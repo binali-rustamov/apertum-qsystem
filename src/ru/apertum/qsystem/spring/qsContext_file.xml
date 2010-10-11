@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
+    "spring-beans-2.0.dtd">
+<beans>
+    <!-- Параметры коннекта к базе -->
+    <!-- база не требуется
+    <bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://192.168.0.43/qsystem"/>
+        <property name="username" value="admin"/>
+        <property name="password" value="123"/>
+    </bean>
+    -->
+    <!-- Фабрика получения сессии работы с БД. Перечисление аннотированных классов для hibernate. -->
+    <!-- база не требуется
+    <bean id="mySessionFactory" class="ru.apertum.qsystem.hibernate.AnnotationSessionFactoryBean">
+        <property name="dataSource" ref="myDataSource"/>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect
+                </prop>
+            </props>
+        </property>
+        <property name="annotatedClasses">
+            <list>
+                <value>ru.apertum.qsystem.server.model.NetProperty</value>
+                <value>ru.apertum.qsystem.server.model.QService</value>
+                <value>ru.apertum.qsystem.server.model.QUser</value>
+                <value>ru.apertum.qsystem.common.model.QCustomer</value>
+                <value>ru.apertum.qsystem.server.model.PlanService</value>
+            </list>
+        </property>
+        <property name="configurationClass">
+            <value>org.hibernate.cfg.AnnotationConfiguration</value>
+        </property>
+    </bean>
+    -->
+    <!-- бин для загрузки из файла -->
+    <bean id="serverProperty" class="ru.apertum.qsystem.server.model.FromFileBuilder">
+        <constructor-arg index="0" value="config\config.xml" />
+    </bean>
+    
+    <!-- бин для загрузки из БД
+    <bean id="serverProperty" class="ru.apertum.qsystem.server.model.FromDBBuilder">
+        <property name="sessionFactory" ref="mySessionFactory"/>
+    </bean>
+    -->
+    <!-- бин для определения порта для работы с устройствами вывода. -->
+    <bean id="serialPort" class="ru.apertum.qsystem.server.model.serialPort.RxtxSerialPort">
+        <constructor-arg index="0" value="COM1" />
+    </bean>
+    <!-- Бин для Гирлянды на RS-488 -->
+    <!-- Пока юзаем мониторный вариант
+    <bean id="indicatorBoard" class="ru.apertum.qsystem.server.model.QIndicatorBoardRS"/>
+    -->
+    <!-- Бин для второго монитора USB или RGB -->
+    <bean id="indicatorBoard" class="ru.apertum.qsystem.server.model.QIndicatorBoardMonitor">
+        <!-- Координаты по Х(чтоб попали в нужный монитор) -->
+        <constructor-arg index="0" value="1500" />
+        <!-- Координаты по У(чтоб попали в нужный монитор) -->
+        <constructor-arg index="1" value="100" />
+        <!-- Количество строк на табло -->
+        <constructor-arg index="2" value="4" />
+        <!-- Размер шрифта на табло -->
+        <constructor-arg index="3" value="200" />
+    </bean>
+</beans>

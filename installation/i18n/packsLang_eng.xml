@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<langpack>
+	<str id="mainFiles.description" txt="Main files, libraries, graphics resources."/>
+	<str id="workPlace.description" txt="Installing the workstation of operator. Placing a configuration file to the operator workstation."/>
+	<str id="server.description" txt="Installing server components: configuration tools, configuration files, server resources."/>
+	<str id="admin.description" txt="Installation of an administrator workstation. Placing the configuration files and component management."/>
+	<str id="registrationPoint.description" txt="Installation of check-in point: the configuration tools, configuration files, server resources."/>
+	<str id="docs.description" txt="Documentation on the system: Administrator's Guide QSystem, User Guide QSystem, Guide system programmer reporting system"/>
+	<str id="forArmCP.txt" txt="For workstation and check-point:"/>
+	<str id="forArmCP.id" txt="For workstation and check-point:"/>
+</langpack>

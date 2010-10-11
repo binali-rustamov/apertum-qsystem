@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<userInput>
+    <panel order="0" layout="left">
+        <!--field type="title" align="left" txt="Сетевые параметры" bold="true" size="1" id="Параметры соединения с сервером:"/>
+
+        <field type="divider" /-->
+        <!-- field type="staticText" align="left" txt="Network settings" id="Для рабочего места и пункта регистрации:"/ -->
+		<field type="staticText" align="left" txt="Network settings" id="forArmCP"/>
+        <field type="rule" variable="serverAdress">
+            <spec txt="Multicast Address:" id="servAddr" size="20" set="0:127 1:0 2:0 3:1"
+                  layout="N:3:3 . N:3:3 . N:3:3 . N:3:3"/>
+            <validator class="com.izforge.izpack.util.NotEmptyValidator" txt="The Multicast address is mandatory!"/>
+        </field>
+        <field type="rule" variable="serverPort">
+            <spec txt="RMI port:" id="servPort" layout="N:6:6" set="0:3128"/>
+            <validator class="com.izforge.izpack.util.NotEmptyValidator" txt="Invalid Port"/>
+        </field>
+        
+        <!--field type="divider" /-->
+        <field type="staticText" align="left" txt="Network settings" id="forAdmin"/>
+        <field type="rule" variable="welcomeAdress">
+            <spec txt="Multicast Address:" id="CPaddr" size="20" set="0:127 1:0 2:0 3:1"
+                  layout="N:3:3 . N:3:3 . N:3:3 . N:3:3"/>
+            <validator class="com.izforge.izpack.util.NotEmptyValidator" txt="The Multicast address is mandatory!"/>
+        </field>
+        <field type="rule" variable="welcomePort">
+            <spec txt="RMI port:" id="CPport" layout="N:6:6" set="0:3129"/>
+            <validator class="com.izforge.izpack.util.NotEmptyValidator" txt="Invalid Port"/>
+        </field>
+
+        <!--field type="divider" /-->
+        <field type="staticText" align="left" txt="Network settings2" id="requestServ"/>
+        <field type="rule" variable="clientPort">
+            <spec txt="RMI port:" id="clnPort" layout="N:6:6" set="0:3129"/>
+            <validator class="com.izforge.izpack.util.NotEmptyValidator" txt="Invalid Port"/>
+        </field>
+        
+        
+        <field type="staticText" align="centre" txt="Network settings" id="forCP"/>
+        
+        <field type="radio" variable="tach">
+            <description align="left" txt="tach.radio" id="kindCP"/>
+            <spec>
+                <choice txt="r1" id="tach" value="tach"  set="true" />
+                <choice txt="r2" id="buttons" value="buttons"/>
+           </spec>
+        </field>
+
+
+        <!--field type="divider" /-->
+        <field type="check" variable="super">
+            <spec txt="Super Server" id="super" true="super" false="" set="false"/>
+        </field>
+    </panel>
+</userInput>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<project name="QSystemBuilder" default="default" basedir="..">
+    <description>Create build.</description>
+
+    <echo message="Delete folders ..."/>
+    <target name="-pre-init">
+       <delete includeEmptyDirs="true" failonerror="no">
+           <fileset dir="dist"/>
+           <fileset dir="build"/>
+        </delete>
+    </target>
+    
+    <property file="src/ru/apertum/qsystem/common/version.properties"/>
+    <import file="../build-ext.xml"/>
+
+    
+    <target name="-post-test-run">
+
+    </target>
+   
+     
+    <target name="-post-jar">
+	  
+        <description>Make Install Package</description>
+                
+        
+
+          <echo message="Make installation ..."/>
+          <exec dir="installation" executable="../installation/makeInstall.bat"/>
+
+          <echo message="Make system ZIP ..."/>
+          <zip destfile="building/qsystem-${version}.zip">
+               <fileset dir="installation" includes="readme.txt"/>
+               <fileset dir="installation" includes="install.jar"/>
+          </zip>
+
+
+          <!-- echo message="Copy system to server ..."/>
+          <copy todir="\\INTEGRATOR\files\qsystem\builds">
+            <fileset dir="building">
+                <include name="qsystem-${version}.zip" />
+            </fileset>
+          </copy>
+
+
+          <echo message="Deleting local copy ..."/>
+          <delete> 
+               <fileset dir="building" includes="qsystem-${version}.zip" defaultexcludes="no"/>
+          </delete>
+
+          <echo message="Mailing ..."/>
+          < mail mailhost="gmail.com" mailport="25" messagemimetype="text/html" subject="admin@apertum.ru"/>
+               <to address="admin@apertum.ru"/>
+               <to address="andry5b@rambler.ru"/>
+               <to address="abczlab@gmail.com"/>
+          </mail -->
+
+    </target>
+ 
+ 
+</project>

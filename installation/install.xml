@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+
+<!-- 
+    Это скрипт формирования инсталяционного приложения
+-->
+<installation version="1.0">
+
+    <!-- 
+        Информация о продукте.
+    -->
+    <info>
+        <appname>QSystem</appname>
+        <appversion>[]</appversion>
+        <authors>
+            <author name="Product of ''Apertum Project''" email="info@apertum.ru"/>
+            <author name="Develop by Evgeniy V. Egorov" email="info@apertum.ru"/>
+        </authors>
+        <url>http://www.apertum.ru</url>
+        <javaversion>1.6.0.20</javaversion>
+        <requiresjdk>no</requiresjdk>
+        <run-privileged condition="izpack.windowsinstall.vista|izpack.macinstall"/>
+    </info>
+	
+
+    <!-- 
+        Параметры GUI. Пока без применения look & feel
+    -->
+    <guiprefs width="640" height="480" resizable="yes">
+        <modifier key="labelGap" value="2"/>
+        <modifier key="useHeadingPanel" value="yes"/>
+        <modifier key="headingImageOnLeft" value="yes"/>
+        <modifier key="headingLineCount" value="1"/>
+        <modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
+    </guiprefs>
+	
+    <!--
+        Для возможности создавать ярлыки под windows
+    -->
+    <native type="izpack" name="ShellLink.dll"/>
+
+    <!-- 
+        Может быть много языков, пока только Русский.
+        <langpack iso3="eng"/>
+        <langpack iso3="fra"/>
+		<langpack iso3="deu"/>
+    -->
+    <locale>
+	    <langpack iso3="eng"/>
+        <langpack iso3="rus"/>
+    </locale>
+
+    <!-- 
+        Это ресурсы для работы инсталятора. Тексты, лицензия и т.д.
+    -->
+    <resources>
+        <res id="userInputSpec.xml" src="userInputSpec.xml" />
+		<res id="userInputLang.xml_eng" src="i18n/userInputLang_eng.xml" />
+        <res id="userInputLang.xml_rus" src="i18n/userInputLang_rus.xml" />
+
+        <res id="HTMLInfoPanel.readme_rus" src="i18n/Readme_rus.html"/>
+		<res id="HTMLInfoPanel.readme_eng" src="i18n/Readme_eng.html"/>
+		<res id="LicencePanel.licence_rus" src="../license-gpl3-rus.txt"/>
+		<res id="LicencePanel.licence_eng" src="../license-gpl3-eng.txt"/>
+        <res id="InfoPanel.info" src="../src/ru/apertum/qsystem/common/version.properties"/>
+        <res id="shortcutSpec.xml_eng" src="i18n/shortcutSpec_eng.xml"/>
+		<res id="shortcutSpec.xml_rus" src="i18n/shortcutSpec_rus.xml"/>
+        <res id="Installer.image" src="resource/img/install_img.png"/>
+		<res id="packsLang.xml_eng" src="i18n/packsLang_eng.xml"/>
+        <res id="packsLang.xml_rus" src="i18n/packsLang_rus.xml"/>
+    </resources>
+
+    <!-- 
+        Это последовательность диалоговых и информатионных страниц инсталятора
+    -->
+    <panels>
+        <panel classname="HelloPanel"/>
+        <panel classname="HTMLInfoPanel" id="readme"/>
+        <panel classname="InfoPanel"/>
+		<panel classname="LicencePanel"/>
+        <panel classname="TargetPanel"/>
+        <panel classname="PacksPanel"/>
+        <panel classname="UserInputPanel"/>
+        <panel classname="SummaryPanel"/>
+        <panel classname="InstallPanel"/>
+        <panel classname="ShortcutPanel"/>
+        <panel classname="SimpleFinishPanel"/>
+    </panels>
+
+    <!-- 
+        Файлы, включенный в дистрибутив.
+        Одновременно для Win и nix.
+        Указываем что и откуда включить в пакет и куда все это потом поместить.
+    -->
+    <packs>
+        <pack id="mainFiles" name="Main files" required="yes">
+            <description>Основные файлы</description>
+            <file src="../dist" targetdir="$INSTALL_PATH"/>
+            <file type="html" src="i18n/Readme_eng.html" targetdir="$INSTALL_PATH"/>
+			<file type="html" src="i18n/Readme_rus.html" targetdir="$INSTALL_PATH"/>
+            <file os="windows" src="D:/Distrib/JMF/jmf-2_1_1e-windows-i586.exe" targetdir="$INSTALL_PATH/JMF"/>
+            <file os="unix" src="D:/Distrib/JMF/jmf-2_1_1e-linux-i586.bin" targetdir="$INSTALL_PATH/JMF"/>
+            <!--executable os="windows" targetfile="$INSTALL_PATH/JMF/jmf-2_1_1e-windows-i586.exe" stage="postinstall"/-->
+            <fileset os="windows" dir="resource/img" includes="*.ico" targetdir="$INSTALL_PATH/icons/"/>
+            <fileset os="unix" dir="resource/img" includes="*.png" targetdir="$INSTALL_PATH/icons/"/>
+        </pack>
+        <!-- 
+        Для сервера кроме самих исполняемых библиотек еще нужно 
+        библиотеки для работы с COM-портом и скрипт разворачивания БД
+        -->
+        <pack id="workPlace" name="Work place" required="no">
+            <description>Рабочее место оператора</description>
+            <file os="windows" src="resource/txt/StartClient.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/client.sh" targetdir="$INSTALL_PATH"/>
+            <file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
+            <parsable os="windows" targetfile="$INSTALL_PATH/StartClient.bat"/>
+            <parsable os="unix" targetfile="$INSTALL_PATH/client.sh"/>
+        </pack>
+        <pack id="server" name="Server" required="no" preselected="no">
+            <description>Сервер</description>
+            <fileset os="windows" dir="D:/Distrib/rxtx-2.1-7-bins-r2/Windows/i368-mingw32" includes="*.dll" targetdir="${ENV[WINDIR]}/system32"/>
+            <fileset os="unix" dir="D:/Distrib/rxtx-2.1-7-bins-r2/Linux/i686-unknown-linux-gnu" includes="*.so" targetdir="$INSTALL_PATH"/>
+            <file os="windows" src="resource/bin/jar.exe" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/bin/jli.dll" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/bin/msvcr71.dll" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/txt/admspr.bat" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/txt/admdbcom.bat" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/bin/jar" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/bin/libjli.so" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH/dist"/>
+            <file src="../db/qsystem.sql" targetdir="$INSTALL_PATH/DB/"/>
+            <file src="../config/config.xml" targetdir="$INSTALL_PATH/config/"/>
+            <file src="../config/qsystem.dtd" targetdir="$INSTALL_PATH/config/"/>
+            <file src="../config/qsystem.xsl" targetdir="$INSTALL_PATH/config/"/>
+            <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
+			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
+            <file src="../config/board_belgorod.properties" targetdir="$INSTALL_PATH/config/"/>
+            <file os="windows" src="../StartServer.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/server.sh" targetdir="$INSTALL_PATH"/>
+        </pack>
+        <pack id="admin" name="Administrator" required="no" preselected="no">
+            <description>Администрирование</description>
+            <file src="../config/welcome.properties" targetdir="$INSTALL_PATH/config/"/>
+            <file src="../config/admin.properties" targetdir="$INSTALL_PATH/config/"/>
+            <file os="windows" src="../StartAdmin.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/admin.sh" targetdir="$INSTALL_PATH"/>
+            <parsable targetfile="$INSTALL_PATH/config/admin.properties"/>
+            <file os="windows" src="resource/bin/jar.exe" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/bin/jli.dll" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/bin/msvcr71.dll" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/txt/admspr.bat" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/txt/admdbcom.bat" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/bin/jar" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/bin/libjli.so" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH/dist"/>
+        </pack>
+        <pack id="registrationPoint" name="Registration point" required="no" preselected="no">
+            <description>Пункт регистрации</description>
+            <file src="../config/welcome.properties" targetdir="$INSTALL_PATH/config/"/>
+            <file os="windows" src="resource/txt/Welcome.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/welcome.sh" targetdir="$INSTALL_PATH"/>
+            <parsable os="windows" targetfile="$INSTALL_PATH/Welcome.bat"/>
+            <parsable os="unix" targetfile="$INSTALL_PATH/welcome.sh"/>
+        </pack>
+        <pack id="docs" name="Documentation" required="no">
+            <description>Документация</description>
+            <fileset os="windows" dir="../docs" includes="*.doc,*.html,*.pdf,*.rtf,*.otd" targetdir="$INSTALL_PATH/docs/"/>
+            <!-- Reccursive adding -->
+        </pack>
+    </packs>
+</installation>

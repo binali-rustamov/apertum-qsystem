@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<langpack>
+	<str id="forArmCP" txt="Для рабочего места и пункта регистрации:"/>
+	<str id="servAddr" txt="Адрес сервера:"/>
+	<str id="servPort" txt="Порт сервера:"/>
+	<str id="forAdmin" txt="Для администрирования:"/>
+	<str id="CPaddr" txt="Адрес пункта регистрации:"/>
+	<str id="CPport" txt="Порт пункта регистрации:"/>
+	<str id="requestServ" txt="Для обратной связи сервера с клиентами и пунктом регистрации:"/>
+	<str id="clnPort" txt="Порт клиентов:"/>
+	<str id="forCP" txt="Для пункта регистрации:"/>
+	<str id="kindCP" txt="Выбор вида пункта регистрации:"/>
+	<str id="tach" txt="Выбор услуги на сенсорном терминале"/>
+	<str id="buttons" txt="Выбор услуги на кнопочном устройстве"/>
+	<str id="super" txt="Суперсайт (для пункта регистрации)"/>
+</langpack>

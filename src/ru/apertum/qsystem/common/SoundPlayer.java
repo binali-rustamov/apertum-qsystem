@@ -1,0 +1,378 @@
+/*
+ *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package ru.apertum.qsystem.common;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import javax.sound.sampled.*;
+import javax.swing.*;
+import java.lang.Thread.*;
+import java.util.LinkedList;
+
+/**
+ * Класс проигрывания звуковых ресурсов и файлов.
+ * Создает отдельный поток для каждого проигрыша, но игоает синхронизированно.
+ * По этому все ресурсы проиграются друг за другом и это не будет тормозить основной поток.
+ * Воспроизведение кучи мелких файлов глючит, накладываются др. на др.
+ * @author Evgeniy Egorov
+ */
+public class SoundPlayer implements Runnable {
+
+    public SoundPlayer(LinkedList<String> resourceList) {
+        this.resourceList = resourceList;
+    }
+    /**
+     * Тут храним имя ресурса для загрузки
+     */
+    private final LinkedList<String> resourceList;
+
+    /**
+     * Проиграть звуковой ресурс
+     * @param resourceName имя проигрываемого ресурса
+     */
+    public static void play(String resourceName) {
+        final LinkedList<String> resourceList = new LinkedList<String>();
+        resourceList.add(resourceName);
+        play(resourceList);
+    }
+
+    /**
+     * Проиграть набор звуковых ресурсов
+     * @param resourceList список имен проигрываемых ресурсов
+     */
+    public static void play(LinkedList<String> resourceList) {
+        // и запускаем новый вычислительный поток (см. ф-ю run())
+        final Thread playThread = new Thread(new SoundPlayer(resourceList));
+        //playThread.setDaemon(true);
+        playThread.setPriority(Thread.NORM_PRIORITY);
+        playThread.start();
+    }
+
+    public static void printAudioFormatInfo(AudioFormat audioformat) {
+        System.out.println("*****************************************");
+        System.out.println("Format: " + audioformat.toString());
+        System.out.println("Encoding: " + audioformat.getEncoding());
+        System.out.println("SampleRate:" + audioformat.getSampleRate());
+        System.out.println("SampleSizeInBits: " + audioformat.getSampleSizeInBits());
+        System.out.println("Channels: " + audioformat.getChannels());
+        System.out.println("FrameSize: " + audioformat.getFrameSize());
+        System.out.println("FrameRate: " + audioformat.getFrameRate());
+        System.out.println("BigEndian: " + audioformat.isBigEndian());
+        System.out.println("*****************************************\n");
+    }
+
+    /** Asks the user to select a file to play.*/
+    public File getFileToPlay() {
+        File file = null;
+        JFrame frame = new JFrame();
+        JFileChooser chooser = new JFileChooser(".");
+        int returnvalue = chooser.showDialog(frame, "Select File to Play");
+        if (returnvalue == JFileChooser.APPROVE_OPTION) {
+            file = chooser.getSelectedFile();
+        }
+        return file;
+    }
+
+    @Override
+    public void run() {
+        doSounds(this, resourceList);
+    }
+
+    /**
+     * Загрузит ресурс
+     * @param o для згрузки из jar
+     * @param resourceName имя ресурса, это полное имя файла на диске или ресурса в jar
+     * @return входной поток для чтения ресурса, если ничего не найделоЮ то вернет null
+     */
+    private static InputStream getInputStream(Object o, String resourceName) {
+        if ("".equals(resourceName)) {
+            return null;
+        } else {
+            final DataInputStream inStream;
+            File f = new File(resourceName);
+            if (f.exists()) {
+
+                try {
+                    inStream = new DataInputStream(new FileInputStream(f));
+                } catch (FileNotFoundException ex) {
+                    throw new Uses.ServerException("Нет звукового файла \"" + resourceName + "\" " + ex);
+                }
+
+            } else {
+                inStream = new DataInputStream(o.getClass().getResourceAsStream(resourceName));
+            }
+            return inStream;
+        }
+    }
+    /**
+     * Листенер, срабатываюшщий при начале проигрывания семплов
+     */
+    private static ActionListener startListener = null;
+
+    public static ActionListener getStartListener() {
+        return startListener;
+    }
+
+    public static void setStartListener(ActionListener startListener) {
+        SoundPlayer.startListener = startListener;
+    }
+    /**
+     * Событие завершения проигрывания семплов
+     */
+    private static ActionListener finishListener = null;
+
+    public static ActionListener getFinishListener() {
+        return finishListener;
+    }
+
+    public static void setFinishListener(ActionListener finishListener) {
+        SoundPlayer.finishListener = finishListener;
+    }
+
+    synchronized private static void doSounds(Object o, LinkedList<String> resourceList) {
+        if (startListener != null) {
+            startListener.actionPerformed(new ActionEvent(o, 1, "start do sounds"));
+        }
+        for (String res : resourceList) {
+            doSound(o, res);
+        }
+        if (finishListener != null) {
+            finishListener.actionPerformed(new ActionEvent(o, 1, "finish do sounds"));
+        }
+    }
+
+    synchronized private static void doSound(Object o, String resourceName) {
+        Uses.log.logger.debug("Пытаемся воспроизвести звуковой ресурс \"" + resourceName + "\"");
+        InputStream inStream = getInputStream(o, resourceName);
+        AudioInputStream ais = null;
+        if (inStream == null) {
+            Uses.log.logger.error("Ресурс не загружен: \"" + resourceName + "\"");
+            return;
+        }
+        try {
+            //get an AudioInputStream
+            ais = AudioSystem.getAudioInputStream(inStream);
+            //get the AudioFormat for the AudioInputStream 
+            AudioFormat audioformat = ais.getFormat();
+            //printAudioFormatInfo(audioformat);
+            //ULAW & ALAW format to PCM format conversion 
+            if ((audioformat.getEncoding() == AudioFormat.Encoding.ULAW)
+                    || (audioformat.getEncoding() == AudioFormat.Encoding.ALAW)) {
+                AudioFormat newformat = new AudioFormat(
+                        AudioFormat.Encoding.PCM_SIGNED,
+                        audioformat.getSampleRate(),
+                        audioformat.getSampleSizeInBits() * 2,
+                        audioformat.getChannels(),
+                        audioformat.getFrameSize() * 2,
+                        audioformat.getFrameRate(),
+                        true);
+                ais = AudioSystem.getAudioInputStream(newformat, ais);
+                audioformat = newformat;
+                //printAudioFormatInfo(audioformat);
+            }
+            //checking for a supported output line 
+            DataLine.Info datalineinfo = new DataLine.Info(SourceDataLine.class, audioformat);
+            if (!AudioSystem.isLineSupported(datalineinfo)) {
+                System.out.println("Line matching " + datalineinfo + " is not supported.");
+            } else {
+                //System.out.println("Line matching " + datalineinfo + " is supported.");
+                //opening the sound output line 
+                SourceDataLine sourcedataline = (SourceDataLine) AudioSystem.getLine(datalineinfo);
+                sourcedataline.open(audioformat);
+                sourcedataline.start();
+                //Copy data from the input stream to the output data line 
+                int framesizeinbytes = audioformat.getFrameSize();
+                int bufferlengthinframes = sourcedataline.getBufferSize() / 8;
+                int bufferlengthinbytes = bufferlengthinframes * framesizeinbytes;
+                byte[] sounddata = new byte[bufferlengthinbytes];
+                int numberofbytesread = 0;
+                while ((numberofbytesread = ais.read(sounddata)) != -1) {
+                    sourcedataline.write(sounddata, 0, numberofbytesread);
+                }
+                // пдождем пока проиграет семпл.
+                int frPos = -1;
+                while (frPos != sourcedataline.getFramePosition()) {
+                    frPos = sourcedataline.getFramePosition();
+                    Thread.sleep(100);
+                }
+                sourcedataline.close();
+                sounddata = null;
+            }
+
+            //printAudioFormatInfo(audioformat);
+        } catch (InterruptedException ex) {
+            Uses.log.logger.error("InterruptedException: " + ex);
+        } catch (LineUnavailableException lue) {
+            Uses.log.logger.error("LineUnavailableException: " + lue.toString());
+        } catch (UnsupportedAudioFileException uafe) {
+            Uses.log.logger.error("UnsupportedAudioFileException: " + uafe.toString());
+        } catch (IOException ioe) {
+            Uses.log.logger.error("IOException: " + ioe.toString());
+        } finally {
+            try {
+                if (ais != null) {
+                    ais.close();
+                }
+                if (inStream != null) {
+                    inStream.close();
+                }
+            } catch (IOException ex) {
+                Uses.log.logger.error("IOException при освобождении входного потока медиаресурса: " + ex);
+            }
+        }
+    }
+
+    /**
+     * Разбить фразу на звуки и сформировать набор файлов для воспроизведения.
+     * @param path путь, где лежать звуковые ресурсы, это могут быть файлы на диске или ресурсы в jar
+     * @param phrase фраза для разбора 
+     * @return список файлов для воспроизведения фразы
+     */
+    private static LinkedList<String> toSound(String path, String phrase) {
+        final LinkedList<String> res = new LinkedList<String>();
+        for (int i = 0; i < phrase.length(); i++) {
+
+            String elem = phrase.substring(i, i + 1);
+            if (isNum(phrase.charAt(i))) {
+                String ss = elem;
+                if (i != 0 && isNum(phrase.charAt(i - 1))) {
+                    ss = "_" + ss;
+                }
+                int n = i + 1;
+                boolean suff = false;
+                while (n < phrase.length() && isNum(phrase.charAt(n))) {
+                    ss = ss + "0";
+                    if ('0' != phrase.charAt(n)) {
+                        suff = true;
+                    }
+                    n++;
+                }
+                if (suff) {
+                    ss = ss + "_";
+                } else {
+                    i = n - 1;
+                }
+                elem = ss;
+                if (elem.indexOf("_0") != -1 && elem.indexOf("0_") != -1) {
+                    continue;
+                }
+                if (isZero(elem)) {
+                    elem = "0";
+                }
+                if (elem.endsWith("10_")) {
+                    char[] ch = new char[1];
+                    ch[0] = phrase.charAt(i + 1);
+                    elem = elem.replaceFirst("10_", "1" + new String(ch));
+                    i++;
+                }
+            }
+
+            final String file = path + elem.toLowerCase() + ".wav";
+            //System.out.println(nom.substring(i, i + 1) + " - " + file);
+            res.add(file);
+
+        }
+        return res;
+    }
+
+    /**
+     * Разбить фразу на звуки и сформировать набор файлов для воспроизведения. Упрощенный вариант.
+     * @param path путь, где лежать звуковые ресурсы, это могут быть файлы на диске или ресурсы в jar
+     * @param phrase фраза для разбора
+     * @return список файлов для воспроизведения фразы
+     */
+    public static LinkedList<String> toSoundSimple(String path, String phrase) {
+        final LinkedList<String> res = new LinkedList<String>();
+        for (int i = 0; i < phrase.length(); i++) {
+
+            String elem = phrase.substring(i, i + 1);
+            if (isNum(phrase.charAt(i))) {
+
+                if (!isZero(elem)) {
+                    int j = i + 1;
+                    while (j < phrase.length() && isNum(phrase.charAt(j))) {
+                        elem = elem + "0";
+                        j++;
+                    }
+                }
+                if ("10".equals(elem)) {
+                    elem = phrase.substring(i, i + 2);
+                    i++;
+                }
+
+            }
+            if (!isZero(elem)) {
+                final String file = path + elem.toLowerCase() + ".wav";
+                //System.out.println(elem + " - " + file);
+                res.add(file);
+            }
+
+        }
+        return res;
+    }
+
+    private static boolean isNum(char elem) {
+        return '1' == elem || '2' == elem || '3' == elem || '4' == elem || '5' == elem || '6' == elem || '7' == elem || '8' == elem || '9' == elem || '0' == elem;
+    }
+
+    private static boolean isZero(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            if (!('0' == str.charAt(i) || '_' == str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Проговорить вызов клиента голосом
+     * @param clientNumber номер вызываемого клиента
+     * @param pointNumber  номер кабинета, куда вызвали
+     */
+    public static void inviteClient(String clientNumber, String pointNumber) {
+        if (Uses.getNumeration().getSound() == 0) {
+            return;
+        }
+        final LinkedList<String> res = new LinkedList<String>();
+        // путь к звуковым файлам
+        final String path = "/ru/apertum/qsystem/server/sound/";
+        res.add(path + "ding.wav");
+        if (Uses.getNumeration().getSound() == 2) {
+            res.add(path + "client.wav");
+
+            res.addAll(toSoundSimple(path, clientNumber));
+
+            switch (Uses.getNumeration().getPoint()) {
+                case 0:
+                    res.add(path + "tocabinet.wav");
+                    break;
+                case 1:
+                    res.add(path + "towindow.wav");
+                    break;
+                case 2:
+                    res.add(path + "tostoika.wav");
+                    break;
+                default:
+                    res.add(path + "towindow.wav");
+            }
+
+            res.addAll(toSoundSimple(path, pointNumber));
+        }
+        SoundPlayer.play(res);
+    }
+}

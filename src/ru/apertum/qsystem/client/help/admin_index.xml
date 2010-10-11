@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE index
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 1.0//EN"
+         "index_1_0.dtd">
+
+<index version="1.0">
+  <indexitem text="The First?">
+    <indexitem target="first" text="I'm One"/>
+    <indexitem target="second" text="I'm Second"/>
+  </indexitem>
+  <indexitem text="The Last?">
+    <indexitem target="third" text="We're Third!"/>
+  </indexitem>
+  <indexitem target="overview" text="Overview!!!"/>
+</index>

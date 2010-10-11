@@ -1,0 +1,168 @@
+﻿<html xmlns:o="urn:schemas-microsoft-com:office:office"
+       xmlns:w="urn:schemas-microsoft-com:office:word"
+       xmlns="http://www.w3.org/TR/REC-html40">
+
+    <head>
+        <title>Помощь</title>
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <meta name="author" content="Egorov">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    </head>
+
+
+    <body lang=RU style="tab-interval: 35.4pt">
+        <P align=center>Старт компонентов системы </P>
+        <P><FONT color=#008000>Запуск
+                компонентов</FONT><BR><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Запуск
+            осуществляется из командной строки. В качестве параметров передаются сетевые
+            параметры и параметры вывода информации для клиента при необходимости. Для
+            удобства создается командный файл или ярлык, который можно поместить в любое
+            место и запускать двойным щелчком мыши. Для вывода сопутствующей информации в
+            консольное окно в параметрах необходимо указать ключ debug.</P>
+        <P><FONT color=#008000>Развертывание СУБД и настройка параметров
+                соединения</FONT></P>
+        <P>Исполните инсталляционный скрипт для создания СУБД, который находится на
+            диске. После этого создастся схема qsystem. Заведите пользователя и дайте ему
+            права на qsystem. На сервере в jar архиве системы dist\QSystem.jar в файле
+            ru\apertum\spring\qsContext.xml меняем параметры соединения.<BR>Пример параметров
+            соединения с СУБД на сервере 192.168.0.43, пользователь «admin», пароль
+            «123».</P>
+        <P><BR><SPAN lang=EN-US
+                     style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">&lt;</SPAN><SPAN
+                     lang=EN-US
+                     style="FONT-SIZE: 8pt; COLOR: #990000; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">bean
+                id</SPAN><SPAN lang=EN-US
+                           style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">="</SPAN><B><SPAN
+                    lang=EN-US
+                    style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">myDataSource</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">"</SPAN><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: #990000; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">
+                class</SPAN><SPAN lang=EN-US
+                              style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">="</SPAN><B><SPAN
+                    lang=EN-US
+                    style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">org.apache.commons.dbcp.BasicDataSource</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">"</SPAN><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: #990000; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">
+                destroy-method</SPAN><SPAN lang=EN-US
+                                       style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">="</SPAN><B><SPAN
+                    lang=EN-US
+                    style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">close</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">"</SPAN><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: #990000; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">
+                lazy-init</SPAN><SPAN lang=EN-US
+                                  style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">="</SPAN><B><SPAN
+                    lang=EN-US
+                    style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">default</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">"</SPAN><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: #990000; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">
+                autowire</SPAN><SPAN lang=EN-US
+                                 style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">="</SPAN><B><SPAN
+                    lang=EN-US
+                    style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">default</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">"</SPAN><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: #990000; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">
+                dependency-check</SPAN><SPAN lang=EN-US
+                                         style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">="</SPAN><B><SPAN
+                    lang=EN-US
+                    style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">default</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">"&gt;</SPAN><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US"><o:p></o:p></SPAN></P>
+        <P class=MsoNormal
+           style="MARGIN: 0cm 0cm 0pt 18pt; TEXT-INDENT: -18pt; TEXT-ALIGN: left"
+           align=left><B><SPAN lang=EN-US
+                            style="FONT-SIZE: 8pt; COLOR: red; FONT-FAMILY: 'Courier New'; mso-ansi-language: EN-US">&nbsp;</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US"> <SPAN
+                    style="COLOR: blue">&lt;</SPAN><SPAN style="COLOR: #990000">property</SPAN>
+                <SPAN style="COLOR: #990000">name</SPAN><SPAN
+                    style="COLOR: blue">="</SPAN><B>driverClassName</B><SPAN
+                    style="COLOR: blue">"</SPAN><SPAN style="COLOR: #990000"> value</SPAN><SPAN
+                    style="COLOR: blue">="</SPAN><B>com.mysql.jdbc.Driver</B><SPAN
+                    style="COLOR: blue">" /&gt;</SPAN> <o:p></o:p></SPAN></P>
+        <P class=MsoNormal
+           style="MARGIN: 0cm 0cm 0pt 18pt; TEXT-INDENT: -18pt; TEXT-ALIGN: left"
+           align=left><B><SPAN lang=EN-US
+                            style="FONT-SIZE: 8pt; COLOR: red; FONT-FAMILY: 'Courier New'; mso-ansi-language: EN-US">&nbsp;</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US"> <SPAN
+                    style="COLOR: blue">&lt;</SPAN><SPAN style="COLOR: #990000">property</SPAN>
+                <SPAN style="COLOR: #990000">name</SPAN><SPAN
+                    style="COLOR: blue">="</SPAN><B>url</B><SPAN style="COLOR: blue">"</SPAN><SPAN
+                    style="COLOR: #990000"> value</SPAN><SPAN
+                    style="COLOR: blue">="</SPAN><B>jdbc:mysql://192.168.0.43/qsystem?characterEncoding=UTF-8</B><SPAN
+                    style="COLOR: blue">" /&gt;</SPAN> <o:p></o:p></SPAN></P>
+        <P class=MsoNormal
+           style="MARGIN: 0cm 0cm 0pt 18pt; TEXT-INDENT: -18pt; TEXT-ALIGN: left"
+           align=left><B><SPAN lang=EN-US
+                            style="FONT-SIZE: 8pt; COLOR: red; FONT-FAMILY: 'Courier New'; mso-ansi-language: EN-US">&nbsp;</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US"> <SPAN
+                    style="COLOR: blue">&lt;</SPAN><SPAN style="COLOR: #990000">property</SPAN>
+                <SPAN style="COLOR: #990000">name</SPAN><SPAN
+                    style="COLOR: blue">="</SPAN><B>username</B><SPAN
+                    style="COLOR: blue">"</SPAN><SPAN style="COLOR: #990000"> value</SPAN><SPAN
+                    style="COLOR: blue">="</SPAN><B>admin</B><SPAN style="COLOR: blue">"
+                    /&gt;</SPAN> <o:p></o:p></SPAN></P>
+        <P class=MsoNormal
+           style="MARGIN: 0cm 0cm 0pt 18pt; TEXT-INDENT: -18pt; TEXT-ALIGN: left"
+           align=left><B><SPAN lang=EN-US
+                            style="FONT-SIZE: 8pt; COLOR: red; FONT-FAMILY: 'Courier New'; mso-ansi-language: EN-US">&nbsp;</SPAN></B><SPAN
+                lang=EN-US
+                style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US"> <SPAN
+                    style="COLOR: blue">&lt;</SPAN><SPAN style="COLOR: #990000">property</SPAN>
+                <SPAN style="COLOR: #990000">name</SPAN><SPAN
+                    style="COLOR: blue">="</SPAN><B>password</B><SPAN
+                    style="COLOR: blue">"</SPAN><SPAN style="COLOR: #990000"> value</SPAN><SPAN
+                    style="COLOR: blue">="</SPAN><B>123</B><SPAN style="COLOR: blue">" /&gt;</SPAN>
+                <o:p></o:p></SPAN></P>
+        <P class=MsoNormal
+           style="MARGIN: 0cm 0cm 0pt 18pt; TEXT-INDENT: -18pt; TEXT-ALIGN: left"
+           align=left><SPAN lang=EN-US
+                         style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">&lt;/</SPAN><SPAN
+                         lang=EN-US
+                         style="FONT-SIZE: 8pt; COLOR: #990000; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">bean</SPAN><SPAN
+                         lang=EN-US
+                         style="FONT-SIZE: 8pt; COLOR: blue; FONT-FAMILY: Verdana; mso-ansi-language: EN-US">&gt;</SPAN><SPAN
+                         lang=EN-US
+                         style="FONT-SIZE: 8pt; FONT-FAMILY: Verdana; mso-ansi-language: EN-US"><o:p></o:p></SPAN></P>
+        <P><BR><FONT color=#008000>Запуск сервера</FONT></P><FONT color=#008000></FONT>
+        <P>Запуск осуществляется из командной строки. В качестве параметра передается
+            полное имя конфигурационного файла. Это позволяет иметь несколько конфигураций.
+            Для удобства создается командный файл, ярлык можно поместить в любое место и
+            запускать двойным щелчком мыши. Описание конфигурационного файла не приводится.
+            Если используется СУБД, то никакие параметры передавать не нужно. Все необходимое
+            для соединения с СУБД настраивается в контексте системы (описывается ниже). После
+            запуска сервера в консольном окне будет выведено сообщение: «Сервер системы
+            запущен» и будет производиться индикация активности сервера.</P>
+        <P><BR><FONT color=#008000>Запуск администратора</FONT></P>
+        <P align=left>Старт можно произвести командой </P>
+        <P align=center>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; javaw -cp
+            dist/QSystem.jar ru.apertum.qsystem.client.forms.FAdmin.</P>
+
+        <P><BR><FONT color=#008000>Запуск пункта регистрации</FONT></P>
+        <P align=left>Формат команды запуска:</P>
+        <P align=center>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; javaw -cp
+            dist/QSystem.jar ru.apertum.qsystem.client.forms.FAdmin -s 192.168.0.43 -sport 3128 -cport 31290 [debug] tach|buttons [med]</P>
+        <ul>
+            <li>debug - необязательный параметр, указывает на то чтобы окно не разворачивалось на весь экран и не прятался курсор мыши.</li>
+            <li>tach|buttons - вариант пункта регистрации, это может быть сенсорный монитор или кнопочное устройство подсоединяемое на СОМ-порт</li>
+            <li>med - необязательный параметр для использования пункта регистрации в мед.учреждениях для предварительной записи на прием</li>
+        </ul>
+
+
+    </body>
+
+</html>

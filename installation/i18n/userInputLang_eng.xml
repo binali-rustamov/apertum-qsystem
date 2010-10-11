@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<langpack>
+	<str id="forArmCP" txt="For workstation and check-point:"/>
+	<str id="servAddr" txt="Server address:"/>
+	<str id="servPort" txt="Server port:"/>
+	<str id="forAdmin" txt="For administration:"/>
+	<str id="CPaddr" txt="Check-point address:"/>
+	<str id="CPport" txt="Check-point port:"/>
+	<str id="requestServ" txt="For feedback server with clients and point of registration:"/>
+	<str id="clnPort" txt="Client port:"/>
+	<str id="forCP" txt="For check-point:"/>
+	<str id="kindCP" txt="Choise kind of check-point:"/>
+	<str id="tach" txt="Select Services on the touch terminal"/>
+	<str id="buttons" txt="Select Services on the buttons device"/>
+	<str id="super" txt="Supersite (for check-point)"/>
+</langpack>

@@ -1,0 +1,73 @@
+﻿<html xmlns:o="urn:schemas-microsoft-com:office:office"
+       xmlns:w="urn:schemas-microsoft-com:office:word"
+       xmlns="http://www.w3.org/TR/REC-html40">
+
+    <head>
+        <title>Помощь</title>
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <meta name="author" content="Egorov">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    </head>
+
+
+    <body lang=RU style="tab-interval: 35.4pt">
+        <P align=center>Старт компонентов системы </P>
+        <P><FONT color=#000000>
+
+
+                Запуск осуществляется из командной строки. В качестве параметров
+                при заруске&nbsp;передаются сетевые параметры и параметры вывода информации для клиента
+                при необходимости, если используется второй монитор для&nbsp;вывода номера вызванного клиента. Для удобства
+                создается командный файл или ярлык, который можно поместить в любое
+                место и запускать двойным щелчком мыши. Если для установки
+                системы использовался инсталяционный пакет, то все необходимые командные файлы
+                и ярлыки создадутся
+                автоматически.</FONT></P>
+        <P><FONT color=#000000>После старта будет предложено выбрать от имени какого
+                участника процесса будет выступать данный пользователь. При сворачивании окна
+                приложения, оно сворачивается в область системных уведомлений (трей). Двойной
+                щелчок мыши по соответствующей иконке откроет окно приложения.</FONT></P><FONT color=#000000>
+            <P><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Пример командной
+                строки запуска компонента рабочего местаоператора.</P>
+            <P align=center><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; java -cp
+                dist/QSystem.jar ru.apertum.qsystem.server.QСlient -s 192.168.0.1 -cport 3129 -sport 3128 -cfg config/clientboard.xml</P>
+            <P><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -s 192.168.0.1 - работать с
+                сервером&nbsp;системы&nbsp;по адресу
+                192.168.0.1<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -cport 3129 - порт приема
+                сообщений клиентом 3129<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -sport 3128 -
+                сервер работает на порту 3128<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -cfg config/clientboard.xml - файл конфигурации главного табло, не обязательный параметр. Требуется при использовании табло оператора.<BR></P>
+            <P>&nbsp;</P>
+            <P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Пример командной
+                строки&nbsp;запуска программы администрирования</P>
+            <P align=center>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; javaw -cp
+                dist/QSystem.jar ru.apertum.qsystem.client.forms.FAdmin.</P>
+
+            <P><BR><FONT color=#008000>Запуск пункта регистрации</FONT></P>
+            <P align=left>Формат команды запуска:</P>
+            <P align=center>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; javaw -cp
+                dist/QSystem.jar ru.apertum.qsystem.client.forms.FAdmin -s 192.168.0.43 -sport 3128 -cport 31290 [debug] tach|buttons [med] [super]</P>
+            <ul>
+                <li>debug - необязательный параметр, указывает на то чтобы окно не разворачивалось на весь экран и не прятался курсор мыши.</li>
+                <li>tach|buttons - вариант пункта регистрации, это может быть сенсорный монитор или кнопочное устройство подсоединяемое на СОМ-порт</li>
+                <li>med - необязательный параметр для использования пункта регистрации в мед.учреждениях для предварительной записи на прием</li>
+                <li> -cport 3129 - порт приема сообщений на пункте регистрации 3129</li>
+                <li> -sport 3128 - порт сервера 3128, с которым работает пункт регистрации</li>
+                <li> -s 192.168.0.1 - работать с сервером системы по адресу 192.168.0.1</li>
+                <li>    super - необязательный параметер, указывает пункту регистрации что он должен работать с суперсайтом домена.</li>
+            </ul>
+            Запуск сервера и модуля администрирования не требует передачи параметров для запуска.</FONT>
+
+
+
+
+
+
+
+
+
+
+
+    </body>
+
+</html>

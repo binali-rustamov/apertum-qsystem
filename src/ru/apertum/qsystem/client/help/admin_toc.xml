@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE toc
+PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+"toc_1_0.dtd">
+
+<toc version="1.0">
+    <tocitem image="toplevelfolder" target="overview" text="Администрирование">
+        <tocitem text="Для начала">
+            <tocitem target="introduction" text="Введение"/>
+            <tocitem target="start" text="Старт администратора"/>
+        </tocitem>
+        <tocitem text="Администрирование">
+            <tocitem target="loginning" text="Вход в систему"/>
+            <tocitem target="monitoring" text="Мониторинг"/>
+            <tocitem target="configuring" text="Формирование конфигурации"/>
+            <tocitem target="net" text="Сетевые настройки сервера"/>
+            <tocitem target="domain" text="Формирование домена"/>
+
+            <tocitem target="schedulers" text="Планы расписаний"/>
+            <tocitem target="results" text="Результаты работы"/>
+            <tocitem target="responses" text="Отзывы клиентов"/>
+            <tocitem target="calendars" text="Рабочие календари"/>
+            <tocitem target="editTablo" text="Редактор главного табло"/>
+            <tocitem target="infoSystem" text="Справочная система"/>
+      
+        </tocitem>
+    </tocitem>
+</toc>
