@@ -39,7 +39,6 @@
     <native type="izpack" name="ShellLink.dll"/>
 
     <!-- 
-        Может быть много языков, пока только Русский.
         <langpack iso3="eng"/>
         <langpack iso3="fra"/>
 		<langpack iso3="deu"/>
@@ -111,6 +110,8 @@
             <description>Рабочее место оператора</description>
             <file os="windows" src="resource/txt/StartClient.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/client.sh" targetdir="$INSTALL_PATH"/>
+			<file os="windows" src="resource/txt/StartTabloRedactor.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/starttabloredactor.sh" targetdir="$INSTALL_PATH"/>
             <file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
             <parsable os="windows" targetfile="$INSTALL_PATH/StartClient.bat"/>
             <parsable os="unix" targetfile="$INSTALL_PATH/client.sh"/>
