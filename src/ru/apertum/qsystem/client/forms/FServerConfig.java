@@ -95,13 +95,13 @@ public class FServerConfig extends javax.swing.JFrame {
             comStopBits = Uses.elementsByAttr(com.get(0), "name", "stopBits").get(0);
             setComboValue(comboBoxStopBits, comStopBits.attributeValue("value"));
         }
-        final ArrayList<Element> db = Uses.elementsByAttr(root, "id", "myDataSource");
+        final ArrayList<Element> db = Uses.elementsByAttr(root, "id", "c3p0DataSource");
         isDB = !db.isEmpty();
         if (isDB) {
             /*<property name="url" value="jdbc:mysql://192.168.0.251/qsystem?characterEncoding=UTF-8"/>
             <property name="username" value="admin"/>
             <property name="password" value="123"/>*/
-            dbUrl = Uses.elementsByAttr(db.get(0), "name", "url").get(0);
+            dbUrl = Uses.elementsByAttr(db.get(0), "name", "jdbcUrl").get(0);
             final String s = dbUrl.attributeValue("value");
             int st = s.indexOf("://") + 3; // начало адреса
             int ssh = s.indexOf("/", st);
@@ -117,7 +117,7 @@ public class FServerConfig extends javax.swing.JFrame {
                 ssh++;
             }
             textFieldBaseName.setText(s.substring(ssh, ask));
-            dbUser = Uses.elementsByAttr(db.get(0), "name", "username").get(0);
+            dbUser = Uses.elementsByAttr(db.get(0), "name", "user").get(0);
             textFieldUserName.setText(dbUser.attributeValue("value"));
             dbPassword = Uses.elementsByAttr(db.get(0), "name", "password").get(0);
             textFieldPassword.setText(dbPassword.attributeValue("value"));

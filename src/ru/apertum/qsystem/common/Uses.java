@@ -261,6 +261,7 @@ public final class Uses {
     public static final String TASK_GET_SERVICES = "Получить перечень услуг";
     public static final String TASK_ABOUT_SERVICE = "Получить описание услуги";
     public static final String TASK_GET_SERVICE_PREINFO = "Получить информацию по услуге";
+    public static final String TASK_GET_INFO_PRINT = "Получить информацию для печати";
     public static final String TASK_GET_USERS = "Получить перечень пользователей";
     public static final String TASK_GET_SELF = "Получить описание пользователя";
     public static final String TASK_GET_SELF_SERVICES = "Получить состояние очередей";
@@ -582,7 +583,7 @@ public final class Uses {
 
     /**
      * Выводит сообщение на консоль по русски.
-     * @throws IOException 
+     * @param mes 
      */
     public static void writeRus(String mes) {
         if (!(isDebug || isDemo)) {
@@ -751,7 +752,7 @@ public final class Uses {
 
     /**
      * Так через Spring мы установим фабрику сессий.
-     * @param sessionFactory этот рапаметр определяется в Spring
+     * @param hibernateTemplate 
      */
     public static void setSessionFactory(HibernateTemplate hibernateTemplate) {
         Uses.hibernateTemplate = hibernateTemplate;
@@ -905,7 +906,7 @@ public final class Uses {
     /**
      * Послать сообщение по UDP
      * @param message текст посылаемого сообщения
-     * @param addres адрес получателя. Если адрес "255.255.255.255", то рассылка будет широковещательной.
+     * @param address адрес получателя. Если адрес "255.255.255.255", то рассылка будет широковещательной.
      * @param port порт получателя
      */
     public static void sendUDPMessage(String message, InetAddress address, int port) {
@@ -945,6 +946,7 @@ public final class Uses {
      * @param o - класс, нужен для получения ресурса
      * @param resourceName путь к ресурсу в jar-файле
      * @return массив байт, содержащий ресурс
+     * @throws IOException
      */
     public static byte[] readResource(Object o, String resourceName) throws IOException {
         // Выдаем ресурс  "/ru/apertum/qsystem/reports/web/"
@@ -957,6 +959,7 @@ public final class Uses {
      *  Если Параметр пустой, то возвращает null.
      * @param o Объект для загрузки ресурса из jar, чаще всего класс в котором понадобилась эта картинка.
      * @param resourceName путь к ресурсу или файлу картинки. Может быть пустым.
+     * @return
      */
     public static Image loadImage(Object o, String resourceName) {
         if ("".equals(resourceName)) {
@@ -1003,6 +1006,8 @@ public final class Uses {
 
     /**
      * Округление до нескольких знаков после запятой.
+     * @param value
+     * @param scale 
      * @return Готовое обрезанное дробное число.
      */
     public static double roundAs(double value, int scale) {

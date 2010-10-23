@@ -83,18 +83,21 @@ public abstract class AGenerator implements IGenerator {
 
     /**
      * Абстрактный метод формирования данных отчета.
+     * @param inputData
      * @return
      */
     abstract protected JRDataSource getDataSource(String inputData);
 
     /**
      * Абстрактный метод формирования параметров для отчета.
+     * @param inputData
      * @return
      */
     abstract protected Map getParameters(String inputData);
 
     /**
      * Метод получения коннекта к базе если отчет строится через коннект.
+     * @param inputData
      * @return коннект соединения к базе или null.
      */
     abstract protected Connection getConnection(String inputData);
@@ -103,6 +106,7 @@ public abstract class AGenerator implements IGenerator {
      * Абстрактный метод выполнения неких действия для подготовки данных отчета.
      * Если он возвращает заполненный массив байт, то его нужно отдать клиенту,
      * иначе если null то продолжаем генерировать отчет.
+     * @param inputData
      * @return массив байт для выдачи на клиента.
      */
     abstract protected byte[] preparation(String inputData);
@@ -110,7 +114,7 @@ public abstract class AGenerator implements IGenerator {
     /**
      * Метод получения документа-отчета или другого какого документа в виде массива байт.
      * Сдесь испольщуем методы интерфейса IFormirovator для получения отчета.
-     * @param format какого формата отчет хотим получить(html, pdf, rtf)
+     * @param inputData ? какого формата отчет хотим получить(html, pdf, rtf)
      * @return массив байт документа.
      */
     @Override

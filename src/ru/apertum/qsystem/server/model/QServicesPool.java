@@ -59,6 +59,7 @@ import ru.apertum.qsystem.reports.model.CurrentStatistic;
 import ru.apertum.qsystem.server.model.calendar.CalendarTableModel;
 import ru.apertum.qsystem.server.model.calendar.FreeDay;
 import ru.apertum.qsystem.server.model.calendar.QCalendarList;
+import ru.apertum.qsystem.server.model.infosystem.QInfoItem;
 import ru.apertum.qsystem.server.model.infosystem.QInfoTree;
 import ru.apertum.qsystem.server.model.response.QRespEvent;
 import ru.apertum.qsystem.server.model.response.QResponseList;
@@ -1641,6 +1642,18 @@ public final class QServicesPool implements IRmiCommander {
             return "<Ответ>\n<html>\n<![CDATA[" + srv.getPreInfoHtml() + "]]>\n</html>\n<print>\n<![CDATA[" + srv.getPreInfoPrintText().replace("\n", "<brk>") + "]]>\n</print>\n</Ответ>";
         }
     };
+    /**
+     * Получение текста для печати информационного узла по его имени
+     */
+    final Task getPtintInfoItem = new Task(Uses.TASK_GET_INFO_PRINT) {
+
+        @Override
+        String process(Element task, String ipAdress, byte[] IP) {
+            super.process(task, ipAdress, IP);
+            final QInfoItem item = infoTree.getByName(task.attributeValue(Uses.TAG_INFO_ITEM));
+            return "<Ответ><![CDATA[" + item.getTextPrint() + "]]></Ответ>";
+        }
+    };
 
 //****************************************************************************
 //********************* КОНЕЦ добавления в мап обработчиков заданий  *********
@@ -1813,7 +1826,7 @@ public final class QServicesPool implements IRmiCommander {
         Uses.log.logger.info("Пробуем восстановить состояние системы.");
         File recovFile = new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE);
         if (recovFile.exists()) {
-            Uses.log.logger.warn("Восстановление состояние системы после нештатного завершения работы сервера.");
+            Uses.log.logger.warn("Восстановление состояние системы после вчерашнего... нештатного завершения работы сервера.");
             //восстанавливаем состояние
             final SAXReader reader = new SAXReader(false);
             final Element root;

@@ -97,6 +97,20 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
     public void setHTMLText(String htmlText) {
         this.htmlText = htmlText;
     }
+
+    /**
+     * Текст для печати
+     */
+    @Column(name = "text_print")
+    private String textPrint;
+
+    public String getTextPrint() {
+        return textPrint;
+    }
+
+    public void setTextPrint(String textPrint) {
+        this.textPrint = textPrint;
+    }
     //*******************************************************************************************************************
     //*******************************************************************************************************************
     //********************** Реализация сервисных методов ***************************************************************

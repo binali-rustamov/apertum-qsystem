@@ -26,11 +26,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.MemoryImageSource;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.border.EtchedBorder;
 import org.dom4j.Element;
 import org.jdesktop.application.Action;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
+import ru.apertum.qsystem.common.model.NetCommander;
 
 /**
  * Created on 18.09.2009, 11:33:46
@@ -43,7 +45,10 @@ public class FInfoDialog extends javax.swing.JDialog {
 
     private static FInfoDialog infoDialog;
 
-    /** Creates new form FStandAdvance */
+    /** Creates new form FStandAdvance
+     * @param parent
+     * @param modal
+     */
     public FInfoDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         infoDialog = this;
@@ -62,14 +67,18 @@ public class FInfoDialog extends javax.swing.JDialog {
      */
     private static Element root;
     /**
-     * Предыдущий системы
+     * Предыдущий уровень кнопок
      */
     private static Element preLevel;
+    /**
+     * Текущий уровень кнопок
+     */
+    private static Element level;
 
     /**
-     * Статический метод который показывает модально диалог выбора времени для предварительной записи клиентов.
+     * Статический метод который показывает модально диалог чтения информации.
      * @param parent фрейм относительно которого будет модальность
-     * @param respList XML-список возможных отзывов
+     * @param respList XML-дерево информации
      * @param modal модальный диалог или нет
      * @param fullscreen растягивать форму на весь экран и прятать мышку или нет
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
@@ -105,50 +114,59 @@ public class FInfoDialog extends javax.swing.JDialog {
     private void showLevel(Element level) {
         infoDialog.panelMain.removeAll();
         infoDialog.panelMain.repaint();
-        int delta = 10;
-        switch (Toolkit.getDefaultToolkit().getScreenSize().width) {
-            case 640:
-                delta = 10;
-                break;
-            case 800:
-                delta = 20;
-                break;
-            case 1024:
-                delta = 30;
-                break;
-            case 1280:
-                delta = 40;
-                break;
-            case 1600:
-                delta = 50;
-                break;
-        }
-        int cols = 3;
-        int rows = 5;
-        if (level.elements().size() < 4) {
-            cols = 1;
-            rows = 3;
-        }
-        if (level.elements().size() > 3 && level.elements().size() < 11) {
-            cols = 2;
-            rows = Math.round(new Float(level.elements().size()) / 2);
-        }
-        if (level.elements().size() > 10) {
-            cols = 3;
-            rows = Math.round(new Float(0.3) + level.elements().size() / 3);
-        }
-        infoDialog.panelMain.setLayout(new GridLayout(rows, cols, delta, delta / 2));
-        for (Object o : level.elements()) {
-            final Element el = (Element) o;
-            final InfoButton button = new InfoButton(el);
-            infoDialog.panelMain.add(button);
-        }
-        if (level != root) {
-            preLevel = level.getParent();
+        FInfoDialog.level = level;
+        buttonPrint.setVisible(level.elements().isEmpty());
+        if (level.elements().isEmpty()) {
+            final JLabel label = new JLabel(level.getText());
+            GridLayout gl = new GridLayout(1, 1);
+            panelMain.setLayout(gl);
+            panelMain.add(label);
         } else {
-            preLevel = root;
+            int delta = 10;
+            switch (Toolkit.getDefaultToolkit().getScreenSize().width) {
+                case 640:
+                    delta = 10;
+                    break;
+                case 800:
+                    delta = 20;
+                    break;
+                case 1024:
+                    delta = 30;
+                    break;
+                case 1280:
+                    delta = 40;
+                    break;
+                case 1600:
+                    delta = 50;
+                    break;
+            }
+            int cols = 3;
+            int rows = 5;
+            if (level.elements().size() < 4) {
+                cols = 1;
+                rows = 3;
+            }
+            if (level.elements().size() > 3 && level.elements().size() < 11) {
+                cols = 2;
+                rows = Math.round(new Float(level.elements().size()) / 2);
+            }
+            if (level.elements().size() > 10) {
+                cols = 3;
+                rows = Math.round(new Float(0.3) + level.elements().size() / 3);
+            }
+            infoDialog.panelMain.setLayout(new GridLayout(rows, cols, delta, delta / 2));
+            for (Object o : level.elements()) {
+                final Element el = (Element) o;
+                final InfoButton button = new InfoButton(el);
+                infoDialog.panelMain.add(button);
+            }
+            if (level != root) {
+                preLevel = level.getParent();
+            } else {
+                preLevel = root;
+            }
+            setSize(getWidth() + s(), getHeight());
         }
-        setSize(getWidth() + s(), getHeight());
     }
     private static int s = 1;
 
@@ -169,9 +187,9 @@ public class FInfoDialog extends javax.swing.JDialog {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (!el.elements().isEmpty()) {
-                        infoDialog.showLevel(el);
-                    }
+                    //if (!el.elements().isEmpty()) {
+                    infoDialog.showLevel(el);
+                    //}
                 }
             });
         }
@@ -203,6 +221,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         jButton2 = new javax.swing.JButton();
         buttonInRoot = new javax.swing.JButton();
         buttonBack = new javax.swing.JButton();
+        buttonPrint = new javax.swing.JButton();
         panelMain = new ru.apertum.qsystem.client.model.QPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -234,7 +253,7 @@ public class FInfoDialog extends javax.swing.JDialog {
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelUpLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE)
+                .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 1004, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelUpLayout.setVerticalGroup(
@@ -286,6 +305,13 @@ public class FInfoDialog extends javax.swing.JDialog {
             }
         });
 
+        buttonPrint.setAction(actionMap.get("printInfo")); // NOI18N
+        buttonPrint.setFont(resourceMap.getFont("buttonPrint.font")); // NOI18N
+        buttonPrint.setIcon(resourceMap.getIcon("buttonPrint.icon")); // NOI18N
+        buttonPrint.setText(resourceMap.getString("buttonPrint.text")); // NOI18N
+        buttonPrint.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonPrint.setName("buttonPrint"); // NOI18N
+
         javax.swing.GroupLayout panelBottomLayout = new javax.swing.GroupLayout(panelBottom);
         panelBottom.setLayout(panelBottomLayout);
         panelBottomLayout.setHorizontalGroup(
@@ -293,20 +319,24 @@ public class FInfoDialog extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 142, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 108, Short.MAX_VALUE)
+                .addComponent(buttonPrint, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(buttonInRoot, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addComponent(buttonBack, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         panelBottomLayout.setVerticalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
+            .addGroup(panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonInRoot, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
-                    .addComponent(buttonBack, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
+                .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(buttonBack, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
+                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
+                        .addComponent(buttonInRoot, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
+                    .addComponent(buttonPrint, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -318,11 +348,11 @@ public class FInfoDialog extends javax.swing.JDialog {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 817, Short.MAX_VALUE)
+            .addGap(0, 1024, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 253, Short.MAX_VALUE)
+            .addGap(0, 321, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout panelAllLayout = new javax.swing.GroupLayout(panelAll);
@@ -389,10 +419,26 @@ public class FInfoDialog extends javax.swing.JDialog {
         }
         setVisible(false);
     }//GEN-LAST:event_buttonBackActionPerformed
+
+    @Action
+    public void printInfo() {
+        Uses.log.logger.info("Печать информации");
+
+        // Узнать у сервера, есть ли информация для печати
+        // Если текст информации не пустой, то показать диалог сэтим текстом
+        // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
+        final Element printInfo = NetCommander.getPintForInfoItem(FWelcome.netProperty, level.attributeValue(Uses.TAG_NAME), "");
+        if (printInfo != null) {
+            String printedText = printInfo.getText();
+            printedText = "".equals(printedText.trim()) ? "Нет информации для печати.\nОбратитесь к менеджеру." : printedText;
+            FWelcome.printPreInfoText(printedText);
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel LabelCaption2;
     private javax.swing.JButton buttonBack;
     private javax.swing.JButton buttonInRoot;
+    private javax.swing.JButton buttonPrint;
     private javax.swing.JButton jButton2;
     private ru.apertum.qsystem.client.model.QPanel panelAll;
     private ru.apertum.qsystem.client.model.QPanel panelBottom;

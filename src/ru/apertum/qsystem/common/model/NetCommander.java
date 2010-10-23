@@ -39,6 +39,7 @@ public class NetCommander {
     public final static String PARAM_SITE_MARK = "%PARAM_SITE_MARK%";
     public final static String PARAM_INPUT_DATA = "%INPUT_DATA%";
     public final static String PARAM_SERVICE = "%SERVICE%";
+    public final static String PARAM_INFO_ITEM = "%INFO_ITEM%";
     private final static String PARAM_ID = "%ID%";
     private final static String PARAM_AUTH_CUSTOMER_ID = "%AUTH_CUSTOMER_ID%";
     public final static String PARAM_PASSWORD = "%PASSWORD%";
@@ -56,6 +57,7 @@ public class NetCommander {
     private final static String TASK_I_AM_LIVE = "<" + Uses.TASK_SITE + " " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\" " + Uses.TAG_NAME + "=\"" + Uses.TASK_I_AM_LIVE + "\"/>";
     private final static String TASK_ABOUT_SERVICE = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_ABOUT_SERVICE + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
     private final static String TASK_GET_SERVICE_PREINFO = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_SERVICE_PREINFO + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
+    private final static String TASK_GET_INFO_PRINT = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_INFO_PRINT + "\" " + Uses.TAG_INFO_ITEM + "=\"" + PARAM_INFO_ITEM + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
     private final static String TASK_GET_USERS = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_USERS + "\"/>";
     public final static String TASK_STAND_IN = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_STAND_IN + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TAG_PASSWORD + "=\"" + PARAM_PASSWORD + "\" " + Uses.TAG_PRIORITY + "=\"" + PARAM_PRIORITY + "\" " + Uses.TAG_INPUT_DATA + "=\"" + PARAM_INPUT_DATA + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
     private final static String TASK_ADVANCE_STAND_IN = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_ADVANCE_STAND_IN + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TAG_START_TIME + "=\"" + PARAM_DATE + "\" " + Uses.TAG_AUTH_CUSTOMER_ID + "=\"" + PARAM_AUTH_CUSTOMER_ID + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
@@ -746,12 +748,36 @@ public class NetCommander {
      * @throws DocumentException
      */
     public static Element getPreInfoForService(INetProperty netProperty, String serviceName, String siteMark) throws IOException, DocumentException {
-        Uses.log.logger.info("Встать в очередь.");
+        Uses.log.logger.info("Узнать есть ли информация по услуге.");
         // загрузим ответ
         String mes = TASK_GET_SERVICE_PREINFO;
         mes = mes.replaceFirst(PARAM_SERVICE, serviceName);
         mes = mes.replaceFirst(PARAM_SITE_MARK, siteMark);
         return send(netProperty, mes);
 
+    }
+
+    /**
+     * Узнать есть ли информация для печати информационного узла
+     * @param netProperty параметры соединения с сервером.
+     * @param infoItemName название информационного узла о котором получаем информацию
+     * @param siteMark маркировка сайта для доменной работы если требуется, иначе "".
+     * @return XML-ответ.
+     */
+    public static Element getPintForInfoItem(INetProperty netProperty, String infoItemName, String siteMark) {
+        Uses.log.logger.info("Узнать есть ли что напечатать для информации.");
+        // загрузим ответ
+        String mes = TASK_GET_INFO_PRINT;
+        mes = mes.replaceFirst(PARAM_INFO_ITEM, infoItemName);
+        mes = mes.replaceFirst(PARAM_SITE_MARK, siteMark);
+        Element res = null;
+        try {
+            res = send(netProperty, mes);
+        } catch (IOException e) {// вывод исключений
+            throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
+        } catch (DocumentException e) {
+            throw new Uses.ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
+        }
+        return res;
     }
 }

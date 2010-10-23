@@ -47,7 +47,10 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
 
     private static FAdvanceCalendar advanceCalendar;
 
-    /** Creates new form FAdvanceCalendar */
+    /** Creates new form FAdvanceCalendar
+     * @param parent
+     * @param modal 
+     */
     public FAdvanceCalendar(Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -85,7 +88,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         FAdvanceCalendar.serviceName = serviceName;
         FAdvanceCalendar.siteMark = siteMark;
         if (advanceCalendar.showWeek(new Date())) {
-            if (!(Uses.isDebug || Uses.isDemo && !fullscreen)) {
+            if (!(Uses.isDebug || Uses.isDemo) && fullscreen) {
                 Uses.setFullSize(advanceCalendar);
                 int[] pixels = new int[16 * 16];
                 Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));

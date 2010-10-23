@@ -21,9 +21,10 @@ pause
 
 jar uf QSystem.jar ru/apertum/qsystem/spring/qsContext.xml
 
-del ru\apertum\spring\qsContext.xml
-del ru\apertum\spring\spring-beans-2.0.dtd
-rd ru\apertum\spring
+del ru\apertum\qsystem\spring\qsContext.xml
+del ru\apertum\qsystem\spring\spring-beans-2.0.dtd
+rd ru\apertum\qsystem\spring
+rd ru\apertum\qsystem
 rd ru\apertum
 rd ru
 
