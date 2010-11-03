@@ -373,6 +373,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`information` (
   `parent_id` BIGINT NULL ,
   `name` VARCHAR(100) NOT NULL COMMENT 'Наименование узла справки' ,
   `text` VARCHAR(5000) NOT NULL DEFAULT '' COMMENT 'html-текст справки' ,
+  `text_print` VARCHAR(5000) NOT NULL DEFAULT '' COMMENT 'Текст для печати информационного узла' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_information_information1`
     FOREIGN KEY (`parent_id` )
@@ -553,7 +554,7 @@ COMMIT;
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 USE `qsystem`;
-INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `super_site`, `version`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', false, '0.9');
+INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `super_site`, `version`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', false, '1.1.1');
 
 COMMIT;
 
@@ -602,7 +603,7 @@ COMMIT;
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 USE `qsystem`;
-INSERT INTO `information` (`id`, `parent_id`, `name`, `text`) VALUES (1, null, 'Справочная система', '<html><b><p align=center><span style=\'font-size:20.0pt;color:green\'>Справвочная информационная система.<br>Для  получения детальной информации обратитесь к менеджеру</span></b>');
+INSERT INTO `information` (`id`, `parent_id`, `name`, `text`, `text_print`) VALUES (1, null, 'Справочная система', '<html><b><p align=center><span style=\'font-size:20.0pt;color:green\'>Справвочная информационная система.<br>Для  получения детальной информации обратитесь к менеджеру</span></b>', 'Для  получения детальной информации обратитесь к менеджеру');
 
 COMMIT;
 
