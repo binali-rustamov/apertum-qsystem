@@ -303,8 +303,8 @@ public class FAdmin extends javax.swing.JFrame {
             }
         });
 
-        formattedTextFieldStartTime.setInputVerifier(DateVerifier);
-        formattedTextFieldFinishTime.setInputVerifier(DateVerifier);
+        textFieldStartTime.setInputVerifier(DateVerifier);
+        textFieldFinishTime.setInputVerifier(DateVerifier);
 
         // Суперсайты тока с базой.
         checkBoxSuper.setVisible(Uses.isDBconnected());
@@ -576,22 +576,20 @@ public class FAdmin extends javax.swing.JFrame {
 
         @Override
         public boolean verify(JComponent input) {
-            if (!((JFormattedTextField) input).isEditValid()) {
+            final DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+            try {
+                if (input==textFieldStartTime) {
+                    dateFormat.parse(textFieldStartTime.getText());
+                }
+                if (input==textFieldFinishTime) {
+                    dateFormat.parse(textFieldFinishTime.getText());
+                }
+            } catch (ParseException ex) {
+                System.err.println("Незапарсилась дата " + textFieldStartTime.getText() + " или" + textFieldFinishTime.getText());
                 return false;
             }
-            DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-            boolean f = false;
-            try {
-                f = dateFormat.parse(formattedTextFieldStartTime.getText()).before(dateFormat.parse(formattedTextFieldFinishTime.getText()))
-                        || dateFormat.parse(formattedTextFieldStartTime.getText()).equals(dateFormat.parse(formattedTextFieldFinishTime.getText()));
-            } catch (ParseException ex) {
-                System.err.println("Незапарсилась дата " + formattedTextFieldStartTime.getText() + " или" + formattedTextFieldFinishTime.getText());
-            }
-            if (!f) {
-                //JOptionPane.showMessageDialog(null, "Время начала должно предшествовать времени завершения работы.", "Не верное время", JOptionPane.INFORMATION_MESSAGE);
-                f = true; // Убрали ограничение на период работы внутри одного дня
-            }
-            return f;
+            saveNet();
+            return true;
         }
     };
 
@@ -672,8 +670,8 @@ public class FAdmin extends javax.swing.JFrame {
         spinnerPropClientPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getClientPort());
         spinnerWebServerPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getWebServerPort());
         checkBoxSuper.setSelected(QServicesPool.getServicesPool(true).getNetPropetry().getSuperSite());
-        formattedTextFieldStartTime.setText(Uses.format_HH_mm.format(QServicesPool.getServicesPool(true).getNetPropetry().getStartTime()));
-        formattedTextFieldFinishTime.setText(Uses.format_HH_mm.format(QServicesPool.getServicesPool(true).getNetPropetry().getFinishTime()));
+        textFieldStartTime.setText(Uses.format_HH_mm.format(QServicesPool.getServicesPool(true).getNetPropetry().getStartTime()));
+        textFieldFinishTime.setText(Uses.format_HH_mm.format(QServicesPool.getServicesPool(true).getNetPropetry().getFinishTime()));
 
         // выставим начальные позиции в списках
         if (listUsers.getLastVisibleIndex() != -1) {
@@ -927,8 +925,8 @@ public class FAdmin extends javax.swing.JFrame {
         ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setWebServerPort((Integer) spinnerWebServerPort.getValue());
         ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setSuperSite(checkBoxSuper.isSelected());
         try {
-            ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setStartTime(Uses.format_HH_mm.parse(formattedTextFieldStartTime.getText()));
-            ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setFinishTime(Uses.format_HH_mm.parse(formattedTextFieldFinishTime.getText()));
+            ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setStartTime(Uses.format_HH_mm.parse(textFieldStartTime.getText()));
+            ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setFinishTime(Uses.format_HH_mm.parse(textFieldFinishTime.getText()));
         } catch (ParseException ex) {
             Uses.log.logger.error("Проблемы с сохранение сетевых настроек. ", ex);
         }
@@ -1490,8 +1488,8 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel10 = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
-        formattedTextFieldStartTime = new javax.swing.JFormattedTextField();
-        formattedTextFieldFinishTime = new javax.swing.JFormattedTextField();
+        textFieldStartTime = new javax.swing.JTextField();
+        textFieldFinishTime = new javax.swing.JTextField();
         checkBoxSuper = new javax.swing.JCheckBox();
         panelSites = new javax.swing.JPanel();
         jScrollPane5 = new javax.swing.JScrollPane();
@@ -2585,23 +2583,11 @@ public class FAdmin extends javax.swing.JFrame {
         jLabel14.setText(resourceMap.getString("jLabel14.text")); // NOI18N
         jLabel14.setName("jLabel14"); // NOI18N
 
-        formattedTextFieldStartTime.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT))));
-        formattedTextFieldStartTime.setText(resourceMap.getString("formattedTextFieldStartTime.text")); // NOI18N
-        formattedTextFieldStartTime.setName("formattedTextFieldStartTime"); // NOI18N
-        formattedTextFieldStartTime.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                formattedTextFieldStartTimeFocusLost(evt);
-            }
-        });
+        textFieldStartTime.setText(resourceMap.getString("textFieldStartTime.text")); // NOI18N
+        textFieldStartTime.setName("textFieldStartTime"); // NOI18N
 
-        formattedTextFieldFinishTime.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT))));
-        formattedTextFieldFinishTime.setText(resourceMap.getString("formattedTextFieldFinishTime.text")); // NOI18N
-        formattedTextFieldFinishTime.setName("formattedTextFieldFinishTime"); // NOI18N
-        formattedTextFieldFinishTime.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                formattedTextFieldFinishTimeFocusLost(evt);
-            }
-        });
+        textFieldFinishTime.setText(resourceMap.getString("textFieldFinishTime.text")); // NOI18N
+        textFieldFinishTime.setName("textFieldFinishTime"); // NOI18N
 
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -2612,23 +2598,23 @@ public class FAdmin extends javax.swing.JFrame {
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel14)
                     .addComponent(jLabel10))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(formattedTextFieldStartTime)
-                    .addComponent(formattedTextFieldFinishTime))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(textFieldStartTime)
+                    .addComponent(textFieldFinishTime, javax.swing.GroupLayout.DEFAULT_SIZE, 43, Short.MAX_VALUE))
+                .addGap(10, 10, 10))
         );
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel10Layout.createSequentialGroup()
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(formattedTextFieldStartTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(textFieldStartTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
-                    .addComponent(formattedTextFieldFinishTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                    .addComponent(textFieldFinishTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         checkBoxSuper.setText(resourceMap.getString("checkBoxSuper.text")); // NOI18N
@@ -2791,7 +2777,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelSitesLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
                     .addGroup(panelSitesLayout.createSequentialGroup()
                         .addGap(9, 9, 9)
                         .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -2818,7 +2804,7 @@ public class FAdmin extends javax.swing.JFrame {
                             .addComponent(jLabel25)
                             .addComponent(textFieldSiteButtonCaption, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+                        .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -2837,16 +2823,16 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(560, Short.MAX_VALUE))
+                .addContainerGap(565, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addComponent(checkBoxSuper)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelSites, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -3351,16 +3337,6 @@ private void passwordFieldUserKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
 
     saveUser();
 }//GEN-LAST:event_passwordFieldUserKeyReleased
-
-private void formattedTextFieldStartTimeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formattedTextFieldStartTimeFocusLost
-
-    saveNet();
-}//GEN-LAST:event_formattedTextFieldStartTimeFocusLost
-
-private void formattedTextFieldFinishTimeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formattedTextFieldFinishTimeFocusLost
-
-    saveNet();
-}//GEN-LAST:event_formattedTextFieldFinishTimeFocusLost
 
 private void tabbedPaneMainStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabbedPaneMainStateChanged
 
@@ -4112,7 +4088,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                 for (int i = 0; i < Uses.PRIORITYS_WORD.size(); i++) {
                     if (name.equals(Uses.PRIORITYS_WORD.get(i))) {
                         JOptionPane.showMessageDialog(this, NetCommander.setCustomerPriority(new ServerNetProperty(), i, num).getTextTrim(), "Изменение приоритета", JOptionPane.INFORMATION_MESSAGE);
-                        
+
                     }
                 }
             }
@@ -4138,8 +4114,6 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JCheckBox checkBoxReport;
     private javax.swing.JCheckBox checkBoxServerAuto;
     private javax.swing.JCheckBox checkBoxSuper;
-    private javax.swing.JFormattedTextField formattedTextFieldFinishTime;
-    private javax.swing.JFormattedTextField formattedTextFieldStartTime;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton11;
@@ -4316,6 +4290,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JTable tableCalendar;
     private javax.swing.JTextField textFieldCalendarName;
     private javax.swing.JTextField textFieldClientAdress;
+    private javax.swing.JTextField textFieldFinishTime;
     private javax.swing.JTextField textFieldInfoItemName;
     private javax.swing.JTextField textFieldResponse;
     private javax.swing.JTextField textFieldScheduleName;
@@ -4324,6 +4299,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JTextField textFieldSiteButtonCaption;
     private javax.swing.JTextField textFieldSiteComment;
     private javax.swing.JTextField textFieldSiteName;
+    private javax.swing.JTextField textFieldStartTime;
     private javax.swing.JTextField textFieldUserIdent;
     private javax.swing.JTextField textFieldUserName;
     private javax.swing.JTextPane textPaneInfoItem;

@@ -19,13 +19,15 @@ package ru.apertum.qsystem.server;
 import java.io.*;
 import java.net.*;
 import java.util.Properties;
+import ru.apertum.qsystem.common.CodepagePrintStream;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.reports.model.CurrentStatistic;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.model.QServicesPool;
 
 /**
- * Класс старта и инициализации сервера. Организация потоков выполнения заданий.
+ * Класс старта и exit
+ * инициализации сервера. Организация потоков выполнения заданий.
  * @author Evgeniy Egorov
  */
 public class QServer extends Thread {
@@ -38,6 +40,20 @@ public class QServer extends Thread {
      * @throws Exception 
      */
     public static void main(String[] args) throws Exception {
+
+
+        //Установка вывода консольных сообщений в нужной кодировке
+        if ("\\".equals(File.separator)) {
+            try {
+                String consoleEnc = System.getProperty("console.encoding", "Cp866");
+                System.setOut(new CodepagePrintStream(System.out, consoleEnc));
+                System.setErr(new CodepagePrintStream(System.err, consoleEnc));
+            } catch (UnsupportedEncodingException e) {
+                System.out.println("Unable to setup console codepage: " + e);
+            }
+        }
+
+
         System.out.println("Welcome to the QSystem server. Your MySQL mast be prepared.");
         final Properties settings = new Properties();
         final InputStream inStream = settings.getClass().getResourceAsStream("/ru/apertum/qsystem/common/version.properties");
@@ -46,16 +62,37 @@ public class QServer extends Thread {
         } catch (IOException ex) {
             throw new Uses.ClientException("Проблемы с чтением версии. " + ex);
         }
-        System.out.println("Server version: "+settings.getProperty("version")+"-community QSystem Server (GPL)");
-        System.out.println("Database version: "+settings.getProperty("version_db")+" for MySQL 5.1-community Server (GPL)");
-        System.out.println("Released : "+settings.getProperty("date"));
+        System.out.println("Server version: " + settings.getProperty("version") + "-community QSystem Server (GPL)");
+        System.out.println("Database version: " + settings.getProperty("version_db") + " for MySQL 5.1-community Server (GPL)");
+        System.out.println("Released : " + settings.getProperty("date"));
 
         System.out.println("Copyright (c) 2010, Apertum project and/or its affiliates. All rights reserved.");
         System.out.println("This software comes with ABSOLUTELY NO WARRANTY. This is free software,");
         System.out.println("and you are welcome to modify and redistribute it under the GPL v3 license");
+        System.out.println("Text of this license on your language located in the folder with the program.");
 
         System.out.println("Type 'exit' to stop work and close server.");
         System.out.println();
+
+
+        System.out.println("Добро пожаловать на сервер QSystem. Для работы необходим MySQL5.1 или выше.");
+        System.out.println("Версия сервера: " + settings.getProperty("version") + "-community QSystem Server (GPL)");
+        System.out.println("Версия базы данных: " + settings.getProperty("version_db") + " for MySQL 5.1-community Server (GPL)");
+        System.out.println("Дата выпуска : " + settings.getProperty("date"));
+        System.out.println("Copyright (c) 2010, Проект Apertum. Все права защищены.");
+        System.out.println("QSystem является свободным программным обеспечением, вы можете");
+        System.out.println("распространять и/или изменять его согласно условиям Стандартной Общественной");
+        System.out.println("Лицензии GNU (GNU GPL), опубликованной Фондом свободного программного");
+        System.out.println("обеспечения (FSF), либо Лицензии версии 3, либо более поздней версии.");
+
+        System.out.println("Вы должны были получить копию Стандартной Общественной Лицензии GNU вместе");
+        System.out.println("с этой программой. Если это не так, напишите в Фонд Свободного ПО ");
+        System.out.println("(Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA)");
+
+        System.out.println("Набирите 'exit' чтобы штатно остановить работу сервера.");
+        System.out.println();
+
+
 
         final long start = System.currentTimeMillis();
         Uses.isDebug = Uses.setLogining(args, true);
@@ -91,7 +128,7 @@ public class QServer extends Thread {
                 throw new Uses.ServerException("Ошибка сети: " + e);
             }
             server.setSoTimeout(500);
-            Uses.writeRus("Сервер системы 'Очередь' запущен.\n");
+            System.out.println("Server QSystem started.\n");
             Uses.log.logger.info("Сервер системы 'Очередь' запущен.");
             int pos = 0;
             boolean exit = false;
@@ -107,6 +144,7 @@ public class QServer extends Thread {
                         System.out.println();
                     }
                 } catch (SocketTimeoutException e) {
+                    // ничего страшного, гасим исключение стобы дать возможность отработать входному/выходному потоку
                 } catch (Exception e) {
                     throw new Uses.ServerException("Ошибка сети: " + e);
                 }
@@ -114,7 +152,7 @@ public class QServer extends Thread {
 
                 if (!Uses.isDebug) {
                     final char ch = '*';
-                    String progres = "Активность: " + ch;
+                    String progres = "Process: " + ch;
                     final int len = 5;
                     for (int i = 0; i < pos; i++) {
                         progres = progres + ch;
@@ -125,7 +163,7 @@ public class QServer extends Thread {
                     if (++pos == len) {
                         pos = 0;
                     }
-                    Uses.writeRus(progres);
+                    System.out.print(progres);
                     System.out.write(13);// '\b' - возвращает корретку на одну позицию назад
 
                 }
@@ -260,7 +298,13 @@ public class QServer extends Thread {
                 throw new Uses.ServerException("Ошибка при записи в поток: " + e.getStackTrace());
             }
         } catch (Exception ex) {
-            throw new Uses.ServerException("Ошибка при выполнении задания." + ex);
+            final StringBuilder sb = new StringBuilder("\nStackTrace:\n");
+            for (StackTraceElement bag : ex.getStackTrace()) {
+                sb.append("    at ").append(bag.getClassName()).append(".").append(bag.getMethodName()).append("(").append(bag.getFileName()).append(":").append(bag.getLineNumber()).append(")\n");
+            }
+            final String err = sb.toString() + "\n";
+            sb.setLength(0);
+            throw new Uses.ServerException("Ошибка при выполнении задания.\n" + ex + err);
         } finally {
             // завершаем соединение
             try {

@@ -18,6 +18,8 @@ package ru.apertum.qsystem.client.forms;
 
 import java.awt.Cursor;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
@@ -118,7 +120,9 @@ public class FInfoDialog extends javax.swing.JDialog {
         buttonPrint.setVisible(level.elements().isEmpty());
         if (level.elements().isEmpty()) {
             final JLabel label = new JLabel(level.getText());
-            GridLayout gl = new GridLayout(1, 1);
+            final GridBagLayout gl = new GridBagLayout();
+            final GridBagConstraints c = new GridBagConstraints();
+            gl.setConstraints(label, c);
             panelMain.setLayout(gl);
             panelMain.add(label);
         } else {
@@ -175,6 +179,9 @@ public class FInfoDialog extends javax.swing.JDialog {
         return s;
     }
 
+    /**
+     * Кнопка для навигации по дереву информации и для вывода этой информации ей в капшен
+     */
     private static class InfoButton extends JButton {
 
         final Element el;

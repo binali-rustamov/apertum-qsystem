@@ -16,9 +16,6 @@
  */
 package ru.apertum.qsystem.reports.formirovators;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -27,7 +24,9 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.reports.common.Response;
 
 /**
  *
@@ -39,10 +38,11 @@ public class AuthorizedClientsPeriodUsers extends AFormirovator {
      * Метод формирования параметров для отчета.
      * В отчет нужно передать некие параметры. Они упаковываются в Мар.
      * Если параметры не нужны, то сформировать пустой Мар.
+     * @param reques
      * @return
      */
     @Override
-    public Map getParameters(String driverClassName, String url, String username, String password, String inputData) {
+    public Map getParameters(String driverClassName, String url, String username, String password, HttpRequest reques) {
         return paramMap;
     }
     /**
@@ -53,10 +53,11 @@ public class AuthorizedClientsPeriodUsers extends AFormirovator {
     /**
      * Метод получения коннекта к базе если отчет строится через коннект.
      * Если отчет строится не через коннект, а формироватором, то выдать null.
+     * @param reques
      * @return коннект соединения к базе или null.
      */
     @Override
-    public Connection getConnection(String driverClassName, String url, String username, String password, String inputData) {
+    public Connection getConnection(String driverClassName, String url, String username, String password, HttpRequest reques) {
         final Connection connection;
         try {
             Class.forName(driverClassName);
@@ -68,13 +69,13 @@ public class AuthorizedClientsPeriodUsers extends AFormirovator {
         }
         return connection;
     }
-
+/*
     @Override
-    public byte[] preparation(String driverClassName, String url, String username, String password, String inputData) {
+    public byte[] preparation(String driverClassName, String url, String username, String password, HttpRequest request) {
         // если в запросе не содержаться введенные параметры, то выдыем форму ввода
         // иначе выдаем null.
-        final String data = Uses.getRequestData(inputData);
-        final String tmp = Uses.getRequestTarget(inputData);
+        final String data = NetUtil.getEntityContent(request);
+        final String tmp = NetUtil.getUrl(request);
         //Uses.log.logger.trace("Принятые параметры \"" + data + "\".");
         //Uses.log.logger.trace("subject \"" + tmp + "\".");
         // флаг введенности параметров
@@ -137,7 +138,7 @@ public class AuthorizedClientsPeriodUsers extends AFormirovator {
                 throw new Uses.ReportException("Ошибка чтения ресурса для диалога ввода сервиса. " + ex);
             }
             try {
-                Connection conn = getConnection(driverClassName, url, username, password, inputData);
+                Connection conn = getConnection(driverClassName, url, username, password, request);
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery("SELECT id, name FROM users ORDER BY name");
                 Long id;
@@ -151,8 +152,7 @@ public class AuthorizedClientsPeriodUsers extends AFormirovator {
             } catch (SQLException ex) {
                 throw new Uses.ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
             }
-            final String subject = Uses.getRequestTarget(inputData);
-            result = result.replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, subject).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess).replaceFirst("#DATA_FOR_TITLE#", "Отчет по авторизованным персонам за период для пользователя:").replaceFirst("#DATA_FOR_USERS#", users_select);
+            result = result.replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, request.getRequestLine().getUri()).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess).replaceFirst("#DATA_FOR_TITLE#", "Отчет по авторизованным персонам за период для пользователя:").replaceFirst("#DATA_FOR_USERS#", users_select);
             try {
                 return result.getBytes("UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -161,5 +161,75 @@ public class AuthorizedClientsPeriodUsers extends AFormirovator {
         } else {
             return null;
         }
+    }
+*/
+    @Override
+    public Response getDialog(String driverClassName, String url, String username, String password, HttpRequest request, String errorMessage) {
+        Response result = getDialog("/ru/apertum/qsystem/reports/web/get_period_clients_users.html", request, errorMessage);
+        final StringBuilder users_select = new StringBuilder();
+        final Connection conn = getConnection(driverClassName, url, username, password, request);
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT id, name FROM users ORDER BY name");
+            while (rs.next()) {
+                users_select.append("<option value=").append(rs.getLong(1)).append(">").append(rs.getString(2)).append("\n");
+            }
+        } catch (SQLException ex) {
+            users_select.setLength(0);
+            throw new Uses.ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException ex) {
+                throw new Uses.ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
+            }
+        }
+        try {
+            rs.close();
+            stmt.close();
+        } catch (SQLException ex) {
+            throw new Uses.ReportException("Ошибка закрытия запроса для диалога ввода пользователя. " + ex);
+        }
+
+        result.setData(new String(result.getData()).replaceFirst("#DATA_FOR_TITLE#", "Отчет по авторизованным персонам за период для пользователя:").replaceFirst("#DATA_FOR_USERS#", users_select.toString()).getBytes());
+        users_select.setLength(0);
+        return result;
+    }
+
+    @Override
+    public String validate(String driverClassName, String url, String username, String password, HttpRequest request, HashMap<String, String> params) {
+        // проверка на корректность введенных параметров
+        Uses.log.logger.trace("Принятые параметры \"" + params.toString() + "\".");
+        if (params.size() == 4) {
+            // sd/ed/user_id/user
+            Date sd = null;
+            Date fd = null;
+            String sdate = null;
+            String fdate = null;
+            long user_id = -1;
+            String user = null;
+            try {
+                //date = Uses.format_dd_MM_yyyy.parse(ss0[1]);
+                sd = Uses.format_dd_MM_yyyy.parse(params.get("sd"));
+                fd = Uses.format_dd_MM_yyyy.parse(params.get("ed"));
+                sdate = (new java.text.SimpleDateFormat("yyyy-MM-dd")).format(sd);
+                fdate = (new java.text.SimpleDateFormat("yyyy-MM-dd")).format(fd);
+                user_id = Long.parseLong(params.get("user_id"));
+                user = params.get("user");
+            } catch (Exception ex) {
+                return "<br>Ошибка ввода параметров! Не все параметры введены корректно (дд.мм.гггг).";
+            }
+            paramMap.put("sdate", sdate);
+            paramMap.put("fdate", fdate);
+            paramMap.put("sd", sd);
+            paramMap.put("fd", fd);
+            paramMap.put("user_id", new Long(user_id));
+            paramMap.put("user", user);
+        } else {
+            return "<br>Ошибка ввода параметров!";
+        }
+        return null;
     }
 }

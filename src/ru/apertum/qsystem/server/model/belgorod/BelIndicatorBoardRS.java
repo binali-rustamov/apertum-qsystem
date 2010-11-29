@@ -52,7 +52,7 @@ public class BelIndicatorBoardRS extends AIndicatorBoardRS {
     }
 
     /** 
-     * @param adresses The adresses to set. 
+     * @param adress The adresses to set. 
      */
     public void setAdress(Integer adress) {
         this.adress = adress;

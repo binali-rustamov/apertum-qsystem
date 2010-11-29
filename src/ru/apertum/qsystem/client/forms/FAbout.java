@@ -39,7 +39,10 @@ public class FAbout extends javax.swing.JDialog {
      */
     private static FAbout aboutForm;
 
-    /** Creates new form FAbout */
+    /** Creates new form FAbout
+     * @param parent
+     * @param modal 
+     */
     public FAbout(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -198,7 +201,7 @@ public class FAbout extends javax.swing.JDialog {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jToggleButtonLic)
                             .addComponent(labelRight))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(88, Short.MAX_VALUE))
             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
@@ -247,7 +250,7 @@ public class FAbout extends javax.swing.JDialog {
         jTextArea1.setPreferredSize(new java.awt.Dimension(148, 220));
         jScrollPane1.setViewportView(jTextArea1);
 
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(-1, 311, 503, 285));
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(-1, 311, 503, 295));
 
         java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         setBounds((screenSize.width-500)/2, (screenSize.height-313)/2, 500, 313);
@@ -279,7 +282,7 @@ private void labelRightMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:
 }//GEN-LAST:event_labelRightMouseClicked
 
 private void jToggleButtonLicActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonLicActionPerformed
-    final int delta = 280 * (jToggleButtonLic.isSelected() ? 1 : -1);
+    final int delta = 290 * (jToggleButtonLic.isSelected() ? 1 : -1);
     aboutForm.setSize(aboutForm.getSize().width, aboutForm.getSize().height + delta);
 }//GEN-LAST:event_jToggleButtonLicActionPerformed
 

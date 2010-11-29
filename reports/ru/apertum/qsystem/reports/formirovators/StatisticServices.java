@@ -16,8 +16,6 @@
  */
 package ru.apertum.qsystem.reports.formirovators;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -27,7 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.reports.common.Response;
 
 /**
  * Статистический отчет в разрезе услуг за период.
@@ -42,7 +42,7 @@ public class StatisticServices extends AFormirovator {
      * @return
      */
     @Override
-    public Map getParameters(String driverClassName, String url, String username, String password, String inputData) {
+    public Map getParameters(String driverClassName, String url, String username, String password, HttpRequest request) {
         return paramMap;
     }
     /**
@@ -56,7 +56,7 @@ public class StatisticServices extends AFormirovator {
      * @return коннект соединения к базе или null.
      */
     @Override
-    public Connection getConnection(String driverClassName, String url, String username, String password, String inputData) {
+    public Connection getConnection(String driverClassName, String url, String username, String password, HttpRequest request) {
         final Connection connection;
         try {
             Class.forName(driverClassName);
@@ -68,12 +68,12 @@ public class StatisticServices extends AFormirovator {
         }
         return connection;
     }
-
+/*
     @Override
-    public byte[] preparation(String driverClassName, String url, String username, String password, String inputData) {
+    public byte[] preparation(String driverClassName, String url, String username, String password, HttpRequest request) {
         // если в запросе не содержаться введенные параметры, то выдыем форму ввода
         // иначе выдаем null.
-        final String data = Uses.getRequestData(inputData);
+        final String data = NetUtil.getEntityContent(request);
         Uses.log.logger.trace("Принятые параметры \"" + data + "\".");
         // флаг введенности параметров
         boolean flag = false;
@@ -134,11 +134,45 @@ public class StatisticServices extends AFormirovator {
             } catch (IOException ex) {
                 throw new Uses.ReportException("Ошибка чтения ресурса для диалогового ввода периода. " + ex);
             }
-            final String subject = Uses.getRequestTarget(inputData);
-            result = new String(result).replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, subject).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess).getBytes();
+            result = new String(result).replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, request.getRequestLine().getUri()).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess).getBytes();
             return result;
         } else {
             return null;
         }
+    }
+*/
+    @Override
+    public Response getDialog(String driverClassName, String url, String username, String password, HttpRequest request, String errorMessage) {
+        return getDialog("/ru/apertum/qsystem/reports/web/get_period_for_statistic_services.html", request, errorMessage);
+    }
+
+    @Override
+    public String validate(String driverClassName, String url, String username, String password, HttpRequest request, HashMap<String, String> params) {
+        //sd=20.01.2009&ed=28.01.2009
+        // проверка на корректность введенных параметров
+        Uses.log.logger.trace("Принятые параметры \"" + params.toString() + "\".");
+        if (params.size() == 2) {
+            Date sd = null;
+            Date fd = null;
+            Date fd1 = null;
+            try {
+                sd = Uses.format_dd_MM_yyyy.parse(params.get("sd"));
+                fd = Uses.format_dd_MM_yyyy.parse(params.get("ed"));
+                fd1 = DateUtils.addDays(Uses.format_dd_MM_yyyy.parse(params.get("ed")), 1);
+            } catch (ParseException ex) {
+                return "<br>Ошибка ввода параметров! Не все параметры введены корректно(дд.мм.гггг).";
+            }
+            if (!sd.after(fd)) {
+                paramMap.put("sd", sd);
+                paramMap.put("ed", fd);
+                paramMap.put("ed1", fd1);
+            } else {
+                return "<br>Ошибка ввода параметров! Дата начала больше даты завершения.";
+            }
+
+        } else {
+            return "<br>Ошибка ввода параметров!";
+        }
+        return null;// все нормально
     }
 }

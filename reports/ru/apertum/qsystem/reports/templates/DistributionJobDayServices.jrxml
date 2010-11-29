@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="DistributionJobDayService" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
 	<parameter name="sdate" class="java.lang.String"/>
 	<parameter name="date" class="java.util.Date"/>
 	<parameter name="service" class="java.lang.String"/>
-	<parameter name="service_id" class="java.lang.Integer"/>
+	<parameter name="service_id" class="java.lang.Long">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[(SELECT '00' AS H, COUNT(*) AS C FROM statistic WHERE client_stand_time BETWEEN '$P!{sdate} 00:00:00' AND '$P!{sdate} 01:00:00' AND service_id=$P{service_id}) UNION ALL
 (SELECT '01', COUNT(*) FROM statistic WHERE client_stand_time BETWEEN '$P!{sdate} 01:00:00' AND '$P!{sdate} 02:00:00' AND service_id=$P{service_id}) UNION ALL
@@ -94,6 +99,7 @@
 				</categoryDataset>
 				<barPlot isShowTickMarks="false">
 					<plot/>
+					<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
 					<categoryAxisLabelExpression><![CDATA["часы"]]></categoryAxisLabelExpression>
 					<categoryAxisFormat>
 						<axisFormat>

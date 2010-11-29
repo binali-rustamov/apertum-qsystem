@@ -16,9 +16,6 @@
  */
 package ru.apertum.qsystem.reports.formirovators;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -28,12 +25,14 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
 import org.apache.commons.lang.time.DateUtils;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.reports.common.Response;
 
 /**
  * Статистический отчет в разрезе персонала за период
@@ -45,7 +44,7 @@ public class ResponsesDateReport extends AFormirovator {
 
         public ResponsesDateDataSource(Connection conn, Date sd, Date ed) {
             index = -1;
-            Vector<Vector<Object>> data_tmp = new Vector<Vector<Object>>();
+            ArrayList<ArrayList<Object>> data_tmp = new ArrayList<ArrayList<Object>>();
             // fill array
             try {
                 String ssd = (new java.text.SimpleDateFormat("yyyy-MM-dd")).format(sd);
@@ -76,7 +75,7 @@ public class ResponsesDateReport extends AFormirovator {
                 query = query.replaceAll("#sd#", ssd).replaceAll("#ed#", sed);
                 ResultSet rs = stmt.executeQuery(query);
                 int id, prev_id = -1;
-                Vector<HashMap<String, Integer>> id_set = new Vector<HashMap<String, Integer>>();
+                ArrayList<HashMap<String, Integer>> id_set = new ArrayList<HashMap<String, Integer>>();
                 int ind = 0;
                 while (rs.next()) {
                     id = rs.getInt(1);
@@ -86,7 +85,7 @@ public class ResponsesDateReport extends AFormirovator {
                         hash_id.put("ind", new Integer(ind));
                         id_set.add(hash_id);
                     }
-                    Vector<Object> line = new Vector<Object>(6, 0);
+                    ArrayList<Object> line = new ArrayList<Object>(6);
                     line.add(new java.lang.Integer(rs.getInt(1)));
                     line.add(rs.getString(2));
                     line.add(rs.getDate(3));
@@ -97,13 +96,13 @@ public class ResponsesDateReport extends AFormirovator {
                     prev_id = id;
                     ind++;
                 }
-                data = new Vector<Vector<Object>>();
+                data = new ArrayList<ArrayList<Object>>();
                 int isd = (int) (sd.getTime() / 86400000L) + 1;	// дата в количестве дней с 1970 года
                 int ied = (int) (ed.getTime() / 86400000L) + 1;
                 int i;
                 int idt;
                 java.util.Date dt = new java.util.Date();
-                Vector<Object> ext_line;
+                ArrayList<Object> ext_line;
                 HashMap<String, Integer> hash_id;
                 int need_id;
                 int need_ind;
@@ -137,7 +136,7 @@ public class ResponsesDateReport extends AFormirovator {
                                 all_count_period = ((Integer) ext_line.get(5)).intValue();
                                 if (idt != idate) // ins_before, ins_after
                                 {
-                                    Vector<Object> new_line = new Vector<Object>(6, 0);
+                                    ArrayList<Object> new_line = new ArrayList<Object>(6);
                                     new_line.add(new Integer(id));
                                     new_line.add(name);
                                     new_line.add(dt);
@@ -148,7 +147,7 @@ public class ResponsesDateReport extends AFormirovator {
                                 } else if (idt == idate) // copy, next
                                 {
                                     @SuppressWarnings("unchecked")
-                                    Vector<Object> copy_line = (Vector<Object>) ext_line.clone();
+                                    ArrayList<Object> copy_line = (ArrayList<Object>) ext_line.clone();
                                     data.add(copy_line);
                                     ind++;
                                 }
@@ -157,7 +156,7 @@ public class ResponsesDateReport extends AFormirovator {
                                 name = (String) ext_line.get(1);
                                 all_count = ((Integer) ext_line.get(4)).intValue();
                                 all_count_period = ((Integer) ext_line.get(5)).intValue();
-                                Vector<Object> new_line = new Vector<Object>(6, 0);
+                                ArrayList<Object> new_line = new ArrayList<Object>(6);
                                 new_line.add(new Integer(need_id));
                                 new_line.add(name);
                                 new_line.add(dt);
@@ -169,7 +168,7 @@ public class ResponsesDateReport extends AFormirovator {
                             }
                         }
                     } catch (ArrayIndexOutOfBoundsException e) {
-                        ;
+                        
                     }
                 }
             } catch (SQLException ex) {
@@ -178,25 +177,27 @@ public class ResponsesDateReport extends AFormirovator {
                 throw new Uses.ReportException("Ошибка обработки запроса ResponsesDateDataSource" + ex);
             }
         }
-        private Vector<Vector<Object>> data;
+        private ArrayList<ArrayList<Object>> data;
         private int index;
         /*public void moveFirst()
         {
         index = -1;
         }*/
 
+        @Override
         public boolean next() throws JRException {
             index++;
             return (index < data.size());
         }
 
+        @Override
         public Object getFieldValue(JRField field) throws JRException {
             Object value = null;
 
             String fieldName = field.getName();
-            Vector line = null;
+            ArrayList line = null;
             try {
-                line = (Vector) data.get(index);
+                line = (ArrayList) data.get(index);
                 if ("id".equals(fieldName)) {
                     value = line.get(0);
                 } else if ("responses_name".equals(fieldName)) {
@@ -210,10 +211,10 @@ public class ResponsesDateReport extends AFormirovator {
                 } else if ("all_count_period".equals(fieldName)) {
                     value = line.get(5);
                 } else {
-                    value = new String("unk_field");
+                    value = "unk_field";
                 }
             } catch (Exception e) {
-                value = new String("ResponsesDateDataSource: index is out of range!");
+                value = "ResponsesDateDataSource: index is out of range!";
                 return value;
             }
             return value;
@@ -225,8 +226,8 @@ public class ResponsesDateReport extends AFormirovator {
      * @return Готовая структура для компилирования в документ.
      */
     @Override
-    public JRDataSource getDataSource(String driverClassName, String url, String username, String password, String inputData) {
-        Connection conn = connect_to_db(driverClassName, url, username, password, inputData);
+    public JRDataSource getDataSource(String driverClassName, String url, String username, String password, HttpRequest request) {
+        Connection conn = connect_to_db(driverClassName, url, username, password, request);
         Date sd = paramMap.get("sd");
         Date ed1 = paramMap.get("ed1");
         return new ResponsesDateDataSource(conn, sd, ed1);
@@ -239,7 +240,7 @@ public class ResponsesDateReport extends AFormirovator {
      * @return
      */
     @Override
-    public Map getParameters(String driverClassName, String url, String username, String password, String inputData) {
+    public Map getParameters(String driverClassName, String url, String username, String password, HttpRequest request) {
         return paramMap;
     }
     /**
@@ -247,7 +248,7 @@ public class ResponsesDateReport extends AFormirovator {
      */
     final private HashMap<String, Date> paramMap = new HashMap<String, Date>();
 
-    private Connection connect_to_db(String driverClassName, String url, String username, String password, String inputData) {
+    private Connection connect_to_db(String driverClassName, String url, String username, String password, HttpRequest request) {
         final Connection connection;
         try {
             Class.forName(driverClassName);
@@ -266,15 +267,15 @@ public class ResponsesDateReport extends AFormirovator {
      * @return коннект соединения к базе или null.
      */
     @Override
-    public Connection getConnection(String driverClassName, String url, String username, String password, String inputData) {
+    public Connection getConnection(String driverClassName, String url, String username, String password, HttpRequest request) {
         return null;
     }
-
+/*
     @Override
-    public byte[] preparation(String driverClassName, String url, String username, String password, String inputData) {
+    public byte[] preparation(String driverClassName, String url, String username, String password, HttpRequest request) {
         // если в запросе не содержаться введенные параметры, то выдыем форму ввода
         // иначе выдаем null.
-        final String data = Uses.getRequestData(inputData);
+        final String data = NetUtil.getEntityContent(request);
         Uses.log.logger.trace("Принятые параметры \"" + data + "\".");
         // флаг введенности параметров
         boolean flag = false;
@@ -337,8 +338,7 @@ public class ResponsesDateReport extends AFormirovator {
             } catch (IOException ex) {
                 throw new Uses.ReportException("Ошибка чтения ресурса для диалогового ввода периода. " + ex);
             }
-            final String subject = Uses.getRequestTarget(inputData);
-            result = result.replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, subject).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess);
+            result = result.replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, request.getRequestLine().getUri()).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess);
             try {
                 return result.getBytes("UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -347,5 +347,39 @@ public class ResponsesDateReport extends AFormirovator {
         } else {
             return null;
         }
+    }
+*/
+    @Override
+    public Response getDialog(String driverClassName, String url, String username, String password, HttpRequest request, String errorMessage) {
+        return getDialog("/ru/apertum/qsystem/reports/web/get_period_for_statistic_date_responses.html", request, errorMessage);
+    }
+
+    @Override
+    public String validate(String driverClassName, String url, String username, String password, HttpRequest request, HashMap<String, String> params) {
+        // проверка на корректность введенных параметров
+        Uses.log.logger.trace("Принятые параметры \"" + params.toString() + "\".");
+        if (params.size() == 2) {
+            Date sd = null;
+            Date fd = null;
+            Date fd1 = null;
+            try {
+                sd = Uses.format_dd_MM_yyyy.parse(params.get("sd"));
+                fd = Uses.format_dd_MM_yyyy.parse(params.get("ed"));
+                fd1 = DateUtils.addDays(Uses.format_dd_MM_yyyy.parse(params.get("ed")), 1);
+            } catch (ParseException ex) {
+                return "<br>Ошибка ввода параметров! Не все параметры введены корректно(дд.мм.гггг).";
+            }
+            if (!sd.after(fd)) {
+                paramMap.put("sd", sd);
+                paramMap.put("ed", fd);
+                paramMap.put("ed1", fd1);
+            } else {
+                return "<br>Ошибка ввода параметров! Дата начала больше даты завершения.";
+            }
+
+        } else {
+            return "<br>Ошибка ввода параметров!";
+        }
+        return null;// все нормально
     }
 }

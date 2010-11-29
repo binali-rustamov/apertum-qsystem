@@ -26,14 +26,12 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -582,28 +580,6 @@ public final class Uses {
     }
 
     /**
-     * Выводит сообщение на консоль по русски.
-     * @param mes 
-     */
-    public static void writeRus(String mes) {
-        if (!(isDebug || isDemo)) {
-            BufferedWriter rusBuf = null;
-            try {
-                rusBuf = new BufferedWriter(new OutputStreamWriter(System.out, "cp866"));
-            } catch (UnsupportedEncodingException ex) {
-                Uses.log.logger.error(ex.getMessage());
-            }
-            try {
-                rusBuf.write(mes);
-                rusBuf.flush();
-                rusBuf.close();
-            } catch (IOException ex) {
-                Uses.log.logger.error(ex.getMessage());
-            }
-        }
-    }
-
-    /**
      * Определение политики логирования.
      * @param args параметры командной строки
      * @param isServer показывает тип логируемого
@@ -638,14 +614,6 @@ public final class Uses {
             } catch (IOException ex) {
                 throw new Uses.ClientException("Проблемы с чтением версии. " + ex);
             }
-            Uses.writeRus("Добро пожаловать в систему QSystem. Ваш MySQL должен быть готов к работе.\n"
-                    + "Версия сервера: " + settings.getProperty("version") + "-community QSystem Server (GPL)\n"
-                    + "Версия БД: " + settings.getProperty("version_db") + " for MySQL 5.1-community Server (GPL)\n"
-                    + "Дата выпуска : " + settings.getProperty("date") + "\n"
-                    + "Copyright (c) 2010, Проект Апертум. Все права защищены.\n"
-                    + "Эта программа распространяется АБСОЛЮТНО БЕЗ ГАРАНТИЙ.\nЭто бесплатное программное обеспечение, "
-                    + "и вы можите распространять\nи модифицировать его согласно лицензии GNU GPL v3.\nДля завершения работы сервера набирите команду 'exit'.\n\n");
-            System.out.println();
         }
         Uses.log.logger.info("СТАРТ ЛОГИРОВАНИЯ. Логгер: " + Uses.log.logger.getName());
         return isDebugin;
@@ -949,7 +917,7 @@ public final class Uses {
      * @throws IOException
      */
     public static byte[] readResource(Object o, String resourceName) throws IOException {
-        // Выдаем ресурс  "/ru/apertum/qsystem/reports/web/"
+        // Выдаем ресурс  "/ru/apertum/qsystem/reports/web/name.jpg"
         final InputStream inStream = o.getClass().getResourceAsStream(resourceName);
         return readInputStream(inStream);
     }
@@ -1043,6 +1011,7 @@ public final class Uses {
      * Получение имени ссылки из HTTP-запроса
      * @param request HTTP-запрос
      * @return
+     * @deprecated не использовать работу на прямую с http-заголовками. Сейчас все через apache-http-core
      */
     public static String getRequestTarget(String request) {
         if (request.indexOf("POST") == 0) {
@@ -1060,6 +1029,7 @@ public final class Uses {
      * Получение строки параметров из HTTP-запроса
      * @param request HTTP-запрос
      * @return
+     * @deprecated не использовать работу на прямую с http-заголовками. Сейчас все через apache-http-core
      */
     public static String getRequestData(String request) {
         if (request.indexOf("POST") == 0) {
@@ -1089,6 +1059,7 @@ public final class Uses {
      * Cookie: username=%D0%90%D0%B4%D0%BC%D0%B8%D0%BD%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%82%D0%BE%D1%80; password=
      * @param request HTTP-запрос
      * @return Мар (имя кукиса -> значение кукиса)
+     * @deprecated не использовать работу на прямую с http-заголовками. Сейчас все через apache-http-core
      */
     public static HashMap<String, String> getCoocies(String request) {
         final String[] pears = request.split("\r\n");

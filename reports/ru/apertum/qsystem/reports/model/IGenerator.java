@@ -16,6 +16,9 @@
  */
 package ru.apertum.qsystem.reports.model;
 
+import org.apache.http.HttpRequest;
+import ru.apertum.qsystem.reports.common.Response;
+
 /**
  * Интерфейс герератора отчетов.
  * По сути генератор генерирует документ определенного формата(html, rtf, pdf) по готовому источнику данных
@@ -27,10 +30,10 @@ public interface IGenerator {
 
     /**
      * Получение отчета.
-     * @param inputData строка, которую прислал блоузер на сервер.
-     * @return
+     * @param request заврос, который прислал блоузер на сервер.
+     * @return данные для возврата клиенту
      */
-    public byte[] process(String inputData);
+    public Response process(HttpRequest request);
     
     /**
      * Ссылка на генератор. Уникально в системе. всегда идентифацирует генератор.

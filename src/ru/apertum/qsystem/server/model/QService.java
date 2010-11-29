@@ -196,8 +196,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     public void setPreInfoPrintText(String preInfoPrintText) {
         this.preInfoPrintText = preInfoPrintText;
     }
-
-
     /**
      * последний номер, выданный последнему кастомеру при номерировании клиентов обособлено в услуге.
      */
@@ -221,6 +219,7 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
 
     /**
      * Конструктор услуги, к которой строится очередь.
+     * @param service параметры по которым создатся услуга.
      */
     public QService(IServiceProperty service) {
         this.setName(service.getName());
@@ -269,11 +268,14 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
         if (elCustomer.attributeValue(Uses.TAG_PREFIX) == null) {
             elCustomer.addAttribute(Uses.TAG_PREFIX, getPrefix());
         } else {
-            if (number > lastNumber) {
-                lastNumber = number;
-            }
-            if (number > lastStNumber) {
-                lastStNumber = number;
+            // тут бы не нужно проверять последний выданный если это происходит с редиректенныйм
+            if (Uses.STATE_REDIRECT != Integer.parseInt(elCustomer.attributeValue(Uses.TAG_STATE))) {
+                if (number > lastNumber) {
+                    lastNumber = number;
+                }
+                if (number > lastStNumber) {
+                    lastStNumber = number;
+                }
             }
         }
         elCustomer.addAttribute(Uses.TAG_SERVICE, getName());
@@ -287,6 +289,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * Добавить в очередь
      * при этом проставится название сервиса, в который всрал, и его описание,
      * если у кастомера нету префикса, то проставится и префикс.
+     * @param customer это кастомер которого добавляем в очередь к услуге
+     * @return возвращаем XML-представление только что поставленного кастомера. Оно могло измениться в момент постановки.
      */
     public Element addCustomer(ICustomer customer) {
         updateInfo(customer.toXML());
@@ -336,8 +340,9 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     }
 
     /**
-     * Удалить. может вернуть false при неудаче
-     * @return любого в очереди кастомера
+     * Удалить любого в очереди кастомера. 
+     * @param customer удаляемый кастомер
+     * @return может вернуть false при неудаче
      */
     public boolean removeCustomer(ICustomer customer) {
         return customers.remove(customer);
@@ -352,6 +357,7 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
 
     /** 
      *  Получение количества кастомеров, стоящих в очереди.
+     * @return количество кастомеров в этой услуге
      */
     public int getCountCustomers() {
         return customers.size();

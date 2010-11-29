@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -35,8 +36,10 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRHtmlExporter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.reports.common.Response;
+import ru.apertum.qsystem.reports.net.NetUtil;
 
 /**
  * Базовый класс генераторов отчетов.
@@ -83,42 +86,58 @@ public abstract class AGenerator implements IGenerator {
 
     /**
      * Абстрактный метод формирования данных отчета.
-     * @param inputData
+     * @param request
      * @return
      */
-    abstract protected JRDataSource getDataSource(String inputData);
+    abstract protected JRDataSource getDataSource(HttpRequest request);
 
     /**
      * Абстрактный метод формирования параметров для отчета.
-     * @param inputData
+     * @param request
      * @return
      */
-    abstract protected Map getParameters(String inputData);
+    abstract protected Map getParameters(HttpRequest request);
 
     /**
      * Метод получения коннекта к базе если отчет строится через коннект.
-     * @param inputData
+     * @param request
      * @return коннект соединения к базе или null.
      */
-    abstract protected Connection getConnection(String inputData);
+    abstract protected Connection getConnection(HttpRequest request);
 
     /**
      * Абстрактный метод выполнения неких действия для подготовки данных отчета.
      * Если он возвращает заполненный массив байт, то его нужно отдать клиенту,
      * иначе если null то продолжаем генерировать отчет.
-     * @param inputData
-     * @return массив байт для выдачи на клиента.
+     * @param request
+     * @return массив байт для выдачи на клиента. Может быть null если выдовать ничего не надо.
      */
-    abstract protected byte[] preparation(String inputData);
+    abstract protected Response preparationReport(HttpRequest request);
+
+    /**
+     * Сформируем диалог дл ввода параметров
+     * @param request
+     * @param errorMessage сообщение об ощибке предыдущего ввода, иначе null
+     * @return
+     */
+    abstract protected Response getDialog(HttpRequest request, String errorMessage);
+
+    /**
+     * Проверка параметров если они были введены
+     * @param request
+     * @param params параметры из request
+     * @return сообщение об ошибке если была, иначе null
+     */
+    abstract protected String validate(HttpRequest request, HashMap<String, String> params);
 
     /**
      * Метод получения документа-отчета или другого какого документа в виде массива байт.
      * Сдесь испольщуем методы интерфейса IFormirovator для получения отчета.
-     * @param inputData ? какого формата отчет хотим получить(html, pdf, rtf)
-     * @return массив байт документа.
+     * @param request ? какого формата отчет хотим получить(html, pdf, rtf)
+     * @return данные документа.
      */
     @Override
-    public byte[] process(String inputData) {
+    public Response process(HttpRequest request) {
         Uses.logRep.logger.debug("Генерируем : \"" + href + "\"");
 
         /*
@@ -126,7 +145,37 @@ public abstract class AGenerator implements IGenerator {
          * Для этого надо выдать клиенту форму для заполнения и принять от него введенные данные.
          * А по этим данным уже формировать отчетные данные. 
          */
-        final byte[] before = preparation(inputData);
+        /*
+         * Логика следующая:
+         *
+         * если параметров нет, то вызвать метод возвращающий страницу запроса параметров
+         * и если этот метод вернет null, то параметры не требуются. Если этот метод вернет массив
+         * байт, то отдать его пользователю для ввода параметров.
+         *
+         * Если по запросу страници параметров получили null, то нужно отвалидировать параметры
+         * валидация null если все нормально и по getParameters(...) можно получать параметры.
+         * если косяк, то нужно каким-то образом перевыдать форму ввода параметров с сообщением
+         * что накосячили в прошлый раз.
+         */
+        //сначала диалог для параметров
+        final HashMap<String, String> params = NetUtil.getParameters(request);
+        if (params.isEmpty()) {
+            final Response dialog = getDialog(request, null);
+            if (dialog != null) {
+                return dialog;
+            }
+        } else {
+            String err = validate(request, params);
+            if (err != null) {
+                final Response dialog = getDialog(request, err);
+                if (dialog != null) {
+                    return dialog;
+                }
+            }
+        }
+
+        // ну и если что можно еще что нибудь замастырить
+        final Response before = preparationReport(request);
         if (before != null) {
             return before;
         }
@@ -137,6 +186,8 @@ public abstract class AGenerator implements IGenerator {
 
         // Получение готового к экспорту отчета
         //JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, hm, xmlDataSource); - это вариант с предкампиляцией
+        // это тип полученных данных, пойдет в http заголовок
+        String dataType = null;
         try {
             // Шаблон может быть в виде файла, иначе в виде ресурса
             final File f_temp = new File(template);
@@ -151,27 +202,18 @@ public abstract class AGenerator implements IGenerator {
             }
             // теперь посмотрим, не сформировали ли коннект 
             //если есть коннект, то строим отчет по коннекту, иначе формируем данные формироватором.
-            final Connection conn = getConnection(inputData);
+            final Connection conn = getConnection(request);
             final JasperPrint jasperPrint;
             if (conn == null) {
-                jasperPrint = JasperFillManager.fillReport(inStr, getParameters(inputData), getDataSource(inputData));//это используя уже откампиленный
+                jasperPrint = JasperFillManager.fillReport(inStr, getParameters(request), getDataSource(request));//это используя уже откампиленный
             } else {
-                jasperPrint = JasperFillManager.fillReport(inStr, getParameters(inputData), conn);//это используя уже откампиленный
+                jasperPrint = JasperFillManager.fillReport(inStr, getParameters(request), conn);//это используя уже откампиленный
             }
             byte[] result = null;
 
-            String format;
-            String GETString = Uses.getRequestTarget(inputData);
-            int pos = GETString.indexOf(".");
-            if (pos == -1) {
-                format = "";
-            } else {
-                format = GETString.substring(pos + 1);
-            }
-            pos = format.indexOf("?");
-            if (pos != -1) {
-                format = StringUtils.left(format, pos);
-            }
+            final String subject = NetUtil.getUrl(request);
+            int dot = subject.lastIndexOf(".");
+            final String format = subject.substring(dot + 1);
 
             if (Uses.REPORT_FORMAT_HTML.equalsIgnoreCase(format)) {
                 final JRHtmlExporter exporter = new JRHtmlExporter();
@@ -190,6 +232,7 @@ public abstract class AGenerator implements IGenerator {
                 exporter.setParameter(JRExporterParameter.OUTPUT_STRING_BUFFER, buf);
                 exporter.exportReport();
                 result = new String(buf.toString().getBytes()).replaceAll("nullpx", "resources/px").replaceFirst("<body text=\"#000000\"", "<body text=\"#000000\"  background=\"resources/setka.gif\" bgproperties=\"fixed\"").replaceAll("bgcolor=\"white\"", "bgcolor=\"CCDDEE\"").replaceAll("nullimg_", "img_").getBytes("UTF-8");
+                dataType = "text/html";
             } else if (Uses.REPORT_FORMAT_RTF.equalsIgnoreCase(format)) {
                 final JRRtfExporter exporter = new JRRtfExporter();
                 exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
@@ -197,6 +240,7 @@ public abstract class AGenerator implements IGenerator {
                 exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, baos);
                 exporter.exportReport();
                 result = baos.toByteArray();
+                dataType = "application/rtf";
             } else if (Uses.REPORT_FORMAT_PDF.equalsIgnoreCase(format)) {
                 // создадим файл со шрифтами если его нет
                 final File f = new File("tahoma.ttf");
@@ -209,8 +253,9 @@ public abstract class AGenerator implements IGenerator {
                     fo.close();
                 }
                 result = genPDF(jasperPrint);
+                dataType = "application/pdf";
             }
-            return result;
+            return new Response(result, dataType);
         } catch (FileNotFoundException ex) {
             throw new Uses.ReportException("Не найден файл шрифтов для генерации PDF. " + ex);
         } catch (IOException ex) {
@@ -242,4 +287,4 @@ public abstract class AGenerator implements IGenerator {
         pdf.delete();
         return Uses.readInputStream(inStream);
     }
-}    
+}

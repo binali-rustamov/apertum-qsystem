@@ -178,7 +178,7 @@ public class FWelcome extends javax.swing.JFrame {
                 throw new Uses.ClientException("Ошибка при создании серверного сокета: " + e);
             }
 
-            Uses.writeRus("Сервер управления пунктом регистрации запущен.\n");
+            System.out.println("Server for managment of registration point started.\n");
             Uses.log.logger.info("Сервер управления пунктом регистрации запущен.");
 
             // слушаем порт
@@ -368,7 +368,7 @@ public class FWelcome extends javax.swing.JFrame {
                                 if (++pos == len) {
                                     pos = 0;
                                 }
-                                Uses.writeRus(progres);
+                                System.out.print(progres);
                                 System.out.write(13);// '\b' - возвращает корретку на одну позицию назад
 
                             }
@@ -419,7 +419,7 @@ public class FWelcome extends javax.swing.JFrame {
                                             try {
                                                 Thread.sleep(welcomeParams.delayPrint);
                                                 port.bind(listener);
-                                                Uses.writeRus("Прием команд активен\n");
+                                                System.out.println("Receive of command is ready");
                                             } catch (Exception ex) {
                                                 Uses.log.logger.error("При захвате СОМ-порта после печати чека возникла ошибка . " + ex);
                                                 sucses = false;

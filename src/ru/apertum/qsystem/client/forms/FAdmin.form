@@ -1938,7 +1938,7 @@
                                   <Component id="jPanel10" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="560" max="32767" attributes="0"/>
+                          <EmptySpace pref="565" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1946,11 +1946,11 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="jPanel10" max="32767" attributes="1"/>
-                              <Component id="jPanel9" alignment="1" min="-2" max="-2" attributes="1"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="jPanel10" min="-2" max="-2" attributes="1"/>
+                              <Component id="jPanel9" min="-2" max="-2" attributes="1"/>
                           </Group>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="checkBoxSuper" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="panelSites" max="32767" attributes="0"/>
@@ -2070,12 +2070,12 @@
                                   <Component id="jLabel14" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel10" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="formattedTextFieldStartTime" max="32767" attributes="1"/>
-                                  <Component id="formattedTextFieldFinishTime" alignment="0" max="32767" attributes="1"/>
-                              </Group>
                               <EmptySpace max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="textFieldStartTime" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="textFieldFinishTime" alignment="0" pref="43" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -2084,14 +2084,14 @@
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="formattedTextFieldStartTime" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="textFieldStartTime" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel14" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="formattedTextFieldFinishTime" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="textFieldFinishTime" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="37" max="32767" attributes="0"/>
+                              <EmptySpace pref="32" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -2109,29 +2109,17 @@
                         <Property name="name" type="java.lang.String" value="jLabel14" noResource="true"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JFormattedTextField" name="formattedTextFieldStartTime">
+                    <Component class="javax.swing.JTextField" name="textFieldStartTime">
                       <Properties>
-                        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
-                          <Format subtype="1" type="2"/>
-                        </Property>
-                        <Property name="text" type="java.lang.String" resourceKey="formattedTextFieldStartTime.text"/>
-                        <Property name="name" type="java.lang.String" value="formattedTextFieldStartTime" noResource="true"/>
+                        <Property name="text" type="java.lang.String" resourceKey="textFieldStartTime.text"/>
+                        <Property name="name" type="java.lang.String" value="textFieldStartTime" noResource="true"/>
                       </Properties>
-                      <Events>
-                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="formattedTextFieldStartTimeFocusLost"/>
-                      </Events>
                     </Component>
-                    <Component class="javax.swing.JFormattedTextField" name="formattedTextFieldFinishTime">
+                    <Component class="javax.swing.JTextField" name="textFieldFinishTime">
                       <Properties>
-                        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
-                          <Format subtype="1" type="2"/>
-                        </Property>
-                        <Property name="text" type="java.lang.String" resourceKey="formattedTextFieldFinishTime.text"/>
-                        <Property name="name" type="java.lang.String" value="formattedTextFieldFinishTime" noResource="true"/>
+                        <Property name="text" type="java.lang.String" resourceKey="textFieldFinishTime.text"/>
+                        <Property name="name" type="java.lang.String" value="textFieldFinishTime" noResource="true"/>
                       </Properties>
-                      <Events>
-                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="formattedTextFieldFinishTimeFocusLost"/>
-                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -2210,7 +2198,7 @@
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jScrollPane5" pref="442" max="32767" attributes="0"/>
+                                      <Component id="jScrollPane5" pref="436" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="1" attributes="0">
                                       <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
@@ -2244,7 +2232,7 @@
                                           <Component id="textFieldSiteButtonCaption" alignment="3" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jScrollPane7" pref="239" max="32767" attributes="0"/>
+                                      <Component id="jScrollPane7" pref="233" max="32767" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jPanel16" min="-2" max="-2" attributes="0"/>
                                   </Group>

@@ -1922,7 +1922,7 @@ public final class QServicesPool implements IRmiCommander {
 
         final String taskName = task.attributeValue(Uses.TAG_NAME);
         if (!Uses.isDebug) {
-            Uses.writeRus("Обработка задания: '" + taskName + "'\n");
+            System.out.println("Task processing: '" + taskName);
         }
         Uses.log.logger.info("Обработка задания: '" + taskName + "'");
         if (tasks.get(taskName) == null) {

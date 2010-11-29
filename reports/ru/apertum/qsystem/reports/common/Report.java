@@ -18,6 +18,7 @@ package ru.apertum.qsystem.reports.common;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,6 +27,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import net.sf.jasperreports.engine.JRDataSource;
+import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.reports.formirovators.IFormirovator;
 import ru.apertum.qsystem.reports.model.AGenerator;
@@ -83,22 +85,32 @@ public class Report extends AGenerator implements Serializable {
     }
 
     @Override
-    protected JRDataSource getDataSource(String inputData) {
-        return formirovator.getDataSource(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, inputData);
+    protected JRDataSource getDataSource(HttpRequest request) {
+        return formirovator.getDataSource(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, request);
+    }
+
+     @Override
+    protected Map getParameters(HttpRequest request) {
+        return formirovator.getParameters(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, request);
     }
 
     @Override
-    protected byte[] preparation(String inputData) {
-        return formirovator.preparation(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, inputData);
+    protected Connection getConnection(HttpRequest request) {
+        return formirovator.getConnection(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, request);
     }
 
     @Override
-    protected Map getParameters(String inputData) {
-        return formirovator.getParameters(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, inputData);
+    protected Response preparationReport(HttpRequest request) {
+        return formirovator.preparationReport(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, request);
     }
 
     @Override
-    protected Connection getConnection(String inputData) {
-        return formirovator.getConnection(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, inputData);
+    protected Response getDialog(HttpRequest request, String errorMessage) {
+        return formirovator.getDialog(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, request, errorMessage);
+    }
+
+    @Override
+    protected String validate(HttpRequest request, HashMap<String, String> params) {
+        return formirovator.validate(Uses.spring.driverClassName, Uses.spring.url, Uses.spring.username, Uses.spring.password, request, params);
     }
 }

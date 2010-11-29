@@ -65,6 +65,7 @@ public abstract class ACustomer implements ICustomer {
     /**
      *  АТРИБУТЫ "ОЧЕРЕДНИКА"
      *  персональный номер, именно по нему система ведет учет и управление очередниками 
+     * @param number новер - целое число
      */
     public void setNumber(Integer number) {
         xmlElement.addAttribute(Uses.TAG_NUMBER, String.valueOf(number));

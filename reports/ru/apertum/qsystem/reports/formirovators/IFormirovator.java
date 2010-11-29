@@ -17,8 +17,11 @@
 package ru.apertum.qsystem.reports.formirovators;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.Map;
 import net.sf.jasperreports.engine.JRDataSource;
+import org.apache.http.HttpRequest;
+import ru.apertum.qsystem.reports.common.Response;
 
 /**
  * Формирует источник данных для отчета.
@@ -32,15 +35,15 @@ public interface IFormirovator {
      * При построении отчета через коннект SQL-выражение находится в шаблоне отчета, по этому метод getDataSource() 
      * не вызывается.
      * @param driverClassName имя драйвера используемого для подключения к СУБД
-     * @param inputData строка пришедшая от браузера
      * @param password пароль с которым пользователь соединяется с базой
      * @param url использыемай база в СУБД
+     * @param request данные пришедшие от браузера
      * @param username пользователь СУБД
      * @return Готовая структура для компилирования в документ.
      */
-    public JRDataSource getDataSource(String driverClassName, String url, String username, String password, String inputData);
+    public JRDataSource getDataSource(String driverClassName, String url, String username, String password, HttpRequest request);
 
-    /**
+    /*
      * Метод выполнения неких действия для подготовки данных отчета.
      * Если он возвращает заполненный массив байт, то его нужно отдать клиенту,
      * иначе если null то продолжаем генерировать отчет.
@@ -49,26 +52,66 @@ public interface IFormirovator {
      * Если HTTP-запрос inputData имеет параметр "Super: xxx", то этот запрос пришел от супер сайта и
      * необходимо сформировать свою часть консолидированного отчета и выдать.
      * @param driverClassName имя драйвера используемого для подключения к СУБД
-     * @param inputData строка пришедшая от браузера
+     * @param request данные пришедшие от браузера
      * @param password пароль с которым пользователь соединяется с базой
      * @param url использыемай база в СУБД
      * @param username пользователь СУБД
      * @return массив байт для выдачи на клиента.
+     * @deprecated будет разбит на методы получения диалога и валидации и будет изменен тип возвращаемого значения(preparationPerort)? ,будет удален
+     
+    public byte[] preparation(String driverClassName, String url, String username, String password, HttpRequest request);
+*/
+    /**
+     * Метод выполнения неких действия для подготовки данных отчета.
+     * Если он возвращает заполненный массив байт, то его нужно отдать клиенту,
+     * иначе если null то продолжаем генерировать отчет.
+     * @param driverClassName имя драйвера используемого для подключения к СУБД
+     * @param request данные пришедшие от браузера
+     * @param password пароль с которым пользователь соединяется с базой
+     * @param url использыемай база в СУБД
+     * @param username пользователь СУБД
+     * @return данные для выдачи на клиента. или null если ничего выдавать не нужно
      */
-    public byte[] preparation(String driverClassName, String url, String username, String password, String inputData);
-    
+    public Response preparationReport(String driverClassName, String url, String username, String password, HttpRequest request);
+
+    /**
+     * Получение страници диалога ввода параметров перед генерацией отчета.
+     * Если диалог не нужет то вернуть null
+     * @param driverClassName имя драйвера используемого для подключения к СУБД
+     * @param request данные пришедшие от браузера
+     * @param password пароль с которым пользователь соединяется с базой
+     * @param url использыемай база в СУБД
+     * @param username пользователь СУБД
+     * @param errorMessage это сообщение об ошибке предыдущего ввода. Может быть null если вводится первый раз.
+     * @return данные для выдачи на клиента или null.
+     */
+    public Response getDialog(String driverClassName, String url, String username, String password, HttpRequest request, String errorMessage);
+
+    /**
+     *
+     * @param driverClassName имя драйвера используемого для подключения к СУБД
+     * @param request данные пришедшие от браузера
+     * @param password пароль с которым пользователь соединяется с базой
+     * @param url использыемай база в СУБД
+     * @param username пользователь СУБД
+     * @param params параметры из HttpRequest request
+     * @return null если все хорошо, сообщение обошибке если что-то не в порядке. Это сообщение будет передано
+     * в повторный вызов метода getDialog()
+     */
+    public String validate(String driverClassName, String url, String username, String password, HttpRequest request, HashMap<String, String> params);
+
     /**
      * Метод формирования параметров для отчета.
      * В отчет нужно передать некие параметры. Они упаковываются в Мар.
      * Если параметры не нужны, то сформировать пустой Мар.
      * @param driverClassName имя драйвера используемого для подключения к СУБД
-     * @param inputData строка пришедшая от браузера
+     * @param request данные пришедшие от браузера
      * @param password пароль с которым пользователь соединяется с базой
      * @param url использыемай база в СУБД
      * @param username пользователь СУБД
      * @return
      */
-    public Map getParameters(String driverClassName, String url, String username, String password, String inputData);
+    public Map getParameters(String driverClassName, String url, String username, String password, HttpRequest request);
 
     /**
      * Метод получения коннекта к базе если отчет строится через коннект.
@@ -76,11 +119,11 @@ public interface IFormirovator {
      * При построении отчета через коннект SQL-выражение находится в шаблоне отчета, по этому метод getDataSource() 
      * не вызывается.
      * @param driverClassName имя драйвера используемого для подключения к СУБД
-     * @param inputData строка пришедшая от браузера
+     * @param request данные пришедшие от браузера
      * @param password пароль с которым пользователь соединяется с базой
      * @param url использыемай база в СУБД
      * @param username пользователь СУБД
      * @return коннект соединения к базе или null.
      */
-    public Connection getConnection(String driverClassName, String url, String username, String password, String inputData);
+    public Connection getConnection(String driverClassName, String url, String username, String password, HttpRequest request);
 }

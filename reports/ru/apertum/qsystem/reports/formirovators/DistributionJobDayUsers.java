@@ -16,9 +16,6 @@
  */
 package ru.apertum.qsystem.reports.formirovators;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -27,7 +24,9 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.reports.common.Response;
 
 /**
  *
@@ -42,7 +41,7 @@ public class DistributionJobDayUsers extends AFormirovator {
      * @return
      */
     @Override
-    public Map getParameters(String driverClassName, String url, String username, String password, String inputData) {
+    public Map getParameters(String driverClassName, String url, String username, String password, HttpRequest request) {
         return paramMap;
     }
     /**
@@ -56,7 +55,7 @@ public class DistributionJobDayUsers extends AFormirovator {
      * @return коннект соединения к базе или null.
      */
     @Override
-    public Connection getConnection(String driverClassName, String url, String username, String password, String inputData) {
+    public Connection getConnection(String driverClassName, String url, String username, String password, HttpRequest request) {
         final Connection connection;
         try {
             Class.forName(driverClassName);
@@ -68,13 +67,13 @@ public class DistributionJobDayUsers extends AFormirovator {
         }
         return connection;
     }
-
+/*
     @Override
-    public byte[] preparation(String driverClassName, String url, String username, String password, String inputData) {
+    public byte[] preparation(String driverClassName, String url, String username, String password, HttpRequest request) {
         // если в запросе не содержаться введенные параметры, то выдыем форму ввода
         // иначе выдаем null.
-        final String data = Uses.getRequestData(inputData);
-        final String tmp = Uses.getRequestTarget(inputData);
+        final String data = NetUtil.getEntityContent(request);
+        final String tmp = NetUtil.getUrl(request);
         Uses.log.logger.trace("Принятые параметры \"" + data + "\".");
         Uses.log.logger.trace("subject \"" + tmp + "\".");
         // флаг введенности параметров
@@ -128,7 +127,7 @@ public class DistributionJobDayUsers extends AFormirovator {
                 throw new Uses.ReportException("Ошибка чтения ресурса для диалога ввода сервиса. " + ex);
             }
             try {
-                Connection conn = getConnection(driverClassName, url, username, password, inputData);
+                Connection conn = getConnection(driverClassName, url, username, password, request);
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery("SELECT id, name FROM users ORDER BY name");
                 int id;
@@ -142,8 +141,7 @@ public class DistributionJobDayUsers extends AFormirovator {
             } catch (SQLException ex) {
                 throw new Uses.ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
             }
-            final String subject = Uses.getRequestTarget(inputData);
-            result = result.replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, subject).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess).replaceFirst("#DATA_FOR_TITLE#", "Распределение нагрузки внутри дня для пользователя:").replaceFirst("#DATA_FOR_USERS#", users_select);
+            result = result.replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, request.getRequestLine().getUri()).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess).replaceFirst("#DATA_FOR_TITLE#", "Распределение нагрузки внутри дня для пользователя:").replaceFirst("#DATA_FOR_USERS#", users_select);
             try {
                 return result.getBytes("UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -152,5 +150,68 @@ public class DistributionJobDayUsers extends AFormirovator {
         } else {
             return null;
         }
+    }
+*/
+    @Override
+    public Response getDialog(String driverClassName, String url, String username, String password, HttpRequest request, String errorMessage) {
+        Response result = getDialog("/ru/apertum/qsystem/reports/web/get_date_distribution_users.html", request, errorMessage);
+        final StringBuilder users_select = new StringBuilder();
+        final Connection conn = getConnection(driverClassName, url, username, password, request);
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT id, name FROM users ORDER BY name");
+            while (rs.next()) {
+                users_select.append("<option value=").append(rs.getLong(1)).append(">").append(rs.getString(2)).append("\n");
+            }
+        } catch (SQLException ex) {
+            users_select.setLength(0);
+            throw new Uses.ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException ex) {
+                throw new Uses.ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
+            }
+        }
+        try {
+            rs.close();
+            stmt.close();
+        } catch (SQLException ex) {
+            throw new Uses.ReportException("Ошибка закрытия запроса для диалога ввода пользователя. " + ex);
+        }
+
+        result.setData(new String(result.getData()).replaceFirst("#DATA_FOR_TITLE#", "Распределение нагрузки внутри дня для пользователя:").replaceFirst("#DATA_FOR_USERS#", users_select.toString()).getBytes());
+        users_select.setLength(0);
+        return result;
+    }
+
+    @Override
+    public String validate(String driverClassName, String url, String username, String password, HttpRequest request, HashMap<String, String> params) {
+        // проверка на корректность введенных параметров
+        Uses.log.logger.trace("Принятые параметры \"" + params.toString() + "\".");
+        if (params.size() == 3) {
+            // date/user_id/user
+            Date date = null;
+            String sdate = null;
+            long user_id = -1;
+            String user = null;
+            try {
+                date = Uses.format_dd_MM_yyyy.parse(params.get("date"));
+                sdate = (new java.text.SimpleDateFormat("yyyy-MM-dd")).format(date);
+                user_id = Long.parseLong(params.get("user_id"));
+                user = params.get("user");
+            } catch (Exception ex) {
+                return "<br>Ошибка ввода параметров! Не все параметры введены корректно (дд.мм.гггг).";
+            }
+            paramMap.put("sdate", sdate);
+            paramMap.put("date", date);
+            paramMap.put("user_id", new Long(user_id));
+            paramMap.put("user", user);
+        } else {
+            return "<br>Ошибка ввода параметров!";
+        }
+        return null;
     }
 }

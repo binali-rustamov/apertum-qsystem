@@ -16,16 +16,16 @@
  */
 package ru.apertum.qsystem.reports.formirovators;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.reports.common.Response;
 
 /**
  *
@@ -40,7 +40,7 @@ public class DistributionWaitDay extends AFormirovator {
      * @return
      */
     @Override
-    public Map getParameters(String driverClassName, String url, String username, String password, String inputData) {
+    public Map getParameters(String driverClassName, String url, String username, String password, HttpRequest request) {
         return paramMap;
     }
     /**
@@ -54,7 +54,7 @@ public class DistributionWaitDay extends AFormirovator {
      * @return коннект соединения к базе или null.
      */
     @Override
-    public Connection getConnection(String driverClassName, String url, String username, String password, String inputData) {
+    public Connection getConnection(String driverClassName, String url, String username, String password, HttpRequest request) {
         final Connection connection;
         try {
             Class.forName(driverClassName);
@@ -66,12 +66,12 @@ public class DistributionWaitDay extends AFormirovator {
         }
         return connection;
     }
-
+/*
     @Override
-    public byte[] preparation(String driverClassName, String url, String username, String password, String inputData) {
+    public byte[] preparation(String driverClassName, String url, String username, String password, HttpRequest request) {
         // если в запросе не содержаться введенные параметры, то выдыем форму ввода
         // иначе выдаем null.
-        final String data = Uses.getRequestData(inputData);
+        final String data = NetUtil.getEntityContent(request);
         Uses.log.logger.trace("Принятые параметры \"" + data + "\".");
         // флаг введенности параметров
         boolean flag = false;
@@ -114,8 +114,7 @@ public class DistributionWaitDay extends AFormirovator {
             } catch (IOException ex) {
                 throw new Uses.ReportException("Ошибка чтения ресурса для диалогового ввода периода. " + ex);
             }
-            final String subject = Uses.getRequestTarget(inputData);
-            result = result.replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, subject).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess).replaceFirst("#DATA_FOR_TITLE#", "Распределение среднего времени ожидания внутри дня:");
+            result = result.replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, request.getRequestLine().getUri()).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, mess).replaceFirst("#DATA_FOR_TITLE#", "Распределение среднего времени ожидания внутри дня:");
             try {
                 return result.getBytes("UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -124,5 +123,34 @@ public class DistributionWaitDay extends AFormirovator {
         } else {
             return null;
         }
+    }
+*/
+    @Override
+    public Response getDialog(String driverClassName, String url, String username, String password, HttpRequest request, String errorMessage) {
+        final Response result = getDialog("/ru/apertum/qsystem/reports/web/get_date_distribution.html", request, errorMessage);
+        result.setData(new String(result.getData()).replaceFirst("#DATA_FOR_TITLE#", "Распределение среднего времени ожидания внутри дня:").getBytes());
+        return result;
+    }
+
+    @Override
+    public String validate(String driverClassName, String url, String username, String password, HttpRequest request, HashMap<String, String> params) {
+        // проверка на корректность введенных параметров
+        Uses.log.logger.trace("Принятые параметры \"" + params.toString() + "\".");
+        if (params.size() == 1) {
+            Date date = null;
+            String sdate = null;
+            try {
+                date = Uses.format_dd_MM_yyyy.parse(params.get("date"));
+                sdate = (new java.text.SimpleDateFormat("yyyy-MM-dd")).format(date);
+            } catch (ParseException ex) {
+                return "<br>Ошибка ввода параметров! Не все параметры введены корректно(дд.мм.гггг).";
+            }
+            paramMap.put("sdate", sdate);
+            paramMap.put("date", date);
+
+        } else {
+            return "<br>Ошибка ввода параметров!";
+        }
+        return null;// все нормально
     }
 }

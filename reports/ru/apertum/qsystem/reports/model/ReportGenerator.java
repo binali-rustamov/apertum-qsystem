@@ -18,13 +18,14 @@ package ru.apertum.qsystem.reports.model;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.sql.Connection;
 import java.util.HashMap;
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
+import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.reports.common.Response;
+import ru.apertum.qsystem.reports.generators.RepCurrentUsers;
+import ru.apertum.qsystem.reports.generators.ReportCurrentServices;
+import ru.apertum.qsystem.reports.generators.ReportsList;
+import ru.apertum.qsystem.reports.net.NetUtil;
 import ru.apertum.qsystem.server.model.QSiteList;
 
 /**
@@ -63,142 +64,25 @@ public class ReportGenerator {
      * coocies для браузера, чтоб далее браузер подставлял жти куки в запрос и тем самым сервак "узнавал пользователя".
      * Сдесь нужен только метод preparation(), т.к. никакой генерации нет.
      */
-    private final static IGenerator getReportsList = new AGenerator("reportList", "") {
-
-        @Override
-        protected JRDataSource getDataSource(String inputData) {
-            throw new Uses.ReportException("Ошибочное обращение к методу.");
-        }
-
-        @Override
-        protected byte[] preparation(String inputData) {
-            // в запросе должен быть пароль и пользователь, если нету, то отказ на вход
-            final String data = Uses.getRequestData(inputData);
-            Uses.log.logger.trace("Принятые параметры \"" + data + "\".");
-            // ресурс для выдачи в браузер. это либо список отчетов при корректном логининге или отказ на вход
-            String res = "/ru/apertum/qsystem/reports/web/error_login.html";
-            String usr = "err";
-            String pwd = "err";
-            // разбирем параметры
-            final String[] ss = data.split("&");
-            if (ss.length == 2) {
-                final String[] ss0 = ss[0].split("=");
-                final String[] ss1 = ss[1].split("=");
-                if ("username".equals(ss0[0]) && ("password".equals(ss1[0]))) {
-                    usr = ss0[1];
-                    pwd = (ss1.length == 1 ? "" : ss1[1]);
-
-                    if (pwd.equals(WebServer.passMap.get(usr))) {
-                        res = "/ru/apertum/qsystem/reports/web/reportList.html";
-                    }
-                }
-            }
-            final InputStream inStream = getClass().getResourceAsStream(res);
-            byte[] result = null;
-            try {
-                result = Uses.readInputStream(inStream);
-                if ("/ru/apertum/qsystem/reports/web/reportList.html".equals(res)) {
-                    // добавим список аналитических отчетов
-                    result = new String(result).replaceFirst(Uses.ANCHOR_REPORT_LIST, WebServer.repList).getBytes(); //"Cp1251"
-                    // Добавим кукисы сессии
-                    //<META HTTP-EQUIV="Set-Cookie" CONTENT="NAME=value; EXPIRES=date; DOMAIN=domain_name; PATH=path; SECURE">
-                    final String coocie = "<META HTTP-EQUIV=\"Set-Cookie\" CONTENT=\"username=" + URLEncoder.encode(usr, "utf-8") + "\">\n<META HTTP-EQUIV=\"Set-Cookie\" CONTENT=\"password=" + URLEncoder.encode(pwd, "utf-8") + "\">";
-                    result = new String(result).replaceFirst(Uses.ANCHOR_COOCIES, coocie).getBytes(); //"Cp1251"
-                }
-            } catch (IOException ex) {
-                throw new Uses.ReportException("Ошибка чтения ресурса для диалогового выбора отчета. " + ex);
-            }
-            return result;
-        }
-
-        @Override
-        protected HashMap getParameters(String inputData) {
-            throw new Uses.ReportException("Ошибочное обращение к методу.");
-        }
-
-        @Override
-        protected Connection getConnection(String inputData) {
-            throw new Uses.ReportException("Ошибочное обращение к методу.");
-        }
-    };
+    private final static IGenerator getReportsList = new ReportsList("reportList", "");
     /**
      * Отчет по текущему состоянию в разрее услуг
      */
-    private final static IGenerator getReportCurrentServices = new AGenerator(Uses.REPORT_CURRENT_SERVICES.toLowerCase(), "/ru/apertum/qsystem/reports/templates/currentStateServices.jasper") {
-
-        @Override
-        protected JRDataSource getDataSource(String inputData) {
-            try {
-                return CurrentStatistic.getDataSourceCurrentServices();
-            } catch (JRException ex) {
-                throw new Uses.ReportException("Ошибка генерации. " + ex);
-            } catch (UnsupportedEncodingException ex) {
-                throw new Uses.ReportException("Ошибка генерации. Не поддерживается кодировка. " + ex);
-            }
-        }
-
-        @Override
-        protected byte[] preparation(String inputData) {
-            return null;
-        }
-
-        @Override
-        protected HashMap getParameters(String inputData) {
-            return new HashMap();
-        }
-
-        @Override
-        protected Connection getConnection(String inputData) {
-            return null;
-        }
-    };
+    private final static IGenerator getReportCurrentServices = new ReportCurrentServices(Uses.REPORT_CURRENT_SERVICES.toLowerCase(), "/ru/apertum/qsystem/reports/templates/currentStateServices.jasper");
     /**
      * Отчет по текущему состоянию в разрезе пользователей
      */
-    private final static IGenerator getRepCurrentUsers = new AGenerator(Uses.REPORT_CURRENT_USERS.toLowerCase(), "/ru/apertum/qsystem/reports/templates/currentStateUsers.jasper") {
-
-        @Override
-        protected JRDataSource getDataSource(String inputData) {
-            try {
-                return CurrentStatistic.getDataSourceCurrentUsers();
-            } catch (JRException ex) {
-                throw new Uses.ReportException("Ошибка генерации. " + ex);
-            } catch (UnsupportedEncodingException ex) {
-                throw new Uses.ReportException("Ошибка генерации. Не поддерживается кодировка. " + ex);
-            }
-        }
-
-        @Override
-        protected byte[] preparation(String inputData) {
-            return null;
-        }
-
-        @Override
-        protected HashMap getParameters(String inputData) {
-            return new HashMap();
-        }
-
-        @Override
-        protected Connection getConnection(String inputData) {
-            return null;
-        }
-    };
+    private final static IGenerator getRepCurrentUsers = new RepCurrentUsers(Uses.REPORT_CURRENT_USERS.toLowerCase(), "/ru/apertum/qsystem/reports/templates/currentStateUsers.jasper");
 
     /**
      * Генерация отчета по его имени.
-     * @param name Имя отчета.
+     * @param request запрос пришедший от клиента
      * @return Отчет в виде массива байт.
      */
-    public static byte[] generate(String inputData) {
+    public static synchronized Response generate(HttpRequest request) {
         final long start = System.currentTimeMillis();
-        String GETString = Uses.getRequestTarget(inputData);
-        final int pos = GETString.indexOf(".");
-        final String nameReport;
-        if (pos == -1) {
-            nameReport = GETString;
-        } else {
-            nameReport = GETString.substring(0, pos);
-        }
+        String url = NetUtil.getUrl(request);
+        final String nameReport = url.lastIndexOf(".") == -1 ? url.substring(1) : url.substring(1, url.lastIndexOf("."));
 
         final IGenerator generator = generators.get(nameReport.toLowerCase());
         // если нет такого отчета
@@ -214,10 +98,15 @@ public class ReportGenerator {
         // Но есть нюанс, формирование списка отчетов - тоже формироватор, и к нему доступ не по кукисам,
         // а по введеному паролю и пользователю. По этому надо проверить если приехали параметры пароля и пользователя,
         // введенные юзером, то игнорировать проверку кукисов. Т.е. если гениратор reportList, то не проверяем кукисы
-        if (!"reportList.html".equals(Uses.getRequestTarget(inputData))) {
-            final HashMap<String, String> coocies = Uses.getCoocies(inputData);
-            final String pass = coocies.get("password");
-            final String usr = coocies.get("username");
+        if (!"/reportList.html".equals(url)) {
+
+            if (request.getFirstHeader("Cookie") == null) {
+                // если куков нет
+                return getLoginPage();
+            }
+            final HashMap<String, String> cookie = NetUtil.getCookie(request.getFirstHeader("Cookie").getValue(), "; ");
+            final String pass = cookie.get("password");
+            final String usr = cookie.get("username");
             if (pass == null || usr == null) {
                 // если не нашлось в куках
                 return getLoginPage();
@@ -227,14 +116,12 @@ public class ReportGenerator {
                 return getLoginPage();
             }
         }
-        Uses.writeRus("Генерация отчета: '" + nameReport + "'\n");
+        System.out.println("Report build: '" + nameReport + "'\n");
         Uses.logRep.logger.info("Генерация отчета: '" + nameReport + "'");
-        final byte[] result;
-
         /*
          * Вот сама генерация отчета. 
          */
-        result = generator.process(inputData);
+        final Response result = generator.process(request);
 
         Uses.logRep.logger.info("Генерация завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
         return result;
@@ -244,7 +131,7 @@ public class ReportGenerator {
      * Загрузим страничку ввода пароля и пользователя
      * @return страница в виде массива байт.
      */
-    private static byte[] getLoginPage() {
+    private static Response getLoginPage() {
         byte[] result = null;
         // Выдаем ресурс  "/ru/apertum/qsystem/reports/web/"
         final InputStream inStream = new ReportGenerator().getClass().getResourceAsStream("/ru/apertum/qsystem/reports/web/login.html");
@@ -256,30 +143,22 @@ public class ReportGenerator {
             }
         } else {
             final String s = "<html><head><meta http-equiv = \"Content-Type\" content = \"text/html; charset=windows-1251\" ></head><p align=center>Ресурс для входа не найден.</p></html>";
-            return s.getBytes();
+            return new Response(s.getBytes());
         }
-        return new String(result).replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, WebServer.usrList).getBytes(); //"Cp1251"
+        return new Response(new String(result).replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, WebServer.usrList).getBytes()); //"Cp1251"
     }
 
-    private static boolean checkLogin(String inputData) {
-        // в запросе должен быть пароль и пользователь, если нету, то отказ на вход
-        final String data = Uses.getRequestData(inputData);
-        // ресурс для выдачи в браузер. это либо список отчетов при корректном логининге или отказ на вход
+    private static boolean checkLogin(HttpRequest request) {
         boolean res = false;
-        String usr = "err";
-        String pwd = "err";
+        // в запросе должен быть пароль и пользователь, если нету, то отказ на вход
+        String entityContent = NetUtil.getEntityContent(request);
+        Uses.log.logger.trace("Принятые параметры \"" + entityContent + "\".");
+        // ресурс для выдачи в браузер. это либо список отчетов при корректном логининге или отказ на вход
         // разбирем параметры
-        final String[] ss = data.split("&");
-        if (ss.length == 2) {
-            final String[] ss0 = ss[0].split("=");
-            final String[] ss1 = ss[1].split("=");
-            if ("username".equals(ss0[0]) && ("password".equals(ss1[0]))) {
-                usr = ss0[1];
-                pwd = (ss1.length == 1 ? "" : ss1[1]);
-
-                if (pwd.equals(WebServer.passMap.get(usr))) {
-                    res = true;
-                }
+        final HashMap<String, String> cookie = NetUtil.getCookie(entityContent, "&");
+        if (cookie.containsKey("username") && cookie.containsKey("password")) {
+            if (cookie.get("password").equals(WebServer.passMap.get(cookie.get("username")))) {
+                res = true;
             }
         }
         return res;

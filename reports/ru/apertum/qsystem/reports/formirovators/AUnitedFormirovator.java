@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.data.JRXmlDataSource;
+import org.apache.http.HttpRequest;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -47,54 +48,54 @@ public abstract class AUnitedFormirovator extends AFormirovator {
     /**
      * Формирование части консолидированного отчета на сайте.
      * @param driverClassName имя драйвера используемого для подключения к СУБД
-     * @param inputData строка пришедшая от браузера
      * @param password пароль с которым пользователь соединяется с базой
      * @param url использыемай база в СУБД
+     * @param request строка пришедшая от браузера
      * @param username пользователь СУБД
      * @return Часть консолидированного отчета в XML-виде. Имя корневого элементо произвольное.
      */
-    public abstract Element getSiteReport(String driverClassName, String url, String username, String password, String inputData);
+    public abstract Element getSiteReport(String driverClassName, String url, String username, String password, HttpRequest request);
 
     /**
      * То же самое что и preparation(), только для консоледированных.
      * @param driverClassName имя драйвера используемого для подключения к СУБД
-     * @param inputData строка пришедшая от браузера
      * @param password пароль с которым пользователь соединяется с базой
      * @param url использыемай база в СУБД
+     * @param request строка пришедшая от браузера
      * @param username пользователь СУБД
      * @return подготовительные данные, например страничка с формой ввода каких-то данных.
      */
-    public abstract byte[] unitedPreparation(String driverClassName, String url, String username, String password, String inputData);
+    public abstract byte[] unitedPreparation(String driverClassName, String url, String username, String password, HttpRequest request);
 
     /**
      * Разруливает все вопросы по подготовке данных для консолидированных отчетов.
      * @param driverClassName имя драйвера используемого для подключения к СУБД
-     * @param inputData строка пришедшая от браузера
+     * @param request строка пришедшая от браузера
      * @param password пароль с которым пользователь соединяется с базой
      * @param url использыемай база в СУБД
      * @param username пользователь СУБД
      * @return результат подготовки данных на сайте. Для суперсайта это может быть страничка с формой ввода, для простого
      * сайта это часть консолидированного отчета в XML-виде.
-     */
+     /
     @Override
-    final public byte[] preparation(String driverClassName, String url, String username, String password, String inputData) {
-        final byte[] prepare = unitedPreparation(driverClassName, url, username, password, inputData);
+    final public byte[] preparation(String driverClassName, String url, String username, String password, HttpRequest request) {
+        final byte[] prepare = unitedPreparation(driverClassName, url, username, password, request);
         if (prepare != null) {
             return prepare;
         } else {
-            if (inputData.indexOf(Uses.TASK_SUPER_REQUEST) == -1) {
+            if (request.getRequestLine().getUri().indexOf(Uses.TASK_SUPER_REQUEST) == -1) {
                 return null;
             } else {
-                return getSiteReport(driverClassName, url, username, password, inputData).asXML().getBytes();
+                return getSiteReport(driverClassName, url, username, password, request).asXML().getBytes();
             }
         }
     }
-
+*/
     @Override
-    final public JRDataSource getDataSource(String driverClassName, String url, String username, String password, String inputData) {
+    final public JRDataSource getDataSource(String driverClassName, String url, String username, String password, HttpRequest request) {
         Uses.log.logger.debug("Сбор частей отчетов со всех сайтов.");
         // В строку HTTP-запроса вставить "Super: xxx"
-        final String superInputData = inputData.replaceFirst("Host: ", Uses.TASK_SUPER_REQUEST + "\r\n" + "Host: ");
+        final String superInputData = request.getRequestLine().getUri().replaceFirst("Host: ", Uses.TASK_SUPER_REQUEST + "\r\n" + "Host: ");
         // Разослать всем сайтам этот запрос и получить от них ответы
         if (!ReportGenerator.isSuperSite()) {
             throw new Uses.ReportException("Попытка обращения к консолидированному отчету не через суперсайт.");
@@ -137,7 +138,7 @@ public abstract class AUnitedFormirovator extends AFormirovator {
         } catch (UnsupportedEncodingException ex) {
             throw new Uses.ReportException("Проблема с кодировкой консолидированного отчета. " + ex);
         }
-        if (answers.elements().size() == 0) {
+        if (answers.elements().isEmpty()) {
             rec = "Пусто";
         } else {
             rec = ((Element) answers.elements().get(0)).getName();
@@ -168,7 +169,7 @@ public abstract class AUnitedFormirovator extends AFormirovator {
         writer.flush();
         // Чтение ответа.
         while (in.hasNextLine()) {
-            sb = sb.append(in.nextLine() + "\n");
+            sb = sb.append(in.nextLine()).append("\n");
         }
         final String data = sb.toString();
         socket.close();

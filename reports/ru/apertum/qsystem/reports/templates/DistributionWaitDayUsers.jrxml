@@ -3,7 +3,7 @@
 	<parameter name="sdate" class="java.lang.String"/>
 	<parameter name="date" class="java.util.Date"/>
 	<parameter name="user" class="java.lang.String"/>
-	<parameter name="user_id" class="java.lang.Integer"/>
+	<parameter name="user_id" class="java.lang.Long"/>
 	<queryString>
 		<![CDATA[(SELECT '00' AS H, COUNT(*) AS C, AVG(client_wait_period) AS AVG FROM statistic WHERE client_stand_time BETWEEN '$P!{sdate} 00:00:00' AND '$P!{sdate} 01:00:00' AND user_id=$P{user_id}) UNION ALL
 (SELECT '01', COUNT(*), AVG(client_wait_period) FROM statistic WHERE client_stand_time BETWEEN '$P!{sdate} 01:00:00' AND '$P!{sdate} 02:00:00' AND user_id=$P{user_id}) UNION ALL

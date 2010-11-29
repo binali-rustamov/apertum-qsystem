@@ -100,11 +100,11 @@ public class CurrentStatistic {
                 ReportGenerator.addGenerator(report);
                 list = list.concat(
                         "<tr>\n"
-                        + "<td><center>\n"
+                        + "<td style=\"text-align: left; padding-left: 60px;\">\n"
                         + "<a href=\"" + report.getHref() + ".html\" target=\"_blank\">" + report.getName() + "</a>\n"
                         + "<a href=\"" + report.getHref() + ".rtf\" target=\"_blank\">[RTF]</a>\n"
                         + "<a href=\"" + report.getHref() + ".pdf\" target=\"_blank\">[PDF]</a>\n"
-                        + "</center></td>\n"
+                        + "</td>\n"
                         + "</tr>\n");
 
             }

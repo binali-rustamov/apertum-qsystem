@@ -160,6 +160,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
         /**
          * При создании строка попадает в список отображения с признаком
          * того что еще не отвесела. Таймер висения включеется когда строка попадает на табло.
+         * @param userName 
          * @param point номер кабинета куда вызвали кастомера.
          * @param customerNumber номер кастомера о ком запись.
          * @param adressRS адрес клиентского табло.
@@ -329,7 +330,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
     /**
      * Высветить запись на табло оператора. 
-     * @param records Высвечиваемая запись.
+     * @param record Высвечиваемая запись.
      */
     abstract protected void showToUser(Record record);
 }

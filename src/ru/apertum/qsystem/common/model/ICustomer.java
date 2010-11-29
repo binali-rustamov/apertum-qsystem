@@ -59,11 +59,13 @@ public interface ICustomer extends Comparable<ICustomer> {
 
     /**
      * Установливает время постановки клиента в очередь
+     * @param date время когда клиент всятал в очередь
      */
     public void setStandTime(Date date);
 
     /**
      * Установливает время начала работы с клиентом
+     * @param date время нвчала работы
      */
     public void setStartTime(Date date);
 
@@ -75,6 +77,7 @@ public interface ICustomer extends Comparable<ICustomer> {
 
     /**
      * Установливает время вызова клиента
+     * @param date вревя вызова клиента
      */
     public void setCallTime(Date date);
 
@@ -86,6 +89,7 @@ public interface ICustomer extends Comparable<ICustomer> {
 
     /**
      * Установливает время окончания работы с клиентом
+     * @param date время окончания работы
      */
     public void setFinishTime(Date date);
 
@@ -121,6 +125,7 @@ public interface ICustomer extends Comparable<ICustomer> {
 
     /**
      * Установить состояние кастомера
+     * @param state Новое состояние, например Uses.STATE_REDIRECT
      */
     public void setState(int state);
 
