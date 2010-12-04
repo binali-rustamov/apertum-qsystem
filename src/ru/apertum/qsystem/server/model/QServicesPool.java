@@ -531,7 +531,7 @@ public final class QServicesPool implements IRmiCommander {
                     gc_day.setTime(end);
                     final int eh = gc_day.get(GregorianCalendar.HOUR_OF_DAY);
                     final int em = gc_day.get(GregorianCalendar.MINUTE);
-                    if (!(sh * 60 + sm <= h * 60 + m && h * 60 + m <= eh * 60 + em)) {
+                    if (!(sh * 60 + sm <= h * 60 + m && h * 60 + m <= eh * 60 + em) && (!((sh == eh) && (sm == em)))) {
                         min = Uses.LOCK_FREE_INT;
                     }
                 } else {

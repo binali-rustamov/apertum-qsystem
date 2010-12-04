@@ -16,12 +16,14 @@
  */
 package ru.apertum.qsystem.client.forms;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.ActionMap;
@@ -34,6 +36,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.common.CodepagePrintStream;
 
 /**
  * Created on 25 Май 2009 г., 13:11
@@ -411,22 +414,39 @@ public class FServerConfig extends javax.swing.JFrame {
 
 private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
+    final ComboPooledDataSource cpds = new ComboPooledDataSource();
+    try {
+        cpds.setDriverClass("com.mysql.jdbc.Driver"); //loads the jdbc driver
+    } catch (PropertyVetoException ex) {
+        System.err.println(ex);
+        JOptionPane.showMessageDialog(this, "Соединение с базой данных не удачно.\n" + ex.getMessage() + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
+        throw new RuntimeException("Соединение с базой данных не удачно", ex);
+    }
+    cpds.setJdbcUrl("jdbc:mysql://" + textFieldServerAdress.getText() + ("".equals(textFieldBaseName.getText()) ? "" : "/" + textFieldBaseName.getText()) + "?autoReconnect=true&amp;characterEncoding=UTF-8");
+    cpds.setUser(textFieldUserName.getText());
+    cpds.setPassword(textFieldPassword.getText());
+    cpds.setCheckoutTimeout(2000);
+
     Connection con = null;
     try {
-        con = DriverManager.getConnection("jdbc:mysql://" + textFieldServerAdress.getText() + ":3306/" + textFieldBaseName.getText(), textFieldUserName.getText(), textFieldPassword.getText());
+        con = cpds.getConnection();
     } catch (SQLException ex) {
-        JOptionPane.showMessageDialog(this, "Соединение с базой данных не удачно.\nНомер ошибки " + ex.getSQLState() + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
-        return;
+        JOptionPane.showMessageDialog(this, "Соединение с базой данных не удачно.\nНомер ошибки: " + ex + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
+        throw new RuntimeException("Соединение с базой данных не удачно", ex);
     } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Соединение с базой данных не удачно.\nНомер ошибки " + ex.getMessage() + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
+        System.err.println(ex);
+        JOptionPane.showMessageDialog(this, "Соединение с базой данных не удачно. " + ex + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
+        throw new RuntimeException("Соединение с базой данных не удачно", ex);
     } finally {
         try {
             if (con != null) {
                 con.close();
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Соединение с базой данных закрыто не удачно.\nНомер ошибки " + ex.getSQLState() + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
-            return;
+            JOptionPane.showMessageDialog(this, "Соединение с базой данных закрыто не удачно.\nНомер ошибки: " + ex.getSQLState() + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
+            throw new RuntimeException("Соединение с базой данных не удачно", ex);
+        } finally {
+            cpds.close();
         }
     }
     JOptionPane.showMessageDialog(this, "Соединение с базой прошло успешно.", "Проверки соединения с БД", JOptionPane.INFORMATION_MESSAGE);
@@ -500,6 +520,18 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+
+        //Установка вывода консольных сообщений в нужной кодировке
+        if ("\\".equals(File.separator)) {
+            try {
+                String consoleEnc = System.getProperty("console.encoding", "Cp866");
+                System.setOut(new CodepagePrintStream(System.out, consoleEnc));
+                System.setErr(new CodepagePrintStream(System.err, consoleEnc));
+            } catch (UnsupportedEncodingException e) {
+                System.out.println("Unable to setup console codepage: " + e);
+            }
+        }
+
         if (args.length == 0) {
             System.out.println("No param file context.");
             return;
