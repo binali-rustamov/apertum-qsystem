@@ -46,6 +46,7 @@
     <locale>
 	    <langpack iso3="eng"/>
         <langpack iso3="rus"/>
+		<langpack iso3="ukr"/>
     </locale>
 
     <!-- 
@@ -55,17 +56,24 @@
         <res id="userInputSpec.xml" src="userInputSpec.xml" />
 		<res id="userInputLang.xml_eng" src="i18n/userInputLang_eng.xml" />
         <res id="userInputLang.xml_rus" src="i18n/userInputLang_rus.xml" />
+		<res id="userInputLang.xml_rus" src="i18n/userInputLang_ukr.xml" />
 
         <res id="HTMLInfoPanel.readme_rus" src="i18n/Readme_rus.html"/>
 		<res id="HTMLInfoPanel.readme_eng" src="i18n/Readme_eng.html"/>
+		<res id="HTMLInfoPanel.readme_eng" src="i18n/Readme_ukr.html"/>
+		
 		<res id="LicencePanel.licence_rus" src="../license-gpl3-rus.txt"/>
 		<res id="LicencePanel.licence_eng" src="../license-gpl3-eng.txt"/>
+		<res id="LicencePanel.licence_eng" src="../license-gpl3-ukr.txt"/>
+		
         <res id="InfoPanel.info" src="../src/ru/apertum/qsystem/common/version.properties"/>
         <res id="shortcutSpec.xml_eng" src="i18n/shortcutSpec_eng.xml"/>
 		<res id="shortcutSpec.xml_rus" src="i18n/shortcutSpec_rus.xml"/>
+		<res id="shortcutSpec.xml_rus" src="i18n/shortcutSpec_ukr.xml"/>
+		
         <res id="Installer.image" src="resource/img/install_img.png"/>
 		<res id="packsLang.xml_eng" src="i18n/packsLang_eng.xml"/>
-        <res id="packsLang.xml_rus" src="i18n/packsLang_rus.xml"/>
+        <res id="packsLang.xml_rus" src="i18n/packsLang_ukr.xml"/>
     </resources>
 
     <!-- 

@@ -12,24 +12,6 @@
             <line>594</line>
         </file>
         <file>
-            <url>src/ru/apertum/qsystem/common/RunningLabel.java</url>
-            <line>300</line>
-            <line>352</line>
-            <line>501</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FAdvanceCalendar.java</url>
-            <line>498</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FClientView.java</url>
-            <line>0</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
-            <line>306</line>
-        </file>
-        <file>
             <url>src/ru/ccrs/client/forms/FIndicatorBoard.java</url>
             <line>237</line>
             <line>451</line>
@@ -66,6 +48,20 @@
             <line>419</line>
         </file>
         <file>
+            <url>src/ru/apertum/qsystem/common/RunningLabel.java</url>
+            <line>300</line>
+            <line>352</line>
+            <line>501</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FAdvanceCalendar.java</url>
+            <line>498</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FClientView.java</url>
+            <line>0</line>
+        </file>
+        <file>
             <url>src/ru/ccrs/server/model/QServicesPool.java</url>
             <line>230</line>
             <line>326</line>
@@ -78,5 +74,14 @@
             <line>1392</line>
             <line>1561</line>
         </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
+            <line>306</line>
+        </file>
     </editor-bookmarks>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/D:/Apertum/apertum-qsystem/src/ru/apertum/qsystem/client/forms/FAdvanceCalendar.java</file>
+        <file>file:/D:/Apertum/apertum-qsystem/src/ru/apertum/qsystem/client/forms/FServiceChangeDialod.java</file>
+        <file>file:/D:/Apertum/apertum-qsystem/src/ru/apertum/qsystem/client/forms/FAdmin.java</file>
+    </open-files>
 </project-private>

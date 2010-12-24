@@ -1203,7 +1203,7 @@ public final class QServicesPool implements IRmiCommander {
             }
             final GregorianCalendar gc = new GregorianCalendar();
             gc.setTime(startWeek);
-            gc.set(GregorianCalendar.WEEK_OF_YEAR, gc.get(GregorianCalendar.WEEK_OF_YEAR) + 1);
+            gc.set(GregorianCalendar.DAY_OF_YEAR, gc.get(GregorianCalendar.DAY_OF_YEAR) + 7);
             final Date endWeek = gc.getTime();
 
             Uses.log.logger.trace("Загрузим уже занятых позиций ранее записанными кастомерами от " + Uses.format_for_rep.format(startWeek) + " до " + Uses.format_for_rep.format(endWeek));
@@ -1233,6 +1233,7 @@ public final class QServicesPool implements IRmiCommander {
             advCusts.addAttribute(Uses.TAG_START_TIME, Uses.format_HH_mm.format(netProp.getStartTime()));
             advCusts.addAttribute(Uses.TAG_FINISH_TIME, Uses.format_HH_mm.format(netProp.getFinishTime()));
             advCusts.addAttribute(Uses.TAG_PROP_ADVANCE_LIMIT, service.getAdvanceLinit().toString());
+            advCusts.addAttribute(Uses.TAG_PROP_ADVANCE_PERIOD_LIMIT, service.getAdvanceLimitPeriod() == null ? "0" : service.getAdvanceLimitPeriod().toString());
             // сформируем список доступных времен
             Date day = startWeek;
             while (day.before(endWeek)) {

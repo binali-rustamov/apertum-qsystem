@@ -475,7 +475,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         if (firstWeekDay.after(new Date())) {
             final GregorianCalendar gc = new GregorianCalendar();
             gc.setTime(firstWeekDay);
-            gc.set(GregorianCalendar.WEEK_OF_YEAR, gc.get(GregorianCalendar.WEEK_OF_YEAR) - 1);
+            gc.set(GregorianCalendar.DAY_OF_YEAR, gc.get(GregorianCalendar.DAY_OF_YEAR) - 7);
             showWeek(gc.getTime());
         }
     }
@@ -489,7 +489,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
     public void showArter() {
         final GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(firstWeekDay);
-        gc.set(GregorianCalendar.WEEK_OF_YEAR, gc.get(GregorianCalendar.WEEK_OF_YEAR) + 1);
+        gc.set(GregorianCalendar.DAY_OF_YEAR, gc.get(GregorianCalendar.DAY_OF_YEAR) + 7);
         showWeek(gc.getTime());
     }
     private Date firstWeekDay;
@@ -578,7 +578,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelButtons.removeAll();
         panelButtons.setLayout(new GridLayout(finish - start + 1 + finish_temp, 7));
 
-        
+
         for (int h = 1; h <= finish_temp; h++) {
             for (int d = 0; d < 7; d++) {
 
@@ -699,7 +699,14 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
      */
     protected boolean checkTime(Date date, Element el) {
         final GregorianCalendar gc_client = new GregorianCalendar();
+        final GregorianCalendar gc_now = new GregorianCalendar();
         gc_client.setTime(date);
+        gc_now.setTime(new Date());
+        // проверим не отлистал ли пользователь слишком далеко, куда уже нельзя
+        if (Math.abs(gc_client.get(GregorianCalendar.DAY_OF_YEAR) - gc_now.get(GregorianCalendar.DAY_OF_YEAR)) > Integer.parseInt(el.attributeValue(Uses.TAG_PROP_ADVANCE_PERIOD_LIMIT))
+                && Integer.parseInt(el.attributeValue(Uses.TAG_PROP_ADVANCE_PERIOD_LIMIT)) != 0) {
+            return false;
+        }
         for (Object o : el.elements(Uses.TAG_STAND_TIME)) {
             final Element tm = (Element) o;
             final String time = tm.attributeValue(Uses.TAG_START_TIME);

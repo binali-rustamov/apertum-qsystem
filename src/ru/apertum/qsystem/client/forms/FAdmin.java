@@ -517,6 +517,7 @@ public class FAdmin extends javax.swing.JFrame {
     private void showServiceInfo(QService service) {
         labelServiceInfo.setText("<html>Услуга: \"" + service.getName() + "\"    " + (service.getStatus() == 1 ? "Активна" : (service.getStatus() == 0 ? "Неактивна" : "Недоступна"))
                 + ";    Префикс: " + service.getPrefix() + ";<br>Ограничение по количеству предварительно регистрировшихся в час: " + service.getAdvanceLinit()
+                + ";  Ограничение периода возможности записаться предварительно в днях: " + service.getAdvanceLimitPeriod()
                 + ";<br>Описание: " + service.getDescription() + "<br>Календарь работы: " + (service.getCalendar() == null ? "Не назначен" : service.getCalendar().toString()) + ";  План работы: " + (service.getSchedule() == null ? "Не назначен" : service.getSchedule().toString()) + "<br>"
                 + (service.getInput_required() ? "Требуется ввод клиентских данных: \"" + service.getInput_caption() + "\"" : "Ввод данных клиентом не требуется") + ";   "
                 + (service.getResult_required() ? "Требуется обозначение результата" : "Обозначение результата не требуется"));

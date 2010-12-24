@@ -187,6 +187,7 @@ public final class Uses {
     public static final String TAG_PROP_DESCRIPTION = "Описание";
     public static final String TAG_PROP_PREFIX = "Префикс";
     public static final String TAG_PROP_ADVANCE_LIMIT = "Лимит";
+    public static final String TAG_PROP_ADVANCE_PERIOD_LIMIT = "ЛимитПредвЗаписиВДнях";
     public static final String TAG_PROP_USERS = "Пользователи";
     public static final String TAG_PROP_USER = "Пользователь";
     public static final String TAG_PROP_PASSWORD = "Пароль";

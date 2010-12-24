@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <shortcuts>
     <skipIfNotSupported/>
     <programGroup defaultName="QSystem" location="startMenu"/>
@@ -8,7 +8,7 @@
     target="$INSTALL_PATH/Welcome.bat"
     commandLine=""
     workingDirectory="$INSTALL_PATH"
-    description="Пункт регистрации"
+    description="Registration point"
     iconFile="$INSTALL_PATH/icons/welcome.ico"
     iconIndex="0"
     initialState="normal"
@@ -21,11 +21,11 @@
     </shortcut>
     <shortcut
     os="unix"
-    name="Пункт регистрации"
+    name="Registration point"
     target="sh"
     commandLine="$INSTALL_PATH/welcome.sh"
     workingDirectory="$INSTALL_PATH"
-    description="Пункт регистрации"
+    description="Registration point"
     type="Application"
     encoding="UTF-8"
     iconFile="$INSTALL_PATH/icons/welcome.png"
@@ -36,15 +36,15 @@
     applications="no"
     startMenu="no"
     startup="no">
-        <createForPack name="Пункт регистрации"/>
+        <createForPack name="Registration point"/>
     </shortcut>
     <shortcut
     os="windows"
-    name="Система автоматизации работы с клиентами"
+    name="The system of automation of work with clients"
     target="$INSTALL_PATH/StartClient.bat"
     commandLine=""
     workingDirectory="$INSTALL_PATH"
-    description="Система автоматизации работы с клиентами"
+    description="The system of automation of work with clients"
     iconFile="$INSTALL_PATH/icons/client.ico"
     iconIndex="0"
     initialState="normal"
@@ -53,15 +53,15 @@
     applications="no"
     startMenu="no"
     startup="no">
-        <createForPack name="Рабочее место оператора"/>
+        <createForPack name="Workplace of operator"/>
     </shortcut>
     <shortcut
     os="unix"
-    name="Система автоматизации работы с клиентами"
+    name="The system of automation of work with clients"
     target="sh"
     commandLine="$INSTALL_PATH/client.sh"
     workingDirectory="$INSTALL_PATH"
-    description="Система автоматизации работы с клиентами"
+    description="The system of automation of work with clients"
     type="Application"
     encoding="UTF-8"
     iconFile="$INSTALL_PATH/icons/client.png"
@@ -72,15 +72,15 @@
     applications="no"
     startMenu="no"
     startup="no">
-        <createForPack name="Система автоматизации работы с клиентами"/>
+        <createForPack name="The system of automation of work with clients"/>
     </shortcut>
     <shortcut
     os="windows"
-    name="Сервер QSystem"
+    name="Server QSystem"
     target="$INSTALL_PATH/StartServer.bat"
     commandLine=""
     workingDirectory="$INSTALL_PATH"
-    description="Сервер QSystem"
+    description="Server QSystem"
     iconFile="$INSTALL_PATH/icons/server.ico"
     iconIndex="0"
     initialState="normal"
@@ -89,15 +89,15 @@
     applications="no"
     startMenu="no"
     startup="no">
-        <createForPack name="Сервер"/>
+        <createForPack name="Server"/>
     </shortcut>
     <shortcut
     os="unix"
-    name="Сервер"
+    name="Server"
     target="sh"
     commandLine="$INSTALL_PATH/server.sh"
     workingDirectory="$INSTALL_PATH"
-    description="Сервер"
+    description="Server"
     type="Application"
     encoding="UTF-8"
     iconFile="$INSTALL_PATH/icons/server.png"
@@ -108,15 +108,15 @@
     applications="no"
     startMenu="no"
     startup="no">
-        <createForPack name="Сервер"/>
+        <createForPack name="Server"/>
     </shortcut>
     <shortcut
     os="windows"
-    name="Администрирование QSystem"
+    name="Administration of QSystem"
     target="$INSTALL_PATH/StartAdmin.bat"
     commandLine=""
     workingDirectory="$INSTALL_PATH"
-    description="Администрирование QSystem"
+    description="Administration of QSystem"
     iconFile="$INSTALL_PATH/icons/admin.ico"
     iconIndex="0"
     initialState="normal"
@@ -125,15 +125,15 @@
     applications="no"
     startMenu="no"
     startup="no">
-        <createForPack name="Администрирование"/>
+        <createForPack name="Administration"/>
     </shortcut>
     <shortcut
     os="unix"
-    name="Администрирование QSystem"
+    name="Administration of QSystem"
     target="sh"
     commandLine="$INSTALL_PATH/admin.sh"
     workingDirectory="$INSTALL_PATH"
-    description="Администрирование QSystem"
+    description="Administration of QSystem"
     type="Application"
     encoding="UTF-8"
     iconFile="$INSTALL_PATH/icons/admin.png"
@@ -144,15 +144,15 @@
     applications="no"
     startMenu="no"
     startup="no">
-        <createForPack name="Администрирование QSystem"/>
+        <createForPack name="Administration of QSystem"/>
     </shortcut>
     <shortcut
     os="windows"
-    name="Удаление QSystem"
+    name="Uninstall QSystem"
     target="$INSTALL_PATH/Uninstaller/uninstaller.jar"
     commandLine=""
     workingDirectory="$USER_HOME"
-    description="Удаление QSystem"
+    description="Uninstall QSystem"
     iconFile="$INSTALL_PATH/icons/uninstall.ico"
     iconIndex="0"
     initialState="normal"
@@ -161,15 +161,15 @@
     applications="no"
     startMenu="no"
     startup="no">
-        <createForPack name="Файлы приложения и библиотеки"/>
+        <createForPack name="Files of program"/>
     </shortcut>
     <shortcut
     os="unix"
-    name="Удаление QSystem"
+    name="Деінсталяція QSystem"
     target="java"
     commandLine="-cp $INSTALL_PATH/Uninstaller/uninstaller.jar com.izforge.izpack.uninstaller.Uninstaller"
     workingDirectory="$INSTALL_PATH"
-    description="Удаление QSystem"
+    description="Uninstall QSystem"
     type="Application"
     encoding="UTF-8"
     iconFile="$INSTALL_PATH/icons/uninstall.png"
@@ -180,6 +180,6 @@
     applications="no"
     startMenu="no"
     startup="no">
-        <createForPack name="Удаление QSystem"/>
+        <createForPack name="Uninstall QSystem"/>
     </shortcut>
 </shortcuts>

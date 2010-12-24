@@ -14,7 +14,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ru.apertum.qsystem.client.forms;
 
 import java.awt.Frame;
@@ -32,7 +31,10 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
 
     private static FServiceChangeDialod serviceChangeDialod;
 
-    /** Creates new form FServiceChangeDialod */
+    /** Creates new form FServiceChangeDialod
+     * @param parent родительская форма
+     * @param modal модальность
+     */
     public FServiceChangeDialod(Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -42,10 +44,11 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
      * <Услуга Наименование="Удостоверение_доверенности" Описание="Удостоверение доверенности" Префикс="Й]" Статус="1" Лимит="3"><![CDATA[<html><b><p align=center><span style='font-size:20.0pt;color:blue'>Удостоверение доверенности</span>]]>
      * </Услуга>
      * Основной метод редактирования услуги.
-     * @param parent
-     * @param modal
+     * @param parent родительская форма
+     * @param modal модальность
      * @param service Услуга для редактирования в XML-виде
-     * @return
+     * @param scheduleModel
+     * @param calendarModel
      */
     public static void changeService(Frame parent, boolean modal, QService service, ComboBoxModel scheduleModel, ComboBoxModel calendarModel) {
         Uses.log.logger.info("Редактирование услуги \"" + service.getName() + "\"");
@@ -73,6 +76,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         comboBoxEnabled.setSelectedIndex(service.getStatus() * (-1) + 1);
         comboBoxEnabled.setEnabled(!service.isRoot());
         spinnerLimit.setValue(service.getAdvanceLinit());
+        spinnerLimitPeriod.setValue(service.getAdvanceLimitPeriod());
         if (service.getSchedule() == null) {
             comboBoxSchedule.setSelectedIndex(-1);
         } else {
@@ -94,6 +98,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         service.setName(textFieldServiceName.getText());
         service.setDescription(textFieldServiceDescript.getText());
         service.setAdvanceLinit((Integer) spinnerLimit.getValue());
+        service.setAdvanceLimitPeriod((Integer) spinnerLimitPeriod.getValue() < 0 ? 0 : (Integer) spinnerLimitPeriod.getValue());
         if ("".equals(textAreaButtonCaption.getText())) {
             throw new Uses.ClientException("Поле \"Надпись на кнопке\" не должно быть пустым.");
         }
@@ -154,6 +159,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         textAreaInfoHtml = new javax.swing.JTextArea();
+        jLabel8 = new javax.swing.JLabel();
+        spinnerLimitPeriod = new javax.swing.JSpinner();
         panelButtons = new javax.swing.JPanel();
         buttonSave = new javax.swing.JButton();
         buttonCancel = new javax.swing.JButton();
@@ -274,7 +281,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 84, Short.MAX_VALUE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
         );
 
         jSplitPane1.setBottomComponent(jPanel1);
@@ -305,10 +312,15 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE))
         );
 
         jSplitPane1.setLeftComponent(jPanel2);
+
+        jLabel8.setText(resourceMap.getString("jLabel8.text")); // NOI18N
+        jLabel8.setName("jLabel8"); // NOI18N
+
+        spinnerLimitPeriod.setName("spinnerLimitPeriod"); // NOI18N
 
         javax.swing.GroupLayout panelPropsLayout = new javax.swing.GroupLayout(panelProps);
         panelProps.setLayout(panelPropsLayout);
@@ -334,8 +346,12 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                         .addComponent(textFieldPrefix, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(panelPropsLayout.createSequentialGroup()
                         .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spinnerLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(spinnerLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spinnerLimitPeriod, javax.swing.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE))
                     .addGroup(panelPropsLayout.createSequentialGroup()
                         .addComponent(jLabel22)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -366,7 +382,9 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelPropsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(spinnerLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(spinnerLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8)
+                    .addComponent(spinnerLimitPeriod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(10, 10, 10)
                 .addGroup(panelPropsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel22)
@@ -490,6 +508,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -499,6 +518,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JPanel panelButtons;
     private javax.swing.JPanel panelProps;
     private javax.swing.JSpinner spinnerLimit;
+    private javax.swing.JSpinner spinnerLimitPeriod;
     private javax.swing.JTextArea textAreaButtonCaption;
     private javax.swing.JTextArea textAreaInfoHtml;
     private javax.swing.JTextArea textAreaTextPrint;

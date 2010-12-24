@@ -109,6 +109,23 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     public void setAdvanceLinit(Integer advanceLimit) {
         this.advanceLimit = advanceLimit;
     }
+
+    /**
+     * Это ограничение в днях, в пределах которого можно записаться вперед при предварительной записи
+     * может быть null или 0 если нет ограничения
+     */
+    @Column(name = "advance_limit_period")
+    private Integer advanceLimitPeriod = 0;
+
+    public Integer getAdvanceLimitPeriod() {
+        return advanceLimitPeriod;
+    }
+
+    public void setAdvanceLimitPeriod(Integer advanceLimitPeriod) {
+        this.advanceLimitPeriod = advanceLimitPeriod;
+    }
+
+
     /**
      * Удаленный или нет.
      * Нельзя их из базы гасить чтоб констрейнты не поехали.
