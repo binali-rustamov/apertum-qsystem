@@ -103,7 +103,7 @@ public final class QServicesPool implements IRmiCommander {
         return serviceTree;
     }
     /**
-     * Дерево информационной ситемы
+     * Дерево информационной системы
      */
     private QInfoTree infoTree;
 

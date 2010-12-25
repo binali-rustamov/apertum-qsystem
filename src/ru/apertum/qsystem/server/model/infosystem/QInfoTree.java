@@ -67,8 +67,8 @@ public class QInfoTree extends DefaultTreeModel {
         //Получение корневого элемента. Он будет самодельный, т.к. корневых элементов в информационной системе можнт быто несколько.
         // И все корневые имеют парентИД = нулл.
         final QInfoItem root = new QInfoItem();
-        root.setName("Информационная ситема");
-        root.setHTMLText("Информационная ситема");
+        root.setName("Информационная система");
+        root.setHTMLText("Информационная система");
         root.setId(null);
         root.setParent(null);
         instance = new QInfoTree(root);

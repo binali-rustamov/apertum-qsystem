@@ -154,7 +154,7 @@ public class FClient extends javax.swing.JFrame {
                 || "true".equals(customer.toXML().attributeValue(Uses.TAG_PROP_RESULT_REQUIRED).toLowerCase()))) {
             getResults();
             Object res = null;
-            res = JOptionPane.showInputDialog(this, "Выбирите результат", "Результат работы с клиентом", JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
+            res = JOptionPane.showInputDialog(this, "Выберите результат", "Результат работы с клиентом", JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
             rs = res == null ? null : results.get((String) res);
         }
         return rs;

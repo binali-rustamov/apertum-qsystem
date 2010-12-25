@@ -56,24 +56,25 @@
         <res id="userInputSpec.xml" src="userInputSpec.xml" />
 		<res id="userInputLang.xml_eng" src="i18n/userInputLang_eng.xml" />
         <res id="userInputLang.xml_rus" src="i18n/userInputLang_rus.xml" />
-		<res id="userInputLang.xml_rus" src="i18n/userInputLang_ukr.xml" />
+		<res id="userInputLang.xml_ukr" src="i18n/userInputLang_ukr.xml" />
 
-        <res id="HTMLInfoPanel.readme_rus" src="i18n/Readme_rus.html"/>
 		<res id="HTMLInfoPanel.readme_eng" src="i18n/Readme_eng.html"/>
-		<res id="HTMLInfoPanel.readme_eng" src="i18n/Readme_ukr.html"/>
+        <res id="HTMLInfoPanel.readme_rus" src="i18n/Readme_rus.html"/>
+		<res id="HTMLInfoPanel.readme_ukr" src="i18n/Readme_ukr.html"/>
 		
-		<res id="LicencePanel.licence_rus" src="../license-gpl3-rus.txt"/>
 		<res id="LicencePanel.licence_eng" src="../license-gpl3-eng.txt"/>
-		<res id="LicencePanel.licence_eng" src="../license-gpl3-ukr.txt"/>
+		<res id="LicencePanel.licence_rus" src="../license-gpl3-rus.txt"/>
+		<res id="LicencePanel.licence_ukr" src="../license-gpl3-ukr.txt"/>
 		
         <res id="InfoPanel.info" src="../src/ru/apertum/qsystem/common/version.properties"/>
         <res id="shortcutSpec.xml_eng" src="i18n/shortcutSpec_eng.xml"/>
 		<res id="shortcutSpec.xml_rus" src="i18n/shortcutSpec_rus.xml"/>
-		<res id="shortcutSpec.xml_rus" src="i18n/shortcutSpec_ukr.xml"/>
+		<res id="shortcutSpec.xml_ukr" src="i18n/shortcutSpec_ukr.xml"/>
 		
         <res id="Installer.image" src="resource/img/install_img.png"/>
 		<res id="packsLang.xml_eng" src="i18n/packsLang_eng.xml"/>
-        <res id="packsLang.xml_rus" src="i18n/packsLang_ukr.xml"/>
+        <res id="packsLang.xml_rus" src="i18n/packsLang_rus.xml"/>
+		<res id="packsLang.xml_ukr" src="i18n/packsLang_ukr.xml"/>
     </resources>
 
     <!-- 
@@ -104,6 +105,7 @@
             <file src="../dist" targetdir="$INSTALL_PATH"/>
             <file type="html" src="i18n/Readme_eng.html" targetdir="$INSTALL_PATH"/>
 			<file type="html" src="i18n/Readme_rus.html" targetdir="$INSTALL_PATH"/>
+			<file type="html" src="i18n/Readme_ukr.html" targetdir="$INSTALL_PATH"/>
             <file os="windows" src="D:/Distrib/JMF/jmf-2_1_1e-windows-i586.exe" targetdir="$INSTALL_PATH/JMF"/>
             <file os="unix" src="D:/Distrib/JMF/jmf-2_1_1e-linux-i586.bin" targetdir="$INSTALL_PATH/JMF"/>
             <!--executable os="windows" targetfile="$INSTALL_PATH/JMF/jmf-2_1_1e-windows-i586.exe" stage="postinstall"/-->
