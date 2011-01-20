@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Scanner;
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -61,6 +62,10 @@ import net.sourceforge.barbecue.BarcodeException;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.output.OutputException;
 import org.dom4j.Element;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
@@ -79,12 +84,20 @@ import ru.evgenic.rxtx.serialPort.RxtxSerialPort;
  * @author Evgeniy Egorov
  */
 public class FWelcome extends javax.swing.JFrame {
-    // Состояния пункта регистрации
 
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FWelcome.class);
+        }
+        return localeMap.getString(key);
+    }
+    // Состояния пункта регистрации
     public static final String LOCK = "Заблокирован";
     public static final String UNLOCK = "Готов к работе";
     public static final String OFF = "Выключен";
-    public static final String LOCK_MESSAGE = "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Временно не активно. Обратитесь к администратору.</span></b></p>";
+    public static final String LOCK_MESSAGE = "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>" + getLocaleMessage("messages.lock_messages") + "</span></b></p>";
     /**
      * Константы хранения параметров в файле.
      */
@@ -290,8 +303,10 @@ public class FWelcome extends javax.swing.JFrame {
 
     /**
      * @param args the command line arguments
+     * @throws Exception 
      */
     public static void main(final String args[]) throws Exception {
+        Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.isDebug = Uses.setLogining(args, false);
         netProperty = Uses.getClientNetProperty(args);
         // определим режим пользовательского интерфейса
@@ -530,7 +545,7 @@ public class FWelcome extends javax.swing.JFrame {
         public int logoLeft = 50; // Отступ печати логотипа слева
         public int logoTop = -5; // Отступ печати логотипа сверху
         public String logoImg = "/ru/apertum/qsystem/client/forms/resources/logo_ticket.png"; // Отступ печати логотипа сверху
-        public String promoText = "© ЗАО \"ККС\". Тел./факс: ---, e-mail: info@aperum.ru"; // промотекст, печатающийся мелким шрифтом перед штрихкодом.
+        public String promoText = "Aperum projects, e-mail: info@aperum.ru"; // промотекст, печатающийся мелким шрифтом перед штрихкодом.
         public String bottomText = "Приятного ожидания. Спасибо."; // произвольный текст, печатающийся в конце квитанции после штрихкода
         public int askLimit = 3; // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь
         /**
@@ -621,7 +636,7 @@ public class FWelcome extends javax.swing.JFrame {
                         if (customer != null) {
                             advancedCustomer = Long.parseLong(customer.attributeValue(Uses.TAG_ID));
                             setAdvanceRegim(true);
-                            labelCaption.setText("<html><b><p align=center><span style='font-size:35.0pt;color:green'>" + customer.attributeValue(Uses.TAG_SURNAME) + " " + customer.attributeValue(Uses.TAG_NAME) + " " + customer.attributeValue(Uses.TAG_OTCHESTVO) + "<br></span><span style='font-size:30.0pt;color:red'>Выберите услугу для предварительной записи");
+                            labelCaption.setText("<html><b><p align=center><span style='font-size:35.0pt;color:green'>" + customer.attributeValue(Uses.TAG_SURNAME) + " " + customer.attributeValue(Uses.TAG_NAME) + " " + customer.attributeValue(Uses.TAG_OTCHESTVO) + "<br></span><span style='font-size:30.0pt;color:red'>" + getLocaleMessage("messages.select_adv_servece"));
                         } else {
                             throw new Uses.ClientException("Нельзя выбирать услугу если не идентифицирован клиент.");
                         }
@@ -679,6 +694,7 @@ public class FWelcome extends javax.swing.JFrame {
     /**
      * Создаем и расставляем кнопки по форме.
      * @param current уровень отображения кнопок.
+     * @param panel
      */
     public void showButtons(Element current, JPanel panel) {
 
@@ -767,7 +783,7 @@ public class FWelcome extends javax.swing.JFrame {
                 int line = 1;
                 write(caption, line, welcomeParams.leftMargin, 1.5, 1.5);
                 line++;
-                write("Ваш номер:", ++line, 115, 1, 1);
+                write(getLocaleMessage("ticket.your_number"), ++line, 115, 1, 1);
 
                 int x;
                 final String suff = el.attributeValue(Uses.TAG_NUMBER);
@@ -805,7 +821,7 @@ public class FWelcome extends javax.swing.JFrame {
 
                 line = line + 3;
 
-                write("Услуга:", ++line, welcomeParams.leftMargin, 1.5, 1);
+                write(getLocaleMessage("ticket.service"), ++line, welcomeParams.leftMargin, 1.5, 1);
                 String name = el.attributeValue(Uses.TAG_SERVICE);
                 while (name.length() != 0) {
                     String prn;
@@ -828,14 +844,14 @@ public class FWelcome extends javax.swing.JFrame {
                     write(prn, ++line, welcomeParams.leftMargin, 1, 1);
                 }
 
-                write("Время:", ++line, welcomeParams.leftMargin, 1.5, 1);
+                write(getLocaleMessage("ticket.time"), ++line, welcomeParams.leftMargin, 1.5, 1);
 
                 write(el.attributeValue(Uses.TAG_STAND_TIME), ++line, welcomeParams.leftMargin, 1, 1);
                 if (el.attributeValue(Uses.TAG_PROP_INPUT_CAPTION) != null) {
                     write(el.attributeValue(Uses.TAG_PROP_INPUT_CAPTION), ++line, welcomeParams.leftMargin, 1, 1);
                     write(el.attributeValue(Uses.TAG_INPUT_DATA), ++line, welcomeParams.leftMargin, 1, 1);
                 }
-                write("Ждите вызова на табло", ++line, welcomeParams.leftMargin, 1.8, 1);
+                write(getLocaleMessage("ticket.wait"), ++line, welcomeParams.leftMargin, 1.8, 1);
                 write(welcomeParams.promoText, ++line, welcomeParams.leftMargin, 0.7, 0.4);
                 int y = write("", ++line, 0, 1, 1);
                 if (welcomeParams.barcode) {
@@ -940,7 +956,7 @@ public class FWelcome extends javax.swing.JFrame {
                 int line = 1;
                 write(caption, line, welcomeParams.leftMargin, 1.5, 1.5);
                 line++;
-                write("Талон предварительной записи на:", ++line, 20, 1, 1);
+                write(getLocaleMessage("ticket.adv_purpose"), ++line, 20, 1, 1);
 
                 final String time = el.attributeValue(Uses.TAG_START_TIME);
                 final Date date;
@@ -962,7 +978,7 @@ public class FWelcome extends javax.swing.JFrame {
 
                 line = line + 2;
 
-                write("Услуга:", ++line, welcomeParams.leftMargin, 1.5, 1);
+                write(getLocaleMessage("ticket.service"), ++line, welcomeParams.leftMargin, 1.5, 1);
                 String name = el.attributeValue(Uses.TAG_SERVICE);
                 while (name.length() != 0) {
                     String prn;
@@ -985,11 +1001,11 @@ public class FWelcome extends javax.swing.JFrame {
                     write(prn, ++line, welcomeParams.leftMargin, 1, 1);
                 }
 
-                write("Время регистрации:", ++line, welcomeParams.leftMargin, 1.5, 1);
+                write(getLocaleMessage("ticket.reg_time"), ++line, welcomeParams.leftMargin, 1.5, 1);
 
                 write(Uses.format_for_label.format(new Date()), ++line, welcomeParams.leftMargin, 1, 1);
 
-                write("Код предварительной записи:", ++line, welcomeParams.leftMargin, 1.3, 1);
+                write(getLocaleMessage("ticket.adv_code"), ++line, welcomeParams.leftMargin, 1.3, 1);
                 int y = write("", ++line, 0, 1, 1);
                 if (welcomeParams.barcode) {
                     Barcode barcode = null;
@@ -1496,8 +1512,8 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         FWelcome.advanceRegim = advanceRegim;
         buttonToBeginActionPerformed(null);
         if (advanceRegim) {
-            labelCaption.setText("<html><b><p align=center><span style='font-size:30.0pt;color:red'>Выберите услугу для предварительной записи");
-            buttonAdvance.setText("<html><p align=center>Отменить<br/>запись");
+            labelCaption.setText("<html><b><p align=center><span style='font-size:30.0pt;color:red'>" + getLocaleMessage("messages.select_adv_servece"));
+            buttonAdvance.setText("<html><p align=center>" + getLocaleMessage("lable.reg_calcel"));
             //возврат в начальное состояние из диалога предварительной записи.
             if (clockBack.isActive()) {
                 clockBack.stop();
@@ -1508,7 +1524,7 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                 clockBack.stop();
             }
             labelCaption.setText(root.getTextTrim());
-            buttonAdvance.setText("<html><p align=center>Предварительная<br/>запись");
+            buttonAdvance.setText("<html><p align=center>" + getLocaleMessage("lable.adv_reg"));
         }
         //кнопка регистрации пришедших которые записались давно видна только в стандартном режиме и вместе с кнопкой предварительной записи
         if (buttonAdvance.isVisible()) {
@@ -1520,6 +1536,7 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
      * Заставка на некоторый таймаут
      * @param text текст на заставке
      * @param imagePath картинка на заставке
+     * @return
      */
     public ATalkingClock showDelayFormPrint(String text, String imagePath) {
         setVisibleButtons(false);
@@ -1560,8 +1577,8 @@ private void buttonStandAdvanceActionPerformed(java.awt.event.ActionEvent evt) {
 
         if (res.attributeValue(Uses.TAG_ID) != null) {
 
-            showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:green'>Пожалуйста возьмите талон!<br></span>"
-                    + "<span style='font-size:20.0pt;color:blue'>ваш номер<br></span>"
+            showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:green'>" + getLocaleMessage("ticket.get_caption") + "<br></span>"
+                    + "<span style='font-size:20.0pt;color:blue'>" + getLocaleMessage("ticket.get_caption_number") + "<br></span>"
                     + "<span style='font-size:100.0pt;color:blue'>" + res.attributeValue(Uses.TAG_PREFIX) + res.attributeValue(Uses.TAG_NUMBER) + "</span></p>",
                     "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
 

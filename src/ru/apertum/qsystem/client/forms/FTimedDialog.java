@@ -18,6 +18,9 @@
 package ru.apertum.qsystem.client.forms;
 
 import java.awt.Frame;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
@@ -29,19 +32,30 @@ public class FTimedDialog extends javax.swing.JDialog {
 
     private static FTimedDialog dialog;
 
-    /** Creates new form FTimedDialog */
+    /** Creates new form FTimedDialog
+     * @param parent
+     * @param modal 
+     */
     public FTimedDialog(Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+    }
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FTimedDialog.class);
+        }
+        return localeMap.getString(key);
     }
 
     /**
      * Статический метод который показывает модально диалог регистрации клиентов.
      * @param parent фрейм относительно которого будет модальность
      * @param modal модальный диалог или нет
-     * @param netProperty свойства работы с сервером
-     * @param fullscreen растягивать форму на весь экран и прятать мышку или нет
-     * @return XML-описание результата предварительной записи. если null, то отказались от предварительной записи
+     * @param message
+     * @param timeout
      */
     public static void showTimedDialog(Frame parent, boolean modal, String message, int timeout) {
         if (dialog == null) {

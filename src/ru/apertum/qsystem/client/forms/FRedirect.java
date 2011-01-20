@@ -47,9 +47,21 @@ public class FRedirect extends JDialog {
      */
     private static FRedirect servicesForm;
 
-    /** Creates new form FRedirect */
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FRedirect.class);
+        }
+        return localeMap.getString(key);
+    }
+
+    /** Creates new form FRedirect
+     * @param netProperty
+     * @param owner 
+     */
     public FRedirect(INetProperty netProperty, JFrame owner) {
-        super(owner, "Определение услуги для перенаправления", true);
+        super(owner, getLocaleMessage("redirect.caption"), true);
         initComponents();
 
         buttonOk.addActionListener(new ActionListener() {

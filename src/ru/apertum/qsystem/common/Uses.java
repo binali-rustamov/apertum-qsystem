@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Properties;
 import javax.swing.ImageIcon;
 import javax.swing.JDesktopPane;
@@ -72,6 +71,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.server.model.Numeration;
 import ru.apertum.qsystem.server.model.QService;
@@ -993,7 +993,7 @@ public final class Uses {
      */
     public static String getFileName(Component parent, String title, String description, String extension) {
         final JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setLocale(Locale.ROOT);
+        fileChooser.setLocale(Locales.getInstance().getLangCurrent());
         fileChooser.resetChoosableFileFilters();
         final FileNameExtensionFilter filter = new FileNameExtensionFilter(description, extension);
         fileChooser.setFileFilter(filter);

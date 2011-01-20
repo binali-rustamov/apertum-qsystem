@@ -30,6 +30,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import org.dom4j.Element;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.IAdviceEvent;
 import ru.apertum.qsystem.client.model.QAvancePanel;
 import ru.apertum.qsystem.common.Uses;
@@ -44,6 +47,15 @@ import ru.apertum.qsystem.common.model.NetCommander;
  * @author Evgeniy Egorov
  */
 public class FAdvanceCalendar extends javax.swing.JDialog {
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FAdvanceCalendar.class);
+        }
+        return localeMap.getString(key);
+    }
 
     private static FAdvanceCalendar advanceCalendar;
 
@@ -510,7 +522,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         final Element res = NetCommander.getGridOfWeek(netProperty, serviceName, this.firstWeekDay, siteMark, advancedCustomer);
         if (res.attributeValue(Uses.TAG_START_TIME) == null) {
             Uses.log.logger.error(res.getTextTrim());
-            JOptionPane.showConfirmDialog(this, res.getTextTrim(), "Недопустимое удаление", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showConfirmDialog(this, res.getTextTrim(), getLocaleMessage("dialog.message.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
             return false;
         }
         showWeek(res, gc);
@@ -665,25 +677,25 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         //понедельник вторник среда четверг пятница суббота воскресенье
         switch (gc.get(GregorianCalendar.DAY_OF_WEEK)) {
             case GregorianCalendar.MONDAY:
-                s = "Понедельник";
+                s = getLocaleMessage("calendar.day.monday");
                 break;
             case GregorianCalendar.TUESDAY:
-                s = "Вторник";
+                s = getLocaleMessage("calendar.day.tuesday");
                 break;
             case GregorianCalendar.WEDNESDAY:
-                s = "Среда";
+                s = getLocaleMessage("calendar.day.wednesday");
                 break;
             case GregorianCalendar.THURSDAY:
-                s = "Четверг";
+                s = getLocaleMessage("calendar.day.thursday");
                 break;
             case GregorianCalendar.FRIDAY:
-                s = "Пятница";
+                s = getLocaleMessage("calendar.day.friday");
                 break;
             case GregorianCalendar.SATURDAY:
-                s = "Суббота";
+                s = getLocaleMessage("calendar.day.saturday");
                 break;
             case GregorianCalendar.SUNDAY:
-                s = "Воскресенье";
+                s = getLocaleMessage("calendar.day.sunday");
                 break;
         }
 

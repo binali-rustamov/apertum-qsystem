@@ -23,6 +23,9 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
 import org.dom4j.Element;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
@@ -39,7 +42,10 @@ public class FStandAdvance extends javax.swing.JDialog {
 
     private static FStandAdvance standAdvance;
 
-    /** Creates new form FStandAdvance */
+    /** Creates new form FStandAdvance
+     * @param parent
+     * @param modal
+     */
     public FStandAdvance(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -50,13 +56,20 @@ public class FStandAdvance extends javax.swing.JDialog {
     private static Element result = null;
     private static int delay = 10000;
 
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FStandAdvance.class);
+        }
+        return localeMap.getString(key);
+    }
+
     /**
      * Статический метод который показывает модально диалог выбора времени для предварительной записи клиентов.
      * @param parent фрейм относительно которого будет модальность
      * @param modal модальный диалог или нет
      * @param netProperty свойства работы с сервером
-     * @param serviceName имя услуги, в которую происходит предварительная запись
-     * @param siteMark сайт услуги
      * @param fullscreen растягивать форму на весь экран и прятать мышку или нет
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
      * @return XML-описание результата предварительной записи, по сути это номерок. если null, то отказались от предварительной записи
@@ -66,7 +79,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         Uses.log.logger.info("Ввод кода предварительной записи");
         if (standAdvance == null) {
             standAdvance = new FStandAdvance(parent, modal);
-            standAdvance.setTitle("Ввод кода предварительной записи");
+            standAdvance.setTitle(getLocaleMessage("dialog.input_code"));
         }
         result = null;
         Uses.setLocation(standAdvance);
@@ -89,7 +102,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         standAdvance.setVisible(true);
         return result;
     }
-    private static final String DEFAULT_KOD = "Код предварительной записи";
+    private static final String DEFAULT_KOD = getLocaleMessage("dialog.default_code");
     /**
      * Таймер, по которому будем выходить в корень меню.
      */

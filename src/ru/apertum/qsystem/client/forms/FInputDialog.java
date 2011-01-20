@@ -22,11 +22,12 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
-import org.dom4j.Element;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
-import ru.apertum.qsystem.common.model.NetCommander;
 
 /**
  * Created on 18.09.2009, 11:33:46
@@ -37,9 +38,21 @@ import ru.apertum.qsystem.common.model.NetCommander;
  */
 public class FInputDialog extends javax.swing.JDialog {
 
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FInputDialog.class);
+        }
+        return localeMap.getString(key);
+    }
+
     private static FInputDialog inputDialog;
 
-    /** Creates new form FStandAdvance */
+    /** Creates new form FStandAdvance
+     * @param parent
+     * @param modal
+     */
     public FInputDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -55,10 +68,9 @@ public class FInputDialog extends javax.swing.JDialog {
      * @param parent фрейм относительно которого будет модальность
      * @param modal модальный диалог или нет
      * @param netProperty свойства работы с сервером
-     * @param serviceName имя услуги, в которую происходит предварительная запись
-     * @param siteMark сайт услуги
      * @param fullscreen растягивать форму на весь экран и прятать мышку или нет
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
+     * @param caption 
      * @return XML-описание результата предварительной записи, по сути это номерок. если null, то отказались от предварительной записи
      */
     public static String showInputDialog(Frame parent, boolean modal, INetProperty netProperty, boolean fullscreen, int delay, String caption) {
@@ -90,7 +102,7 @@ public class FInputDialog extends javax.swing.JDialog {
         inputDialog.setVisible(true);
         return result;
     }
-    private static final String DEFAULT_KOD = "Введите ваши данные";
+    private static final String DEFAULT_KOD =  getLocaleMessage("dialog.default");
     /**
      * Таймер, по которому будем выходить в корень меню.
      */

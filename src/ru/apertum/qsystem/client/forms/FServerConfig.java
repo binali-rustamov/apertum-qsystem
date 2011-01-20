@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Locale;
 import javax.swing.ActionMap;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -36,6 +37,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.CodepagePrintStream;
 
 /**
@@ -44,6 +46,15 @@ import ru.apertum.qsystem.common.CodepagePrintStream;
  * @author Evgeniy Egorov
  */
 public class FServerConfig extends javax.swing.JFrame {
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FServerConfig.class);
+        }
+        return localeMap.getString(key);
+    }
 
     private Element root = null;
 
@@ -55,7 +66,7 @@ public class FServerConfig extends javax.swing.JFrame {
         try {
             root = reader.read(filePath).getRootElement();
         } catch (DocumentException ex) {
-            JOptionPane.showMessageDialog(this, "Невозможно прочитать файл \"" + filePath + "\"" + ex, "Ошибка.", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog.title") + " \"" + filePath + "\"" + ex, getLocaleMessage("servercfg.dialog.caption"), JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
         final ArrayList<Element> com = Uses.elementsByAttr(root, "id", "serialPort");
@@ -419,8 +430,8 @@ private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         cpds.setDriverClass("com.mysql.jdbc.Driver"); //loads the jdbc driver
     } catch (PropertyVetoException ex) {
         System.err.println(ex);
-        JOptionPane.showMessageDialog(this, "Соединение с базой данных не удачно.\n" + ex.getMessage() + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
-        throw new RuntimeException("Соединение с базой данных не удачно", ex);
+        JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog2.title") + "\n" + ex.getMessage() + "\n" + ex, getLocaleMessage("servercfg.dialog2.caption"), JOptionPane.WARNING_MESSAGE);
+        throw new RuntimeException(getLocaleMessage("servercfg.bd.fail"), ex);
     }
     cpds.setJdbcUrl("jdbc:mysql://" + textFieldServerAdress.getText() + ("".equals(textFieldBaseName.getText()) ? "" : "/" + textFieldBaseName.getText()) + "?autoReconnect=true&amp;characterEncoding=UTF-8");
     cpds.setUser(textFieldUserName.getText());
@@ -431,25 +442,25 @@ private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     try {
         con = cpds.getConnection();
     } catch (SQLException ex) {
-        JOptionPane.showMessageDialog(this, "Соединение с базой данных не удачно.\nНомер ошибки: " + ex + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
-        throw new RuntimeException("Соединение с базой данных не удачно", ex);
+        JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog2.title") + ".\nНомер ошибки: " + ex + "\n" + ex, getLocaleMessage("servercfg.dialog2.caption"), JOptionPane.WARNING_MESSAGE);
+        throw new RuntimeException(getLocaleMessage("servercfg.bd.fail"), ex);
     } catch (Exception ex) {
         System.err.println(ex);
-        JOptionPane.showMessageDialog(this, "Соединение с базой данных не удачно. " + ex + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
-        throw new RuntimeException("Соединение с базой данных не удачно", ex);
+        JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog2.title") + ". " + ex + "\n" + ex, getLocaleMessage("servercfg.dialog2.caption"), JOptionPane.WARNING_MESSAGE);
+        throw new RuntimeException(getLocaleMessage("servercfg.bd.fail"), ex);
     } finally {
         try {
             if (con != null) {
                 con.close();
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Соединение с базой данных закрыто не удачно.\nНомер ошибки: " + ex.getSQLState() + "\n" + ex, "Проверки соединения с БД", JOptionPane.WARNING_MESSAGE);
-            throw new RuntimeException("Соединение с базой данных не удачно", ex);
+            JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog2.title") + ".\nНомер ошибки: " + ex.getSQLState() + "\n" + ex, getLocaleMessage("servercfg.dialog2.caption"), JOptionPane.WARNING_MESSAGE);
+            throw new RuntimeException(getLocaleMessage("servercfg.bd.fail"), ex);
         } finally {
             cpds.close();
         }
     }
-    JOptionPane.showMessageDialog(this, "Соединение с базой прошло успешно.", "Проверки соединения с БД", JOptionPane.INFORMATION_MESSAGE);
+    JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog3.title"), getLocaleMessage("servercfg.dialog3.caption"), JOptionPane.INFORMATION_MESSAGE);
 }//GEN-LAST:event_jButton3ActionPerformed
 
 private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClickOK
@@ -503,14 +514,14 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
     try {
         fos = new FileOutputStream(filePath);
     } catch (FileNotFoundException ex) {
-        throw new Uses.ClientException("Не возможно создать временный файл состояния. " + ex.getMessage());
+        throw new Uses.ClientException(getLocaleMessage("servercfg.file.error") + ex.getMessage());
     }
     try {
         fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\" \"spring-beans-2.0.dtd\">\n" + root.asXML()).getBytes("UTF-8"));
         fos.flush();
         fos.close();
     } catch (IOException ex) {
-        throw new Uses.ClientException("Не возможно сохранить изменения в поток." + ex.getMessage());
+        throw new Uses.ClientException(getLocaleMessage("servercfg.stream.error") + ex.getMessage());
     }
     System.exit(0);
 }//GEN-LAST:event_onClickOK
@@ -520,6 +531,7 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        Locale.setDefault(Locales.getInstance().getLangCurrent());
 
         //Установка вывода консольных сообщений в нужной кодировке
         if ("\\".equals(File.separator)) {

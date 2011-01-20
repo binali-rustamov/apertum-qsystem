@@ -22,6 +22,9 @@ import javax.swing.ListModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.IServiceProperty;
@@ -183,11 +186,21 @@ public class FMessager extends javax.swing.JDialog {
     private static FMessager messagerForm;
     private final int port;
 
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FMessager.class);
+        }
+        return localeMap.getString(key);
+    }
+
     /**
      * Выбор услуги для перенаправления.
-     * @param netProperty свойства коннекта
+     * @param port
+     * @param users
+     * @param services
      * @param owner относительно этого контрола модальность и позиционирование
-     * @return класс полусения свойств
      */
     public static void getMessager(JFrame owner, int port, ListModel users, TreeModel services) {
         Uses.log.logger.info("Выбор услуги для перенаправления.");

@@ -25,6 +25,9 @@ import java.net.URISyntaxException;
 import java.util.Properties;
 import javax.swing.JFrame;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;
 
@@ -87,7 +90,15 @@ public class FAbout extends javax.swing.JDialog {
             aboutForm.setLocation((Math.round(kit.getScreenSize().width - aboutForm.getWidth()) / 2),
                     (Math.round(kit.getScreenSize().height - aboutForm.getHeight()) / 2));
         }
-        aboutForm.labelDBVer.setText("".equals(verDB) ? "" : ("Версия базы данных : " + verDB));
+        aboutForm.labelDBVer.setText("".equals(verDB) ? "" : (getLocaleMessage("about.db_version") + " : " + verDB));
+    }
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FAbout.class);
+        }
+        return localeMap.getString(key);
     }
 
     /**
@@ -103,8 +114,8 @@ public class FAbout extends javax.swing.JDialog {
         } catch (IOException ex) {
             throw new Uses.ClientException("Проблемы с чтением версии. " + ex);
         }
-        labelDate.setText("Дата сборки : " + settings.getProperty(DATE));
-        labelVersion.setText("Версия сборки : " + settings.getProperty(VERSION));
+        labelDate.setText(getLocaleMessage("about.data") + " : " + settings.getProperty(DATE));
+        labelVersion.setText(getLocaleMessage("about.version") + " : " + settings.getProperty(VERSION));
     }
     private final static String DATE = "date";
     private final static String VERSION = "version";

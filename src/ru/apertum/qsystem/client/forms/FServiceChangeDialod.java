@@ -18,6 +18,9 @@ package ru.apertum.qsystem.client.forms;
 
 import java.awt.Frame;
 import javax.swing.ComboBoxModel;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
@@ -28,6 +31,15 @@ import ru.apertum.qsystem.server.model.schedule.QSchedule;
  * @author Evgeniy Egorov
  */
 public class FServiceChangeDialod extends javax.swing.JDialog {
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FServiceChangeDialod.class);
+        }
+        return localeMap.getString(key);
+    }
 
     private static FServiceChangeDialod serviceChangeDialod;
 
@@ -100,16 +112,16 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         service.setAdvanceLinit((Integer) spinnerLimit.getValue());
         service.setAdvanceLimitPeriod((Integer) spinnerLimitPeriod.getValue() < 0 ? 0 : (Integer) spinnerLimitPeriod.getValue());
         if ("".equals(textAreaButtonCaption.getText())) {
-            throw new Uses.ClientException("Поле \"Надпись на кнопке\" не должно быть пустым.");
+            throw new Uses.ClientException(getLocaleMessage("dialog.message1"));
         }
         if (textAreaButtonCaption.getText().length() > 2500) {
-            throw new Uses.ClientException("Текст в поле \"Надпись на кнопке\" не должн преваышать более 2500 символов.");
+            throw new Uses.ClientException(getLocaleMessage("dialog.message2"));
         }
         if (textAreaInfoHtml.getText().length() > 2500) {
-            throw new Uses.ClientException("Текст в поле \"Текст информационного диалога(HTML)\" не должн превышать более 2500 символов.");
+            throw new Uses.ClientException(getLocaleMessage("dialog.message3"));
         }
         if (textAreaTextPrint.getText().length() > 2500) {
-            throw new Uses.ClientException("Текст в поле \"Текст для печати предварительной информации\" не должн превышать более 2500 символов.");
+            throw new Uses.ClientException(getLocaleMessage("dialog.message4"));
         }
         if (textAreaButtonCaption.getText().length() < 2500 && !"".equals(textAreaButtonCaption.getText())) {
             service.setButtonText(textAreaButtonCaption.getText());

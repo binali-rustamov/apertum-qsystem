@@ -351,6 +351,17 @@
             <Property name="name" type="java.lang.String" value="menuFile" noResource="true"/>
           </Properties>
           <SubComponents>
+            <Menu class="javax.swing.JMenu" name="menuLangs">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="menuLangs.text"/>
+                <Property name="name" type="java.lang.String" value="menuLangs" noResource="true"/>
+              </Properties>
+            </Menu>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator15">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="jSeparator15" noResource="true"/>
+              </Properties>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItem25">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">

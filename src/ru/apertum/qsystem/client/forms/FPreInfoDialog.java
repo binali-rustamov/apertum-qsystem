@@ -30,6 +30,9 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
@@ -56,6 +59,15 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         initComponents();
     }
 
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FPreInfoDialog.class);
+        }
+        return localeMap.getString(key);
+    }
+
     /**
      * Статический метод который показывает модально диалог с информацией для клиентов.
      * @param parent фрейм относительно которого будет модальность
@@ -71,7 +83,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         Uses.log.logger.info("Чтение обязательной информации перед постановкой в очередь");
         if (preInfoDialog == null) {
             preInfoDialog = new FPreInfoDialog(parent, modal);
-            preInfoDialog.setTitle("Чтение обязательной информации");
+            preInfoDialog.setTitle(getLocaleMessage("dialog.title"));
         }
         FPreInfoDialog.htmlText = htmlText;
         FPreInfoDialog.printText = printText;

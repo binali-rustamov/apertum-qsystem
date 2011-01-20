@@ -31,11 +31,12 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Properties;
+import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
@@ -51,11 +52,16 @@ import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.server.model.QServicesPool;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.help.Helper;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.IProperty;
@@ -88,6 +94,15 @@ import ru.apertum.qsystem.server.model.schedule.QScheduleList;
  * @author Evgeniy Egorov
  */
 public class FAdmin extends javax.swing.JFrame {
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FAdmin.class);
+        }
+        return localeMap.getString(key);
+    }
 
     /**
      * Константы хранения параметров в файле.
@@ -169,8 +184,8 @@ public class FAdmin extends javax.swing.JFrame {
         final Toolkit kit = Toolkit.getDefaultToolkit();
         setLocation((Math.round(kit.getScreenSize().width - getWidth()) / 2), (Math.round(kit.getScreenSize().height - getHeight()) / 2));
         // Поставим эконку
-        tray = QTray.getInstance(this, "/ru/apertum/qsystem/client/forms/resources/admin.png", "Мониторинг и администрирование");
-        tray.addItem("Мониторинг и администрирование", new ActionListener() {
+        tray = QTray.getInstance(this, "/ru/apertum/qsystem/client/forms/resources/admin.png", getLocaleMessage("tray.caption"));
+        tray.addItem(getLocaleMessage("tray.caption"), new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -184,7 +199,7 @@ public class FAdmin extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
             }
         });
-        tray.addItem("Завершить работу", new ActionListener() {
+        tray.addItem(getLocaleMessage("tray.exit"), new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -192,6 +207,18 @@ public class FAdmin extends javax.swing.JFrame {
                 System.exit(0);
             }
         });
+
+        int ii = 1;
+        final ButtonGroup bg = new ButtonGroup();
+        final String currLng = Locales.getInstance().getLangCurrName();
+        for (String lng : Locales.getInstance().getAvailableLocales()) {
+            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FAdmin.class, this).get("setCurrentLang"));
+            bg.add(item);
+            item.setSelected(lng.equals(currLng));
+            item.setText(lng); // NOI18N
+            item.setName("QRadioButtonMenuItem" + (ii++)); // NOI18N
+            menuLangs.add(item);
+        }
 
         // Определим события выбора итемов в списках.
         listUsers.addListSelectionListener(new ListSelectionListener() {
@@ -239,7 +266,7 @@ public class FAdmin extends javax.swing.JFrame {
                     if (tableCalendar.getModel() instanceof CalendarTableModel) {
                         final CalendarTableModel model = (CalendarTableModel) tableCalendar.getModel();
                         if (!model.isSaved()) {
-                            final int res = JOptionPane.showConfirmDialog(null, "Сетка календаря была изменена. Сохранить изменения?", "Календарь не сохранён", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+                            final int res = JOptionPane.showConfirmDialog(null, getLocaleMessage("calendar.change.title"), getLocaleMessage("calendar.change.caption"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
                             switch (res) {
                                 case 0:   // сохранить и переключиться
                                     model.save();
@@ -468,17 +495,17 @@ public class FAdmin extends javax.swing.JFrame {
         textFieldScheduleName.setText(item.getName());
         String str = "<HTML>"
                 + "<span style='font-size:12.0pt;color:blue;'>"
-                + "<b>Параметры плана:</b>"
+                + "<b>" + getLocaleMessage("calendar.plan_params") + ":</b>"
                 + "<table  border='0'>"
                 + (item.getType() == 0
-                ? (((item.getTime_begin_1() == null || item.getTime_end_1() == null) ? "" : "<tr><td>Понедельник</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_1()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_1()) + "</td></tr>")
-                + ((item.getTime_begin_2() == null || item.getTime_end_2() == null) ? "" : "<tr><td>Вторник</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_2()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_2()) + "</td></tr>")
-                + ((item.getTime_begin_3() == null || item.getTime_end_3() == null) ? "" : "<tr><td>Среда</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_3()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_3()) + "</td></tr>")
-                + ((item.getTime_begin_4() == null || item.getTime_end_4() == null) ? "" : "<tr><td>Четверг</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_4()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_4()) + "</td></tr>")
-                + ((item.getTime_begin_5() == null || item.getTime_end_5() == null) ? "" : "<tr><td>Пятница</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_5()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_5()) + "</td></tr>")
-                + ((item.getTime_begin_6() == null || item.getTime_end_6() == null) ? "" : "<tr><td>Суббота</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_6()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_6()) + "</td></tr>")
-                + ((item.getTime_begin_7() == null || item.getTime_end_7() == null) ? "" : "<tr><td>Воскресенье</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_7()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_7()) + "</td></tr>")) : ((item.getTime_begin_1() == null || item.getTime_end_1() == null) ? "" : "<tr><td>По четным</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_1()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_1()) + "</td></tr>"
-                + ((item.getTime_begin_2() == null || item.getTime_end_2() == null) ? "" : "<tr><td>По нечетным</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_2()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_2()) + "</td></tr>"))) + "</table>" + "</span>";
+                ? (((item.getTime_begin_1() == null || item.getTime_end_1() == null) ? "" : "<tr><td>" + getLocaleMessage("calendar.day.monday") + "</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_1()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_1()) + "</td></tr>")
+                + ((item.getTime_begin_2() == null || item.getTime_end_2() == null) ? "" : "<tr><td>" + getLocaleMessage("calendar.day.tuesday") + "</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_2()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_2()) + "</td></tr>")
+                + ((item.getTime_begin_3() == null || item.getTime_end_3() == null) ? "" : "<tr><td>" + getLocaleMessage("calendar.day.wednesday") + "</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_3()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_3()) + "</td></tr>")
+                + ((item.getTime_begin_4() == null || item.getTime_end_4() == null) ? "" : "<tr><td>" + getLocaleMessage("calendar.day.thursday") + "</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_4()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_4()) + "</td></tr>")
+                + ((item.getTime_begin_5() == null || item.getTime_end_5() == null) ? "" : "<tr><td>" + getLocaleMessage("calendar.day.friday") + "</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_5()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_5()) + "</td></tr>")
+                + ((item.getTime_begin_6() == null || item.getTime_end_6() == null) ? "" : "<tr><td>" + getLocaleMessage("calendar.day.saturday") + "</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_6()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_6()) + "</td></tr>")
+                + ((item.getTime_begin_7() == null || item.getTime_end_7() == null) ? "" : "<tr><td>" + getLocaleMessage("calendar.day.sunday") + "</td><td>с " + Uses.format_HH_mm.format(item.getTime_begin_7()) + "</td><td>до " + Uses.format_HH_mm.format(item.getTime_end_7()) + "</td></tr>")) : ((item.getTime_begin_1() == null || item.getTime_end_1() == null) ? "" : "<tr><td>" + getLocaleMessage("calendar.even") + "</td><td>" + getLocaleMessage("calendar.time.from") + " " + Uses.format_HH_mm.format(item.getTime_begin_1()) + "</td><td>" + getLocaleMessage("calendar.time.to") + " " + Uses.format_HH_mm.format(item.getTime_end_1()) + "</td></tr>"
+                + ((item.getTime_begin_2() == null || item.getTime_end_2() == null) ? "" : "<tr><td>" + getLocaleMessage("calendar.even") + "</td><td>" + getLocaleMessage("calendar.time.from") + " " + Uses.format_HH_mm.format(item.getTime_begin_2()) + "</td><td>" + getLocaleMessage("calendar.time.to") + " " + Uses.format_HH_mm.format(item.getTime_end_2()) + "</td></tr>"))) + "</table>" + "</span>";
         labelSchedule.setText(str);
     }
 
@@ -515,12 +542,12 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     private void showServiceInfo(QService service) {
-        labelServiceInfo.setText("<html>Услуга: \"" + service.getName() + "\"    " + (service.getStatus() == 1 ? "Активна" : (service.getStatus() == 0 ? "Неактивна" : "Недоступна"))
-                + ";    Префикс: " + service.getPrefix() + ";<br>Ограничение по количеству предварительно регистрировшихся в час: " + service.getAdvanceLinit()
-                + ";  Ограничение периода возможности записаться предварительно в днях: " + service.getAdvanceLimitPeriod()
-                + ";<br>Описание: " + service.getDescription() + "<br>Календарь работы: " + (service.getCalendar() == null ? "Не назначен" : service.getCalendar().toString()) + ";  План работы: " + (service.getSchedule() == null ? "Не назначен" : service.getSchedule().toString()) + "<br>"
-                + (service.getInput_required() ? "Требуется ввод клиентских данных: \"" + service.getInput_caption() + "\"" : "Ввод данных клиентом не требуется") + ";   "
-                + (service.getResult_required() ? "Требуется обозначение результата" : "Обозначение результата не требуется"));
+        labelServiceInfo.setText("<html>"+ getLocaleMessage("service.service")+": \"" + service.getName() + "\"    " + (service.getStatus() == 1 ? getLocaleMessage("service.kind.active") : (service.getStatus() == 0 ? getLocaleMessage("service.kind.not_active") : getLocaleMessage("service.kind.unavailable")))
+                + ";    " + getLocaleMessage("service.prefix") + ": " + service.getPrefix() + ";<br>" + getLocaleMessage("service.restrict_adv_reg") + ": " + service.getAdvanceLinit()
+                + ";  " + getLocaleMessage("service.restrict_adv_period") + ": " + service.getAdvanceLimitPeriod()
+                + ";<br>" + getLocaleMessage("service.description") + ": " + service.getDescription() + "<br>" + getLocaleMessage("service.work_calendar") + ": " + (service.getCalendar() == null ? getLocaleMessage("service.work_calendar.no") : service.getCalendar().toString()) + ";  " + getLocaleMessage("service.work_calendar.plan") + ": " + (service.getSchedule() == null ? getLocaleMessage("service.work_calendar.no") : service.getSchedule().toString()) + "<br>"
+                + (service.getInput_required() ? getLocaleMessage("service.required_client_data") + ": \"" + service.getInput_caption() + "\"" : getLocaleMessage("service.required_client_data.not")) + ";   "
+                + (service.getResult_required() ? getLocaleMessage("service.required_result") : getLocaleMessage("service.required_result.not")));
         labelButtonCaption.setText(service.getButtonText());
     }
 
@@ -609,12 +636,12 @@ public class FAdmin extends javax.swing.JFrame {
         try {
             in = new FileInputStream("config" + File.separator + "admin.properties");
         } catch (FileNotFoundException ex) {
-            throw new Uses.ClientException("Проблемы с файлом при чтении. " + ex);
+            throw new Uses.ClientException(getLocaleMessage("error.file_not_read") + ". " + ex);
         }
         try {
             settings.load(in);
         } catch (IOException ex) {
-            throw new Uses.ClientException("Проблемы с чтением параметров. " + ex);
+            throw new Uses.ClientException(getLocaleMessage("error.params_not_read") + ". " + ex);
         }
         textFieldServerAddr.setText(settings.getProperty(SERVER_ADRESS));
         spinnerServerPort.setValue(Integer.parseInt(settings.getProperty(SERVER_PORT)));
@@ -633,7 +660,7 @@ public class FAdmin extends javax.swing.JFrame {
         try {
             out = new FileOutputStream("config" + File.separator + "admin.properties");
         } catch (FileNotFoundException ex) {
-            throw new Uses.ClientException("Проблемы с файлом при сохранении. " + ex);
+            throw new Uses.ClientException(getLocaleMessage("error.file_not_save") + ". " + ex);
         }
         settings.put(SERVER_ADRESS, textFieldServerAddr.getText());
         settings.put(SERVER_PORT, String.valueOf(spinnerServerPort.getValue()));
@@ -644,7 +671,7 @@ public class FAdmin extends javax.swing.JFrame {
         try {
             settings.store(out, "Settings of admining and monitoring");
         } catch (IOException ex) {
-            throw new Uses.ClientException("Проблемы с выводом в файл. " + ex);
+            throw new Uses.ClientException(getLocaleMessage("error.file_output") + ". " + ex);
         }
     }
 
@@ -781,16 +808,16 @@ public class FAdmin extends javax.swing.JFrame {
         try {
             root = NetCommander.getServerState(new ServerNetProperty());
         } catch (Exception ex) {
-            labelServerState.setText("<HTML><b><span style='font-size:20.0pt;color:red;'>Состояние: сервер не запущен</span></b>");
+            labelServerState.setText("<HTML><b><span style='font-size:20.0pt;color:red;'>" + getLocaleMessage("admin.message.server_not_start") + "</span></b>");
             Uses.log.logger.error("Сервер ответил на запрос о состоянии: \"" + ex + "\"");
-            tray.showMessageTray("Сервер!", "Сервер автоматизации управления клиентами прекратил работу", QTray.MessageType.WARNING);
+            tray.showMessageTray(getLocaleMessage("tray.server"), getLocaleMessage("tray.message.stop_server"), QTray.MessageType.WARNING);
             return;
         }
         //Сформируем ответ
         final String red = "<td align=\"center\"><span style='font-size:12.0pt;color:red;'>";
         final String green = "<td align=\"center\"><span style='font-size:12.0pt;color:green;'>";
         String col = root.attributeValue(Uses.TAG_REP_SERVICE_WAIT);
-        final String first = "<html>Всего клиентов: " + ("0".equals(col) ? "<span style='font-size:12.0pt;color:green;'>" : "<span style='font-size:12.0pt;color:red;'>") + col + "</span>";
+        final String first = "<html>" + getLocaleMessage("admin.info.total_clients") + ": " + ("0".equals(col) ? "<span style='font-size:12.0pt;color:green;'>" : "<span style='font-size:12.0pt;color:red;'>") + col + "</span>";
         String html = "";
         for (Object o : root.elements(Uses.TAG_SERVICE)) {
             final Element el = (Element) o;
@@ -802,7 +829,7 @@ public class FAdmin extends javax.swing.JFrame {
                     + "<td align=\"center\">" + el.attributeValue(Uses.TAG_CUSTOMER) + "</span></td></tr>";
         }
         labelServerState.setText(first
-                + "<table border=\"1\"><tr>  <td align=\"center\"<span style='font-size:16.0pt;color:red;'>Услуга</span></td>  <td align=\"center\"><span style='font-size:16.0pt;color:red;'>Количество ожидающих</span></td>  <td align=\"center\"><span style='font-size:16.0pt;color:red;'>Номер следующего</span></td></tr>"
+                + "<table border=\"1\"><tr>  <td align=\"center\"<span style='font-size:16.0pt;color:red;'>" + getLocaleMessage("service.service") + "</span></td>  <td align=\"center\"><span style='font-size:16.0pt;color:red;'>" + getLocaleMessage("admin.info.total_wait") + "</span></td>  <td align=\"center\"><span style='font-size:16.0pt;color:red;'>" + getLocaleMessage("admin.info.next_number") + "</span></td></tr>"
                 + html
                 + "</table></html>");
     }
@@ -813,12 +840,12 @@ public class FAdmin extends javax.swing.JFrame {
         try {
             root = command == null ? NetCommander.getWelcomeState(netPropWelcome(), "Empty") : NetCommander.getWelcomeState(netPropWelcome(), command);
         } catch (Exception ex) {
-            labelWelcomeState.setText("<HTML><b><span style='font-size:20.0pt;color:red;'>Состояние: пункт регистрации не запущен</span></b>");
+            labelWelcomeState.setText("<HTML><b><span style='font-size:20.0pt;color:red;'>" + getLocaleMessage("admin.message.welcome_not_start") + "</span></b>");
             Uses.log.logger.error("Пункт регистрации не ответил на запрос о состоянии или поризошла ошибка. \"" + ex + "\"");
-            tray.showMessageTray("Пункт регистрации!", "Пункт регистрации управления клиентами прекратил работу", QTray.MessageType.WARNING);
+            tray.showMessageTray(getLocaleMessage("tray.message_stop_server.title"), getLocaleMessage("tray.message_stop_server.caption"), QTray.MessageType.WARNING);
             return;
         }
-        labelWelcomeState.setText("<HTML><span style='font-size:20.0pt;color:green;'>Пункт регистрации \"" + root.getTextTrim() + "\"</span>");
+        labelWelcomeState.setText("<HTML><span style='font-size:20.0pt;color:green;'>" + getLocaleMessage("admin.welcome") + " \"" + root.getTextTrim() + "\"</span>");
     }
 
     protected INetProperty netPropWelcome() {
@@ -938,6 +965,7 @@ public class FAdmin extends javax.swing.JFrame {
      * @throws Exception
      */
     public static void main(String args[]) throws Exception {
+        Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.startSplash();
         Uses.isDebug = Uses.setLogining(args, false);
         Uses.setServerContext();
@@ -963,18 +991,18 @@ public class FAdmin extends javax.swing.JFrame {
         String userName = "";
         boolean flag = true;
         while (flag) {
-            userName = (String) JOptionPane.showInputDialog(this, "Введите название пользователя", "Наименование пользователя", 3, null, null, userName);
+            userName = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.add_user_dialog.title"), getLocaleMessage("admin.add_user_dialog.caption"), 3, null, null, userName);
             if (userName == null) {
                 return;
             }
             if ("".equals(userName)) {
-                JOptionPane.showConfirmDialog(this, "Наименование пользователя не должно быть пустым.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err1.title"), getLocaleMessage("admin.add_user_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (QServicesPool.getServicesPool(true).getUserList().hasByName(userName)) {
-                JOptionPane.showConfirmDialog(this, "Наименование пользователя должно быть уникальным.", "Неуникальное значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err2.title"), getLocaleMessage("admin.add_user_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (userName.indexOf('\"') != -1) {
-                JOptionPane.showConfirmDialog(this, "Наименование пользователя не должно сожержать символ двойных ковычек.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err3.title"), getLocaleMessage("admin.add_user_dialog.err3.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (userName.length() > 150) {
-                JOptionPane.showConfirmDialog(this, "Длинна наименования пользователя не должно превышать 150 символов.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err4.title"), getLocaleMessage("admin.add_user_dialog.err4.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else {
                 flag = false;
             }
@@ -996,18 +1024,18 @@ public class FAdmin extends javax.swing.JFrame {
             String userName = user.getName();
             boolean flag = true;
             while (flag) {
-                userName = (String) JOptionPane.showInputDialog(this, "Введите название пользователя", "Наименование пользователя", 3, null, null, userName);
+                userName = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.rename_user_dialog.title"), getLocaleMessage("admin.rename_user_dialog.caption"), 3, null, null, userName);
                 if (userName == null) {
                     return;
                 }
                 if ("".equals(userName)) {
-                    JOptionPane.showConfirmDialog(this, "Наименование пользователя не должно быть пустым.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_user_dialog.err1.title"), getLocaleMessage("admin.rename_user_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else if (QServicesPool.getServicesPool(true).getUserList().hasByName(userName)) {
-                    JOptionPane.showConfirmDialog(this, "Наименование пользователя должно быть уникальным.", "Неуникальное значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_user_dialog.err2.title"), getLocaleMessage("admin.rename_user_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else if (userName.indexOf('\"') != -1) {
-                    JOptionPane.showConfirmDialog(this, "Наименование пользователя не должно сожержать символ двойных ковычек.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_user_dialog.err3.title"), getLocaleMessage("admin.rename_user_dialog.err3.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else if (userName.length() > 150) {
-                    JOptionPane.showConfirmDialog(this, "Длина наименования пользователя не должна превышать 150 символов.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_user_dialog.err4.title"), getLocaleMessage("admin.rename_user_dialog.err4.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else {
                     flag = false;
                 }
@@ -1022,8 +1050,8 @@ public class FAdmin extends javax.swing.JFrame {
     public void deleteUser() {
         if (listUsers.getSelectedIndex() != -1) {
             if (JOptionPane.showConfirmDialog(this,
-                    "Вы действительно хотите удалить ползователя \"" + ((QUser) listUsers.getSelectedValue()).getName() + "\"?",
-                    "Удаление пользователей",
+                    getLocaleMessage("admin.remove_user_dialog.title") + " \"" + ((QUser) listUsers.getSelectedValue()).getName() + "\"?",
+                    getLocaleMessage("admin.remove_user_dialog.caption"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
@@ -1044,7 +1072,7 @@ public class FAdmin extends javax.swing.JFrame {
                     }
                 }
                 if (cnt == 1) {
-                    JOptionPane.showConfirmDialog(this, "Удаляемый пользователь является последним администратором системы.", "Недопустимое удаление", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.remove_user_dialog.err.title"), getLocaleMessage("admin.remove_user_dialog.err.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
                     return;
                 }
             }
@@ -1070,18 +1098,18 @@ public class FAdmin extends javax.swing.JFrame {
         String serviceName = "";
         boolean flag = true;
         while (flag) {
-            serviceName = (String) JOptionPane.showInputDialog(this, "Введите название услуги", "Наименование услуги", 3, null, null, serviceName);
+            serviceName = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.add_service_dialog.title"), getLocaleMessage("admin.add_service_dialog.caption"), 3, null, null, serviceName);
             if (serviceName == null) {
                 return;
             }
             if ("".equals(serviceName)) {
-                JOptionPane.showConfirmDialog(this, "Наименование услуги не должно быть пустым.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_service_dialog.err1.title"), getLocaleMessage("admin.add_service_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (QServicesPool.getServicesPool(true).getServices().hasByName(serviceName)) {
-                JOptionPane.showConfirmDialog(this, "Наименование услуги должно быть уникальным.", "Неуникальное значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_service_dialog.err2.title"), getLocaleMessage("admin.add_service_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (serviceName.indexOf('\"') != -1) {
-                JOptionPane.showConfirmDialog(this, "Наименование услуги не должно сожержать символ двойных ковычек.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_service_dialog.err3.title"), getLocaleMessage("admin.add_service_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (serviceName.length() > 2001) {
-                JOptionPane.showConfirmDialog(this, "Длинна наименования услуги не должно превышать 2000 символов.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_service_dialog.err4.title"), getLocaleMessage("admin.add_service_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else {
                 flag = false;
             }
@@ -1112,18 +1140,18 @@ public class FAdmin extends javax.swing.JFrame {
             String serviceName = service.getName();
             boolean flag = true;
             while (flag) {
-                serviceName = (String) JOptionPane.showInputDialog(this, "Введите название услуги", "Наименование услуги", 3, null, null, serviceName);
+                serviceName = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.rename_service_dialog.title"), getLocaleMessage("admin.rename_service_dialog.caption"), 3, null, null, serviceName);
                 if (serviceName == null) {
                     return;
                 }
                 if ("".equals(serviceName)) {
-                    JOptionPane.showConfirmDialog(this, "Наименование услуги не должно быть пустым.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_service_dialog.err1.title"), getLocaleMessage("admin.rename_service_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else if (QServicesPool.getServicesPool(true).getServices().hasByName(serviceName)) {
-                    JOptionPane.showConfirmDialog(this, "Наименование услуги должно быть уникальным.", "Неуникальное значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_service_dialog.err2.title"), getLocaleMessage("admin.rename_service_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else if (serviceName.indexOf('\"') != -1) {
-                    JOptionPane.showConfirmDialog(this, "Наименование услуги не должно сожержать символ двойных ковычек.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_service_dialog.err3.title"), getLocaleMessage("admin.rename_service_dialog.err3.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else if (serviceName.length() > 2001) {
-                    JOptionPane.showConfirmDialog(this, "Длина наименования услуги не должна превышать 2000 символов.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_service_dialog.err4.title"), getLocaleMessage("admin.rename_service_dialog.err4.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else {
                     flag = false;
                 }
@@ -1174,8 +1202,8 @@ public class FAdmin extends javax.swing.JFrame {
         final QService service = (QService) treeServices.getLastSelectedPathComponent();
         if (service != null && !service.isRoot()) {
             if (JOptionPane.showConfirmDialog(this,
-                    "Вы действительно хотите удалить " + (service.isLeaf() ? "услугу" : "группу услуг") + "\n\"" + (service.getName().length() > 85 ? service.getName().substring(0, 85) + " ..." : service.getName()) + "\"?",
-                    "Удаление услуг",
+                    getLocaleMessage("admin.remove_service_dialog.title") + " " + (service.isLeaf() ? getLocaleMessage("admin.remove_service_dialog.title_1") : getLocaleMessage("admin.remove_service_dialog.title_2")) + "\n\"" + (service.getName().length() > 85 ? service.getName().substring(0, 85) + " ..." : service.getName()) + "\"?",
+                    getLocaleMessage("admin.remove_service_dialog.caption"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
@@ -1203,19 +1231,19 @@ public class FAdmin extends javax.swing.JFrame {
     @Action
     public void addInfoItem() {
         // Запросим название инфоузла и если оно уникально и не пусто, то примем
-        String infoName = "Информация";
+        String infoName = getLocaleMessage("admin.add_info_dialog.info");
         boolean flag = true;
         while (flag) {
-            infoName = (String) JOptionPane.showInputDialog(this, "Введите название узла", "Наименование узла", 3, null, null, infoName);
+            infoName = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.add_info_dialog.title"), getLocaleMessage("admin.add_info_dialog.caption"), 3, null, null, infoName);
             if (infoName == null) {
                 return;
             }
             if ("".equals(infoName)) {
-                JOptionPane.showConfirmDialog(this, "Наименование узла не должно быть пустым.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_info_dialog.err1.title"), getLocaleMessage("admin.add_info_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (infoName.indexOf('\"') != -1) {
-                JOptionPane.showConfirmDialog(this, "Наименование услуги не должно сожержать символ двойных ковычек.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_info_dialog.err2.title"), getLocaleMessage("admin.add_info_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (infoName.length() > 101) {
-                JOptionPane.showConfirmDialog(this, "Длинна наименования услуги не должно превышать 100 символов.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_info_dialog.err3.title"), getLocaleMessage("admin.add_info_dialog.err3.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else {
                 flag = false;
             }
@@ -1242,8 +1270,8 @@ public class FAdmin extends javax.swing.JFrame {
         final QInfoItem item = (QInfoItem) treeInfo.getLastSelectedPathComponent();
         if (item != null && !item.isRoot()) {
             if (JOptionPane.showConfirmDialog(this,
-                    "Вы действительно хотите удалить " + (item.isLeaf() ? "информационный узел" : "группу информационных узлов") + "\"" + (item.getName().length() > 85 ? item.getName().substring(0, 85) + " ..." : item.getName()) + "\"?",
-                    "Удаление информационных узлов",
+                    getLocaleMessage("admin.remove_info_dialog.title") + " " + (item.isLeaf() ? getLocaleMessage("admin.remove_info_dialog.title_1") : getLocaleMessage("admin.remove_info_dialog.title_2")) + "\"" + (item.getName().length() > 85 ? item.getName().substring(0, 85) + " ..." : item.getName()) + "\"?",
+                    getLocaleMessage("admin.remove_info_dialog.caption"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
@@ -1269,7 +1297,7 @@ public class FAdmin extends javax.swing.JFrame {
     @Action
     public void saveConfiguration() {
         QServicesPool.getServicesPool(true).savePoolConfig();
-        JOptionPane.showMessageDialog(this, "Сохранение завершено успешно.", "Сохранение", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, getLocaleMessage("admin.save.title"), getLocaleMessage("admin.save.caption"), JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Action
@@ -1303,8 +1331,8 @@ public class FAdmin extends javax.swing.JFrame {
     public void deleteServiseFromUser() {
         if (listUserService.getSelectedIndex() != -1) {
             if (JOptionPane.showConfirmDialog(this,
-                    "Вы действительно хотите удалить услугу \"" + listUserService.getSelectedValue().toString() + "\" пользователя \"" + listUsers.getSelectedValue().toString() + "\"?",
-                    "Удаление услуг пользователя",
+                    getLocaleMessage("admin.remove_service_from_user.title") + " \"" + listUserService.getSelectedValue().toString() + "\" " + getLocaleMessage("admin.remove_service_from_user.title_1") +" \"" + listUsers.getSelectedValue().toString() + "\"?",
+                    getLocaleMessage("admin.remove_service_from_user.caption"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
@@ -1342,13 +1370,13 @@ public class FAdmin extends javax.swing.JFrame {
                     res.addAttribute(Uses.TAG_PROP_INPUT_CAPTION, service.getInput_caption());
                 }
             } catch (Exception ex) {
-                throw new Uses.ClientException("Невозможно отправить команду на сервер. " + ex);
+                throw new Uses.ClientException(getLocaleMessage("admin.print_ticket_error") + " " + ex);
             }
             FWelcome.printTicket(res, ((QService) treeServices.getModel().getRoot()).getName());
             final String suff = res.attributeValue(Uses.TAG_NUMBER);
             String pref = res.attributeValue(Uses.TAG_PREFIX);
             pref = "".equals(pref) ? "" : pref + "-";
-            JOptionPane.showMessageDialog(this, "Клиент поставлен в очередь к услуге \"" + service.getName() + "\". Присвоен номер \"" + pref + suff + "\".", "Постановка в очередь", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.print_ticket.title") + " \"" + service.getName() + "\". " + getLocaleMessage("admin.print_ticket.title_1") + " \"" + pref + suff + "\".", getLocaleMessage("admin.print_ticket.captionru"), JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -1543,6 +1571,8 @@ public class FAdmin extends javax.swing.JFrame {
         jButton12 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
+        menuLangs = new javax.swing.JMenu();
+        jSeparator15 = new javax.swing.JPopupMenu.Separator();
         jMenuItem25 = new javax.swing.JMenuItem();
         jMenuItem8 = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
@@ -3143,6 +3173,14 @@ public class FAdmin extends javax.swing.JFrame {
         menuFile.setText(resourceMap.getString("menuFile.text")); // NOI18N
         menuFile.setName("menuFile"); // NOI18N
 
+        menuLangs.setText(resourceMap.getString("menuLangs.text")); // NOI18N
+        menuLangs.setName("menuLangs"); // NOI18N
+        menuLangs.setName("menuLangs"); // NOI18N
+        menuFile.add(menuLangs);
+
+        jSeparator15.setName("jSeparator15"); // NOI18N
+        menuFile.add(jSeparator15);
+
         jMenuItem25.setAction(actionMap.get("sendMessage")); // NOI18N
         jMenuItem25.setName("jMenuItem25"); // NOI18N
         menuFile.add(jMenuItem25);
@@ -3308,8 +3346,8 @@ private void checkBoxClientAutoStateChanged(javax.swing.event.ChangeEvent evt) {
 private void buttonShutDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonShutDownActionPerformed
     // Уточним намерения
     if (JOptionPane.showConfirmDialog(this,
-            "Вы действительно хотите выключить пункт регистрации?",
-            "Выключение пункта регистрации",
+            getLocaleMessage("admin.close_welcame.title"),
+            getLocaleMessage("admin.close_welcame.caption"),
             JOptionPane.YES_NO_OPTION) == 1) {
         return;
     }
@@ -3323,7 +3361,7 @@ private void buttonRestartActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         @Override
         public void run() {
             checkWelcome(null);
-            JOptionPane.showConfirmDialog(null, "Реинициализация пункта регистрации завершена.", "реинициализация", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showConfirmDialog(null, getLocaleMessage("admin.server_reinit.title"), getLocaleMessage("admin.server_reinit.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
         }
     };
     clock.start();
@@ -3407,7 +3445,7 @@ private void checkBoxAdminMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIR
             }
         }
         if (cnt == 1) {
-            JOptionPane.showConfirmDialog(this, "Пользователь является последним администратором системы.", "Недопустимое действие", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.edit_user_err.title"), getLocaleMessage("admin.edit_user_err.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
             checkBoxAdmin.setSelected(true);
             return;
         }
@@ -3436,7 +3474,7 @@ private void buttonRestartServerActionPerformed(java.awt.event.ActionEvent evt) 
         @Override
         public void run() {
             checkServer();
-            JOptionPane.showConfirmDialog(null, "Рестарт сервера завершён.", "Рестарт сервера", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showConfirmDialog(null, getLocaleMessage("admin.server_restart.title"), getLocaleMessage("admin.server_restart.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
         }
     };
     clock.start();
@@ -3509,7 +3547,7 @@ private void textFieldCalendarNameKeyReleased(java.awt.event.KeyEvent evt) {//GE
 private void tabbedPaneMainFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tabbedPaneMainFocusLost
     final CalendarTableModel model = (CalendarTableModel) tableCalendar.getModel();
     if (!model.isSaved()) {
-        if (0 == JOptionPane.showConfirmDialog(null, "Сетка календаря была изменена. Сохранить изменения?", "Календарь не сохранён", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+        if (0 == JOptionPane.showConfirmDialog(null, getLocaleMessage("admin.calendar_change.message"), getLocaleMessage("admin.calendar_change.title"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             model.save();
         }
     }
@@ -3533,7 +3571,7 @@ private void tableCalendarFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRS
             }
         }
         if (!flag) {
-            JOptionPane.showConfirmDialog(this, "Перед изменением сетки вновь добавленных календарей требуется сохранить конфигурацию(Ctrl + S).", "Требуется сохранение конфигурации", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.calendar_warn.message"), getLocaleMessage("admin.calendar_warn.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
             return;
         }
     }
@@ -3552,16 +3590,16 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         String siteMark = "";
         boolean flag = true;
         while (flag) {
-            siteMark = (String) JOptionPane.showInputDialog(this, "Маркировка сайта(\"адрес\":\"порт\")", "Введите маркировку сайта", 3, null, null, siteMark);
+            siteMark = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.enter_sute_mark.message"), getLocaleMessage("admin.enter_sute_mark.title"), 3, null, null, siteMark);
             if (siteMark == null) {
                 return;
             }
             if ("".equals(siteMark)) {
-                JOptionPane.showConfirmDialog(this, "Маркировка сайта не должна быть пустой.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.enter_sute_mark.err1.message"), getLocaleMessage("admin.enter_sute_mark.err1.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (QServicesPool.getServicesPool(true).getSiteList().hasByMark(siteMark)) {
-                JOptionPane.showConfirmDialog(this, "Маркировка сайта должна быть уникальной.", "Неуникальное значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.enter_sute_mark.err2.message"), getLocaleMessage("admin.enter_sute_mark.err2.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (siteMark.split(":").length != 2) {
-                JOptionPane.showConfirmDialog(this, "Маркировка сайта должна удовлетворять маске \"адрес\":\"порт\".", "Некорректное значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.enter_sute_mark.err3.message"), getLocaleMessage("admin.enter_sute_mark.err3.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else {
                 flag = false;
             }
@@ -3571,7 +3609,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                         throw new NumberFormatException();
                     }
                 } catch (NumberFormatException e) {
-                    JOptionPane.showConfirmDialog(this, "Маркировка сайта должна удовлетворять маске \"адрес\":\"порт\". \"порт\" - положительное целое число.", "Некорректное значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.enter_sute_mark.err4.message"), getLocaleMessage("admin.enter_sute_mark.err4.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                     flag = true;
                 }
             }
@@ -3594,8 +3632,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     public void deleteSite() {
         if (listUsers.getSelectedIndex() != -1) {
             if (JOptionPane.showConfirmDialog(this,
-                    "Вы действительно хотите удалить сайт \"" + listSites.getSelectedValue().toString() + "\"?",
-                    "Удаление сайта",
+                    getLocaleMessage("admin.site_delete.message") + " \"" + listSites.getSelectedValue().toString() + "\"?",
+                    getLocaleMessage("admin.site_delete.title"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
@@ -3633,8 +3671,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         listUserService.requestFocus();
         listUserService.requestFocusInWindow();
         final String name = (String) JOptionPane.showInputDialog(this,
-                "Выберите приоритет для услуги:",
-                "Определение приоритета",
+                getLocaleMessage("admin.select_priority.message"),
+                getLocaleMessage("admin.select_priority.title"),
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 Uses.COEFF_WORD.values().toArray(),
@@ -3660,9 +3698,9 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         try {
             res = NetCommander.setServiseFire(new ServerNetProperty(), plan.getService().getName(), plan.getUser().getName(), plan.getCoefficient());
         } catch (Exception ex) {
-            throw new Uses.ClientException("Невозможно отправить команду на сервер. " + ex);
+            throw new Uses.ClientException(getLocaleMessage("admin.send_cmd.err") + " " + ex);
         }
-        JOptionPane.showMessageDialog(this, res.getTextTrim(), "Привязка услуги пользователю", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, res.getTextTrim(), getLocaleMessage("admin.add_service_to_user.title"), JOptionPane.INFORMATION_MESSAGE);
 
     }
 
@@ -3677,9 +3715,9 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         try {
             res = NetCommander.deleteServiseFire(new ServerNetProperty(), plan.getService().getName(), plan.getUser().getName());
         } catch (Exception ex) {
-            throw new Uses.ClientException("Невозможно отправить команду на сервер. " + ex);
+            throw new Uses.ClientException(getLocaleMessage("admin.send_cmd_remove.err") + " " + ex);
         }
-        JOptionPane.showMessageDialog(this, res.getTextTrim(), "Удаление услуги пользователя", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, res.getTextTrim(), getLocaleMessage("admin.remove_service_to_user.title"), JOptionPane.INFORMATION_MESSAGE);
 
     }
 
@@ -3712,7 +3750,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
             try {
                 res = FAdvanceCalendar.showCalendar(this, true, new ServerNetProperty(), service.getName(), "", false, 0, -1);
             } catch (Exception ex) {
-                throw new Uses.ClientException("Невозможно отправить команду о предварительной записи на сервер. " + ex);
+                throw new Uses.ClientException(getLocaleMessage("admin.send_cmd_adv.err") + " " + ex);
             }
             if (res == null) {
                 return;
@@ -3726,7 +3764,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                 }
             }).start();
 
-            JOptionPane.showMessageDialog(this, "Клиент предварительно записан к услуге \"" + service.getName() + "\". Код предварительной записи \"" + res.attributeValue(Uses.TAG_ID) + "\".", "Предварительная запись", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.client_adv_dialog.msg_1") + " \"" + service.getName() + "\". " + getLocaleMessage("admin.client_adv_dialog.msg_2") + " \"" + res.attributeValue(Uses.TAG_ID) + "\".", getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.INFORMATION_MESSAGE);
         }
     }
     /**
@@ -3756,7 +3794,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
             }
         } catch (Exception e) {
             board = null;
-            Uses.ClientWarning.showWarning("Невозможно открыть редактор. Возможно сервер не отвечает.\n" + e);
+            Uses.ClientWarning.showWarning(getLocaleMessage("admin.open_editor.wern") + "\n" + e);
             return;
         }
         // Отцентирируем
@@ -3774,19 +3812,19 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     @Action
     public void addRespItem() {
         // Запросим название юзера и если оно уникально, то примем
-        String respName = "Отзыв";
+        String respName = getLocaleMessage("admin.add_resp_dialog.info");
         boolean flag = true;
         while (flag) {
-            respName = (String) JOptionPane.showInputDialog(this, "Введите наименование отзыва", "Наименование отзыва", 3, null, null, respName);
+            respName = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.add_resp_dialog.message"), getLocaleMessage("admin.add_resp_dialog.title"), 3, null, null, respName);
             if (respName == null) {
                 return;
             }
             if ("".equals(respName)) {
-                JOptionPane.showConfirmDialog(this, "Наименование отзыва не должно быть пустым.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_resp_dialog.err1.message"), getLocaleMessage("admin.add_resp_dialog.err1.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (respName.indexOf('\"') != -1) {
-                JOptionPane.showConfirmDialog(this, "Наименование отзыва не должно сожержать символ двойных ковычек.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_resp_dialog.err2.message"), getLocaleMessage("admin.add_resp_dialog.err2.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (respName.length() > 100) {
-                JOptionPane.showConfirmDialog(this, "Длинна наименования пользователя не должно превышать 100 символов.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_resp_dialog.err3.message"), getLocaleMessage("admin.add_resp_dialog.err3.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else {
                 flag = false;
             }
@@ -3803,8 +3841,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     public void deleteRespItem() {
         if (listResponse.getSelectedIndex() != -1) {
             if (JOptionPane.showConfirmDialog(this,
-                    "Вы действительно хотите удалить отзыв \"" + ((QRespItem) listResponse.getSelectedValue()).getName() + "\"?",
-                    "Удаление пользователей",
+                    getLocaleMessage("admin.resp_delete.message") + " \"" + ((QRespItem) listResponse.getSelectedValue()).getName() + "\"?",
+                    getLocaleMessage("admin.resp_delete.title"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
@@ -3836,19 +3874,19 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     @Action
     public void addSchedule() {
         // Запросим название плана и если оно уникально, то примем
-        String scheduleName = "План работы";
+        String scheduleName = getLocaleMessage("admin.add_work_plan_dialog.info");
         boolean flag = true;
         while (flag) {
-            scheduleName = (String) JOptionPane.showInputDialog(this, "Введите наименование плана", "Наименование плана", 3, null, null, scheduleName);
+            scheduleName = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.add_work_plan_dialog.message"), getLocaleMessage("admin.add_work_plan_dialog.title"), 3, null, null, scheduleName);
             if (scheduleName == null) {
                 return;
             }
             if ("".equals(scheduleName)) {
-                JOptionPane.showConfirmDialog(this, "Наименование плана не должно быть пустым.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_work_plan_dialog.err1.message"), getLocaleMessage("admin.add_work_plan_dialog.err1.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (scheduleName.indexOf('\"') != -1) {
-                JOptionPane.showConfirmDialog(this, "Наименование плана не должно сожержать символ двойных ковычек.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_work_plan_dialog.err2.message"), getLocaleMessage("admin.add_work_plan_dialog.err2.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (scheduleName.length() > 150) {
-                JOptionPane.showConfirmDialog(this, "Длинна наименования плана не должно превышать 150 символов.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_work_plan_dialog.err3.message"), getLocaleMessage("admin.add_work_plan_dialog.err3.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else {
                 flag = false;
             }
@@ -3865,8 +3903,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     public void deleteSchedule() {
         if (listSchedule.getSelectedIndex() != -1) {
             if (JOptionPane.showConfirmDialog(this,
-                    "Вы действительно хотите удалить план \"" + ((QSchedule) listSchedule.getSelectedValue()).getName() + "\"?",
-                    "Удаление плана",
+                    getLocaleMessage("admin.work_plan_delete.message") + " \"" + ((QSchedule) listSchedule.getSelectedValue()).getName() + "\"?",
+                    getLocaleMessage("admin.work_plan_delete.title"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
@@ -3920,16 +3958,16 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         String resultText = "";
         boolean flag = true;
         while (flag) {
-            resultText = (String) JOptionPane.showInputDialog(this, "Введите текст результата", "Результат", 3, null, null, resultText);
+            resultText = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.add_result_dialog.message"), getLocaleMessage("admin.add_result_dialog.title"), 3, null, null, resultText);
             if (resultText == null) {
                 return;
             }
             if ("".equals(resultText)) {
-                JOptionPane.showConfirmDialog(this, "Текст результата не должно быть пустым.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_result_dialog.err1.message"), getLocaleMessage("admin.add_result_dialog.err1.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (resultText.indexOf('\"') != -1) {
-                JOptionPane.showConfirmDialog(this, "Текст результата не должно сожержать символ двойных ковычек.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_result_dialog.err2.message"), getLocaleMessage("admin.add_result_dialog.err2.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (resultText.length() > 150) {
-                JOptionPane.showConfirmDialog(this, "Длинна текста результата не должно превышать 150 символов.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_result_dialog.err3.message"), getLocaleMessage("admin.add_result_dialog.err3.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else {
                 flag = false;
             }
@@ -3945,8 +3983,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     public void deleteResult() {
         if (listResults.getSelectedIndex() != -1) {
             if (JOptionPane.showConfirmDialog(this,
-                    "Вы действительно хотите удалить результат \"" + ((QResult) listResults.getSelectedValue()).getName() + "\"?",
-                    "Удаление результата",
+                    getLocaleMessage("admin.result_delete.message") + " \"" + ((QResult) listResults.getSelectedValue()).getName() + "\"?",
+                    getLocaleMessage("admin.result_delete.title"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
@@ -3976,19 +4014,19 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     @Action
     public void addCalendar() {
         // Запросим название календаря и если оно уникально, то примем
-        String calendarName = "Календарь работы услуги";
+        String calendarName = getLocaleMessage("admin.add_calendar_dialog.info");
         boolean flag = true;
         while (flag) {
-            calendarName = (String) JOptionPane.showInputDialog(this, "Введите наименование календаря", "Наименование календаря", 3, null, null, calendarName);
+            calendarName = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.add_calendar_dialog.message"), getLocaleMessage("admin.add_calendar_dialog.title"), 3, null, null, calendarName);
             if (calendarName == null) {
                 return;
             }
             if ("".equals(calendarName)) {
-                JOptionPane.showConfirmDialog(this, "Наименование календаря не должно быть пустым.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_calendar_dialog.err1.message"), getLocaleMessage("admin.add_calendar_dialog.err1.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (calendarName.indexOf('\"') != -1) {
-                JOptionPane.showConfirmDialog(this, "Наименование калкндаря не должно сожержать символ двойных ковычек.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_calendar_dialog.err2.message"), getLocaleMessage("admin.add_calendar_dialog.err2.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (calendarName.length() > 150) {
-                JOptionPane.showConfirmDialog(this, "Длинна наименования календаря не должно превышать 150 символов.", "Недопустимое значение", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_calendar_dialog.err3.message"), getLocaleMessage("admin.add_calendar_dialog.err3.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else {
                 flag = false;
             }
@@ -4005,8 +4043,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         if (listCalendar.getSelectedIndex() != -1
                 && (((QCalendar) listCalendar.getSelectedValue()).getId() == null || ((QCalendar) listCalendar.getSelectedValue()).getId() != 1)) {
             if (JOptionPane.showConfirmDialog(this,
-                    "Вы действительно хотите удалить календарь \"" + ((QCalendar) listCalendar.getSelectedValue()).getName() + "\"?",
-                    "Удаление календаря",
+                    getLocaleMessage("admin.calendar_delete.message") + " \"" + ((QCalendar) listCalendar.getSelectedValue()).getName() + "\"?",
+                    getLocaleMessage("admin.calendar_delete.title"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
@@ -4068,18 +4106,18 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     public void saveCalendar() {
         final CalendarTableModel model = (CalendarTableModel) tableCalendar.getModel();
         model.save();
-        JOptionPane.showMessageDialog(this, "Сохранение календаря завершено успешно.", "Сохранение", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, getLocaleMessage("admin.action.save_calensar.message"), getLocaleMessage("admin.action.save_calensar.title"), JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Action
     public void changePriority() {
-        final String num = (String) JOptionPane.showInputDialog(this, "Введите номер клиента", "Номер клиента", 3, null, null, "");
+        final String num = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.action.change_priority.num.message"), getLocaleMessage("admin.action.change_priority.num.title"), 3, null, null, "");
         if (num != null) {
 
 
             final String name = (String) JOptionPane.showInputDialog(this,
-                    "Выберите приоритет для :",
-                    "Определение приоритета",
+                    getLocaleMessage("admin.action.change_priority.get.message"),
+                    getLocaleMessage("admin.action.change_priority.get.title"),
                     JOptionPane.QUESTION_MESSAGE,
                     null,
                     Uses.PRIORITYS_WORD.values().toArray(),
@@ -4088,7 +4126,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
             if (name != null) {
                 for (int i = 0; i < Uses.PRIORITYS_WORD.size(); i++) {
                     if (name.equals(Uses.PRIORITYS_WORD.get(i))) {
-                        JOptionPane.showMessageDialog(this, NetCommander.setCustomerPriority(new ServerNetProperty(), i, num).getTextTrim(), "Изменение приоритета", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(this, NetCommander.setCustomerPriority(new ServerNetProperty(), i, num).getTextTrim(), getLocaleMessage("admin.action.change_priority.title"), JOptionPane.INFORMATION_MESSAGE);
 
                     }
                 }
@@ -4096,6 +4134,15 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
 
         }
 
+    }
+
+    @Action
+    public void setCurrentLang() {
+        for (int i = 0; i < menuLangs.getItemCount(); i++) {
+            if (((JRadioButtonMenuItem) menuLangs.getItem(i)).isSelected()) {
+                Locales.getInstance().setLangCurrent(((JRadioButtonMenuItem) menuLangs.getItem(i)).getText());
+            }
+        }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAddCalendar;
@@ -4237,6 +4284,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JPopupMenu.Separator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JPopupMenu.Separator jSeparator14;
+    private javax.swing.JPopupMenu.Separator jSeparator15;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
@@ -4267,6 +4315,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JMenu menuFile;
     private javax.swing.JMenuItem menuItemAbout;
     private javax.swing.JMenuItem menuItemHelp;
+    private javax.swing.JMenu menuLangs;
     private javax.swing.JMenu menuServices;
     private javax.swing.JMenu menuUsers;
     private javax.swing.JPanel panelSites;

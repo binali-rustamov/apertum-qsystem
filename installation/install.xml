@@ -106,6 +106,7 @@
             <file type="html" src="i18n/Readme_eng.html" targetdir="$INSTALL_PATH"/>
 			<file type="html" src="i18n/Readme_rus.html" targetdir="$INSTALL_PATH"/>
 			<file type="html" src="i18n/Readme_ukr.html" targetdir="$INSTALL_PATH"/>
+			<file type="properties" src="../config/langs.properties" targetdir="$INSTALL_PATH/config/"/>
             <file os="windows" src="D:/Distrib/JMF/jmf-2_1_1e-windows-i586.exe" targetdir="$INSTALL_PATH/JMF"/>
             <file os="unix" src="D:/Distrib/JMF/jmf-2_1_1e-linux-i586.bin" targetdir="$INSTALL_PATH/JMF"/>
             <!--executable os="windows" targetfile="$INSTALL_PATH/JMF/jmf-2_1_1e-windows-i586.exe" stage="postinstall"/-->

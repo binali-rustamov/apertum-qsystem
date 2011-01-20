@@ -19,6 +19,9 @@ package ru.apertum.qsystem.client.forms;
 
 import java.awt.Frame;
 import java.text.ParseException;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
@@ -30,10 +33,22 @@ public class FScheduleChangeDialod extends javax.swing.JDialog {
 
     private static FScheduleChangeDialod scheduleChangeDialod;
 
-    /** Creates new form FServiceChangeDialod */
+    /** Creates new form FServiceChangeDialod
+     * @param parent
+     * @param modal
+     */
     public FScheduleChangeDialod(Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+    }
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FScheduleChangeDialod.class);
+        }
+        return localeMap.getString(key);
     }
 
     /**
@@ -42,14 +57,13 @@ public class FScheduleChangeDialod extends javax.swing.JDialog {
      * Основной метод редактирования услуги.
      * @param parent
      * @param modal
-     * @param service Услуга для редактирования в XML-виде
-     * @return
+     * @param schedule
      */
     public static void changeSchedule(Frame parent, boolean modal, QSchedule schedule) {
         Uses.log.logger.info("Редактирование услуги \"" + schedule.getName() + "\"");
         if (scheduleChangeDialod == null) {
             scheduleChangeDialod = new FScheduleChangeDialod(parent, modal);
-            scheduleChangeDialod.setTitle("Редактирование параметров плана");
+            scheduleChangeDialod.setTitle(getLocaleMessage("dialog.title"));
         }
         scheduleChangeDialod.loadSchedule(schedule);
         Uses.setLocation(scheduleChangeDialod);
@@ -560,8 +574,8 @@ public class FScheduleChangeDialod extends javax.swing.JDialog {
     }//GEN-LAST:event_buttonCancelActionPerformed
 
     private void radioButtonWeekStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_radioButtonWeekStateChanged
-        c1.setText(radioButtonWeek.isSelected() ? "Понедельник" : "Четные дни");
-        c2.setText(radioButtonWeek.isSelected() ? "Вторник" : "Нечетные дни");
+        c1.setText(radioButtonWeek.isSelected() ? getLocaleMessage("c1.text") : getLocaleMessage("dialog.parity"));
+        c2.setText(radioButtonWeek.isSelected() ? getLocaleMessage("c2.text") : getLocaleMessage("dialog.not_parity"));
         panelWeek.setVisible(radioButtonWeek.isSelected());
     }//GEN-LAST:event_radioButtonWeekStateChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables

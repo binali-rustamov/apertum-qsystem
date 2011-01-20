@@ -21,6 +21,9 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import javax.swing.JFrame;
 import org.dom4j.Element;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.help.Helper;
 import ru.apertum.qsystem.common.Uses;
 
@@ -36,6 +39,15 @@ public class FBoardConfig extends AFBoardRedactor {
     private Element leftElement;
     private Element rightElement;
     private Element mainElement;
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FBoardConfig.class);
+        }
+        return localeMap.getString(key);
+    }
 
     /** Creates new form FBoardConfig
      * @param parent
@@ -442,32 +454,32 @@ private void panelDownComponentResized(java.awt.event.ComponentEvent evt) {//GEN
 
 private void buttonMainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonMainActionPerformed
 
-    FParamsEditor.changeParams(this.parent, true, mainElement, "Основные параметры");
+    FParamsEditor.changeParams(this.parent, true, mainElement, getLocaleMessage("cfg.params.main"));
 }//GEN-LAST:event_buttonMainActionPerformed
 
 private void buttonRightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRightActionPerformed
 
-    FBoardParams.changeParams(this.parent, rightElement, "Правая часть табло");
+    FBoardParams.changeParams(this.parent, rightElement, getLocaleMessage("cfg.params.right"));
 
 }//GEN-LAST:event_buttonRightActionPerformed
 
 private void buttonDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonDownActionPerformed
 
-    FBoardParams.changeParams(this.parent, bottomElement, "Нижняя часть табло");
+    FBoardParams.changeParams(this.parent, bottomElement, getLocaleMessage("cfg.params.bottom"));
 
 }//GEN-LAST:event_buttonDownActionPerformed
 
 private void buttonLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLeftActionPerformed
 
 
-    FBoardParams.changeParams(this.parent, leftElement, "Левая часть табло");
+    FBoardParams.changeParams(this.parent, leftElement, getLocaleMessage("cfg.params.left"));
 
 }//GEN-LAST:event_buttonLeftActionPerformed
 
 private void buttonTopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonTopActionPerformed
 
 
-    FBoardParams.changeParams(this.parent, topElement, "Верхняя часть табло");
+    FBoardParams.changeParams(this.parent, topElement, getLocaleMessage("cfg.params.top"));
 
 }//GEN-LAST:event_buttonTopActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

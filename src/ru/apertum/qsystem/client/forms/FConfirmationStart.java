@@ -58,7 +58,10 @@ public class FConfirmationStart extends JDialog {
         }
     };
 
-    /** Creates new form FConfirmationStart */
+    /** Creates new form FConfirmationStart
+     * @param owner
+     * @param count 
+     */
     public FConfirmationStart(JFrame owner, int count) {
         super(owner, "Статистика", true);
         initComponents();
@@ -83,14 +86,23 @@ public class FConfirmationStart extends JDialog {
         });
     }
 
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FConfirmationStart.class);
+        }
+        return localeMap.getString(key);
+    }
+
     public static boolean getMayContinue(JFrame owner, int count) {
         Uses.log.logger.info("Просмотр состояния очереди и принятие решения о постановки себя в очередь.");
         ok = false;
         if (confirmationForm == null) {
             confirmationForm = new FConfirmationStart(owner, count);
         }
-        confirmationForm.labelInfo.setText("<HTML><b><p align=center><span style='font-size:40.0pt;color:green'>В данный момент перед вами</span><br>" +
-                "<span style='font-size:50.0pt;color:red'>" + count + "<br>человек" +
+        confirmationForm.labelInfo.setText("<HTML><b><p align=center><span style='font-size:40.0pt;color:green'>" + getLocaleMessage("dialod.text_before") + "</span><br>" +
+                "<span style='font-size:50.0pt;color:red'>" + count + "<br>" + getLocaleMessage("dialod.text_before_people") +
                 ((((count % 10) >= 2) && ((count % 10) <= 4)) ? "a" : "") + "</span></p></b>");
         confirmationForm.setBounds(owner.getLocation().x, owner.getLocation().y, owner.getWidth(), owner.getHeight());
         // если кастомер провафлил и ушел, то надо закрыть диалог

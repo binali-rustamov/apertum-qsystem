@@ -32,6 +32,9 @@ import javax.swing.JLabel;
 import javax.swing.border.EtchedBorder;
 import org.dom4j.Element;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.NetCommander;
@@ -77,6 +80,15 @@ public class FInfoDialog extends javax.swing.JDialog {
      */
     private static Element level;
 
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FInfoDialog.class);
+        }
+        return localeMap.getString(key);
+    }
+
     /**
      * Статический метод который показывает модально диалог чтения информации.
      * @param parent фрейм относительно которого будет модальность
@@ -91,7 +103,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         Uses.log.logger.info("Чтение информации");
         if (infoDialog == null) {
             infoDialog = new FInfoDialog(parent, modal);
-            infoDialog.setTitle("Чтение информации");
+            infoDialog.setTitle(getLocaleMessage("dialog.title"));
         }
         FInfoDialog.setRoot(respList);
         FInfoDialog.result = null;
@@ -437,7 +449,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         final Element printInfo = NetCommander.getPintForInfoItem(FWelcome.netProperty, level.attributeValue(Uses.TAG_NAME), "");
         if (printInfo != null) {
             String printedText = printInfo.getText();
-            printedText = "".equals(printedText.trim()) ? "Нет информации для печати.\nОбратитесь к менеджеру." : printedText;
+            printedText = "".equals(printedText.trim()) ? getLocaleMessage("dialog.no_info") : printedText;
             FWelcome.printPreInfoText(printedText);
         }
     }

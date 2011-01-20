@@ -21,6 +21,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import org.dom4j.Element;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.common.model.NetCommander;
@@ -55,6 +58,14 @@ abstract public class AFBoardRedactor extends javax.swing.JDialog {
         this.modal = modal;
         Uses.setLocation(this);
     }
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(AFBoardRedactor.class);
+        }
+        return localeMap.getString(key);
+    }
 
     /**
      * Это метод сохранения результатов редактирования параметров табло в форме редактора.
@@ -63,7 +74,7 @@ abstract public class AFBoardRedactor extends javax.swing.JDialog {
      */
     public void saveResult() throws IOException {
         NetCommander.saveBoardConfig(netProperty, params);
-        JOptionPane.showMessageDialog(this, "Сохранение завершено успешно.", "Сохранение", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, getLocaleMessage("dialog.message.caption"), getLocaleMessage("dialog.message.title"), JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
@@ -147,7 +158,6 @@ abstract public class AFBoardRedactor extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-
     @Action
     public void saveBoardConfig() throws IOException {
         saveResult();
@@ -157,7 +167,6 @@ abstract public class AFBoardRedactor extends javax.swing.JDialog {
     public void hideRedactor() {
         setVisible(false);
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JMenu jMenu1;
     protected javax.swing.JMenuItem jMenuItem1;

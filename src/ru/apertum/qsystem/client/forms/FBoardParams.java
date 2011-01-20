@@ -21,9 +21,6 @@ import java.awt.Font;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -33,7 +30,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.dom4j.Element;
 import org.dom4j.Node;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 import org.jfree.ui.tabbedui.VerticalLayout;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 
 /**
@@ -41,6 +41,15 @@ import ru.apertum.qsystem.common.Uses;
  * @author Evgeniy Egorov
  */
 public class FBoardParams extends javax.swing.JDialog {
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FBoardParams.class);
+        }
+        return localeMap.getString(key);
+    }
 
     /**
      * Результат
@@ -412,10 +421,10 @@ private void buttonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     if (buttonRun.isSelected()) {
         runningLabel.start();
-        buttonRun.setText("Стоп");
+        buttonRun.setText(getLocaleMessage("dialog.stop"));
     } else {
         runningLabel.stop();
-        buttonRun.setText("Старт");
+        buttonRun.setText(getLocaleMessage("dialog.start"));
     }
 }//GEN-LAST:event_buttonRunActionPerformed
 
@@ -428,7 +437,7 @@ private void checkBoxDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void buttonColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonColorActionPerformed
 
     final JDialog di = new JDialog(this, true);
-    di.setTitle("Выбор цвета");
+    di.setTitle(getLocaleMessage("dialog.select_color"));
     final JColorChooser cc = new JColorChooser(new Color((Integer) spinnerFontColor.getValue()));
     di.setSize(450, 400);
     LayoutManager l = new VerticalLayout();
@@ -442,7 +451,7 @@ private void buttonColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             di.setVisible(false);
         }
     });
-    but.setText("Выбрать");
+    but.setText(getLocaleMessage("dialog.select"));
     but.setSize(20, 20);
     di.add(but);
     Uses.setLocation(di);

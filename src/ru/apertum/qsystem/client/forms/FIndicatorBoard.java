@@ -38,6 +38,9 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import org.dom4j.Element;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.RunningLabel;
 import ru.apertum.qsystem.common.Uses;
@@ -244,7 +247,17 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             panel.startVideo();
         }
     }
-    private final static Border border = new TitledBorder("вызов");//  MatteBorder(1, 3, 1, 2, Color.LIGHT_GRAY);
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FIndicatorBoard.class);
+        }
+        return localeMap.getString(key);
+    }
+
+    private final static Border border = new TitledBorder(getLocaleMessage("board.cell"));//  MatteBorder(1, 3, 1, 2, Color.LIGHT_GRAY);
 
     public class Line extends JPanel {
 
@@ -426,7 +439,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             //lab.setOpaque(true);
             panel_cap.add(lab_cap_l);
             lab_cap_l.setBounds(0, 0, 100, 100);
-            lab_cap_l.setText("КЛИЕНТ");
+            lab_cap_l.setText(getLocaleMessage("board.client"));
 
             lab_cap_l = new JLabel();
             lab_cap_l.setFont(font_cap);
@@ -437,7 +450,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             //lab.setOpaque(true);
             panel_cap.add(lab_cap_l);
             lab_cap_l.setBounds(0, 0, 100, 100);
-            lab_cap_l.setText("ОКНО");
+            lab_cap_l.setText(getLocaleMessage("board.point"));
         }
         for (int i = 1; i <= indicatorBoard.linesCount; i++) {
             final Line panel = new Line();

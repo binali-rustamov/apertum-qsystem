@@ -26,6 +26,9 @@ import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
 import javax.swing.JComponent;
 import org.dom4j.Element;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
@@ -38,6 +41,15 @@ import ru.evgenic.rxtx.serialPort.ISerialPort;
  * @author Evgeniy Egorov
  */
 public class FMedCheckIn extends javax.swing.JDialog {
+
+     private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FMedCheckIn.class);
+        }
+        return localeMap.getString(key);
+    }
 
     private static FMedCheckIn medCheckIn;
 
@@ -66,7 +78,10 @@ public class FMedCheckIn extends javax.swing.JDialog {
         });
     }
 
-    /** Creates new form FMedCheckIn */
+    /** Creates new form FMedCheckIn
+     * @param parent
+     * @param modal
+     */
     public FMedCheckIn(Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -78,6 +93,7 @@ public class FMedCheckIn extends javax.swing.JDialog {
      * @param modal модальный диалог или нет
      * @param netProperty свойства работы с сервером
      * @param fullscreen растягивать форму на весь экран и прятать мышку или нет
+     * @param port 
      * @return XML-описание результата предварительной записи. если null, то отказались от предварительной записи
      */
     public static Element showMedCheckIn(Frame parent, boolean modal, INetProperty netProperty, boolean fullscreen, ISerialPort port) {
@@ -119,7 +135,7 @@ public class FMedCheckIn extends javax.swing.JDialog {
         if (medCheckIn != null){
             medCheckIn.panelButtonsNumeric.setVisible(!isBlock);
             medCheckIn.buttonEnter.setVisible(!isBlock);
-            medCheckIn.textFieldNumber.setText(isBlock ? "Заблокировано" : "");
+            medCheckIn.textFieldNumber.setText(isBlock ? getLocaleMessage("med.lock") : "");
         }
     }
 

@@ -27,13 +27,15 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import javax.swing.ButtonGroup;
 import org.dom4j.DocumentException;
 import org.jdesktop.application.Action;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.INetProperty;
 import org.dom4j.Element;
@@ -41,6 +43,7 @@ import org.dom4j.io.SAXReader;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.help.Helper;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.client.model.QPanel;
@@ -53,7 +56,7 @@ import ru.apertum.qsystem.common.model.QCustomer;
  * Created on 11 Сентябрь 2008 г., 16:57
  * @author Evgeniy Egorov
  */
-public class FClient extends javax.swing.JFrame {
+public final class FClient extends javax.swing.JFrame {
 
     /**
      * Информация для взаимодействия по сети.
@@ -154,7 +157,7 @@ public class FClient extends javax.swing.JFrame {
                 || "true".equals(customer.toXML().attributeValue(Uses.TAG_PROP_RESULT_REQUIRED).toLowerCase()))) {
             getResults();
             Object res = null;
-            res = JOptionPane.showInputDialog(this, "Выберите результат", "Результат работы с клиентом", JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
+            res = JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
             rs = res == null ? null : results.get((String) res);
         }
         return rs;
@@ -195,9 +198,9 @@ public class FClient extends javax.swing.JFrame {
             }
             if (data.startsWith("message#") && (data.startsWith("message#ALL##") || isMyMessage(data))) {
                 final String mess = data.substring(data.indexOf("##") + 2);
-                tray.showMessageTray("Информационное сообщение", mess, MessageType.INFO);
+                tray.showMessageTray(getLocaleMessage("messages.tray.information"), mess, MessageType.INFO);
 
-                labelMessage.setText(labelMessage.getText() + "<b><span style='color:black'>" + Uses.format_HH_mm.format(new Date()) + " Сообщение:</span></b><br><span style='color:blue'>" + mess.replaceAll("\n", "<br>") + "</span><br>");
+                labelMessage.setText(labelMessage.getText() + "<b><span style='color:black'>" + Uses.format_HH_mm.format(new Date()) + " " + getLocaleMessage("messages.tray.message") + ":</span></b><br><span style='color:blue'>" + mess.replaceAll("\n", "<br>") + "</span><br>");
             }
         }
 
@@ -237,6 +240,10 @@ public class FClient extends javax.swing.JFrame {
 
     /**
      * Creates new form FClient
+     * @param user
+     * @param usersPlan
+     * @param netProperty
+     * @throws AWTException
      */
     public FClient(Element user, Element usersPlan, INetProperty netProperty) throws AWTException {
         this.user = user;
@@ -283,6 +290,18 @@ public class FClient extends javax.swing.JFrame {
         labelUser.setText(userName + " - " + user.attributeValue(Uses.TAG_USER_IDENTIFIER));
         setSituation(usersPlan);
 
+        int ii = 1;
+        final ButtonGroup bg = new ButtonGroup();
+        final String currLng = Locales.getInstance().getLangCurrName();
+        for (String lng : Locales.getInstance().getAvailableLocales()) {
+            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FClient.class, this).get("setCurrentLang"));
+            bg.add(item);
+            item.setSelected(lng.equals(currLng));
+            item.setText(lng); // NOI18N
+            item.setName("RRadioButtonMenuItem" + (ii++)); // NOI18N
+            menuLangs.add(item);
+        }
+
         // стартуем UDP сервер для обнаружения изменения состояния очередей
         udpServer = new UDPServer(netProperty.getClientPort());
         //привязка помощи к форме.
@@ -316,7 +335,6 @@ public class FClient extends javax.swing.JFrame {
     /**
      * Определяет какова ситуация в очереди к пользователю.
      * @param plan - ситуация в XML
-     * @return html - описание очередей.
      */
     protected void setSituation(Element plan) {
         Uses.log.logger.trace("Обновляем видимую ситуацию.");
@@ -404,6 +422,7 @@ public class FClient extends javax.swing.JFrame {
 
     /**
      * Механизм включения/отключения кнопок
+     * @param regim
      */
     public void setKeyRegim(String regim) {
         Uses.log.logger.trace("Конфигурация кнопок \"" + regim + "\".");
@@ -591,6 +610,8 @@ public class FClient extends javax.swing.JFrame {
         labelStatus = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        menuLangs = new javax.swing.JMenu();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         menuItemRefresh = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
@@ -910,6 +931,13 @@ public class FClient extends javax.swing.JFrame {
         fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
         fileMenu.setName("fileMenu"); // NOI18N
 
+        menuLangs.setText(resourceMap.getString("menuLangs.text")); // NOI18N
+        menuLangs.setName("menuLangs"); // NOI18N
+        fileMenu.add(menuLangs);
+
+        jSeparator2.setName("jSeparator2"); // NOI18N
+        fileMenu.add(jSeparator2);
+
         menuItemRefresh.setAction(actionMap.get("refreshClient")); // NOI18N
         menuItemRefresh.setName("menuItemRefresh"); // NOI18N
         fileMenu.add(menuItemRefresh);
@@ -1003,8 +1031,10 @@ public class FClient extends javax.swing.JFrame {
 
     /**
      * @param args the command line arguments
+     * @throws DocumentException
      */
     public static void main(String args[]) throws DocumentException {
+        Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.startSplash();
         Uses.isDebug = Uses.setLogining(args, false);
         final INetProperty netProperty = Uses.getClientNetProperty(args);
@@ -1073,6 +1103,15 @@ public class FClient extends javax.swing.JFrame {
     @Action
     public void help() {
     }
+
+    @Action
+    public void setCurrentLang() {
+        for (int i = 0; i < menuLangs.getItemCount(); i++) {
+            if (((JRadioButtonMenuItem) menuLangs.getItem(i)).isSelected()) {
+                Locales.getInstance().setLangCurrent(((JRadioButtonMenuItem) menuLangs.getItem(i)).getText());
+            }
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JButton buttonFinish;
@@ -1105,6 +1144,7 @@ public class FClient extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel labelMessage;
     private javax.swing.JLabel labelNextCustomerInfo;
@@ -1122,6 +1162,7 @@ public class FClient extends javax.swing.JFrame {
     private javax.swing.JMenuItem menuItemRedirect;
     private javax.swing.JMenuItem menuItemRefresh;
     private javax.swing.JMenuItem menuItemStart;
+    private javax.swing.JMenu menuLangs;
     private javax.swing.JPanel panelDown;
     private javax.swing.JPopupMenu popupMenuTray;
     // End of variables declaration//GEN-END:variables

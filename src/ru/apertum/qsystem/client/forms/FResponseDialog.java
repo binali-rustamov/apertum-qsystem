@@ -29,6 +29,9 @@ import javax.swing.JButton;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import org.dom4j.Element;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
@@ -39,13 +42,25 @@ public class FResponseDialog extends javax.swing.JDialog {
 
     private static FResponseDialog respDialog;
 
-    /** Creates new form FStandAdvance */
+    /** Creates new form FStandAdvance
+     * @param parent
+     * @param modal
+     */
     public FResponseDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
     }
     private static Long result = null;
     private static int delay = 10000;
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FResponseDialog.class);
+        }
+        return localeMap.getString(key);
+    }
 
     /**
      * Статический метод который показывает модально диалог выбора времени для предварительной записи клиентов.
@@ -67,7 +82,7 @@ public class FResponseDialog extends javax.swing.JDialog {
                 final RespButton button = new RespButton(el);
                 respDialog.panelMain.add(button);
             }
-            respDialog.setTitle("Выбор отзыва");
+            respDialog.setTitle(getLocaleMessage("dialog.title"));
         }
         result = null;
         Uses.setLocation(respDialog);

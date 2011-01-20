@@ -21,6 +21,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import org.dom4j.Element;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 
 /**
@@ -38,6 +41,15 @@ import ru.apertum.qsystem.common.Uses;
  * @author Evgeniy Egorov
  */
 public class FParamsEditor extends AFBoardRedactor {
+
+    private static ResourceMap localeMap = null;
+
+    private static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FParamsEditor.class);
+        }
+        return localeMap.getString(key);
+    }
 
     /**
      * Класс итема в списке параметров
@@ -150,7 +162,7 @@ public class FParamsEditor extends AFBoardRedactor {
         listProps.requestFocusInWindow();
         final String value = (String) JOptionPane.showInputDialog(this,
                 param.getName(),
-                "Изменение значения",
+                getLocaleMessage("editor.dialog.title"),
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 null,
@@ -176,7 +188,7 @@ public class FParamsEditor extends AFBoardRedactor {
                 }
             } catch (NumberFormatException ex) {
                 Uses.log.logger.error("Попытка ввода параметра неправильного типа. " + ex);
-                JOptionPane.showMessageDialog(null, "Параметр неправильного типа", "Ошибка ввода", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, getLocaleMessage("editor.dialog2.title"), getLocaleMessage("editor.dialog2.caption"), JOptionPane.ERROR_MESSAGE);
             }
         }
     }
