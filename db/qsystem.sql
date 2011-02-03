@@ -376,7 +376,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`information` (
   `text` VARCHAR(5000) NOT NULL DEFAULT '' COMMENT 'html-текст справки' ,
   `text_print` VARCHAR(5000) NOT NULL DEFAULT '' COMMENT 'Текст для печати информационного узла' ,
   PRIMARY KEY (`id`) ,
-  CONSTRAINT `fk_information_information1`
+  CONSTRAINT `fk_information_information`
     FOREIGN KEY (`parent_id` )
     REFERENCES `qsystem`.`information` (`id` )
     ON DELETE CASCADE
@@ -384,7 +384,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`information` (
 ENGINE = InnoDB
 COMMENT = 'Таблица справочной информации древовидной структуры';
 
-CREATE INDEX `fk_information_information1` ON `qsystem`.`information` (`parent_id` ASC) ;
+CREATE INDEX `fk_information_information` ON `qsystem`.`information` (`parent_id` ASC) ;
 
 
 -- -----------------------------------------------------

@@ -228,10 +228,11 @@ public abstract class AGenerator implements IGenerator {
                 exporterToTempFile.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, Uses.TEMP_FOLDER + File.separator + "temphtml.html");
                 exporterToTempFile.exportReport();
 
-                final StringBuffer buf = new StringBuffer();
+                final StringBuffer buf = new StringBuffer("UTF-8");
                 exporter.setParameter(JRExporterParameter.OUTPUT_STRING_BUFFER, buf);
+                exporter.setParameter(JRExporterParameter.CHARACTER_ENCODING, "UTF-8");
                 exporter.exportReport();
-                result = new String(buf.toString().getBytes()).replaceAll("nullpx", "resources/px").replaceFirst("<body text=\"#000000\"", "<body text=\"#000000\"  background=\"resources/setka.gif\" bgproperties=\"fixed\"").replaceAll("bgcolor=\"white\"", "bgcolor=\"CCDDEE\"").replaceAll("nullimg_", "img_").getBytes("UTF-8");
+                result = buf.toString().replaceAll("nullpx", "resources/px").replaceFirst("<body text=\"#000000\"", "<body text=\"#000000\"  background=\"resources/setka.gif\" bgproperties=\"fixed\"").replaceAll("bgcolor=\"white\"", "bgcolor=\"CCDDEE\"").replaceAll("nullimg_", "img_").getBytes("UTF-8");
                 dataType = "text/html";
             } else if (Uses.REPORT_FORMAT_RTF.equalsIgnoreCase(format)) {
                 final JRRtfExporter exporter = new JRRtfExporter();

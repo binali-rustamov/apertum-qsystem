@@ -16,6 +16,7 @@
  */
 package ru.apertum.qsystem.reports.formirovators;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -128,7 +129,10 @@ public class DistributionWaitDay extends AFormirovator {
     @Override
     public Response getDialog(String driverClassName, String url, String username, String password, HttpRequest request, String errorMessage) {
         final Response result = getDialog("/ru/apertum/qsystem/reports/web/get_date_distribution.html", request, errorMessage);
-        result.setData(new String(result.getData()).replaceFirst("#DATA_FOR_TITLE#", "Распределение среднего времени ожидания внутри дня:").getBytes());
+        try {
+            result.setData(new String(result.getData(), "UTF-8").replaceFirst("#DATA_FOR_TITLE#", "Распределение среднего времени ожидания внутри дня:").getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+        }
         return result;
     }
 

@@ -77,7 +77,7 @@ public class CurrentStatistic {
     /**
      * Запуск отчетного механизма.
      * Метод генерации класса статистики. Класс обработки статистики существует в системе в одном экземпляре.
-     * @param usesrProp Описание набора пользователей в системе, по ним строим статистику
+     * @param usersGetter Описание набора пользователей в системе, по ним строим статистику
      * @param port Порт, на котором работает вэбсервер выдачи статистики по HTTP
      * @param reports Список аналитических отчетов.
      * @param siteList Список сайтов домена, если сайт является суперсайтом. Иначе передать null.
@@ -108,11 +108,15 @@ public class CurrentStatistic {
                         + "</tr>\n");
 
             }
+            WebServer.repList = list;
+            /*
             try {
                 // список аналитических отчетов.
                 WebServer.repList = new String(list.getBytes("UTF-8"));
             } catch (UnsupportedEncodingException ex) {
             }
+             * 
+             */
             String usrList = "";
             String sel = " selected";
             for (Iterator<IUserProperty> i = usersGetter.iterator(); i.hasNext();) {
@@ -124,10 +128,11 @@ public class CurrentStatistic {
                     sel = "";
                 }
             }
-            try {
-                WebServer.usrList = new String(usrList.getBytes("UTF-8"));
-            } catch (UnsupportedEncodingException ex) {
-            }
+            //try {
+            //    WebServer.usrList = new String(usrList.getBytes());
+                WebServer.usrList = usrList;
+            //} catch (UnsupportedEncodingException ex) {
+            //}
             // стартанем вебсервер
             WebServer.startWebServer(port);
         }
@@ -164,7 +169,6 @@ public class CurrentStatistic {
                 //создаем корневой элемент для статистики
                 stat = DocumentHelper.createElement(Uses.TAG_REP_STATISTIC);
             } catch (Exception e) {
-                e.printStackTrace();
                 throw new Uses.ReportException("Не создан XML-элемент для статистики.");
             }
             // Дорабатываем по количеству услуг и пользователям их обрабатывающих.
@@ -423,7 +427,6 @@ public class CurrentStatistic {
     /**4
      * Регистрация статистики при старте обработки юзером кастомера.
      * @param serviceName название услуги
-     * @param userName название юзера
      * @param min время ожидания кастомера в минутах
      */
     public void processingAvgTimeWait(String serviceName, Double min) {
@@ -441,6 +444,7 @@ public class CurrentStatistic {
      * Текущее состояние в разрезе услуг
      * @return JRXmlDataSource
      * @throws net.sf.jasperreports.engine.JRException
+     * @throws UnsupportedEncodingException
      */
     public static JRXmlDataSource getDataSourceCurrentServices() throws JRException, UnsupportedEncodingException {
         //Отсортируем по услуге
@@ -454,6 +458,7 @@ public class CurrentStatistic {
      * Текущее состояние в разрезе персонала
      * @return JRXmlDataSource
      * @throws net.sf.jasperreports.engine.JRException
+     * @throws UnsupportedEncodingException 
      */
     public static JRXmlDataSource getDataSourceCurrentUsers() throws JRException, UnsupportedEncodingException {
         //Отсортируем по услуге

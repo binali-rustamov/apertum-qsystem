@@ -1252,6 +1252,7 @@ public class FAdmin extends javax.swing.JFrame {
         final QInfoItem newItem = new QInfoItem();
         newItem.setName(infoName);
         newItem.setHTMLText("<html><b><p align=center><span style='font-size:20.0pt;color:green'>" + infoName + "</span></b>");
+        newItem.setTextPrint("");
         final QInfoItem parentItem = (QInfoItem) treeInfo.getLastSelectedPathComponent();
         ((QInfoTree) treeInfo.getModel()).insertNodeInto(newItem, parentItem, parentItem.getChildCount());
         final TreeNode[] nodes = ((QInfoTree) treeInfo.getModel()).getPathToRoot(newItem);

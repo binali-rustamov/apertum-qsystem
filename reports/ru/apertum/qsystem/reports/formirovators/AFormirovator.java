@@ -18,6 +18,7 @@ package ru.apertum.qsystem.reports.formirovators;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,7 +92,12 @@ abstract public class AFormirovator implements IFormirovator {
         if (errorMessage == null) {
             errorMessage = "";
         }
-        return new Response(new String(result).replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, NetUtil.getUrl(request)).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, errorMessage).getBytes());
+        Response res = null;
+        try {
+            res = new Response(new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, NetUtil.getUrl(request)).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, errorMessage).getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+        }
+        return res;
     }
 
     /**

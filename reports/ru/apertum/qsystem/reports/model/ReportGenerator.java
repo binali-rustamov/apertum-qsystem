@@ -18,6 +18,7 @@ package ru.apertum.qsystem.reports.model;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
@@ -145,7 +146,12 @@ public class ReportGenerator {
             final String s = "<html><head><meta http-equiv = \"Content-Type\" content = \"text/html; charset=windows-1251\" ></head><p align=center>Ресурс для входа не найден.</p></html>";
             return new Response(s.getBytes());
         }
-        return new Response(new String(result).replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, WebServer.usrList).getBytes()); //"Cp1251"
+        Response res = null;
+        try {
+            res = new Response(new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, WebServer.usrList).getBytes("UTF-8")); //"Cp1251"
+        } catch (UnsupportedEncodingException ex) {
+        }
+        return res;
     }
 
     private static boolean checkLogin(HttpRequest request) {

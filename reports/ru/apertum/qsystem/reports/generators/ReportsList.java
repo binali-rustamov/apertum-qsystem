@@ -68,11 +68,11 @@ public class ReportsList extends AGenerator {
             result = Uses.readInputStream(inStream);
             if ("/ru/apertum/qsystem/reports/web/reportList.html".equals(res)) {
                 // добавим список аналитических отчетов
-                result = new String(result).replaceFirst(Uses.ANCHOR_REPORT_LIST, WebServer.repList).getBytes(); //"Cp1251"
+                result = new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_REPORT_LIST, WebServer.repList).getBytes("UTF-8");
                 // Добавим кукисы сессии
                 //<META HTTP-EQUIV="Set-Cookie" CONTENT="NAME=value; EXPIRES=date; DOMAIN=domain_name; PATH=path; SECURE">
                 final String coocie = "<META HTTP-EQUIV=\"Set-Cookie\" CONTENT=\"username=" + URLEncoder.encode(usr, "utf-8") + "\">\n<META HTTP-EQUIV=\"Set-Cookie\" CONTENT=\"password=" + URLEncoder.encode(pwd, "utf-8") + "\">";
-                result = new String(result).replaceFirst(Uses.ANCHOR_COOCIES, coocie).getBytes(); //"Cp1251"
+                result = new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_COOCIES, coocie).getBytes("UTF-8");
             }
         } catch (IOException ex) {
             throw new Uses.ReportException("Ошибка чтения ресурса для диалогового выбора отчета. " + ex);

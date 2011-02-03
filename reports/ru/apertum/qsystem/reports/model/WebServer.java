@@ -19,6 +19,8 @@ package ru.apertum.qsystem.reports.model;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.reports.net.RunnableSocket;
@@ -87,6 +89,10 @@ public class WebServer /*extends Thread*/ {
             public void run() {
                 System.out.println("Report server for QSystem started.");
                 Uses.logRep.logger.info("Отчетный вэбсервер системы 'Очередь' запущен.");
+                try {
+                    reportSocket.setSoTimeout(1000);
+                } catch (SocketException ex) {
+                }
                 while (isActive && !webTread.isInterrupted()) {
                     // ждём нового подключения, после чего запускаем обработку клиента
                     // в новый вычислительный поток и увеличиваем счётчик на единичку
@@ -97,9 +103,16 @@ public class WebServer /*extends Thread*/ {
                         rs.setSocket(socket);
                         final Thread thread = new Thread(rs);
                         thread.start();
+                    } catch (SocketTimeoutException ex) {
                     } catch (IOException ex) {
                         throw new Uses.ReportException("Ошибка при работе сокета для вэбсервера: " + ex);
                     }
+                }
+                try {
+                    if (reportSocket != null && !reportSocket.isClosed()) {
+                        reportSocket.close();
+                    }
+                } catch (IOException ex) {
                 }
                 Uses.logRep.logger.info("Отчетный вэбсервер системы 'Очередь' остановлен.");
 
@@ -120,15 +133,7 @@ public class WebServer /*extends Thread*/ {
             isActive = false;
         }
         if (webTread != null) {
-            if (reportSocket != null && !reportSocket.isClosed()) {
-                try {
-                    reportSocket.close();
-                } catch (IOException ex) {
-                    throw new Uses.ServerException("Ошибка закрытия сокета отчетного вебсервера." + ex);
-                }
-            }
             webTread.interrupt();
         }
     }
-
 }

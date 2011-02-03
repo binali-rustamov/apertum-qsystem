@@ -139,7 +139,7 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
                 try {
                     result = new Response(Uses.readInputStream(inStream));
                     if ("/login.html".equals(subject)) {
-                        result.setData(new String(result.getData()).replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, WebServer.usrList).getBytes()); //"Cp1251"
+                        result.setData(new String(result.getData(), "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, WebServer.usrList).getBytes("UTF-8")); //"Cp1251"
                     }
                 } catch (IOException ex) {
                     Uses.logRep.logger.error("Ошибка чтения ресурса. " + ex);

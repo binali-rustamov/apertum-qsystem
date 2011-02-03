@@ -16,6 +16,7 @@
  */
 package ru.apertum.qsystem.reports.formirovators;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -181,8 +182,10 @@ public class DistributionJobDayServices extends AFormirovator {
         } catch (SQLException ex) {
             throw new Uses.ReportException("Ошибка закрытия запроса для диалога ввода пользователя. " + ex);
         }
-
-        result.setData(new String(result.getData()).replaceFirst("#DATA_FOR_TITLE#", "Распределение нагрузки внутри дня для услуги:").replaceFirst("#DATA_FOR_SERVICES#", services_select.toString()).getBytes());
+        try {
+            result.setData(new String(result.getData(), "UTF-8").replaceFirst("#DATA_FOR_TITLE#", "Распределение нагрузки внутри дня для услуги:").replaceFirst("#DATA_FOR_SERVICES#", services_select.toString()).getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+        }
         services_select.setLength(0);
         return result;
     }
