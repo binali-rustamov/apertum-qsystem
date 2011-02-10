@@ -102,18 +102,19 @@
     
     -->
     <!-- Бин для второго монитора USB или RGB -->
-    <!--
+    
     <bean id="indicatorBoard" class="ru.apertum.qsystem.server.model.QIndicatorBoardMonitor">
-        <!- Файл конфигурации главного табло ->
+        <!-- Файл конфигурации главного табло -->
         <property name="configFile" value="config\mainboard.xml" />
     </bean>
-    -->
+    
     
     <!-- Бин для отдельной системы табло с транспортной шиной на JGroup под названием Monitorium -->
+    <!--
     <bean id="indicatorBoard" class="ru.apertum.qsystem.server.model.monitorium.QMonitoriumBoard">
-        <!-- property name="dataSource" ref="c3p0DataSource"/-->
+        <!- property name="dataSource" ref="c3p0DataSource"/->
     </bean>
-    
+    -->
     <!-- бин для настройки ведения нумерации и формирования помера клиента -->
     <bean id="numeration" class="ru.apertum.qsystem.server.model.Numeration" lazy-init="default" autowire="default" dependency-check="default">
         <property name="delimiter" value="-"/>

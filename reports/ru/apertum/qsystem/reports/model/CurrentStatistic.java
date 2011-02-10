@@ -111,8 +111,8 @@ public class CurrentStatistic {
             WebServer.repList = list;
             /*
             try {
-                // список аналитических отчетов.
-                WebServer.repList = new String(list.getBytes("UTF-8"));
+            // список аналитических отчетов.
+            WebServer.repList = new String(list.getBytes("UTF-8"));
             } catch (UnsupportedEncodingException ex) {
             }
              * 
@@ -130,7 +130,7 @@ public class CurrentStatistic {
             }
             //try {
             //    WebServer.usrList = new String(usrList.getBytes());
-                WebServer.usrList = usrList;
+            WebServer.usrList = usrList;
             //} catch (UnsupportedEncodingException ex) {
             //}
             // стартанем вебсервер

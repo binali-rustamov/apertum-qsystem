@@ -243,6 +243,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         filePath = Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_VIDEO_FILE).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
         File fv = new File(filePath);
         if (fv.exists()) {
+            label.setVisible(false);
             panel.setVideoFileName(filePath);
             panel.startVideo();
         }

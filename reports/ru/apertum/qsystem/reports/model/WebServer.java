@@ -135,5 +135,9 @@ public class WebServer /*extends Thread*/ {
         if (webTread != null) {
             webTread.interrupt();
         }
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException ex) {
+        }
     }
 }

@@ -56,6 +56,7 @@ import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.IRmiCommander;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.reports.model.CurrentStatistic;
+import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.model.calendar.CalendarTableModel;
 import ru.apertum.qsystem.server.model.calendar.FreeDay;
 import ru.apertum.qsystem.server.model.calendar.QCalendarList;
@@ -1751,6 +1752,8 @@ public final class QServicesPool implements IRmiCommander {
         director.setServerPropertyBuilder(propertyBuilder);
         director.constructServerProperty();
         final IServerGetter property = director.getServerProperty();
+        // остановим отчетный вебсервер и потом перестартанем во время создания статистики
+        WebServer.stopWebServer();
         instance = new QServicesPool(property, ignoreWork);
         instance.poolSaver = property.getPoolSaver();
 

@@ -3470,7 +3470,7 @@ private void treeServicesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRS
 private void buttonRestartServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRestartServerActionPerformed
 
     NetCommander.restartServer(new ServerNetProperty());
-    final ATalkingClock clock = new ATalkingClock(1000, 1) {
+    final ATalkingClock clock = new ATalkingClock(2500, 1) {
 
         @Override
         public void run() {

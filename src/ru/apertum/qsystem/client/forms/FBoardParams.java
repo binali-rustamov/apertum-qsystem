@@ -148,7 +148,7 @@ public class FBoardParams extends javax.swing.JDialog {
         textFieldRunning.setText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RUNNING_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         textAreaHtml.setText(params.getText());
         runningLabel.setRunningText(textFieldRunning.getText());
-        runningLabel.setText(textAreaHtml.getText());
+        runningLabel.setText(textAreaHtml.getText().trim());
         textFieldPict.setText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FON_IMG).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         textFieldVideo.setText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_VIDEO_FILE).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         spinnerFontSize.setValue(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
