@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.border.BevelBorder;
 import javax.swing.table.TableCellRenderer;
+import ru.apertum.qsystem.client.forms.FAdmin;
 
 /**
  * Ячейка сетки календаря
@@ -39,40 +40,40 @@ public class TableСell extends JLabel implements TableCellRenderer {
             // setBackground(Color.lightGray);
             switch (row) {
                 case 0:
-                    setText("Январь");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.january"));
                     break;
                 case 1:
-                    setText("Февраль");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.february"));
                     break;
                 case 2:
-                    setText("Март");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.march"));
                     break;
                 case 3:
-                    setText("Апрель");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.april"));
                     break;
                 case 4:
-                    setText("Май");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.may"));
                     break;
                 case 5:
-                    setText("Июнь");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.june"));
                     break;
                 case 6:
-                    setText("Июль");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.july"));
                     break;
                 case 7:
-                    setText("Август");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.augustus"));
                     break;
                 case 8:
-                    setText("Сентябрь");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.september"));
                     break;
                 case 9:
-                    setText("Октябрь");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.october"));
                     break;
                 case 10:
-                    setText("Ноябрь");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.november"));
                     break;
                 case 11:
-                    setText("Декабрь");
+                    setText(FAdmin.getLocaleMessage("admin.calendar.month.december"));
                     break;
             }
             final GridLayout gl = new GridLayout(1, 1);

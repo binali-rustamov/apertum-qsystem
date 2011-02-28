@@ -52,6 +52,7 @@ public class CalendarTableModel extends AbstractTableModel {
 
     /**
      * Выборка из БД требуемых данных.
+     * @param calcId id календаря
      * @return список выходных дней определенного календаря
      */
     public static List<FreeDay> getFreeDays(final Long calcId) {

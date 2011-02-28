@@ -97,7 +97,7 @@ public class FAdmin extends javax.swing.JFrame {
 
     private static ResourceMap localeMap = null;
 
-    private static String getLocaleMessage(String key) {
+    public static String getLocaleMessage(String key) {
         if (localeMap == null) {
             localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FAdmin.class);
         }

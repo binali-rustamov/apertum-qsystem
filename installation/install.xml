@@ -13,9 +13,9 @@
         <appversion>[]</appversion>
         <authors>
             <author name="Product of ''Apertum Project''" email="info@apertum.ru"/>
-            <author name="Develop by Evgeniy V. Egorov" email="info@apertum.ru"/>
+            <author name="Develop by Evgeniy V. Egorov" email="egorov@apertum.ru"/>
         </authors>
-        <url>http://www.apertum.ru</url>
+        <url>http://www.qsystem.info</url>
         <javaversion>1.6.0.20</javaversion>
         <requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall.vista|izpack.macinstall"/>

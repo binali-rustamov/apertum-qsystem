@@ -555,7 +555,7 @@ COMMIT;
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 USE `qsystem`;
-INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `super_site`, `version`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', false, '1.1.1');
+INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `super_site`, `version`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', false, '1.0');
 
 COMMIT;
 

@@ -16,7 +16,10 @@
  */
 package ru.apertum.qsystem.client;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -33,7 +36,20 @@ public class Locales {
     private Locales() {
         config = new PropertiesConfiguration();
         config.setEncoding("utf8");
-        config.setFileName(configFileName);
+        File f = new File(configFileName);
+        if (f.exists()) {
+            config.setFileName(configFileName);
+        } else {
+            configFileName = "../" + configFileName;
+            f = new File(configFileName);
+            if (f.exists()) {
+                config.setFileName(configFileName);
+            } else {
+                Uses.log.logger.error(new FileNotFoundException(configFileName));
+                throw new RuntimeException(new FileNotFoundException(configFileName));
+            }
+        }
+
         try {
             config.load();
         } catch (ConfigurationException ex) {
@@ -55,7 +71,7 @@ public class Locales {
             }
         }
     }
-    private final String configFileName = "config/langs.properties";
+    private String configFileName = "config/langs.properties";
     private final PropertiesConfiguration config;
     /**
      * eng -> Locale(eng)
@@ -81,10 +97,18 @@ public class Locales {
     private final String LANG_CURRENT = "locale.current";
 
     public Locale getLangCurrent() {
+        if (isJoke) {
+            return new Locale("uk", "UA");
+        }
         return locales.get(config.getString(LANG_CURRENT)) == null ? Locale.getDefault() : locales.get(config.getString(LANG_CURRENT));
     }
 
-    public String getLangCurrName(){
+    private static final boolean isJoke = (new GregorianCalendar()).get(GregorianCalendar.MONTH) == GregorianCalendar.APRIL && (new GregorianCalendar()).get(GregorianCalendar.DAY_OF_MONTH) == 1;
+
+    public String getLangCurrName() {
+        if (isJoke) {
+            return lngs_names.get("ukr");
+        }
         return "".equals(config.getString(LANG_CURRENT)) ? lngs_names.get("eng") : lngs_names.get(config.getString(LANG_CURRENT));
     }
 
