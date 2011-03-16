@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Locale;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import org.dom4j.DocumentException;
@@ -41,6 +42,8 @@ public class TabloRedactor {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        Locale.setDefault(Locales.getInstance().getLangCurrent());
+
         // проверить есть ли файл /config/clientboard.xml и если есть отправить его на редактирование
         if (args.length == 0) {
             throw new Uses.ServerException("No param file context.");
@@ -57,18 +60,18 @@ public class TabloRedactor {
         } catch (DocumentException ex) {
             throw new Uses.ServerException("Невозможно прочитать файл настроек. " + ex.getMessage());
         }
-
+        /*
         java.awt.EventQueue.invokeLater(new Runnable() {
 
-            @Override
-            public void run() {
-                final FBoardConfig bc = new FBoardConfigImpl(null, false);
-                bc.setTitle("Редактор клиентского табло");
-                bc.setParams(root);
-                Uses.setLocation(bc);
-                bc.setVisible(true);
-            }
-        });
+        @Override
+        public void run() {*/
+        final FBoardConfig bc = new FBoardConfigImpl(null, false);
+        bc.setTitle("Редактор клиентского табло");
+        bc.setParams(root);
+        Uses.setLocation(bc);
+        bc.setVisible(true);
+        /*         }
+        });*/
     }
 
     static class FBoardConfigImpl extends FBoardConfig {
@@ -90,8 +93,6 @@ public class TabloRedactor {
             super.hideRedactor();
             System.exit(0);
         }
-
-
     }
 
     /**

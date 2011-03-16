@@ -50,10 +50,10 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="spinnerFontColor" min="-2" pref="104" max="-2" attributes="1"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="114" max="-2" attributes="0"/>
                                       <Component id="buttonColor" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="textFieldFontColor" min="-2" pref="118" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="checkBoxDate" min="-2" max="-2" attributes="0"/>
@@ -104,8 +104,8 @@
                           <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="spinnerFontSize" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="spinnerFontColor" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="buttonColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="textFieldFontColor" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="buttonRun" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -254,14 +254,6 @@
         <Property name="name" type="java.lang.String" value="jLabel8" noResource="true"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="spinnerFontColor">
-      <Properties>
-        <Property name="name" type="java.lang.String" value="spinnerFontColor" noResource="true"/>
-        <Property name="value" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="20" type="code"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JButton" name="buttonColor">
       <Properties>
         <Property name="text" type="java.lang.String" resourceKey="buttonColor.text"/>
@@ -295,5 +287,11 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JTextField" name="textFieldFontColor">
+      <Properties>
+        <Property name="text" type="java.lang.String" resourceKey="textFieldFontColor.text"/>
+        <Property name="name" type="java.lang.String" value="textFieldFontColor" noResource="true"/>
+      </Properties>
+    </Component>
   </SubComponents>
 </Form>

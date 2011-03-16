@@ -613,7 +613,7 @@ public class FWelcome extends javax.swing.JFrame {
      */
     private void loadRootParam() {
         loadRootParamSimple();
-        labelCaption.setText(root.getTextTrim());
+        labelCaption.setText(root.getText().trim());
         setStateWindow(UNLOCK);
         showButtons(root, panelMain);
     }
@@ -738,8 +738,10 @@ public class FWelcome extends javax.swing.JFrame {
         panel.setLayout(la);
         for (Object o : current.elements()) {
             Element el = (Element) o;
-            QButton button = new QButton(el, this, panelMain, "");
-            panel.add(button);
+            final QButton button = new QButton(el, this, panelMain, "");
+            if (button.isIsVisible()) {
+                panel.add(button);
+            }
         }
         setVisible(true);
     }

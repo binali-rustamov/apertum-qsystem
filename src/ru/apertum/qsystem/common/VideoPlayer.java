@@ -154,13 +154,14 @@ public class VideoPlayer {
      */
     private boolean setVideoFile(String videoFilePath) {
         try {
-            mp.setPlayer(Manager.createPlayer(new URL("file:///" + videoFilePath)));
+            //mp.setPlayer(Manager.createPlayer(new URL("file:///" + videoFilePath)));
+            mp.setPlayer(Manager.createPlayer(new URL("file:///" + new File(videoFilePath).getAbsolutePath())));
             return true;
         } catch (IOException ex) {
-            Uses.log.logger.error("Невозможно открыть видеофайл: " + ex);
+            Uses.log.logger.error("Невозможно открыть видеофайл " + videoFilePath + ": " + ex);
             return false;
         } catch (NoPlayerException ex) {
-            Uses.log.logger.error("Проигрыватель не может воспроизвести файл: " + ex);
+            Uses.log.logger.error("Проигрыватель не может воспроизвести файл " + videoFilePath + ": " + ex);
             return false;
         }
     }

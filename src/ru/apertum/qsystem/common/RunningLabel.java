@@ -262,8 +262,8 @@ public class RunningLabel extends JLabel implements Serializable {
          */
         String forDrow = getRunningText();
         // отцентрируем по горизонтале
+        final int len = sizes.length == 0 ? 0 : sizes[sizes.length - 1];
         if (!run) {
-            final int len = sizes[sizes.length - 1];
             switch (getHorizontalAlignment()) {
                 case SwingConstants.CENTER:
                     nPosition = (getWidth() - len) / 2;
@@ -279,7 +279,7 @@ public class RunningLabel extends JLabel implements Serializable {
         gImg.setFont(getFont());
 
         nPosition = nPosition - (run ? getSpeedRunningText() : 0);
-        if (nPosition < -sizes[sizes.length - 1]) {
+        if (nPosition < - len) {
             nPosition = getSize().width;
         }
         if (isVisibleRunningText) {

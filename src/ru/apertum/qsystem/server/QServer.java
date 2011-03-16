@@ -18,7 +18,9 @@ package ru.apertum.qsystem.server;
 
 import java.io.*;
 import java.net.*;
+import java.util.Locale;
 import java.util.Properties;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.CodepagePrintStream;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.reports.model.CurrentStatistic;
@@ -40,7 +42,7 @@ public class QServer extends Thread {
      * @throws Exception 
      */
     public static void main(String[] args) throws Exception {
-
+        Locale.setDefault(Locales.getInstance().getLangCurrent());
 
         //Установка вывода консольных сообщений в нужной кодировке
         if ("\\".equals(File.separator)) {

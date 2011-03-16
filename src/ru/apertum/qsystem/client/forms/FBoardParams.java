@@ -21,6 +21,8 @@ import java.awt.Font;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -50,7 +52,6 @@ public class FBoardParams extends javax.swing.JDialog {
         }
         return localeMap.getString(key);
     }
-
     /**
      * Результат
      */
@@ -95,11 +96,21 @@ public class FBoardParams extends javax.swing.JDialog {
                 runningLabel.setFont(fnt);
             }
         });
-        spinnerFontColor.getModel().addChangeListener(new ChangeListener() {
+        textFieldFontColor.addKeyListener(new KeyListener() {
 
             @Override
-            public void stateChanged(ChangeEvent e) {
-                runningLabel.setForeground(new Color((Integer) spinnerFontColor.getValue()));
+            public void keyTyped(KeyEvent e) {
+                runningLabel.setForeground(Color.decode("#" + textFieldFontColor.getText()));
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                //runningLabel.setForeground(Color.decode(textFieldFontColor.getText()));
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                //runningLabel.setForeground(Color.decode(textFieldFontColor.getText()));
             }
         });
         spinnerSpeed.getModel().addChangeListener(new ChangeListener() {
@@ -146,15 +157,15 @@ public class FBoardParams extends javax.swing.JDialog {
      */
     private void loadXML(Element params) {
         textFieldRunning.setText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RUNNING_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
-        textAreaHtml.setText(params.getText());
+        textAreaHtml.setText(params.getText().trim());
         runningLabel.setRunningText(textFieldRunning.getText());
         runningLabel.setText(textAreaHtml.getText().trim());
         textFieldPict.setText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FON_IMG).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         textFieldVideo.setText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_VIDEO_FILE).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         spinnerFontSize.setValue(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
-        spinnerFontColor.setValue(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+        textFieldFontColor.setText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         runningLabel.setFont(new Font(runningLabel.getFont().getFontName(), runningLabel.getFont().getStyle(), (Integer) spinnerFontSize.getValue()));
-        runningLabel.setForeground(new Color((Integer) spinnerFontColor.getValue()));
+        runningLabel.setForeground(Color.decode("#" + textFieldFontColor.getText()));
         spinnerSpeed.setValue(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SPEED_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
         runningLabel.setSpeedRunningText((Integer) spinnerSpeed.getValue());
         checkBoxDate.setSelected("1".equals(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SIMPLE_DATE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
@@ -183,7 +194,7 @@ public class FBoardParams extends javax.swing.JDialog {
             Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_VIDEO_FILE).get(0).addAttribute(Uses.TAG_BOARD_VALUE, textFieldVideo.getText());
             Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE).get(0).addAttribute(Uses.TAG_BOARD_VALUE, String.valueOf((Integer) spinnerFontSize.getValue()));
             Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SPEED_TEXT).get(0).addAttribute(Uses.TAG_BOARD_VALUE, String.valueOf((Integer) spinnerSpeed.getValue()));
-            Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR).get(0).addAttribute(Uses.TAG_BOARD_VALUE, String.valueOf((Integer) spinnerFontColor.getValue()));
+            Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR).get(0).addAttribute(Uses.TAG_BOARD_VALUE, textFieldFontColor.getText());
             Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SIMPLE_DATE).get(0).addAttribute(Uses.TAG_BOARD_VALUE, checkBoxDate.isSelected() ? "1" : "0");
 
         }
@@ -215,10 +226,10 @@ public class FBoardParams extends javax.swing.JDialog {
         spinnerFontSize = new javax.swing.JSpinner();
         buttonRun = new javax.swing.JToggleButton();
         jLabel8 = new javax.swing.JLabel();
-        spinnerFontColor = new javax.swing.JSpinner();
         buttonColor = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         textAreaHtml = new javax.swing.JTextArea();
+        textFieldFontColor = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -292,9 +303,6 @@ public class FBoardParams extends javax.swing.JDialog {
         jLabel8.setText(resourceMap.getString("jLabel8.text")); // NOI18N
         jLabel8.setName("jLabel8"); // NOI18N
 
-        spinnerFontColor.setName("spinnerFontColor"); // NOI18N
-        spinnerFontColor.setValue(20);
-
         buttonColor.setText(resourceMap.getString("buttonColor.text")); // NOI18N
         buttonColor.setName("buttonColor"); // NOI18N
         buttonColor.addActionListener(new java.awt.event.ActionListener() {
@@ -316,6 +324,9 @@ public class FBoardParams extends javax.swing.JDialog {
             }
         });
         jScrollPane1.setViewportView(textAreaHtml);
+
+        textFieldFontColor.setText(resourceMap.getString("textFieldFontColor.text")); // NOI18N
+        textFieldFontColor.setName("textFieldFontColor"); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -345,10 +356,10 @@ public class FBoardParams extends javax.swing.JDialog {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel8)
+                                        .addGap(114, 114, 114)
+                                        .addComponent(buttonColor)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(spinnerFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(buttonColor))
+                                        .addComponent(textFieldFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(checkBoxDate)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 387, Short.MAX_VALUE)
@@ -385,8 +396,8 @@ public class FBoardParams extends javax.swing.JDialog {
                             .addComponent(jLabel7)
                             .addComponent(spinnerFontSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel8)
-                            .addComponent(spinnerFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(buttonColor)))
+                            .addComponent(buttonColor)
+                            .addComponent(textFieldFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(buttonRun))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -438,7 +449,7 @@ private void buttonColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     final JDialog di = new JDialog(this, true);
     di.setTitle(getLocaleMessage("dialog.select_color"));
-    final JColorChooser cc = new JColorChooser(new Color((Integer) spinnerFontColor.getValue()));
+    final JColorChooser cc = new JColorChooser(Color.decode("#" + textFieldFontColor.getText()));
     di.setSize(450, 400);
     LayoutManager l = new VerticalLayout();
     di.setLayout(l);
@@ -447,7 +458,8 @@ private void buttonColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            spinnerFontColor.setValue(new Integer(cc.getColor().getRGB()));
+            textFieldFontColor.setText(Integer.toHexString(cc.getColor().getRGB()).substring(2).toUpperCase());
+            runningLabel.setForeground(Color.decode("#" + textFieldFontColor.getText()));
             di.setVisible(false);
         }
     });
@@ -477,10 +489,10 @@ private void textAreaHtmlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private ru.apertum.qsystem.common.RunningLabel runningLabel;
-    private javax.swing.JSpinner spinnerFontColor;
     private javax.swing.JSpinner spinnerFontSize;
     private javax.swing.JSpinner spinnerSpeed;
     private javax.swing.JTextArea textAreaHtml;
+    private javax.swing.JTextField textFieldFontColor;
     private javax.swing.JTextField textFieldPict;
     private javax.swing.JTextField textFieldRunning;
     private javax.swing.JTextField textFieldVideo;

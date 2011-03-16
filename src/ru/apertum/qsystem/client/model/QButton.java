@@ -62,7 +62,15 @@ public class QButton extends JButton {
      * Состояния кнопок
      */
     private final boolean isActive;
+
+    public boolean isIsActive() {
+        return isActive;
+    }
     private final boolean isVisible;
+
+    public boolean isIsVisible() {
+        return isVisible;
+    }
     private final static String NO_ACTIVE = "0";
     private final static String NO_VISIBLE = "-1";
 
@@ -184,11 +192,11 @@ public class QButton extends JButton {
                             // Trim - убивает много чего лишнего а не только пробелы в конце и в начале, еще ПЕРЕНОС СТРОКИ убивает
                             final String print = preInfo.elementTextTrim("print");
                             // если есть текст, то показываем диалог
-                            if (!"".equals(html)){
-                               if (!FPreInfoDialog.showPreInfoDialog(form, html, print, true, true, FWelcome.welcomeParams.delayBack)){
-                                  // выходим т.к. кастомер отказался продолжать
-                                  return;
-                               }
+                            if (!"".equals(html)) {
+                                if (!FPreInfoDialog.showPreInfoDialog(form, html, print, true, true, FWelcome.welcomeParams.delayBack)) {
+                                    // выходим т.к. кастомер отказался продолжать
+                                    return;
+                                }
                             }
 
                             // узнать статистику по предлагаемой услуги и спросить потенциального кастомера

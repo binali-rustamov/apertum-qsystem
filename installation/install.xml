@@ -62,9 +62,9 @@
         <res id="HTMLInfoPanel.readme_rus" src="i18n/Readme_rus.html"/>
 		<res id="HTMLInfoPanel.readme_ukr" src="i18n/Readme_ukr.html"/>
 		
-		<res id="LicencePanel.licence_eng" src="../license-gpl3-eng.txt"/>
-		<res id="LicencePanel.licence_rus" src="../license-gpl3-rus.txt"/>
-		<res id="LicencePanel.licence_ukr" src="../license-gpl3-ukr.txt"/>
+		<res id="LicencePanel.licence_eng" src="i18n/license-gpl3-eng.txt"/>
+		<res id="LicencePanel.licence_rus" src="i18n/license-gpl3-rus.txt"/>
+		<res id="LicencePanel.licence_ukr" src="i18n/license-gpl3-ukr.txt"/>
 		
         <res id="InfoPanel.info" src="../src/ru/apertum/qsystem/common/version.properties"/>
         <res id="shortcutSpec.xml_eng" src="i18n/shortcutSpec_eng.xml"/>
@@ -106,7 +106,11 @@
             <file type="html" src="i18n/Readme_eng.html" targetdir="$INSTALL_PATH"/>
 			<file type="html" src="i18n/Readme_rus.html" targetdir="$INSTALL_PATH"/>
 			<file type="html" src="i18n/Readme_ukr.html" targetdir="$INSTALL_PATH"/>
+			<file src="i18n/license-gpl3-eng.txt" targetdir="$INSTALL_PATH/license/"/>
+			<file src="i18n/license-gpl3-rus.txt" targetdir="$INSTALL_PATH/license/"/>
+			<file src="i18n/license-gpl3-ukr.txt" targetdir="$INSTALL_PATH/license/"/>
 			<file type="properties" src="../config/langs.properties" targetdir="$INSTALL_PATH/config/"/>
+			<file src="../config/board/wall.jpg" targetdir="$INSTALL_PATH/config/board/"/>
             <file os="windows" src="D:/Distrib/JMF/jmf-2_1_1e-windows-i586.exe" targetdir="$INSTALL_PATH/JMF"/>
             <file os="unix" src="D:/Distrib/JMF/jmf-2_1_1e-linux-i586.bin" targetdir="$INSTALL_PATH/JMF"/>
             <!--executable os="windows" targetfile="$INSTALL_PATH/JMF/jmf-2_1_1e-windows-i586.exe" stage="postinstall"/-->
@@ -147,6 +151,7 @@
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
             <file src="../config/board_belgorod.properties" targetdir="$INSTALL_PATH/config/"/>
+			<file src="../config/board/video.mpg" targetdir="$INSTALL_PATH/config/board/"/>
             <file os="windows" src="../StartServer.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/server.sh" targetdir="$INSTALL_PATH"/>
         </pack>
