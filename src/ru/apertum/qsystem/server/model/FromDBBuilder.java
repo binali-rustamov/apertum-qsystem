@@ -16,6 +16,7 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import ru.apertum.qsystem.server.controller.QServicesPool;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -201,8 +202,8 @@ public class FromDBBuilder extends AServerPropertyBuilder {
                 } catch (HibernateException ex) {
                     session.getTransaction().rollback();
                     String ss = "";
-                    for (String s : ex.getMessages()) {
-                        ss = ss + "\n" + s;
+                    for (StackTraceElement s : ex.getStackTrace()) {
+                        ss = ss + "\n" + s.toString();
                     }
                     throw new Uses.ClientException("Ошибка системы взаимодействия с БД(Hibetnate). Возможно некорректное поведение соответствующей библиотеки.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nMessages: " + ss);
                 } catch (Exception ex) {

@@ -38,15 +38,6 @@
         
         <field type="staticText" align="centre" txt="Network settings" id="forCP"/>
         
-        <field type="radio" variable="tach">
-            <description align="left" txt="tach.radio" id="kindCP"/>
-            <spec>
-                <choice txt="r1" id="tach" value="tach"  set="true" />
-                <choice txt="r2" id="buttons" value="buttons"/>
-           </spec>
-        </field>
-
-
         <!--field type="divider" /-->
         <field type="check" variable="super">
             <spec txt="Super Server" id="super" true="super" false="" set="false"/>

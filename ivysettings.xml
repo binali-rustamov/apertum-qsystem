@@ -1,0 +1,10 @@
+
+<ivysettings>
+	<settings defaultResolver="default"/>
+	<property name="ivy.sovest.settings.dir" value="ivy" override="false"/>
+	<include url="${ivy.sovest.settings.dir}/ivysettings-public.xml"/>
+	<include url="${ivy.sovest.settings.dir}/ivysettings-shared.xml"/>
+	<include url="${ivy.sovest.settings.dir}/ivysettings-local.xml"/>
+	<include url="${ivy.sovest.settings.dir}/ivysettings-main-chain.xml"/>
+	<include url="${ivy.sovest.settings.dir}/ivysettings-default-chain.xml"/>
+</ivysettings>

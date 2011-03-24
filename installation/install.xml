@@ -145,12 +145,8 @@
             <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH/dist"/>
             <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH/dist"/>
             <file src="../db/qsystem.sql" targetdir="$INSTALL_PATH/DB/"/>
-            <file src="../config/config.xml" targetdir="$INSTALL_PATH/config/"/>
-            <file src="../config/qsystem.dtd" targetdir="$INSTALL_PATH/config/"/>
-            <file src="../config/qsystem.xsl" targetdir="$INSTALL_PATH/config/"/>
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
-            <file src="../config/board_belgorod.properties" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/board/video.mpg" targetdir="$INSTALL_PATH/config/board/"/>
             <file os="windows" src="../StartServer.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/server.sh" targetdir="$INSTALL_PATH"/>

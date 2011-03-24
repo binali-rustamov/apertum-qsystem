@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0">
+    <info module="QSystem" organisation="Apertum" revision="1.0">
+        <license name="GNU GPL3" url="http://www.gnu.org/licenses/gpl.html"/>
+        <ivyauthor name="Evgeniy Egorov" url="http://webby.ru/egorov-ev"/>
+    </info>
+    <configurations>
+        <conf name="compile"/>
+        <conf name="runtime" extends="compile"/>
+        <conf name="compile-test"/>
+        <conf name="runtime-test"/>
+    </configurations>
+
+    <!-- http://mvnrepository.com -->
+    <dependencies>
+        <dependency org="mysql" name="mysql-connector-java" rev="5.1.13" conf="runtime->*" transitive="false"/>
+
+        <!-- http://blog.springsource.com/2009/12/02/obtaining-spring-3-artifacts-with-maven/ ->
+        <dependency org="org.springframework" name="spring-webmvc" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
+        <dependency org="org.springframework" name="spring-web" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/-->
+        <dependency org="org.springframework" name="spring-core" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
+        <dependency org="org.springframework" name="spring-beans" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
+        <dependency org="org.springframework" name="spring-context" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
+        <dependency org="org.springframework" name="spring-jdbc" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
+        <!--dependency org="org.springframework" name="spring-aop" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/-->
+        <dependency org="org.springframework" name="spring-expression" rev="3.0.5.RELEASE"  conf="runtime->*" transitive="false"/>
+        
+        <dependency org="org.springframework" name="spring-tx" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
+        <dependency org="org.springframework" name="spring-orm" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
+        <dependency org="org.springframework" name="spring-asm" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
+        <!--dependency org="org.springframework" name="spring-test" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
+        <dependency org="org.springframework" name="spring-aspects" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/-->
+
+        <!--dependency org="org.hibernate" name="hibernate" rev="3.2.7.ga" conf="compile->*" transitive="false"/-->
+        <dependency org="org.hibernate" name="hibernate-c3p0" rev="3.3.2.GA" conf="compile->*" transitive="false"/>
+        <dependency org="org.hibernate" name="hibernate-annotations" rev="3.4.0.GA" conf="compile->*" transitive="false"/>
+        <dependency org="org.hibernate" name="hibernate-core" rev="3.3.2.GA" conf="compile->*" transitive="false"/>
+        <dependency org="org.hibernate" name="hibernate-commons-annotations" rev="3.3.0.ga" conf="compile->*" transitive="false"/>
+        <dependency org="javax.persistence" name="persistence-api" rev="1.0" conf="compile->*" transitive="false"/>
+        <dependency org="c3p0" name="c3p0" rev="0.9.1.2" conf="compile->*" transitive="false"/>
+
+        <dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="compile->*" transitive="false"/>
+        <dependency org="javax.transaction" name="jta" rev="1.1" conf="runtime->*" transitive="false"/>
+        <dependency org="javassist" name="javassist" rev="3.9.0.GA" conf="runtime->*" transitive="false"/>
+        <dependency org="dom4j" name="dom4j" rev="1.6.1" conf="compile->*" transitive="false"/>
+        <dependency org="antlr" name="antlr" rev="2.7.7" conf="runtime->*" transitive="false"/>
+        <dependency org="org.slf4j" name="jcl-over-slf4j" rev="1.6.1" conf="runtime->*" transitive="false"/>
+        <dependency org="log4j" name="log4j" rev="1.2.15" conf="compile->*" transitive="false"/>
+        <dependency org="xalan" name="xalan" rev="2.7.1" conf="runtime->*" transitive="false"/>
+        <dependency org="com.lowagie" name="itext" rev="2.1.7" conf="runtime->*" transitive="false"/>
+        <dependency org="net.java.dev.beansbinding" name="beansbinding" rev="1.2.1" conf="compile->*" transitive="false"/>
+        <dependency org="net.sourceforge.barbecue" name="barbecue" rev="1.5-beta1" conf="compile->*" transitive="false"/>
+
+        <dependency org="commons-collections" name="commons-collections" rev="3.2.1" conf="compile->*" transitive="false"/>
+        <dependency org="commons-logging" name="commons-logging" rev="1.1.1" conf="compile->*" transitive="false"/>
+        <dependency org="commons-pool" name="commons-pool" rev="1.5.5" conf="compile->*" transitive="false"/>
+        <dependency org="commons-lang" name="commons-lang" rev="2.5" conf="compile->*" transitive="false"/>
+        <dependency org="commons-beanutils" name="commons-beanutils" rev="1.8.3" conf="runtime->*" transitive="false"/>
+        <dependency org="commons-digester" name="commons-digester" rev="2.1" conf="runtime->*" transitive="false"/>
+        <dependency org="commons-dbcp" name="commons-dbcp" rev="1.4" conf="compile->*" transitive="false"/>
+        <dependency org="commons-configuration" name="commons-configuration" rev="1.6" conf="compile->*" transitive="false"/>
+
+        <dependency org="jfree" name="jcommon" rev="1.0.15" conf="runtime->*" transitive="false"/>
+        <dependency org="jfree" name="jfreechart" rev="1.0.13" conf="runtime->*" transitive="false"/>
+
+        <dependency org="javax.help" name="javahelp" rev="2.0.05" conf="compile->*" transitive="false"/>
+
+        <!--dependency org="org.slf4j" name="slf4j-log4j12" rev="1.5.0" conf="runtime->*" transitive="false"/-->
+        <dependency org="com.googlecode.sli4j" name="sli4j-slf4j-log4j" rev="2.0" conf="runtime->*" transitive="false"/>
+
+        <dependency org="org.apache.httpcomponents" name="httpcore" rev="4.1" conf="compile->*" transitive="false"/>
+        <dependency org="org.apache.httpcomponents" name="httpcore-nio" rev="4.1" conf="compile->*" transitive="false"/>
+
+        <dependency org="net.sf.jasperreports" name="jasperreports" rev="3.7.6" conf="compile->*" transitive="false"/>
+        <dependency org="net.sf.jasperreports" name="jasperreports-fonts" rev="4.0.0" conf="runtime->*" transitive="false"/>
+
+    </dependencies>
+</ivy-module>

@@ -46,7 +46,7 @@ import ru.apertum.qsystem.common.model.ICustomer;
  */
 @Entity
 @Table(name = "users")
-public class QUser extends SerialCloneable implements IUserProperty, Serializable {
+public class QUser implements IUserProperty, Serializable {
 
     private Long id;
 

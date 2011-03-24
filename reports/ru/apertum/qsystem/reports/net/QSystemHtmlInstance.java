@@ -65,9 +65,7 @@ public class QSystemHtmlInstance {
         this.httpService = new HttpService(
                 httpproc,
                 new DefaultConnectionReuseStrategy(),
-                new DefaultHttpResponseFactory());
-        this.httpService.setParams(this.params);
-        this.httpService.setHandlerResolver(reqistry);
+                new DefaultHttpResponseFactory(), reqistry, this.params);
     }
     private final HttpParams params = new BasicHttpParams();
     private final HttpService httpService;

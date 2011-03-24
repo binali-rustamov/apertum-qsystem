@@ -17,6 +17,7 @@
 package ru.apertum.qsystem.client.forms;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
@@ -34,7 +35,6 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
-import org.jfree.ui.tabbedui.VerticalLayout;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 
@@ -216,7 +216,6 @@ public class FBoardParams extends javax.swing.JDialog {
         textFieldRunning = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         spinnerSpeed = new javax.swing.JSpinner();
-        runningLabel = new ru.apertum.qsystem.common.RunningLabel();
         jLabel5 = new javax.swing.JLabel();
         textFieldPict = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
@@ -230,6 +229,8 @@ public class FBoardParams extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         textAreaHtml = new javax.swing.JTextArea();
         textFieldFontColor = new javax.swing.JTextField();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        runningLabel = new ru.apertum.qsystem.common.RunningLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -260,11 +261,6 @@ public class FBoardParams extends javax.swing.JDialog {
 
         spinnerSpeed.setName("spinnerSpeed"); // NOI18N
         spinnerSpeed.setValue(10);
-
-        runningLabel.setBackground(resourceMap.getColor("runningLabel.background")); // NOI18N
-        runningLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        runningLabel.setText(resourceMap.getString("runningLabel.text")); // NOI18N
-        runningLabel.setName("runningLabel"); // NOI18N
 
         jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
         jLabel5.setName("jLabel5"); // NOI18N
@@ -328,26 +324,33 @@ public class FBoardParams extends javax.swing.JDialog {
         textFieldFontColor.setText(resourceMap.getString("textFieldFontColor.text")); // NOI18N
         textFieldFontColor.setName("textFieldFontColor"); // NOI18N
 
+        jScrollPane2.setName("jScrollPane2"); // NOI18N
+
+        runningLabel.setBackground(resourceMap.getColor("runningLabel.background")); // NOI18N
+        runningLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        runningLabel.setText(resourceMap.getString("runningLabel.text")); // NOI18N
+        runningLabel.setName("runningLabel"); // NOI18N
+        jScrollPane2.setViewportView(runningLabel);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 703, Short.MAX_VALUE)
-                    .addComponent(runningLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 703, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(buttonOk)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buttonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(textFieldRunning, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
+                            .addComponent(textFieldRunning, javax.swing.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(spinnerFontSize, javax.swing.GroupLayout.Alignment.LEADING)
@@ -356,25 +359,26 @@ public class FBoardParams extends javax.swing.JDialog {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel8)
-                                        .addGap(114, 114, 114)
-                                        .addComponent(buttonColor)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(textFieldFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(textFieldFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(buttonColor))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(checkBoxDate)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 387, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 338, Short.MAX_VALUE)
                                         .addComponent(buttonRun))))))
-                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(jLabel7)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addGap(31, 31, 31)
-                        .addComponent(textFieldPict, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(textFieldPict, javax.swing.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel6))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(textFieldVideo, javax.swing.GroupLayout.DEFAULT_SIZE, 637, Short.MAX_VALUE)))
+                        .addComponent(textFieldVideo, javax.swing.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -396,8 +400,8 @@ public class FBoardParams extends javax.swing.JDialog {
                             .addComponent(jLabel7)
                             .addComponent(spinnerFontSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel8)
-                            .addComponent(buttonColor)
-                            .addComponent(textFieldFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(textFieldFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(buttonColor)))
                     .addComponent(buttonRun))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -410,9 +414,9 @@ public class FBoardParams extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(runningLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buttonOk)
@@ -450,8 +454,8 @@ private void buttonColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     final JDialog di = new JDialog(this, true);
     di.setTitle(getLocaleMessage("dialog.select_color"));
     final JColorChooser cc = new JColorChooser(Color.decode("#" + textFieldFontColor.getText()));
-    di.setSize(450, 400);
-    LayoutManager l = new VerticalLayout();
+    di.setSize(450, 440);
+    LayoutManager l = new FlowLayout(2, 10, 10);
     di.setLayout(l);
     di.add(cc);
     final JButton but = new JButton(new AbstractAction() {
@@ -488,6 +492,7 @@ private void textAreaHtmlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private ru.apertum.qsystem.common.RunningLabel runningLabel;
     private javax.swing.JSpinner spinnerFontSize;
     private javax.swing.JSpinner spinnerSpeed;

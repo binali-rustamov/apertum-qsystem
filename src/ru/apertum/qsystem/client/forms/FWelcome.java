@@ -159,10 +159,6 @@ public class FWelcome extends javax.swing.JFrame {
      */
     public static INetProperty netProperty;
     /**
-     * Режим работы с тачевым блоком(true) или блоком кнопок(false)
-     */
-    public static boolean isTach = true;
-    /**
      * Режим предварительной записи в поликлинике
      */
     public static boolean isMed = false;
@@ -311,9 +307,6 @@ public class FWelcome extends javax.swing.JFrame {
         netProperty = Uses.getClientNetProperty(args);
         // определим режим пользовательского интерфейса
         for (String s : args) {
-            if ("buttons".equals(s)) {
-                isTach = false;
-            }
             if ("med".equals(s)) {
                 isMed = true;
                 if (!"".equals(welcomeParams.buttons_COM)) {
@@ -326,7 +319,6 @@ public class FWelcome extends javax.swing.JFrame {
             }
         }
         root = NetCommander.getServiсes(netProperty);
-        if (isTach) {
             java.awt.EventQueue.invokeLater(new Runnable() {
 
                 @Override
@@ -335,120 +327,6 @@ public class FWelcome extends javax.swing.JFrame {
                     w.setVisible(true);
                 }
             });
-        } else {
-            //грузим параметры
-            loadRootParamSimple();
-            //и запускаем поток прослушки СОМ-порта
-            java.awt.EventQueue.invokeLater(new Runnable() {
-
-                private final ISerialPort port = new RxtxSerialPort(welcomeParams.buttons_COM);
-                private final IReceiveListener listener = new IReceiveListener() {
-
-                    @Override
-                    public void actionPerformed(SerialPortEvent event, byte[] data) {
-                        result = new String(data).substring(0, data.length - 2); //+ " - " + Uses.format_HH_mm_ss.format(new Date());
-                    }
-
-                    @Override
-                    public void actionPerformed(SerialPortEvent event) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                };
-                private String result = null;
-
-                @Override
-                public void run() {
-                    port.setDataBits(welcomeParams.buttons_databits);
-                    port.setParity(welcomeParams.buttons_parity);
-                    port.setSpeed(welcomeParams.buttons_speed);
-                    port.setStopBits(welcomeParams.buttons_stopbits);
-                    try {
-                        port.bind(listener);
-                    } catch (Exception ex) {
-                        throw new Uses.ClientException("Не возможно захватить порт. " + ex);
-                    }
-                    int pos = 0;
-                    while (true) {
-                        if (result == null) {
-                            if (!Uses.isDebug) {
-                                final char ch = '*';
-                                String progres = "Активность: " + ch;
-                                final int len = 5;
-                                for (int i = 0; i < pos; i++) {
-                                    progres = progres + ch;
-                                }
-                                for (int i = 0; i < len; i++) {
-                                    progres = progres + ' ';
-                                }
-                                if (++pos == len) {
-                                    pos = 0;
-                                }
-                                System.out.print(progres);
-                                System.out.write(13);// '\b' - возвращает корретку на одну позицию назад
-
-                            }
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException ex) {
-                                Uses.log.logger.error(ex);
-                            }
-                        } else {
-                            Uses.log.logger.debug("Приняли сообщение в СОМ-порт \"" + result + "\"");
-                            // Определим имя услуги
-                            final ArrayList<Element> list = Uses.elementsByCData(root, result);
-                            final Element element = list.get(0);
-                            // Определим маркировку сайта
-                            final String siteMark;
-                            final String ss = element.attributeValue(Uses.TASK_FOR_SITE);
-                            siteMark = (ss == null) ? "" : ss;
-                            // Отрправим запрос на постановку в очередь
-                            final Element res;
-                            try {
-                                res = NetCommander.standInService(FWelcome.netProperty, element.attributeValue(Uses.TAG_NAME), "1", 1, siteMark, "");
-                            } catch (Exception ex) {
-                                throw new Uses.ClientException("Загнулась команда постановки кента в очередь. " + ex);
-                            }
-                            // Напечатаем квитанцию
-                            Uses.log.logger.info("Печать этикетки.");
-
-                            new Thread(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    try {
-                                        // Для доменной системы на этикетке под картинкой выводим наименование с своего сайта
-                                        port.free();
-
-                                        final String cap = FWelcome.captions.get(siteMark);
-                                        if (cap == null) {
-                                            FWelcome.printTicket(res);
-                                        } else {
-                                            FWelcome.printTicket(res, cap);
-                                        }
-                                    } catch (Exception ex) {
-                                        Uses.log.logger.error("При печати чека возникла ошибка. " + ex);
-                                    } finally {
-                                        boolean sucses = false;
-                                        while (!sucses) {
-                                            sucses = true;
-                                            try {
-                                                Thread.sleep(welcomeParams.delayPrint);
-                                                port.bind(listener);
-                                                System.out.println("Receive of command is ready");
-                                            } catch (Exception ex) {
-                                                Uses.log.logger.error("При захвате СОМ-порта после печати чека возникла ошибка . " + ex);
-                                                sucses = false;
-                                            }
-                                        }
-                                    }
-                                }
-                            }).start();
-                            result = null;
-                        }
-                    }
-                }
-            });
-        }
     }
 
     /** 
@@ -504,7 +382,12 @@ public class FWelcome extends javax.swing.JFrame {
         FWelcome.current = root;
         FWelcome.response = null;
         FWelcome.infoTree = null;
+        try {
         loadRootParam();
+        } catch (Exception ex){
+            Uses.log.logger.error(ex);
+            System.exit(0);
+        }
         server.start();
         if (!(Uses.format_HH_mm.format(finishTime).equals(Uses.format_HH_mm.format(startTime)))) {
             lockWelcome.start();

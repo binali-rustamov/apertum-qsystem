@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import ru.apertum.qsystem.server.controller.QServicesPool;
+
 /**
  * Интерфейс сохранения конфигурации системы.
  * @author Evgeniy Egorov

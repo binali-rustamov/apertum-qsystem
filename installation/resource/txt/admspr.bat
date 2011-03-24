@@ -6,8 +6,8 @@ echo Admin tools for change context
 
 pause asdasdads
 
-jar xf QSystem.jar ru/apertum/qsystem/spring/qsContext.xml
-jar xf QSystem.jar ru/apertum/qsystem/spring/spring-beans-2.0.dtd
+jar xf lib/qcontext.jar ru/apertum/qsystem/spring/qsContext.xml
+jar xf lib/qcontext.jar ru/apertum/qsystem/spring/spring-beans-2.0.dtd
 
 echo Context is open. 
 
@@ -19,7 +19,7 @@ echo Context is change.
 
 pause
 
-jar uf QSystem.jar ru/apertum/qsystem/spring/qsContext.xml
+jar uf lib/qcontext.jar ru/apertum/qsystem/spring/qsContext.xml
 
 del ru\apertum\qsystem\spring\qsContext.xml
 del ru\apertum\qsystem\spring\spring-beans-2.0.dtd

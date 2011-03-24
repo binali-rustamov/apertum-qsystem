@@ -50,7 +50,7 @@ import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.client.model.QTray;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.INetProperty;
-import ru.apertum.qsystem.server.model.QServicesPool;
+import ru.apertum.qsystem.server.controller.QServicesPool;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.event.ChangeListener;

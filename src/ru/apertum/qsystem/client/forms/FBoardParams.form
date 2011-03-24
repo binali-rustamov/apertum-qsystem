@@ -23,11 +23,10 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jScrollPane1" alignment="0" pref="703" max="32767" attributes="0"/>
-                  <Component id="runningLabel" alignment="1" pref="703" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jScrollPane1" alignment="0" pref="654" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="buttonOk" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -40,7 +39,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="textFieldRunning" alignment="0" pref="623" max="32767" attributes="0"/>
+                          <Component id="textFieldRunning" alignment="0" pref="574" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="spinnerFontSize" alignment="0" max="32767" attributes="1"/>
@@ -50,14 +49,14 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="114" max="-2" attributes="0"/>
-                                      <Component id="buttonColor" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="textFieldFontColor" min="-2" pref="118" max="-2" attributes="0"/>
+                                      <Component id="textFieldFontColor" min="-2" pref="77" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="buttonColor" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="checkBoxDate" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="387" max="32767" attributes="0"/>
+                                      <EmptySpace pref="338" max="32767" attributes="0"/>
                                       <Component id="buttonRun" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -68,7 +67,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
-                      <Component id="textFieldPict" pref="623" max="32767" attributes="0"/>
+                      <Component id="textFieldPict" pref="574" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -76,8 +75,9 @@
                           <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="textFieldVideo" pref="637" max="32767" attributes="0"/>
+                      <Component id="textFieldVideo" pref="588" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="jScrollPane2" alignment="1" pref="654" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -104,8 +104,8 @@
                           <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="spinnerFontSize" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="buttonColor" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="textFieldFontColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="buttonColor" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="buttonRun" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -123,9 +123,9 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="142" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="103" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="runningLabel" min="-2" pref="134" max="-2" attributes="0"/>
+              <Component id="jScrollPane2" min="-2" pref="134" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="buttonOk" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -182,14 +182,6 @@
         <Property name="value" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="10" type="code"/>
         </Property>
-      </Properties>
-    </Component>
-    <Component class="ru.apertum.qsystem.common.RunningLabel" name="runningLabel">
-      <Properties>
-        <Property name="background" type="java.awt.Color" resourceKey="runningLabel.background"/>
-        <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="text" type="java.lang.String" resourceKey="runningLabel.text"/>
-        <Property name="name" type="java.lang.String" value="runningLabel" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
@@ -293,5 +285,22 @@
         <Property name="name" type="java.lang.String" value="textFieldFontColor" noResource="true"/>
       </Properties>
     </Component>
+    <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="jScrollPane2" noResource="true"/>
+      </Properties>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="ru.apertum.qsystem.common.RunningLabel" name="runningLabel">
+          <Properties>
+            <Property name="background" type="java.awt.Color" resourceKey="runningLabel.background"/>
+            <Property name="horizontalAlignment" type="int" value="0"/>
+            <Property name="text" type="java.lang.String" resourceKey="runningLabel.text"/>
+            <Property name="name" type="java.lang.String" value="runningLabel" noResource="true"/>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
   </SubComponents>
 </Form>

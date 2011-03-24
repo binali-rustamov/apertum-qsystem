@@ -669,11 +669,11 @@ public final class Uses {
             try {
                 spring.factory = new ClassPathXmlApplicationContext("/ru/apertum/qsystem/spring/qsContext.xml");
             } catch (BeanCreationException ex) {
-                throw new ServerException("Ошибка создания класса-бина контекста приложения: \"" + ex.getCause().getCause().getMessage() + "\"\n"
+                throw new ServerException("Ошибка создания класса-бина контекста приложения: \"" + ex.getCause().getMessage() + "\"\n"
                         + "Бин с ошибкой \"" + ex.getBeanName() + "\""
                         + "Сообщение об ошибке: \"" + ex.getCause().getMessage() + "\"\n" + ex);
             } catch (BeansException ex) {
-                throw new ServerException("Ошибка класса-бина контекста приложения: \"" + ex.getCause().getCause().getMessage() + "\"\n"
+                throw new ServerException("Ошибка класса-бина контекста приложения: \"" + ex.getCause().getMessage() + "\"\n"
                         + "Сообщение об ошибке: \"" + ex.getCause().getMessage() + "\"\n" + ex);
             } catch (Exception ex) {
                 throw new ServerException("Ошибка создания контекста приложения: " + ex);

@@ -199,8 +199,8 @@ public class CalendarTableModel extends AbstractTableModel {
         } catch (HibernateException ex) {
             session.getTransaction().rollback();
             String ss = "";
-            for (String s : ex.getMessages()) {
-                ss = ss + "\n" + s;
+            for (StackTraceElement s : ex.getStackTrace()) {
+                ss = ss + "\n" + s.toString();
             }
             throw new Uses.ClientException("Ошибка системы взаимодействия с БД(Hibetnate).\n Возможно существуют вновь добавленные календари которые еще не сохранены.\nПопробуйте предварительно сохранить конфигурацию.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nMessages: " + ss);
         } catch (Exception ex) {

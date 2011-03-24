@@ -20,7 +20,7 @@ package ru.apertum.qsystem.server.model.monitorium;
 import java.util.LinkedHashSet;
 import org.dom4j.Element;
 import ru.apertum.qsystem.client.forms.AFBoardRedactor;
-import ru.apertum.qsystem.server.model.AIndicatorBoard;
+import ru.apertum.qsystem.server.controller.AIndicatorBoard;
 
 /**
  * Класс для системы внешних табло Monitorium

@@ -25,7 +25,7 @@ import ru.apertum.qsystem.common.CodepagePrintStream;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.reports.model.CurrentStatistic;
 import ru.apertum.qsystem.reports.model.WebServer;
-import ru.apertum.qsystem.server.model.QServicesPool;
+import ru.apertum.qsystem.server.controller.QServicesPool;
 
 /**
  * Класс старта и exit
