@@ -48,7 +48,7 @@ public class QUserList extends DefaultListModel {
 
     /**
      * Принудительное пересоздание списка пользователей. Доступ до Singleton
-     * @param poolGetter свойства услуг, по которым построится дерево услуг.
+     * @param usersGetter свойства юзеров, по которым построится дерево услуг.
      * @return класс - деерво услуг.
      */
     public static QUserList resetUserList(IUsersGetter usersGetter) {

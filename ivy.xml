@@ -74,5 +74,7 @@
         <dependency org="net.sf.jasperreports" name="jasperreports" rev="3.7.6" conf="compile->*" transitive="false"/>
         <dependency org="net.sf.jasperreports" name="jasperreports-fonts" rev="4.0.0" conf="runtime->*" transitive="false"/>
 
+        <dependency org="com.google.code.gson" name="gson" rev="1.4" conf="compile->*" transitive="false"/>
+
     </dependencies>
 </ivy-module>

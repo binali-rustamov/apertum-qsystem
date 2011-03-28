@@ -151,11 +151,6 @@ public class FromDBBuilder extends AServerPropertyBuilder {
                             session.saveOrUpdate(servicePlan);
                         }
                     }
-                    // Сохраняем сайты
-                    for (Object o : pool.getSiteList().toArray()) {
-                        final QSite site = (QSite) o;
-                        session.saveOrUpdate(site);
-                    }
 
                     //Сохраняем сетевые настройки
                     session.saveOrUpdate(pool.getNetPropetry());

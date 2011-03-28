@@ -446,7 +446,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         // Узнать у сервера, есть ли информация для печати
         // Если текст информации не пустой, то показать диалог сэтим текстом
         // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
-        final Element printInfo = NetCommander.getPintForInfoItem(FWelcome.netProperty, level.attributeValue(Uses.TAG_NAME), "");
+        final Element printInfo = NetCommander.getPintForInfoItem(FWelcome.netProperty, level.attributeValue(Uses.TAG_NAME));
         if (printInfo != null) {
             String printedText = printInfo.getText();
             printedText = "".equals(printedText.trim()) ? getLocaleMessage("dialog.no_info") : printedText;

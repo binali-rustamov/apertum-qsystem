@@ -27,7 +27,6 @@ import ru.apertum.qsystem.reports.generators.RepCurrentUsers;
 import ru.apertum.qsystem.reports.generators.ReportCurrentServices;
 import ru.apertum.qsystem.reports.generators.ReportsList;
 import ru.apertum.qsystem.reports.net.NetUtil;
-import ru.apertum.qsystem.server.model.QSiteList;
 
 /**
  * Генератор отчетов.
@@ -44,22 +43,7 @@ public class ReportGenerator {
     public static void addGenerator(IGenerator generator) {
         generators.put(generator.getHref().toLowerCase(), generator);
     }
-    /**
-     * Это список сайтов домена.
-     */
-    private static QSiteList siteList = null;
 
-    public static void addSiteList(QSiteList siteList) {
-        ReportGenerator.siteList = siteList;
-    }
-
-    public static QSiteList getSiteList() {
-        return siteList;
-    }
-
-    public static boolean isSuperSite() {
-        return siteList != null;
-    }
     /**
      * Это не отчет. это генератор списка отчетов, который проверяет пароль и пользователя и формирует
      * coocies для браузера, чтоб далее браузер подставлял жти куки в запрос и тем самым сервак "узнавал пользователя".

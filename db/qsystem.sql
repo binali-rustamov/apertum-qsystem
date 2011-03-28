@@ -227,7 +227,6 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`net` (
   `client_port` INT NOT NULL COMMENT 'UDP Порт клиента, на который идет рассылка широковещательных пакетов.' ,
   `finish_time` TIME NOT NULL COMMENT 'Время прекращения приема заявок на постановку в очередь' ,
   `start_time` TIME NOT NULL COMMENT 'Время начала приема заявок на постановку в очередь' ,
-  `super_site` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Является ли сервер суперсайтом' ,
   `version` VARCHAR(25) NOT NULL DEFAULT 'Не присвоена' COMMENT 'Версия БД' ,
   PRIMARY KEY (`id`) )
 COMMENT = 'Сетевые настройки сервера.';
@@ -317,23 +316,6 @@ COMMENT = 'Зарегистрированные аналитические от�
 
 
 -- -----------------------------------------------------
--- Table `qsystem`.`sites`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `qsystem`.`sites` ;
-
-CREATE  TABLE IF NOT EXISTS `qsystem`.`sites` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT ,
-  `address` VARCHAR(500) NOT NULL COMMENT 'Адрес сервера сайта' ,
-  `server_port` INT NOT NULL COMMENT 'Порт сервера сайта' ,
-  `web_server_port` INT NOT NULL COMMENT 'Порт отчетного веб-сервера' ,
-  `button_text` VARCHAR(2500) NOT NULL COMMENT 'html-текст сайта на кнопке пункта регистрации' ,
-  `description` VARCHAR(2000) NULL COMMENT 'Комментарии к сайту' ,
-  `name` VARCHAR(2000) NULL COMMENT 'Наименование сайта' ,
-  PRIMARY KEY (`id`) )
-COMMENT = 'Список сайтов домена для суперсайта';
-
-
--- -----------------------------------------------------
 -- Table `qsystem`.`advance`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `qsystem`.`advance` ;
@@ -343,7 +325,6 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`advance` (
   `service_id` BIGINT NOT NULL COMMENT 'Услуга предварительной записи' ,
   `advance_time` DATETIME NOT NULL COMMENT 'Время предварительной записи' ,
   `priority` INT NOT NULL DEFAULT 2 COMMENT 'Приоритет заранее записавшегося клиента.' ,
-  `site_mark` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'Маркировка сайта. если используется доменная структура' ,
   `clients_authorization_id` BIGINT NULL COMMENT 'Определено если клиент авторизовался' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_scenario_services`
@@ -555,7 +536,7 @@ COMMIT;
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 USE `qsystem`;
-INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `super_site`, `version`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', false, '1.0');
+INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', '1.1');
 
 COMMIT;
 
@@ -587,15 +568,6 @@ INSERT INTO `reports` (`id`, `name`, `className`, `template`, `href`) VALUES (11
 INSERT INTO `reports` (`id`, `name`, `className`, `template`, `href`) VALUES (12, 'Отчет предварительно зарегистрированных клиентов по услуге на дату', 'ru.apertum.qsystem.reports.formirovators.DistributionMedDayServices', '/ru/apertum/qsystem/reports/templates/DistributionMedDayServices.jasper', 'distribution_med_services');
 INSERT INTO `reports` (`id`, `name`, `className`, `template`, `href`) VALUES (13, 'Отчет по авторизованным персонам за период для пользователя', 'ru.apertum.qsystem.reports.formirovators.AuthorizedClientsPeriodUsers', '/ru/apertum/qsystem/reports/templates/AuthorizedClientsPeriodUsers.jasper', 'authorized_clients_period_users');
 INSERT INTO `reports` (`id`, `name`, `className`, `template`, `href`) VALUES (14, 'Отчет по авторизованным персонам за период для услуги', 'ru.apertum.qsystem.reports.formirovators.AuthorizedClientsPeriodServices', '/ru/apertum/qsystem/reports/templates/AuthorizedClientsPeriodServices.jasper', 'authorized_clients_period_services');
-
-COMMIT;
-
--- -----------------------------------------------------
--- Data for table `qsystem`.`sites`
--- -----------------------------------------------------
-SET AUTOCOMMIT=0;
-USE `qsystem`;
-INSERT INTO `sites` (`id`, `address`, `server_port`, `web_server_port`, `button_text`, `description`, `name`) VALUES (1, '127.0.0.1', 3128, 8088, 'Локальный сайт', 'Локальный сайт', 'Локальный сайт');
 
 COMMIT;
 

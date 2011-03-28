@@ -41,7 +41,7 @@ public class TabloRedactor {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
 
         // проверить есть ли файл /config/clientboard.xml и если есть отправить его на редактирование
@@ -53,7 +53,7 @@ public class TabloRedactor {
             throw new Uses.ServerException("File context not exist.");
         }
         filePath = args[0];
-        Uses.log.logger.info("Загрузим файл " + filePath);
+        Uses.log.logger.info("Загрузим файл " + file.getAbsolutePath());
         final SAXReader reader = new SAXReader(false);
         try {
             root = reader.read(file).getRootElement();

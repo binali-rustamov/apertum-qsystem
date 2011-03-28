@@ -72,8 +72,6 @@ import ru.apertum.qsystem.server.model.schedule.QSchedule;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceList;
 import ru.apertum.qsystem.server.model.QServiceTree;
-import ru.apertum.qsystem.server.model.QSite;
-import ru.apertum.qsystem.server.model.QSiteList;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.QUserList;
 import ru.apertum.qsystem.server.model.calendar.CalendarTableModel;
@@ -296,13 +294,6 @@ public class FAdmin extends javax.swing.JFrame {
             }
         });
         // Определим события выбора сайта в списках.
-        listSites.addListSelectionListener(new ListSelectionListener() {
-
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                siteListChange();
-            }
-        });
         treeServices.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         treeInfo.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         /*
@@ -333,16 +324,14 @@ public class FAdmin extends javax.swing.JFrame {
         textFieldStartTime.setInputVerifier(DateVerifier);
         textFieldFinishTime.setInputVerifier(DateVerifier);
 
-        // Суперсайты тока с базой.
-        checkBoxSuper.setVisible(Uses.isDBconnected());
+
         //Загрузим настройки
         loadSettings();
         // Старт таймера автоматических запросов.
         startTimer();
         // Грузим конфигурацию
         loadConfig();
-        // покажим закладку домена если надо.
-        checkBoxSuperMouseClicked(null);
+
         /*
         userListChange();
         serviceListChange();
@@ -351,13 +340,10 @@ public class FAdmin extends javax.swing.JFrame {
         spinnerPropServerPort.getModel().addChangeListener(new ChangeNet());
         spinnerPropClientPort.getModel().addChangeListener(new ChangeNet());
         spinnerWebServerPort.getModel().addChangeListener(new ChangeNet());
-        checkBoxSuper.getModel().addChangeListener(new ChangeNet());
+
         spinnerServerPort.getModel().addChangeListener(new ChangeSettings());
         spinnerClientPort.getModel().addChangeListener(new ChangeSettings());
         spinnerUserRS.getModel().addChangeListener(new ChangeUser());
-
-        spinnerSitePort.getModel().addChangeListener(new ChangeSite());
-        spinnerSiteWebPort.getModel().addChangeListener(new ChangeSite());
 
         //привязка помощи к форме.
         final Helper helper = Helper.getHelp("ru/apertum/qsystem/client/help/admin.hs");
@@ -366,7 +352,7 @@ public class FAdmin extends javax.swing.JFrame {
         helper.enableHelpKey(jPanel3, "monitoring");
         helper.enableHelpKey(jPanel4, "configuring");
         helper.enableHelpKey(jPanel8, "net");
-        helper.enableHelpKey(panelSites, "domain");
+
 
         helper.enableHelpKey(jPanel17, "schedulers");
         helper.enableHelpKey(jPanel19, "calendars");
@@ -410,18 +396,6 @@ public class FAdmin extends javax.swing.JFrame {
         }
     }
 
-    /**
-     * Сохранять настройки сайта
-     */
-    private class ChangeSite implements ChangeListener {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            if (changeSite) {
-                saveSite();
-            }
-        }
-    }
     /**
      * вспомогательные для отсечения событий сохранения
      */
@@ -570,33 +544,7 @@ public class FAdmin extends javax.swing.JFrame {
         textPaneInfoPrint.setText(item.getTextPrint());
     }
 
-    /**
-     * Действия по смене выбранного сайта в списке сайтов
-     */
-    private void siteListChange() {
-        changeSite = false;
-        if (listSites.getLastVisibleIndex() == -1) {
-            textFieldSiteAddress.setText("");
-            textFieldSiteComment.setText("");
-            textFieldSiteButtonCaption.setText("");
-            spinnerSitePort.setValue(0);
-            spinnerSiteWebPort.setValue(0);
-            labelSiteButtonCaption.setText("");
-            return;
-        }
-        final QSite site = (QSite) listSites.getSelectedValue();
-        if (site == null) {
-            return;
-        }
-        textFieldSiteAddress.setText(site.getAddress());
-        textFieldSiteComment.setText(site.getDescription());
-        textFieldSiteName.setText(site.getName());
-        textFieldSiteButtonCaption.setText(site.getButtonText());
-        spinnerSitePort.setValue(site.getServerPort());
-        spinnerSiteWebPort.setValue(site.getWebServerPort());
-        labelSiteButtonCaption.setText(textFieldSiteButtonCaption.getText());
-        changeSite = true;
-    }
+    
     /**
      * Ограничение ввода время начала и конце работы системы.
      */
@@ -686,18 +634,10 @@ public class FAdmin extends javax.swing.JFrame {
         treeInfo.setModel(QServicesPool.getServicesPool(true).getInfoTree());
         listSchedule.setModel(QServicesPool.getServicesPool(true).getScheduleList());
         listCalendar.setModel(QServicesPool.getServicesPool(true).getCalendarList());
-        // Сайты не грузим если конфигкрация на файлик
-        if (Uses.isDBconnected()) {
-            QServicesPool.getServicesPool(true).setSiteList(); // создадим список сайтов на случай если не стоит галка суперсайта и сервак не закачал список.
-            listSites.setModel(QServicesPool.getServicesPool(true).getSiteList());
-        } else {
-            checkBoxSuper.setVisible(false);
-            panelSites.setVisible(false);
-        }
+        
         spinnerPropServerPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getServerPort());
         spinnerPropClientPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getClientPort());
         spinnerWebServerPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getWebServerPort());
-        checkBoxSuper.setSelected(QServicesPool.getServicesPool(true).getNetPropetry().getSuperSite());
         textFieldStartTime.setText(Uses.format_HH_mm.format(QServicesPool.getServicesPool(true).getNetPropetry().getStartTime()));
         textFieldFinishTime.setText(Uses.format_HH_mm.format(QServicesPool.getServicesPool(true).getNetPropetry().getFinishTime()));
 
@@ -730,9 +670,6 @@ public class FAdmin extends javax.swing.JFrame {
             listUserService.setSelectedIndex(0);
         }
 
-        if (listSites.getLastVisibleIndex() != -1) {
-            listSites.setSelectedIndex(0);
-        }
     }
 
     private class ServerNetProperty implements INetProperty {
@@ -787,11 +724,6 @@ public class FAdmin extends javax.swing.JFrame {
         @Override
         public Element getXML() {
             throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public boolean IsSuperSite() {
-            return false;
         }
 
         @Deprecated
@@ -903,11 +835,6 @@ public class FAdmin extends javax.swing.JFrame {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
 
-            @Override
-            public boolean IsSuperSite() {
-                return false;
-            }
-
             @Deprecated
             @Override
             public String getVersion() {
@@ -932,26 +859,12 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     /**
-     * Сохранение данных о сайте, повесим на потерю фокуса элементов ввода.
-     */
-    public void saveSite() {
-        final QSite site = (QSite) listSites.getSelectedValue();
-        site.setAddress(textFieldSiteAddress.getText());
-        site.setDescription(textFieldSiteComment.getText());
-        site.setName(textFieldSiteName.getText());
-        site.setButtonText(textFieldSiteButtonCaption.getText());
-        site.setServerPort((Integer) spinnerSitePort.getValue());
-        site.setWebServerPort((Integer) spinnerSiteWebPort.getValue());
-    }
-
-    /**
      * Сохранение данных о сетевых настройках, повесим на нажатие кнопок элементов ввода.
      */
     public void saveNet() {
         ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setServerPort((Integer) spinnerPropServerPort.getValue());
         ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setClientPort((Integer) spinnerPropClientPort.getValue());
         ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setWebServerPort((Integer) spinnerWebServerPort.getValue());
-        ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setSuperSite(checkBoxSuper.isSelected());
         try {
             ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setStartTime(Uses.format_HH_mm.parse(textFieldStartTime.getText()));
             ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setFinishTime(Uses.format_HH_mm.parse(textFieldFinishTime.getText()));
@@ -1364,7 +1277,7 @@ public class FAdmin extends javax.swing.JFrame {
 
             final Element res;
             try {
-                res = NetCommander.standInService(new ServerNetProperty(), service.getName(), "1", 1, "", inputData);
+                res = NetCommander.standInService(new ServerNetProperty(), service.getName(), "1", 1, inputData);
                 // костыль. если услуга требует ввода пользователем, то на пичать отправлять не просто кастомера,
                 // а еще и с капшеном того что он вводил для печати на номерке
                 if (service.getInput_required()) {
@@ -1520,27 +1433,6 @@ public class FAdmin extends javax.swing.JFrame {
         jLabel14 = new javax.swing.JLabel();
         textFieldStartTime = new javax.swing.JTextField();
         textFieldFinishTime = new javax.swing.JTextField();
-        checkBoxSuper = new javax.swing.JCheckBox();
-        panelSites = new javax.swing.JPanel();
-        jScrollPane5 = new javax.swing.JScrollPane();
-        listSites = new javax.swing.JList();
-        jPanel16 = new javax.swing.JPanel();
-        jButton13 = new javax.swing.JButton();
-        jButton14 = new javax.swing.JButton();
-        jLabel7 = new javax.swing.JLabel();
-        textFieldSiteAddress = new javax.swing.JTextField();
-        jLabel11 = new javax.swing.JLabel();
-        spinnerSitePort = new javax.swing.JSpinner();
-        spinnerSiteWebPort = new javax.swing.JSpinner();
-        jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel25 = new javax.swing.JLabel();
-        textFieldSiteComment = new javax.swing.JTextField();
-        textFieldSiteButtonCaption = new javax.swing.JTextField();
-        jLabel15 = new javax.swing.JLabel();
-        textFieldSiteName = new javax.swing.JTextField();
-        jScrollPane7 = new javax.swing.JScrollPane();
-        labelSiteButtonCaption = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane8 = new javax.swing.JScrollPane();
         treeInfo = new javax.swing.JTree();
@@ -2649,212 +2541,15 @@ public class FAdmin extends javax.swing.JFrame {
                 .addContainerGap(32, Short.MAX_VALUE))
         );
 
-        checkBoxSuper.setText(resourceMap.getString("checkBoxSuper.text")); // NOI18N
-        checkBoxSuper.setName("checkBoxSuper"); // NOI18N
-        checkBoxSuper.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                checkBoxSuperMouseClicked(evt);
-            }
-        });
-
-        panelSites.setBorder(new javax.swing.border.MatteBorder(null));
-        panelSites.setName("panelSites"); // NOI18N
-
-        jScrollPane5.setName("jScrollPane5"); // NOI18N
-
-        listSites.setName("listSites"); // NOI18N
-        jScrollPane5.setViewportView(listSites);
-
-        jPanel16.setBorder(new javax.swing.border.MatteBorder(null));
-        jPanel16.setName("jPanel2"); // NOI18N
-
-        jButton13.setAction(actionMap.get("addSite")); // NOI18N
-        jButton13.setName("jButton7"); // NOI18N
-
-        jButton14.setAction(actionMap.get("deleteSite")); // NOI18N
-        jButton14.setName("jButton8"); // NOI18N
-
-        javax.swing.GroupLayout jPanel16Layout = new javax.swing.GroupLayout(jPanel16);
-        jPanel16.setLayout(jPanel16Layout);
-        jPanel16Layout.setHorizontalGroup(
-            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel16Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButton13)
-                .addGap(18, 18, 18)
-                .addComponent(jButton14)
-                .addContainerGap(134, Short.MAX_VALUE))
-        );
-        jPanel16Layout.setVerticalGroup(
-            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel16Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton13)
-                    .addComponent(jButton14))
-                .addContainerGap())
-        );
-
-        jLabel7.setText(resourceMap.getString("jLabel7.text")); // NOI18N
-        jLabel7.setName("jLabel7"); // NOI18N
-
-        textFieldSiteAddress.setText(resourceMap.getString("textFieldSiteAddress.text")); // NOI18N
-        textFieldSiteAddress.setEnabled(false);
-        textFieldSiteAddress.setName("textFieldSiteAddress"); // NOI18N
-        textFieldSiteAddress.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                textFieldSiteAddressKeyReleased(evt);
-            }
-        });
-
-        jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N
-        jLabel11.setName("jLabel11"); // NOI18N
-
-        spinnerSitePort.setEnabled(false);
-        spinnerSitePort.setName("spinnerSitePort"); // NOI18N
-
-        spinnerSiteWebPort.setName("spinnerSiteWebPort"); // NOI18N
-        spinnerSiteWebPort.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                spinnerSiteWebPortKeyReleased(evt);
-            }
-        });
-
-        jLabel12.setText(resourceMap.getString("jLabel12.text")); // NOI18N
-        jLabel12.setName("jLabel12"); // NOI18N
-
-        jLabel13.setText(resourceMap.getString("jLabel13.text")); // NOI18N
-        jLabel13.setName("jLabel13"); // NOI18N
-
-        jLabel25.setText(resourceMap.getString("jLabel25.text")); // NOI18N
-        jLabel25.setName("jLabel25"); // NOI18N
-
-        textFieldSiteComment.setText(resourceMap.getString("textFieldSiteComment.text")); // NOI18N
-        textFieldSiteComment.setName("textFieldSiteComment"); // NOI18N
-        textFieldSiteComment.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                textFieldSiteCommentKeyReleased(evt);
-            }
-        });
-
-        textFieldSiteButtonCaption.setText(resourceMap.getString("textFieldSiteButtonCaption.text")); // NOI18N
-        textFieldSiteButtonCaption.setName("textFieldSiteButtonCaption"); // NOI18N
-        textFieldSiteButtonCaption.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                textFieldSiteButtonCaptionKeyReleased(evt);
-            }
-        });
-
-        jLabel15.setText(resourceMap.getString("jLabel15.text")); // NOI18N
-        jLabel15.setName("jLabel15"); // NOI18N
-
-        textFieldSiteName.setText(resourceMap.getString("textFieldSiteName.text")); // NOI18N
-        textFieldSiteName.setName("textFieldSiteName"); // NOI18N
-        textFieldSiteName.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                textFieldSiteNameKeyReleased(evt);
-            }
-        });
-
-        jScrollPane7.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jScrollPane7.border.title"))); // NOI18N
-        jScrollPane7.setName("jScrollPane7"); // NOI18N
-
-        labelSiteButtonCaption.setText(resourceMap.getString("labelSiteButtonCaption.text")); // NOI18N
-        labelSiteButtonCaption.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        labelSiteButtonCaption.setName("labelSiteButtonCaption"); // NOI18N
-        jScrollPane7.setViewportView(labelSiteButtonCaption);
-
-        javax.swing.GroupLayout panelSitesLayout = new javax.swing.GroupLayout(panelSites);
-        panelSites.setLayout(panelSitesLayout);
-        panelSitesLayout.setHorizontalGroup(
-            panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelSitesLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelSitesLayout.createSequentialGroup()
-                        .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 781, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(panelSitesLayout.createSequentialGroup()
-                        .addComponent(jLabel15)
-                        .addContainerGap())
-                    .addGroup(panelSitesLayout.createSequentialGroup()
-                        .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(159, 159, 159))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelSitesLayout.createSequentialGroup()
-                        .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel7)
-                            .addComponent(jLabel12)
-                            .addComponent(jLabel11)
-                            .addComponent(jLabel13)
-                            .addComponent(jLabel25))
-                        .addGap(25, 25, 25)
-                        .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(panelSitesLayout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(spinnerSitePort, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(spinnerSiteWebPort, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(textFieldSiteButtonCaption, 0, 0, Short.MAX_VALUE)
-                            .addComponent(textFieldSiteComment, javax.swing.GroupLayout.DEFAULT_SIZE, 637, Short.MAX_VALUE)
-                            .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(textFieldSiteName, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(textFieldSiteAddress, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)))
-                        .addContainerGap())))
-        );
-        panelSitesLayout.setVerticalGroup(
-            panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelSitesLayout.createSequentialGroup()
-                .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelSitesLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
-                    .addGroup(panelSitesLayout.createSequentialGroup()
-                        .addGap(9, 9, 9)
-                        .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel15)
-                            .addComponent(textFieldSiteName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel7)
-                            .addComponent(textFieldSiteAddress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel11)
-                            .addComponent(spinnerSitePort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel12)
-                            .addComponent(spinnerSiteWebPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel13)
-                            .addComponent(textFieldSiteComment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelSitesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel25)
-                            .addComponent(textFieldSiteButtonCaption, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelSites, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(checkBoxSuper, javax.swing.GroupLayout.PREFERRED_SIZE, 458, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel8Layout.createSequentialGroup()
-                        .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(565, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
@@ -2864,10 +2559,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(checkBoxSuper)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelSites, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(503, Short.MAX_VALUE))
         );
 
         tabbedPaneMain.addTab(resourceMap.getString("jPanel8.TabConstraints.tabTitle"), jPanel8); // NOI18N
@@ -3176,7 +2868,6 @@ public class FAdmin extends javax.swing.JFrame {
 
         menuLangs.setText(resourceMap.getString("menuLangs.text")); // NOI18N
         menuLangs.setName("menuLangs"); // NOI18N
-        menuLangs.setName("menuLangs"); // NOI18N
         menuFile.add(menuLangs);
 
         jSeparator15.setName("jSeparator15"); // NOI18N
@@ -3390,37 +3081,6 @@ private void textFieldUserIdentKeyReleased(java.awt.event.KeyEvent evt) {//GEN-F
     saveUser();
 }//GEN-LAST:event_textFieldUserIdentKeyReleased
 
-private void textFieldSiteButtonCaptionKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textFieldSiteButtonCaptionKeyReleased
-
-    labelSiteButtonCaption.setText(textFieldSiteButtonCaption.getText());
-    saveSite();
-}//GEN-LAST:event_textFieldSiteButtonCaptionKeyReleased
-
-private void textFieldSiteCommentKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textFieldSiteCommentKeyReleased
-
-    saveSite();
-}//GEN-LAST:event_textFieldSiteCommentKeyReleased
-
-private void textFieldSiteAddressKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textFieldSiteAddressKeyReleased
-
-    saveSite();
-}//GEN-LAST:event_textFieldSiteAddressKeyReleased
-
-private void spinnerSiteWebPortKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_spinnerSiteWebPortKeyReleased
-
-    saveSite();
-}//GEN-LAST:event_spinnerSiteWebPortKeyReleased
-
-private void checkBoxSuperMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_checkBoxSuperMouseClicked
-
-    panelSites.setVisible(checkBoxSuper.isSelected());
-}//GEN-LAST:event_checkBoxSuperMouseClicked
-
-private void textFieldSiteNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textFieldSiteNameKeyReleased
-
-    saveSite();
-}//GEN-LAST:event_textFieldSiteNameKeyReleased
-
 private void listUserServiceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listUserServiceMouseClicked
 
     // назначение приоритета услуге.
@@ -3586,83 +3246,6 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
 }//GEN-LAST:event_textPaneInfoPrintKeyReleased
 
     @Action
-    public void addSite() {
-        // Запросим название сайта и порта и если эта пара уникальна, то примем
-        String siteMark = "";
-        boolean flag = true;
-        while (flag) {
-            siteMark = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.enter_sute_mark.message"), getLocaleMessage("admin.enter_sute_mark.title"), 3, null, null, siteMark);
-            if (siteMark == null) {
-                return;
-            }
-            if ("".equals(siteMark)) {
-                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.enter_sute_mark.err1.message"), getLocaleMessage("admin.enter_sute_mark.err1.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-            } else if (QServicesPool.getServicesPool(true).getSiteList().hasByMark(siteMark)) {
-                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.enter_sute_mark.err2.message"), getLocaleMessage("admin.enter_sute_mark.err2.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-            } else if (siteMark.split(":").length != 2) {
-                JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.enter_sute_mark.err3.message"), getLocaleMessage("admin.enter_sute_mark.err3.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-            } else {
-                flag = false;
-            }
-            if (!flag) {
-                try {
-                    if (Integer.valueOf(siteMark.split(":")[1]) < 0) {
-                        throw new NumberFormatException();
-                    }
-                } catch (NumberFormatException e) {
-                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.enter_sute_mark.err4.message"), getLocaleMessage("admin.enter_sute_mark.err4.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-                    flag = true;
-                }
-            }
-        }
-        Uses.log.logger.debug("Добавляем сайт \"" + siteMark + "\"");
-        final QSite site = new QSite();
-        site.setAddress(siteMark.split(":")[0]);
-        site.setServerPort(Integer.parseInt(siteMark.split(":")[1]));
-        site.setWebServerPort(8080);
-        site.setButtonText("");
-        site.setDescription("");
-        site.setName("");
-        QServicesPool.getServicesPool(true).getSiteList().addElement(site);
-        listSites.setSelectedValue(site, true);
-
-
-    }
-
-    @Action
-    public void deleteSite() {
-        if (listUsers.getSelectedIndex() != -1) {
-            if (JOptionPane.showConfirmDialog(this,
-                    getLocaleMessage("admin.site_delete.message") + " \"" + listSites.getSelectedValue().toString() + "\"?",
-                    getLocaleMessage("admin.site_delete.title"),
-                    JOptionPane.YES_NO_OPTION) == 1) {
-                return;
-            }
-            Uses.log.logger.debug("Удаляем сайт \"" + listSites.getSelectedValue().toString() + "\"");
-
-
-            final int del = listSites.getSelectedIndex();
-            final QSiteList m = (QSiteList) listSites.getModel();
-            final int col = m.getSize();
-
-            final QSite site = (QSite) listSites.getSelectedValue();
-            if (Uses.isDBconnected()) {
-                QServicesPool.getServicesPool(true).addKilled(site);
-            }
-
-            QServicesPool.getServicesPool(true).getSiteList().removeElement(site);
-
-            if (col != 1) {
-                if (col == del + 1) {
-                    listSites.setSelectedValue(m.getElementAt(del - 1), true);
-                } else if (col > del + 1) {
-                    listSites.setSelectedValue(m.getElementAt(del), true);
-                }
-            }
-        }
-    }
-
-    @Action
     public void changeServicePriority() {
         final QPlanService plan = (QPlanService) listUserService.getSelectedValue();
         if (plan == null) {
@@ -3749,7 +3332,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         if (service != null && service.isLeaf()) {
             final Element res;
             try {
-                res = FAdvanceCalendar.showCalendar(this, true, new ServerNetProperty(), service.getName(), "", false, 0, -1);
+                res = FAdvanceCalendar.showCalendar(this, true, new ServerNetProperty(), service.getName(), false, 0, -1);
             } catch (Exception ex) {
                 throw new Uses.ClientException(getLocaleMessage("admin.send_cmd_adv.err") + " " + ex);
             }
@@ -4162,13 +3745,10 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JCheckBox checkBoxClientAuto;
     private javax.swing.JCheckBox checkBoxReport;
     private javax.swing.JCheckBox checkBoxServerAuto;
-    private javax.swing.JCheckBox checkBoxSuper;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton12;
-    private javax.swing.JButton jButton13;
-    private javax.swing.JButton jButton14;
     private javax.swing.JButton jButton15;
     private javax.swing.JButton jButton16;
     private javax.swing.JButton jButton17;
@@ -4183,11 +3763,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
@@ -4197,12 +3773,10 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JMenu jMenu1;
@@ -4251,7 +3825,6 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
-    private javax.swing.JPanel jPanel16;
     private javax.swing.JPanel jPanel17;
     private javax.swing.JPanel jPanel18;
     private javax.swing.JPanel jPanel19;
@@ -4274,9 +3847,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
-    private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JSeparator jSeparator1;
@@ -4303,13 +3874,11 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JLabel labelSchedule;
     private javax.swing.JLabel labelServerState;
     private javax.swing.JLabel labelServiceInfo;
-    private javax.swing.JLabel labelSiteButtonCaption;
     private javax.swing.JLabel labelWelcomeState;
     private javax.swing.JList listCalendar;
     private javax.swing.JList listResponse;
     private javax.swing.JList listResults;
     private javax.swing.JList listSchedule;
-    private javax.swing.JList listSites;
     private javax.swing.JList listUserService;
     private javax.swing.JList listUsers;
     private javax.swing.JMenu menuAbout;
@@ -4319,7 +3888,6 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JMenu menuLangs;
     private javax.swing.JMenu menuServices;
     private javax.swing.JMenu menuUsers;
-    private javax.swing.JPanel panelSites;
     private javax.swing.JPasswordField passwordFieldUser;
     private javax.swing.JPopupMenu popupCalendar;
     private javax.swing.JPopupMenu popupInfo;
@@ -4333,8 +3901,6 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JSpinner spinnerPropClientPort;
     private javax.swing.JSpinner spinnerPropServerPort;
     private javax.swing.JSpinner spinnerServerPort;
-    private javax.swing.JSpinner spinnerSitePort;
-    private javax.swing.JSpinner spinnerSiteWebPort;
     private javax.swing.JSpinner spinnerUserRS;
     private javax.swing.JSpinner spinnerWebServerPort;
     private javax.swing.JTabbedPane tabbedPaneMain;
@@ -4346,10 +3912,6 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JTextField textFieldResponse;
     private javax.swing.JTextField textFieldScheduleName;
     private javax.swing.JTextField textFieldServerAddr;
-    private javax.swing.JTextField textFieldSiteAddress;
-    private javax.swing.JTextField textFieldSiteButtonCaption;
-    private javax.swing.JTextField textFieldSiteComment;
-    private javax.swing.JTextField textFieldSiteName;
     private javax.swing.JTextField textFieldStartTime;
     private javax.swing.JTextField textFieldUserIdent;
     private javax.swing.JTextField textFieldUserName;

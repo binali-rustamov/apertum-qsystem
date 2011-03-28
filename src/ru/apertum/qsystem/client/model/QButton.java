@@ -55,7 +55,6 @@ public class QButton extends JButton {
     /**
      * Маркировка сайта, который соотверствует услуге, которая висит на этой кнопке.
      */
-    private final String siteMark;
     private final FWelcome form;
     private final JPanel parent;
     /**
@@ -80,8 +79,6 @@ public class QButton extends JButton {
         this.form = frm;
         this.element = element;
         this.parent = prt;
-        final String ss = element.attributeValue(Uses.TASK_FOR_SITE);
-        this.siteMark = (ss == null) ? "" : ss;
         // Нарисуем картинку на кнопке если надо
         if ("".equals(resourceName)) {
             background = null;
@@ -131,7 +128,7 @@ public class QButton extends JButton {
                             // Если Предварительная запись, то пытаемся предватительно встать и выходим из обработке кнопки.
                             if (FWelcome.isAdvanceRegim()) {
                                 form.setAdvanceRegim(false);
-                                final Element res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, element.attributeValue(Uses.TAG_NAME), siteMark, true, FWelcome.welcomeParams.delayBack * 2, form.advancedCustomer);
+                                final Element res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, element.attributeValue(Uses.TAG_NAME), true, FWelcome.welcomeParams.delayBack * 2, form.advancedCustomer);
                                 //Если res == null значит отказались от выбора
                                 if (res == null) {
                                     form.showMed();
@@ -163,13 +160,7 @@ public class QButton extends JButton {
                                     @Override
                                     public void run() {
                                         Uses.log.logger.info("Печать этикетки бронирования.");
-                                        // Для доменной системы на этикетке под картинкой выводим наименование с своего сайта
-                                        final String cap = FWelcome.captions.get(siteMark);
-                                        if (cap == null) {
-                                            FWelcome.printTicketAdvance(res);
-                                        } else {
-                                            FWelcome.printTicketAdvance(res, cap);
-                                        }
+                                        FWelcome.printTicketAdvance(res);
                                     }
                                 }).start();
                                 // выходим, т.к. вся логика предварительной записи в форме предварительного календаря
@@ -181,7 +172,7 @@ public class QButton extends JButton {
                             // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
                             final Element preInfo;
                             try {
-                                preInfo = NetCommander.getPreInfoForService(FWelcome.netProperty, element.attributeValue(Uses.TAG_PROP_NAME), siteMark);
+                                preInfo = NetCommander.getPreInfoForService(FWelcome.netProperty, element.attributeValue(Uses.TAG_PROP_NAME));
                             } catch (Exception ex) {
                                 // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
                                 Uses.log.logger.error("Невозможно отправить команду на сервер. ", ex);
@@ -203,7 +194,7 @@ public class QButton extends JButton {
                             // будет ли он стоять или нет
                             final Element statistic;
                             try {
-                                statistic = NetCommander.aboutService(FWelcome.netProperty, element.attributeValue(Uses.TAG_PROP_NAME), siteMark);
+                                statistic = NetCommander.aboutService(FWelcome.netProperty, element.attributeValue(Uses.TAG_PROP_NAME));
                             } catch (Exception ex) {
                                 // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
                                 Uses.log.logger.error("Невозможно отправить команду на сервер. ", ex);
@@ -255,7 +246,7 @@ public class QButton extends JButton {
                         if (isActive) {
                             final Element res;
                             try {
-                                res = NetCommander.standInService(FWelcome.netProperty, element.attributeValue(Uses.TAG_NAME), "1", 1, siteMark, inputData);
+                                res = NetCommander.standInService(FWelcome.netProperty, element.attributeValue(Uses.TAG_NAME), "1", 1, inputData);
                             } catch (Exception ex) {
                                 // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
                                 Uses.log.logger.error("Невозможно отправить команду на сервер. ", ex);
@@ -276,13 +267,7 @@ public class QButton extends JButton {
 
                                 @Override
                                 public void run() {
-                                    // Для доменной системы на этикетке под картинкой выводим наименование с своего сайта
-                                    final String cap = FWelcome.captions.get(siteMark);
-                                    if (cap == null) {
-                                        FWelcome.printTicket(res);
-                                    } else {
-                                        FWelcome.printTicket(res, cap);
-                                    }
+                                    FWelcome.printTicket(res);
                                 }
                             }).start();
                         }

@@ -27,6 +27,7 @@ public interface IProperty {
 
     /**
      * Наименование
+     * @return 
      */
     public String getName();
 
@@ -35,6 +36,7 @@ public interface IProperty {
      * Этод метод возвращает в зависимости от места использования:
      * 1. Коэффициент участия юзера в обработке услуги
      * 2. Да и все пока. почти ненужная весч.
+     * @return
      */
     public Object getValue();
 

@@ -16,6 +16,7 @@
  */
 package ru.apertum.qsystem.common.model;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -26,7 +27,10 @@ import java.util.Scanner;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.cmd.CmdParams;
+import ru.apertum.qsystem.common.cmd.JsonRPC20;
 
 /**
  * Содержит статические методы отправки и получения заданий на сервер.
@@ -35,52 +39,7 @@ import ru.apertum.qsystem.common.Uses;
  */
 public class NetCommander {
 
-    public final static String PARAM_SUPER_SITE = "%SUPER_SITE%";
-    public final static String PARAM_SITE_MARK = "%PARAM_SITE_MARK%";
-    public final static String PARAM_INPUT_DATA = "%INPUT_DATA%";
-    public final static String PARAM_SERVICE = "%SERVICE%";
-    public final static String PARAM_INFO_ITEM = "%INFO_ITEM%";
-    private final static String PARAM_ID = "%ID%";
-    private final static String PARAM_AUTH_CUSTOMER_ID = "%AUTH_CUSTOMER_ID%";
-    public final static String PARAM_PASSWORD = "%PASSWORD%";
-    private final static String PARAM_USERNAME = "%USERNAME%";
-    private final static String PARAM_RESULT_ID = "%RESULT_ID%";
-    public final static String PARAM_PRIORITY = "%PRIORITY%";
-    private final static String PARAM_REQUEST_BACK = "%REQUEST_BACK%";
-    private final static String PARAM_KOEFFICIENT = "%KOEFFICIENT%";
-    private final static String PARAM_DATE = "%DATE%";
-    private final static String TASK_GET_SERVICES = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_SERVICES + "\"/>";
-    private final static String TASK_GET_INFO_TREE = "<" + Uses.TASK_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_INFO_TREE + "\"/>";
-    private final static String TASK_GET_RESULTS_LIST = "<" + Uses.TASK_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_RESULTS_LIST + "\"/>";
-    private final static String TASK_GET_RESPONSE_LIST = "<" + Uses.TASK_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_RESPONSE_LIST + "\"/>";
-    private final static String TASK_SET_RESPONSE_ANSWER = "<" + Uses.TASK_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_SET_RESPONSE_ANSWER + "\" " + Uses.TAG_ID + "=\"" + PARAM_ID + "\"/>";
-    private final static String TASK_I_AM_LIVE = "<" + Uses.TASK_SITE + " " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\" " + Uses.TAG_NAME + "=\"" + Uses.TASK_I_AM_LIVE + "\"/>";
-    private final static String TASK_ABOUT_SERVICE = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_ABOUT_SERVICE + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
-    private final static String TASK_GET_SERVICE_PREINFO = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_SERVICE_PREINFO + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
-    private final static String TASK_GET_INFO_PRINT = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_INFO_PRINT + "\" " + Uses.TAG_INFO_ITEM + "=\"" + PARAM_INFO_ITEM + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
-    private final static String TASK_GET_USERS = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_USERS + "\"/>";
-    public final static String TASK_STAND_IN = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_STAND_IN + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TAG_PASSWORD + "=\"" + PARAM_PASSWORD + "\" " + Uses.TAG_PRIORITY + "=\"" + PARAM_PRIORITY + "\" " + Uses.TAG_INPUT_DATA + "=\"" + PARAM_INPUT_DATA + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
-    private final static String TASK_ADVANCE_STAND_IN = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_ADVANCE_STAND_IN + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TAG_START_TIME + "=\"" + PARAM_DATE + "\" " + Uses.TAG_AUTH_CUSTOMER_ID + "=\"" + PARAM_AUTH_CUSTOMER_ID + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
-    private final static String TASK_ADVANCE_CHECK_AND_STAND = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_ADVANCE_CHECK_AND_STAND + "\" " + Uses.TAG_ID + "=\"" + PARAM_ID + "\"/>";
-    private final static String TASK_GET_SELF = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_SELF + "\" " + Uses.TAG_PASSWORD + "=\"" + PARAM_PASSWORD + "\"/>";
-    private final static String TASK_GET_SELF_SERVICES = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_SELF_SERVICES + "\" " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\"/>";
-    private final static String TASK_GET_SELF_SERVICES_CHECK = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_SELF_SERVICES_CHECK + "\" " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\"/>";
-    private final static String TASK_INVITE_NEXT_CUSTOMER = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_INVITE_NEXT_CUSTOMER + "\" " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\"/>";
-    private final static String TASK_KILL_NEXT_CUSTOMER = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_KILL_NEXT_CUSTOMER + "\" " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\"/>";
-    private final static String TASK_START_CUSTOMER = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_START_CUSTOMER + "\" " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\"/>";
-    private final static String TASK_FINISH_CUSTOMER = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_FINISH_CUSTOMER + "\" " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\" " + Uses.TAG_RESULT_ITEM + "=\"" + PARAM_RESULT_ID + "\"/>";
-    private final static String TASK_REDIRECT_CUSTOMER = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_REDIRECT_CUSTOMER + "\" " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TAG_REQUEST_BACK + "=\"" + PARAM_REQUEST_BACK + "\"/>";
-    private final static String TASK_GET_SERVER_STATE = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_SERVER_STATE + "\"/>";
-    private final static String TASK_SET_SERVICE_FIRE = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_SET_SERVICE_FIRE + "\" " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TAG_PROP_KOEF + "=\"" + PARAM_KOEFFICIENT + "\"/>";
-    private final static String TASK_DELETE_SERVICE_FIRE = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_DELETE_SERVICE_FIRE + "\" " + Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\"/>";
-    private final static String TASK_GET_BOARD_CONFIG = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_BOARD_CONFIG + "\"/>";
-    private final static String TASK_GET_GRID_OF_WEEK = "<" + PARAM_SUPER_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_GRID_OF_WEEK + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TAG_START_TIME + "=\"" + PARAM_DATE + "\" " + Uses.TAG_AUTH_CUSTOMER_ID + "=\"" + PARAM_AUTH_CUSTOMER_ID + "\" " + Uses.TASK_FOR_SITE + "=\"" + PARAM_SITE_MARK + "\"/>";
-    private final static String TASK_GET_CLIENT_AUTHORIZATION = "<" + Uses.TASK_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_GET_CLIENT_AUTHORIZATION + "\" " + Uses.TAG_ID + "=\"" + PARAM_ID + "\"/>";
-    private final static String TASK_SET_CUSTOMER_PRIORITY = "<" + Uses.TASK_SITE + " " + Uses.TAG_NAME + "=\"" + Uses.TASK_SET_CUSTOMER_PRIORITY + "\" " + Uses.TAG_PRIORITY + "=\"" + PARAM_PRIORITY + "\" " + Uses.TAG_NUMBER + "=\"" + PARAM_USERNAME + "\"/>";
-    /**
-     * Ответ о живости
-     */
-    public static final String I_AM_LIVE = "<Действие " + Uses.TAG_NAME + "=\"" + Uses.TASK_I_AM_LIVE + "\"/>";
+    private static final JsonRPC20 jsonRpc = new JsonRPC20();
 
     /**
      *  основная работа по отсылки и получению результата.
@@ -88,16 +47,18 @@ public class NetCommander {
      * @param message отсылаемое сообщение.
      * @return XML-ответ
      */
-    synchronized private static Element send(INetProperty netProperty, String message) throws IOException, DocumentException {
-        // Пойдет ли команда на суперсайт или нет зависит от параметров.
-        final String superSite;
-        if (netProperty.IsSuperSite()) {
-            superSite = Uses.TASK_SUPER_SITE;
-        } else {
-            superSite = Uses.TASK_SITE;
+    synchronized private static Element send(INetProperty netProperty, String commandName, CmdParams params) throws IOException, DocumentException {
+        jsonRpc.setMethod(commandName);
+        jsonRpc.setParams(params);
+
+        final String message;
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        try {
+            message = gson.toJson(jsonRpc);
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
         }
-        message = message.replaceFirst(PARAM_SUPER_SITE, superSite);
-        Uses.log.logger.trace("Задание на " + netProperty.getServerAddress().getHostAddress() + ":" + netProperty.getServerPort() + "#\n" + message);
+        Uses.log.logger.trace("Задание \"" + commandName + "\" на " + netProperty.getServerAddress().getHostAddress() + ":" + netProperty.getServerPort() + "#\n" + message);
         // открываем сокет и коннектимся к localhost:3128
         // получаем сокет сервера
         final Socket socket = new Socket(netProperty.getServerAddress(), netProperty.getServerPort());
@@ -133,7 +94,7 @@ public class NetCommander {
         // загрузим ответ
         Element res = null;
         try {
-            res = send(netProperty, TASK_GET_SERVICES);
+            res = send(netProperty, Uses.TASK_GET_SERVICES, null);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -152,21 +113,19 @@ public class NetCommander {
      * @param service услуга, в которую пытаемся встать.
      * @param password пароль того кто пытается выполнить задание.
      * @param priority приоритет.
-     * @param siteMark маркировка сайта для доменной работы если требуется, иначе "".
      * @param inputData
      * @return XML-ответ.
      */
-    public static Element standInService(INetProperty netProperty, String service, String password, int priority, String siteMark, String inputData) {
+    public static Element standInService(INetProperty netProperty, String service, String password, int priority, String inputData) {
         Uses.log.logger.info("Встать в очередь.");
         // загрузим ответ
-        String mes = TASK_STAND_IN;
-        mes = mes.replaceFirst(PARAM_SERVICE, service);
-        mes = mes.replaceFirst(PARAM_PASSWORD, password);
-        mes = mes.replaceFirst(PARAM_PRIORITY, String.valueOf(priority));
-        mes = mes.replaceFirst(PARAM_SITE_MARK, siteMark);
-        mes = mes.replaceFirst(PARAM_INPUT_DATA, inputData == null ? "" : inputData);
+        final CmdParams params = new CmdParams();
+        params.serviceName = service;
+        params.password = password;
+        params.priority = priority;
+        params.textData = inputData;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_STAND_IN, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -178,18 +137,22 @@ public class NetCommander {
      * Узнать сколько народу стоит к услуге и т.д.
      * @param netProperty параметры соединения с сервером.
      * @param serviceName название услуги о которой получаем информацию
-     * @param siteMark маркировка сайта для доменной работы если требуется, иначе "".
      * @return XML-ответ.
      * @throws IOException
      * @throws DocumentException
      */
-    public static Element aboutService(INetProperty netProperty, String serviceName, String siteMark) throws IOException, DocumentException {
+    public static Element aboutService(INetProperty netProperty, String serviceName) throws IOException, DocumentException {
         Uses.log.logger.info("Встать в очередь.");
         // загрузим ответ
-        String mes = TASK_ABOUT_SERVICE;
-        mes = mes.replaceFirst(PARAM_SERVICE, serviceName);
-        mes = mes.replaceFirst(PARAM_SITE_MARK, siteMark);
-        return send(netProperty, mes);
+        final CmdParams params = new CmdParams();
+        params.serviceName = serviceName;
+        try {
+            return send(netProperty, Uses.TASK_ABOUT_SERVICE, params);
+        } catch (IOException e) {// вывод исключений
+            throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
+        } catch (DocumentException e) {
+            throw new Uses.ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
+        }
 
     }
 
@@ -202,11 +165,11 @@ public class NetCommander {
     public static Element getSelf(INetProperty netProperty, String password) {
         Uses.log.logger.info("Получение описания залогинившегося юзера.");
         // загрузим ответ
-        String mes = TASK_GET_SELF;
-        mes = mes.replaceFirst(PARAM_PASSWORD, password);
+        final CmdParams params = new CmdParams();
+        params.password = password;
         Element res = null;
         try {
-            res = send(netProperty, mes);
+            res = send(netProperty, Uses.TASK_GET_SELF, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -229,7 +192,7 @@ public class NetCommander {
         // загрузим ответ
         Element res = null;
         try {
-            res = send(netProperty, TASK_GET_USERS);
+            res = send(netProperty, Uses.TASK_GET_USERS, null);
         } catch (IOException e) {// вывод исключений
             Uses.closeSplash();
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
@@ -253,10 +216,10 @@ public class NetCommander {
     public static Element getSelfServices(INetProperty netProperty, String userName) {
         Uses.log.logger.info("Получение описания очередей для юзера.");
         // загрузим ответ
-        String mes = TASK_GET_SELF_SERVICES;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_GET_SELF_SERVICES, params);
         } catch (IOException e) {// вывод исключений
             Uses.closeSplash();
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
@@ -275,10 +238,10 @@ public class NetCommander {
     public static Element getSelfServicesCheck(INetProperty netProperty, String userName) {
         Uses.log.logger.info("Получение описания очередей для юзера.");
         // загрузим ответ
-        String mes = TASK_GET_SELF_SERVICES_CHECK;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_GET_SELF_SERVICES_CHECK, params);
         } catch (IOException e) {// вывод исключений
             Uses.closeSplash();
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
@@ -297,10 +260,10 @@ public class NetCommander {
     public static Element inviteNextCustomer(INetProperty netProperty, String userName) {
         Uses.log.logger.info("Получение следующего юзера из очередей, обрабатываемых юзером.");
         // загрузим ответ
-        String mes = TASK_INVITE_NEXT_CUSTOMER;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_INVITE_NEXT_CUSTOMER, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -317,10 +280,10 @@ public class NetCommander {
     public static Element killNextCustomer(INetProperty netProperty, String userName) {
         Uses.log.logger.info("Удаление вызванного юзером кастомера.");
         // загрузим ответ
-        String mes = TASK_KILL_NEXT_CUSTOMER;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_KILL_NEXT_CUSTOMER, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -337,10 +300,10 @@ public class NetCommander {
     public static Element getStartCustomer(INetProperty netProperty, String userName) {
         Uses.log.logger.info("Начать работу с вызванным кастомером.");
         // загрузим ответ
-        String mes = TASK_START_CUSTOMER;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_START_CUSTOMER, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -358,11 +321,11 @@ public class NetCommander {
     public static Element getFinishCustomer(INetProperty netProperty, String userName, Long resultId) {
         Uses.log.logger.info("Закончить работу с вызванным кастомером.");
         // загрузим ответ
-        String mes = TASK_FINISH_CUSTOMER;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
-        mes = mes.replaceFirst(PARAM_RESULT_ID, resultId.toString());
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
+        params.resultId = resultId;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_FINISH_CUSTOMER, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -381,12 +344,12 @@ public class NetCommander {
     public static Element redirectCustomer(INetProperty netProperty, String userName, String service, boolean requestBack) {
         Uses.log.logger.info("Переадресовать клиента в другую очередь.");
         // загрузим ответ
-        String mes = TASK_REDIRECT_CUSTOMER;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
-        mes = mes.replaceFirst(PARAM_SERVICE, service);
-        mes = mes.replaceFirst(PARAM_REQUEST_BACK, requestBack ? "1" : "0");
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
+        params.serviceName = service;
+        params.requestBack = requestBack;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_REDIRECT_CUSTOMER, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -402,11 +365,11 @@ public class NetCommander {
      */
     public static Element setLive(INetProperty netProperty, String userName) {
         Uses.log.logger.info("Ответим что живы и здоровы.");
-        String mes = TASK_I_AM_LIVE;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
         try {
             // загрузим ответ
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_I_AM_LIVE, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -423,9 +386,8 @@ public class NetCommander {
     public static Element getServerState(INetProperty netProperty) throws IOException {
         Uses.log.logger.info("Получение описания состояния сервера.");
         // загрузим ответ
-        String mes = TASK_GET_SERVER_STATE;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_SERVER_STATE, null);
         } catch (DocumentException e) {
             throw new Uses.ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
         }
@@ -442,7 +404,7 @@ public class NetCommander {
         Uses.log.logger.info("Получение описания состояния пункта регистрации.");
         // загрузим ответ
         try {
-            return send(netProperty, message);
+            return send(netProperty, message, null);
         } catch (DocumentException e) {
             throw new Uses.ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
         }
@@ -461,12 +423,12 @@ public class NetCommander {
     public static Element setServiseFire(INetProperty netProperty, String serviceName, String userName, int coeff) throws IOException {
         Uses.log.logger.info("Привязка услуги пользователю на горячую.");
         // загрузим ответ
-        String mes = TASK_SET_SERVICE_FIRE;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
-        mes = mes.replaceFirst(PARAM_SERVICE, serviceName);
-        mes = mes.replaceFirst(PARAM_KOEFFICIENT, String.valueOf(coeff));
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
+        params.serviceName = serviceName;
+        params.coeff = coeff;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_SET_SERVICE_FIRE, params);
         } catch (DocumentException e) {
             throw new Uses.ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
         }
@@ -484,11 +446,11 @@ public class NetCommander {
     public static Element deleteServiseFire(INetProperty netProperty, String serviceName, String userName) throws IOException {
         Uses.log.logger.info("Удаление услуги пользователю на горячую.");
         // загрузим ответ
-        String mes = TASK_DELETE_SERVICE_FIRE;
-        mes = mes.replaceFirst(PARAM_USERNAME, userName);
-        mes = mes.replaceFirst(PARAM_SERVICE, serviceName);
+        final CmdParams params = new CmdParams();
+        params.userName = userName;
+        params.serviceName = serviceName;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_DELETE_SERVICE_FIRE, params);
         } catch (DocumentException e) {
             throw new Uses.ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
         }
@@ -504,9 +466,8 @@ public class NetCommander {
     public static Element getBoardConfig(INetProperty netProperty) throws IOException {
         Uses.log.logger.info("Получение конфигурации главного табло - ЖК или плазмы.");
         // загрузим ответ
-        final String mes = TASK_GET_BOARD_CONFIG;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_GET_BOARD_CONFIG, null);
         } catch (DocumentException e) {
             throw new Uses.ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
         }
@@ -523,10 +484,10 @@ public class NetCommander {
     public static Element saveBoardConfig(INetProperty netProperty, Element boardConfig) throws IOException {
         Uses.log.logger.info("Сохранение конфигурации главного табло - ЖК или плазмы.");
         // загрузим ответ
-        boardConfig.addAttribute(Uses.TAG_NAME, Uses.TASK_SAVE_BOARD_CONFIG);
-        final String mes = boardConfig.asXML();
+        final CmdParams params = new CmdParams();
+        params.textData = boardConfig.asXML();
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_SAVE_BOARD_CONFIG, params);
         } catch (DocumentException e) {
             throw new Uses.ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
         }
@@ -537,20 +498,18 @@ public class NetCommander {
      * @param netProperty netProperty параметры соединения с сервером.
      * @param service услуга, в которую пытаемся встать.
      * @param date первый день недели за которую нужны данные.
-     * @param siteMark маркировка сайта для доменной работы если требуется, иначе "".
      * @param advancedCustomer ID авторизованного кастомера
      * @return XML-ответ.
      */
-    public static Element getGridOfWeek(INetProperty netProperty, String service, Date date, String siteMark, long advancedCustomer) {
+    public static Element getGridOfWeek(INetProperty netProperty, String service, Date date, long advancedCustomer) {
         Uses.log.logger.info("Получить таблицу");
         // загрузим ответ
-        String mes = TASK_GET_GRID_OF_WEEK;
-        mes = mes.replaceFirst(PARAM_SERVICE, service);
-        mes = mes.replaceFirst(PARAM_DATE, Uses.format_dd_MM_yyyy.format(date));
-        mes = mes.replaceFirst(PARAM_SITE_MARK, siteMark);
-        mes = mes.replaceFirst(PARAM_AUTH_CUSTOMER_ID, String.valueOf(advancedCustomer));
+        final CmdParams params = new CmdParams();
+        params.serviceName = service;
+        params.date = date.getTime();
+        params.customerId = advancedCustomer;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_GET_GRID_OF_WEEK, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -563,20 +522,18 @@ public class NetCommander {
      * @param netProperty netProperty параметры соединения с сервером.
      * @param service услуга, в которую пытаемся встать.
      * @param date
-     * @param siteMark маркировка сайта для доменной работы если требуется, иначе "".
      * @param advancedCustomer ID авторизованного кастомера
      * @return XML-ответ.
      */
-    public static Element standInServiceAdvance(INetProperty netProperty, String service, Date date, String siteMark, long advancedCustomer) {
+    public static Element standInServiceAdvance(INetProperty netProperty, String service, Date date, long advancedCustomer) {
         Uses.log.logger.info("Записать предварительно в очередь.");
         // загрузим ответ
-        String mes = TASK_ADVANCE_STAND_IN;
-        mes = mes.replaceFirst(PARAM_SERVICE, service);
-        mes = mes.replaceFirst(PARAM_DATE, Uses.format_for_trans.format(date));
-        mes = mes.replaceFirst(PARAM_SITE_MARK, siteMark);
-        mes = mes.replaceFirst(PARAM_AUTH_CUSTOMER_ID, String.valueOf(advancedCustomer));
+        final CmdParams params = new CmdParams();
+        params.serviceName = service;
+        params.date = date.getTime();
+        params.customerId = advancedCustomer;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_ADVANCE_STAND_IN, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -593,10 +550,10 @@ public class NetCommander {
     public static Element standAndCheckAdvance(INetProperty netProperty, Long advanceID) {
         Uses.log.logger.info("Постановка предварительно записанных в очередь.");
         // загрузим ответ
-        String mes = TASK_ADVANCE_CHECK_AND_STAND;
-        mes = mes.replaceFirst(PARAM_ID, advanceID.toString());
+        final CmdParams params = new CmdParams();
+        params.customerId = advanceID;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_ADVANCE_CHECK_AND_STAND, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -613,7 +570,7 @@ public class NetCommander {
         Uses.log.logger.info("Команда на рестарт сервера.");
         try {
             // загрузим ответ
-            return send(netProperty, Uses.TASK_RESTART);
+            return send(netProperty, Uses.TASK_RESTART, null);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -630,7 +587,7 @@ public class NetCommander {
         Uses.log.logger.info("Команда на получение списка отзывов.");
         try {
             // загрузим ответ
-            return send(netProperty, TASK_GET_RESPONSE_LIST);
+            return send(netProperty, Uses.TASK_GET_RESPONSE_LIST, null);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -647,10 +604,10 @@ public class NetCommander {
     public static Element setResponseAnswer(INetProperty netProperty, Long respID) {
         Uses.log.logger.info("Отправка выбранного отзыва.");
         // загрузим ответ
-        String mes = TASK_SET_RESPONSE_ANSWER;
-        mes = mes.replaceFirst(PARAM_ID, respID.toString());
+        final CmdParams params = new CmdParams();
+        params.responseId = respID;
         try {
-            return send(netProperty, mes);
+            return send(netProperty, Uses.TASK_SET_RESPONSE_ANSWER, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -667,7 +624,7 @@ public class NetCommander {
         Uses.log.logger.info("Команда на получение информационного дерева.");
         try {
             // загрузим ответ
-            return send(netProperty, TASK_GET_INFO_TREE);
+            return send(netProperty, Uses.TASK_GET_INFO_TREE, null);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -684,11 +641,11 @@ public class NetCommander {
     public static Element getClientAuthorization(INetProperty netProperty, String id) {
         Uses.log.logger.info("Получение описания авторизованного пользователя.");
         // загрузим ответ
-        String mes = TASK_GET_CLIENT_AUTHORIZATION;
-        mes = mes.replaceFirst(PARAM_ID, id);
+        final CmdParams params = new CmdParams();
+        params.clientAuthId = id;
         Element res = null;
         try {
-            res = send(netProperty, mes);
+            res = send(netProperty, Uses.TASK_GET_CLIENT_AUTHORIZATION, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -706,7 +663,7 @@ public class NetCommander {
         Uses.log.logger.info("Команда на получение списка возможных результатов работы с клиентом.");
         try {
             // загрузим ответ
-            return send(netProperty, TASK_GET_RESULTS_LIST);
+            return send(netProperty, Uses.TASK_GET_RESULTS_LIST, null);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -724,12 +681,12 @@ public class NetCommander {
     public static Element setCustomerPriority(INetProperty netProperty, int prioritet, String customer) {
         Uses.log.logger.info("Команда на повышение приоритета кастомеру.");
         // загрузим ответ
-        String mes = TASK_SET_CUSTOMER_PRIORITY;
-        mes = mes.replaceFirst(PARAM_PRIORITY, String.valueOf(prioritet));
-        mes = mes.replaceFirst(PARAM_USERNAME, customer);
+        final CmdParams params = new CmdParams();
+        params.priority = prioritet;
+        params.clientAuthId = customer;
         Element res = null;
         try {
-            res = send(netProperty, mes);
+            res = send(netProperty, Uses.TASK_SET_CUSTOMER_PRIORITY, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {
@@ -742,37 +699,32 @@ public class NetCommander {
      * Узнать есть ли информация по услуге, которая должна быть предоставлена кастомеру перед постановкой в очередь
      * @param netProperty параметры соединения с сервером.
      * @param serviceName название услуги о которой получаем информацию
-     * @param siteMark маркировка сайта для доменной работы если требуется, иначе "".
      * @return XML-ответ.
      * @throws IOException
      * @throws DocumentException
      */
-    public static Element getPreInfoForService(INetProperty netProperty, String serviceName, String siteMark) throws IOException, DocumentException {
+    public static Element getPreInfoForService(INetProperty netProperty, String serviceName) throws IOException, DocumentException {
         Uses.log.logger.info("Узнать есть ли информация по услуге.");
         // загрузим ответ
-        String mes = TASK_GET_SERVICE_PREINFO;
-        mes = mes.replaceFirst(PARAM_SERVICE, serviceName);
-        mes = mes.replaceFirst(PARAM_SITE_MARK, siteMark);
-        return send(netProperty, mes);
-
+        final CmdParams params = new CmdParams();
+        params.serviceName = serviceName;
+        return send(netProperty, Uses.TASK_GET_SERVICE_PREINFO, params);
     }
 
     /**
      * Узнать есть ли информация для печати информационного узла
      * @param netProperty параметры соединения с сервером.
      * @param infoItemName название информационного узла о котором получаем информацию
-     * @param siteMark маркировка сайта для доменной работы если требуется, иначе "".
      * @return XML-ответ.
      */
-    public static Element getPintForInfoItem(INetProperty netProperty, String infoItemName, String siteMark) {
+    public static Element getPintForInfoItem(INetProperty netProperty, String infoItemName) {
         Uses.log.logger.info("Узнать есть ли что напечатать для информации.");
         // загрузим ответ
-        String mes = TASK_GET_INFO_PRINT;
-        mes = mes.replaceFirst(PARAM_INFO_ITEM, infoItemName);
-        mes = mes.replaceFirst(PARAM_SITE_MARK, siteMark);
+        final CmdParams params = new CmdParams();
+        params.infoItemName = infoItemName;
         Element res = null;
         try {
-            res = send(netProperty, mes);
+            res = send(netProperty, Uses.TASK_GET_INFO_PRINT, params);
         } catch (IOException e) {// вывод исключений
             throw new Uses.ClientException("Невозможно получить ответ от сервера. " + e.toString());
         } catch (DocumentException e) {

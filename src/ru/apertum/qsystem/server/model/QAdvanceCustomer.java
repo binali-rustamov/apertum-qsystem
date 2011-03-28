@@ -62,16 +62,6 @@ public class QAdvanceCustomer implements Serializable {
     public Date getAdvanceTime() {
         return advanceTime;
     }
-    @Column(name = "site_mark")
-    private String siteMark = "";
-
-    public String getSiteMark() {
-        return siteMark;
-    }
-
-    public void setSiteMark(String siteMark) {
-        this.siteMark = siteMark;
-    }
 
     public void setAdvanceTime(Date advanceTime) {
         this.advanceTime = advanceTime;

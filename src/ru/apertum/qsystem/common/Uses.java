@@ -233,6 +233,7 @@ public final class Uses {
     public static final String TAG_BOARD_FONT_COLOR_RIGHT = "Цвет шрифта правого столбца";
     public static final String TAG_BOARD_LINE_BORDER = "Окантовка строк";
     //имена тегов-разделов для табло
+    public static final String TAG_BOARD = "Board";
     public static final String TAG_BOARD_MAIN = "Main";
     public static final String TAG_BOARD_TOP = "Top";
     public static final String TAG_BOARD_BOTTOM = "Bottom";
@@ -246,12 +247,15 @@ public final class Uses {
     public static final int BOARD_TYPE_STR = 3;
     public static final int BOARD_TYPE_BOOL = 4;
     // Наименования заданий
+    /*
     public static final String TASK_SITE = "Задание";
     public static final String TASK_SUPER_SITE = "Суперзадание";
     public static final String TASK_SUPER_ANSWER = "Суперответ";
     public static final String TASK_SUPER_REPORT = "Суперочет";
     public static final String TASK_SUPER_REQUEST = "Super: yes";
     public static final String TASK_FOR_SITE = "Сайт";
+     * 
+     */
     public static final String TASK_FOR_ALL_SITE = "Для всех сайтов домена";
     public static final String TASK_STAND_IN = "Поставить в очередь";
     public static final String TASK_ADVANCE_STAND_IN = "Поставить в очередь предварительно";
@@ -529,7 +533,23 @@ public final class Uses {
             //StringWriter out = new StringWriter();
             //printStackTrace(new PrintWriter(out));
             //log.logger.error("Error!\n"+out.toString(), this);
-            log.logger.error("Error!", this);
+            log.logger.error("Error! " + textException, this);
+        }
+
+        public ServerException(Exception ex) {
+            super(ex);
+            //StringWriter out = new StringWriter();
+            //printStackTrace(new PrintWriter(out));
+            //log.logger.error("Error!\n"+out.toString(), this);
+            log.logger.error("Error! " + ex.toString(), this);
+        }
+
+        public ServerException(String textException, Exception ex) {
+            super(textException, ex);
+            //StringWriter out = new StringWriter();
+            //printStackTrace(new PrintWriter(out));
+            //log.logger.error("Error!\n"+out.toString(), this);
+            log.logger.error("Error! " + textException + "\n" + ex.toString(), this);
         }
     }
 
@@ -843,11 +863,6 @@ public final class Uses {
         @Override
         public Element getXML() {
             throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public boolean IsSuperSite() {
-            return isSuperSite;
         }
 
         @Deprecated

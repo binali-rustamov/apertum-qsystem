@@ -16,13 +16,16 @@
  */
 package ru.apertum.qsystem.server;
 
+import com.google.gson.Gson;
 import java.io.*;
 import java.net.*;
 import java.util.Locale;
 import java.util.Properties;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.CodepagePrintStream;
+import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.reports.model.CurrentStatistic;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.controller.QServicesPool;
@@ -142,6 +145,7 @@ public class QServer extends Thread {
 
                 try {
                     final QServer qServer = new QServer(server.accept(), pool);
+                    qServer.start();
                     if (Uses.isDebug) {
                         System.out.println();
                     }
@@ -237,7 +241,6 @@ public class QServer extends Thread {
         // и запускаем новый вычислительный поток (см. ф-ю run())
         setDaemon(true);
         setPriority(NORM_PRIORITY);
-        start();
     }
 
     @Override
@@ -277,16 +280,25 @@ public class QServer extends Thread {
                 throw new Uses.ServerException("Ошибка декодирования сетевого сообщения: " + ex);
             }
             Uses.log.logger.trace("Задание:\n" + data);
+
+            final JsonRPC20 rpc;
+            final Gson gson = GsonPool.getInstance().borrowGson();
+            try {
+                rpc = gson.fromJson(data, JsonRPC20.class);
+            } finally {
+                GsonPool.getInstance().returnGson(gson);
+            }
+
             // полученное задание передаем в пул, если это не признак жизни
             final String answer;
 
             // Проверка на задание для рестарта
-            if (Uses.TASK_RESTART.equals(data)) {
+            if (Uses.TASK_RESTART.equals(rpc.getMethod())) {
                 Uses.log.logger.debug("Пришла команда на рестарт сервера");
                 restart = true;
                 answer = "<Ответ>\n</Ответ>";
             } else {
-                answer = managersPool.doTask(data, socket.getInetAddress().getHostAddress(), socket.getInetAddress().getAddress());
+                answer = managersPool.doTask(rpc, socket.getInetAddress().getHostAddress(), socket.getInetAddress().getAddress());
             }
 
             // выводим данные:

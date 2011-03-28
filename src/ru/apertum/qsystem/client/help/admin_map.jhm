@@ -10,7 +10,6 @@
   <mapID target="monitoring" url="help_source/monitoring.html" />
   <mapID target="configuring" url="help_source/configuring.html" />
   <mapID target="net" url="help_source/netConfig.html" />
-  <mapID target="domain" url="help_source/domain.html" />
 
   <mapID target="schedulers" url="help_source/schedulers.html" />
   <mapID target="results" url="help_source/results.html" />

@@ -37,7 +37,6 @@ import ru.apertum.qsystem.common.model.IProperty;
 import ru.apertum.qsystem.reports.common.Report;
 import ru.apertum.qsystem.server.model.IUserProperty;
 import ru.apertum.qsystem.server.model.IUsersGetter;
-import ru.apertum.qsystem.server.model.QSiteList;
 
 /**
  * Сбор, обработка и храненение текущей статистики
@@ -80,18 +79,15 @@ public class CurrentStatistic {
      * @param usersGetter Описание набора пользователей в системе, по ним строим статистику
      * @param port Порт, на котором работает вэбсервер выдачи статистики по HTTP
      * @param reports Список аналитических отчетов.
-     * @param siteList Список сайтов домена, если сайт является суперсайтом. Иначе передать null.
      * @return Возвращает класс <b>CurrentStatistic</b> для манипуляций со статистикой.
      * @see CurrentStatistic
      */
-    public static CurrentStatistic startCurrentStatistic(IUsersGetter usersGetter, Integer port, List<Report> reports, QSiteList siteList) {
+    public static CurrentStatistic startCurrentStatistic(IUsersGetter usersGetter, Integer port, List<Report> reports) {
         // паттерн Singleton
         if (currentStatistic == null) {
             // определим логирование для отчетов
             Uses.setRepLogining();
             Uses.logRep.logger.debug("Загружено из базы " + reports.size() + " отчетов.");
-            // На случай суперсайта
-            ReportGenerator.addSiteList(siteList);
             // создадим механизм сбора статистики
             currentStatistic = new CurrentStatistic(usersGetter);
             // добавим аналитические отчеты

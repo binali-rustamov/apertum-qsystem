@@ -16,7 +16,7 @@
  */
 package ru.apertum.qsystem.client.forms;
 
-import gnu.io.SerialPortEvent;
+import com.google.gson.Gson;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -43,10 +43,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Scanner;
@@ -69,10 +67,11 @@ import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
+import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
-import ru.evgenic.rxtx.serialPort.IReceiveListener;
 import ru.evgenic.rxtx.serialPort.ISerialPort;
 import ru.evgenic.rxtx.serialPort.RxtxSerialPort;
 
@@ -97,7 +96,7 @@ public class FWelcome extends javax.swing.JFrame {
     public static final String LOCK = "Заблокирован";
     public static final String UNLOCK = "Готов к работе";
     public static final String OFF = "Выключен";
-    public static final String LOCK_MESSAGE = "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>" + getLocaleMessage("messages.lock_messages") + "</span></b></p>";
+    public static String LOCK_MESSAGE = "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>" + getLocaleMessage("messages.lock_messages") + "</span></b></p>";
     /**
      * Константы хранения параметров в файле.
      */
@@ -228,20 +227,28 @@ public class FWelcome extends javax.swing.JFrame {
                 }
                 Uses.log.logger.trace("Задание:\n" + data);
 
+                final JsonRPC20 rpc;
+                final Gson gson = GsonPool.getInstance().borrowGson();
+                try {
+                    rpc = gson.fromJson(data, JsonRPC20.class);
+                } finally {
+                    GsonPool.getInstance().returnGson(gson);
+                }
+
                 // Обрабатываем задание
                 //С рабочего места администратора должна быть возможность заблокировать пункт постановки в очередь, 
                 //разблокировать, выключить, провести инициализация заново.
                 // В любом другом случае будет выслано состояние.
-                if (Uses.WELCOME_LOCK.equals(data)) {
+                if (Uses.WELCOME_LOCK.equals(rpc.getMethod())) {
                     lock(LOCK_MESSAGE);
                 }
-                if (Uses.WELCOME_UNLOCK.equals(data)) {
+                if (Uses.WELCOME_UNLOCK.equals(rpc.getMethod())) {
                     unlock();
                 }
-                if (Uses.WELCOME_OFF.equals(data)) {
+                if (Uses.WELCOME_OFF.equals(rpc.getMethod())) {
                     off();
                 }
-                if (Uses.WELCOME_REINIT.equals(data)) {
+                if (Uses.WELCOME_REINIT.equals(rpc.getMethod())) {
                     reinit();
                 }
 
@@ -303,6 +310,7 @@ public class FWelcome extends javax.swing.JFrame {
      */
     public static void main(final String args[]) throws Exception {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
+        LOCK_MESSAGE = "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>" + getLocaleMessage("messages.lock_messages") + "</span></b></p>";
         Uses.isDebug = Uses.setLogining(args, false);
         netProperty = Uses.getClientNetProperty(args);
         // определим режим пользовательского интерфейса
@@ -319,14 +327,14 @@ public class FWelcome extends javax.swing.JFrame {
             }
         }
         root = NetCommander.getServiсes(netProperty);
-            java.awt.EventQueue.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
 
-                @Override
-                public void run() {
-                    final FWelcome w = new FWelcome(root);
-                    w.setVisible(true);
-                }
-            });
+            @Override
+            public void run() {
+                final FWelcome w = new FWelcome(root);
+                w.setVisible(true);
+            }
+        });
     }
 
     /** 
@@ -383,8 +391,8 @@ public class FWelcome extends javax.swing.JFrame {
         FWelcome.response = null;
         FWelcome.infoTree = null;
         try {
-        loadRootParam();
-        } catch (Exception ex){
+            loadRootParam();
+        } catch (Exception ex) {
             Uses.log.logger.error(ex);
             System.exit(0);
         }
@@ -535,30 +543,12 @@ public class FWelcome extends javax.swing.JFrame {
      */
     private static void loadRootParamSimple() {
         // Блокировку пункта регистрации проводить по настройкам суперсайта если работаем с таковым
-        if (netProperty.IsSuperSite()) {
-            for (Object o : root.elements()) {
-                final Element el = (Element) o;
-                final String markSite = el.attributeValue(Uses.TASK_FOR_SITE);
-                if (markSite.equals(netProperty.getServerAddress().getHostAddress() + ":" + netProperty.getServerPort())
-                        || markSite.equals(netProperty.getServerAddress().getHostName() + ":" + netProperty.getServerPort())
-                        || markSite.equals("127.0.0.1:" + netProperty.getServerPort())
-                        || markSite.equals("localhost:" + netProperty.getServerPort())) {
-                    FWelcome.startTime = new Date(Long.parseLong(el.attributeValue(Uses.TAG_START_TIME)));
-                    FWelcome.finishTime = new Date(Long.parseLong(el.attributeValue(Uses.TAG_FINISH_TIME)));
-                }
-                //сложим наименования, печатаемые под картинкой
-                captions.put(markSite, el.attributeValue(Uses.TAG_NAME));
-            }
-        } else {
-            FWelcome.startTime = new Date(Long.parseLong(root.attributeValue(Uses.TAG_START_TIME)));
-            FWelcome.finishTime = new Date(Long.parseLong(root.attributeValue(Uses.TAG_FINISH_TIME)));
-        }
+
+        FWelcome.startTime = new Date(Long.parseLong(root.attributeValue(Uses.TAG_START_TIME)));
+        FWelcome.finishTime = new Date(Long.parseLong(root.attributeValue(Uses.TAG_FINISH_TIME)));
+
         FWelcome.caption = root.attributeValue(Uses.TAG_NAME);
     }
-    /**
-     * Список названий, которые печатаем под картинкой в случае домена.
-     */
-    public static final HashMap<String, String> captions = new HashMap<String, String>();
 
     @Override
     protected void finalize() throws Throwable {

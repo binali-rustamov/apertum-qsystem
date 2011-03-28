@@ -126,19 +126,6 @@ public class NetProperty implements INetProperty, Serializable {
         return finishTime;
     }
     /**
-     * Параметр определения суперсайта.
-     */
-    @Column(name = "super_site")
-    private Boolean superSite = false;
-
-    public void setSuperSite(Boolean superSite) {
-        this.superSite = superSite;
-    }
-
-    public Boolean getSuperSite() {
-        return superSite;
-    }
-    /**
      * Адрес сервера.
      */
     @Transient
@@ -160,10 +147,10 @@ public class NetProperty implements INetProperty, Serializable {
         startTime = Uses.format_HH_mm.parse(netProp.attributeValue(Uses.TAG_PROP_START_TIME));
         finishTime = Uses.format_HH_mm.parse(netProp.attributeValue(Uses.TAG_PROP_FINISH_TIME));
         version = netProp.attributeValue(Uses.TAG_PROP_VERSION) == null ? "Не присвоена" : netProp.attributeValue(Uses.TAG_PROP_VERSION);
-    /* Не используется.
-    serverAddress = InetAddress.getByName(netProp.attributeValue(Uses.TAG_PROP_SERV_ADDRESS));
-    clientAddress = InetAddress.getByName(netProp.getAttributeNode(Uses.TAG_PROP_CLIENT_ADDRESS).getNodeValue());
-     */
+        /* Не используется.
+        serverAddress = InetAddress.getByName(netProp.attributeValue(Uses.TAG_PROP_SERV_ADDRESS));
+        clientAddress = InetAddress.getByName(netProp.getAttributeNode(Uses.TAG_PROP_CLIENT_ADDRESS).getNodeValue());
+         */
     }
 
     public NetProperty(INetProperty netProp) {
@@ -207,11 +194,6 @@ public class NetProperty implements INetProperty, Serializable {
         net.addAttribute(Uses.TAG_PROP_VERSION, getVersion());
 
         return net;
-    }
-
-    @Override
-    public boolean IsSuperSite() {
-        return getSuperSite();
     }
     /**
      *Версия БД или конфигурационного файла. Для определения совместимости и возможности вариантов ардейта.

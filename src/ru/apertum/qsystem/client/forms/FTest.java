@@ -42,7 +42,6 @@ import javax.swing.JList;
 import ru.apertum.qsystem.common.AUDPServer;
 import ru.apertum.qsystem.common.SoundPlayer;
 import ru.apertum.qsystem.common.model.ATalkingClock;
-import ru.apertum.qsystem.common.model.RmiCommander;
 
 /**
  * Created on 26 Январь 2009 г., 17:41
@@ -629,17 +628,7 @@ private void qPanel1ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-F
 }//GEN-LAST:event_qPanel1ComponentResized
 
 private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-    try {
-
-        RmiCommander comm = new RmiCommander();
-        Context namingContext = new InitialContext();
-        String name = "rmi:QServicesPool";
-        namingContext.lookup(name);
-    } catch (RemoteException ex) {
-        Logger.getLogger(FTest.class.getName()).log(Level.SEVERE, null, ex);
-    } catch (NamingException ex) {
-        Logger.getLogger(FTest.class.getName()).log(Level.SEVERE, null, ex);
-    }
+    
 
 }//GEN-LAST:event_jButton12ActionPerformed
 

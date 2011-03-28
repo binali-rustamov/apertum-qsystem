@@ -16,9 +16,15 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import javax.persistence.Id;
+import javax.xml.bind.JAXBException;
 import ru.apertum.qsystem.common.model.IProperty;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +34,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.dom4j.Attribute;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -46,6 +58,7 @@ import ru.apertum.qsystem.common.model.ICustomer;
  */
 @Entity
 @Table(name = "users")
+@XmlRootElement(name = Uses.TAG_USER)
 public class QUser implements IUserProperty, Serializable {
 
     private Long id;
@@ -83,11 +96,12 @@ public class QUser implements IUserProperty, Serializable {
      */
     private Boolean adminAccess = false;
 
-    public void setAdminAccess(Boolean adminAccess) {
+    public final void setAdminAccess(Boolean adminAccess) {
         this.adminAccess = adminAccess;
     }
 
     @Column(name = "admin_access")
+    //@XmlAttribute(name = Uses.TAG_USER_ADMIN_ACCESS, required = true)
     @Override
     public Boolean getAdminAccess() {
         return adminAccess;
@@ -97,11 +111,12 @@ public class QUser implements IUserProperty, Serializable {
      */
     private Boolean reportAccess = false;
 
-    public void setReportAccess(Boolean reportAccess) {
+    public final void setReportAccess(Boolean reportAccess) {
         this.reportAccess = reportAccess;
     }
 
     @Column(name = "report_access")
+    //@XmlAttribute(name = Uses.TAG_USER_ADMIN_ACCESS, required = true)
     @Override
     public Boolean getReportAccess() {
         return reportAccess;
@@ -117,7 +132,7 @@ public class QUser implements IUserProperty, Serializable {
     private final QServiceList serviceList = new QServiceList();
 
     @Transient
-    public QServiceList getServiceList() {
+    public final QServiceList getServiceList() {
         // определим сервисы пользователя
         // Их могли уже определить в конструкторе из файла.
         // Если из базы, то они еще пустые.
@@ -161,7 +176,7 @@ public class QUser implements IUserProperty, Serializable {
         planServ.setUser(this);
         getServiceList().addElement(planServ);
     }
-    
+
     /**
      * Переименовать сервис из списка обслуживаемых юзером.
      * Помнить про ДБ.
@@ -172,7 +187,7 @@ public class QUser implements IUserProperty, Serializable {
         final QPlanService planService = getServiceList().getByName(oldServiceName);
         planService.getService().setName(newServiceName);
     }
-    
+
     /**
      * Удалить сервис из списка обслуживаемых юзером.
      * Помнить про ДБ.
@@ -271,7 +286,7 @@ public class QUser implements IUserProperty, Serializable {
                 return crit.list();
             }
         });
-    //return planServices;
+        //return planServices;
 
     }
 
@@ -298,6 +313,7 @@ public class QUser implements IUserProperty, Serializable {
     }
 
     @Transient
+    @XmlTransient
     public ICustomer getCustomer() {
         return customer;
     }
@@ -327,7 +343,7 @@ public class QUser implements IUserProperty, Serializable {
      * Расшифрует
      * @param password - зашифрованное слово
      */
-    public void setPassword(String password) {
+    public final void setPassword(String password) {
         /*final byte[] b = password.getBytes();
         final byte col = b[b.length - 1];
         for (byte i = 0; i < b.length - 2; i++) {
@@ -344,6 +360,7 @@ public class QUser implements IUserProperty, Serializable {
      */
     @Override
     @Column(name = "password")
+    //@XmlAttribute(name = Uses.TAG_PASSWORD, required = true)
     public String getPassword() {
         /*String up = this.password;
         for (int i = 0; i < 21; i++) {
@@ -411,12 +428,13 @@ public class QUser implements IUserProperty, Serializable {
     //@Column(name = "point")
     private String point;
 
-    public void setPoint(String point) {
+    public final void setPoint(String point) {
         this.point = point;
     }
 
     @Override
     @Column(name = "point")
+    //@XmlAttribute(name = Uses.TAG_USER_IDENTIFIER, required = true)
     public String getPoint() {
         return point;
     }
@@ -426,12 +444,13 @@ public class QUser implements IUserProperty, Serializable {
     //@Column(name = "name")
     private String name;
 
-    public void setName(String name) {
+    public final void setName(String name) {
         this.name = name;
     }
 
     @Override
     @Column(name = "name")
+    //@XmlAttribute(name = Uses.TAG_USER_REPORT_ACCESS, required = true)
     public String getName() {
         return name;
     }
@@ -457,6 +476,57 @@ public class QUser implements IUserProperty, Serializable {
         user.add(getServiceList().getXML());
         return user;
     }
+    final static private JAXBContext AXB;
+
+    static {
+        try {
+            AXB = JAXBContext.newInstance(new Class[]{QUser.class});
+        } catch (JAXBException ex) {
+            throw new Uses.ServerException(ex);
+        }
+    }
+
+    public synchronized void marshal(OutputStream outputStream) {
+        try {
+            final Marshaller m = AXB.createMarshaller();
+            m.setProperty("jaxb.formatted.output", true);
+            m.marshal(this, outputStream);
+        } catch (JAXBException ex) {
+            throw new Uses.ServerException(ex);
+        }
+    }
+
+    public synchronized String marshal() {
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        marshal(os);
+        try {
+            return os.toString("utf8");
+        } catch (UnsupportedEncodingException ex) {
+            throw new Uses.ServerException(ex);
+        }
+    }
+
+    public static synchronized QUser unmarshal(InputStream inputStream) {
+        final Unmarshaller u;
+        try {
+            u = AXB.createUnmarshaller();
+            return (QUser) u.unmarshal(inputStream);
+        } catch (JAXBException ex) {
+            throw new Uses.ServerException(ex);
+        }
+    }
+
+    public static synchronized QUser unmarshal(String data) {
+        final Unmarshaller u;
+        try {
+            u = AXB.createUnmarshaller();
+            return (QUser) u.unmarshal(new ByteArrayInputStream(data.getBytes("uts8")));
+        } catch (JAXBException ex) {
+            throw new Uses.ServerException(ex);
+        } catch (UnsupportedEncodingException ex) {
+            throw new Uses.ServerException(ex);
+        }
+    }
 
     @Transient
     @Override
@@ -465,12 +535,13 @@ public class QUser implements IUserProperty, Serializable {
     }
     private Integer adressRS;
 
-    public void setAdressRS(Integer adressRS) {
+    public final void setAdressRS(Integer adressRS) {
         this.adressRS = adressRS;
     }
 
     @Override
     @Column(name = "adress_rs")
+    //@XmlAttribute(name = Uses.TAG_USER_ADRESS_RS, required = true)
     public Integer getAdressRS() {
         return adressRS;
     }

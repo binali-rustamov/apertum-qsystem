@@ -18,21 +18,14 @@ package ru.apertum.qsystem.server.controller;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.ParseException;
 import ru.apertum.qsystem.common.SoundPlayer;
 import java.io.*;
 
 import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URLDecoder;
 import java.net.UnknownHostException;
-import java.rmi.RemoteException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.concurrent.BrokenBarrierException;
 import org.dom4j.DocumentException;
 import ru.apertum.qsystem.common.model.IProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
@@ -40,10 +33,6 @@ import ru.apertum.qsystem.common.model.ICustomer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.dom4j.Element;
@@ -52,9 +41,9 @@ import org.dom4j.io.SAXReader;
 import org.hibernate.Session;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.cmd.CmdParams;
+import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.model.ATalkingClock;
-import ru.apertum.qsystem.common.model.IRmiCommander;
-import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.reports.model.CurrentStatistic;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.model.AServerPropertyBuilder;
@@ -66,8 +55,6 @@ import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
-import ru.apertum.qsystem.server.model.QSite;
-import ru.apertum.qsystem.server.model.QSiteList;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.QUserList;
 import ru.apertum.qsystem.server.model.calendar.CalendarTableModel;
@@ -92,21 +79,8 @@ import ru.apertum.qsystem.server.model.schedule.QScheduleList;
  * Работает как singleton.
  * @author Evgeniy Egorov
  */
-public final class QServicesPool implements IRmiCommander {
+public final class QServicesPool {
 
-    @Override
-    public String inviteCustomer(String userName) throws RemoteException {
-        final Task task = tasks.get(Uses.TASK_INVITE_NEXT_CUSTOMER);
-        final Element el;
-        try {
-            el = DocumentHelper.createElement(Uses.TAG_CUSTOMER);// создаем корневой элемент для кастомера
-        } catch (Exception e) {
-            throw new Uses.ServerException("Не создан XML-элемент для задания RMI." + e);
-        }
-        el.addAttribute(Uses.TAG_USER, userName);
-
-        return task.process(el, "", new byte[0]);
-    }
     /**
      * Дерево услуг.
      */
@@ -207,47 +181,6 @@ public final class QServicesPool implements IRmiCommander {
     public IIndicatorBoard getIndicatorBoard() {
         return indicatorBoard;
     }
-    /**
-     * Сайты домена. У суперсайта этот список содержит все сайты домена включая сам суперсайт.
-     * "адрес сайта" + ":" + "порт сайта" --> параметры сайта QSite(INetProperty).
-     */
-    private QSiteList siteList;
-
-    public QSiteList getSiteList() {
-        if (siteList == null) {
-            throw new Uses.ServerException("Обращение к списку сайтов домена сервером, не являющимся суперсайтом.");
-        }
-        return siteList;
-    }
-
-    final public void setSiteList() {
-        siteList = QSiteList.resetSiteList();
-    }
-
-    private QSite getSuperSite() {
-        QSite superSite = null;
-        for (Object o : getSiteList().toArray()) {
-            QSite site = (QSite) o;
-            try {
-                InetAddress addr = InetAddress.getLocalHost();
-                // Get IP Address
-                String ipAddr = addr.getHostAddress();
-                // Get hostname
-                String hostname = addr.getHostName();
-                if (site.toString().equals(ipAddr + ":" + netProp.getServerPort())
-                        || site.toString().equalsIgnoreCase(hostname + ":" + netProp.getServerPort())
-                        || site.toString().equals("127.0.0.1:" + netProp.getServerPort())
-                        || site.toString().equalsIgnoreCase("localhost:" + netProp.getServerPort())) {
-                    superSite = site;
-                }
-            } catch (UnknownHostException e) {
-            }
-        }
-        if (superSite == null) {
-            throw new Uses.ServerException("Не найден суперсайт.");
-        }
-        return superSite;
-    }
     //
     //*******************************************************************************************************
     //**************************  ОБРАБОТЧИКИ ЗАДАНИЙ *******************************************************
@@ -266,29 +199,32 @@ public final class QServicesPool implements IRmiCommander {
     private class Task {
 
         protected final String name;
-        protected Element task;
+        protected CmdParams cmdParams;
 
         public Task(String name) {
             this.name = name;
             tasks.put(name, this);
         }
 
-        String process(Element task, String ipAdress, byte[] IP) {
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             Uses.log.logger.debug("Выполняем : \"" + name + "\"");
-            this.task = task;
+            this.cmdParams = cmdParams;
             return "";
         }
     }
+    /**
+     * Ключ блокировки для манипуляции с кстомерами
+     */
+    private final Lock clientTaskLock = new ReentrantLock();
     /**
      * Ставим кастомера в очередь.  
      */
     final Task addCustomerTask = new Task(Uses.TASK_STAND_IN) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String serviceName = task.attributeValue(Uses.TAG_SERVICE);
-            final QService service = serviceTree.getByName(serviceName);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final QService service = serviceTree.getByName(cmdParams.serviceName);
             final QCustomer customer;
             final Element elCustomer;
             // синхронизируем работу с клиентом
@@ -300,9 +236,9 @@ public final class QServicesPool implements IRmiCommander {
                 customer.setService(service);
                 // время постановки проставляется автоматом при создании кастомера.
                 // Приоритет "как все"
-                customer.setPriority(Integer.parseInt(task.attributeValue(Uses.TAG_PRIORITY)));
+                customer.setPriority(cmdParams.priority);
                 // Введенные кастомером данные
-                customer.setInput_data(task.attributeValue(Uses.TAG_INPUT_DATA));
+                customer.setInput_data(cmdParams.textData);
                 // Состояние у него "Стою, жду".
                 customer.setState(Uses.STATE_WAIT);
                 //добавим нового пользователя
@@ -317,17 +253,17 @@ public final class QServicesPool implements IRmiCommander {
             } finally {
                 clientTaskLock.unlock();
             }
-            Uses.log.logger.trace("С приоритетом " + customer.getPriority().get() + " К услуге \"" + serviceName + "\" -> " + service.getPrefix() + '\'' + service.getName() + '\'');
+            Uses.log.logger.trace("С приоритетом " + customer.getPriority().get() + " К услуге \"" + cmdParams.serviceName + "\" -> " + service.getPrefix() + '\'' + service.getName() + '\'');
             // если кастомер добавился, то его обязательно отправить в ответ
             // он уже есть в системе
             try {
                 // сохраняем состояния очередей.
                 savePool();
                 //Запишим в статистику этот момент
-                statistic.processingSetWaitCustomers(serviceName, service.getCountCustomers());
+                statistic.processingSetWaitCustomers(cmdParams.serviceName, service.getCountCustomers());
                 //разослать оповещение о том, что появился посетитель
                 //рассылаем широковещетельно по UDP на определенный порт
-                Uses.sendUDPBroadcast(serviceName, netProp.getClientPort());
+                Uses.sendUDPBroadcast(cmdParams.serviceName, netProp.getClientPort());
             } finally {
                 return elCustomer.asXML();
             }
@@ -344,18 +280,17 @@ public final class QServicesPool implements IRmiCommander {
          * Может случиться ситуация когда двое вызывают последнего кастомера, первому достанется, а второму нет.
          */
         @Override
-        synchronized String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String userName = task.attributeValue(Uses.TAG_USER);
+        synchronized String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             // Определить из какой очереди надо выбрать кастомера.
             // Пока без учета коэфициента.
             // Для этого смотрим первых кастомеров во всех очередях и ищем первого среди первых.
-            final QUser user = userList.getByName(userName); // юзер
+            final QUser user = userList.getByName(cmdParams.userName); // юзер
             final boolean isRecall = user.getCustomer() != null;
 
             // есть ли у юзера вызванный кастомер? Тогда поторный вызов
             if (isRecall) {
-                Uses.log.logger.debug("Повторный вызов кастомера №" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + " пользователем " + userName);
+                Uses.log.logger.debug("Повторный вызов кастомера №" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + " пользователем " + cmdParams.userName);
 
                 // просигналим звуком
                 //SoundPlayer.play("/ru/apertum/qsystem/server/sound/sound.wav");
@@ -449,8 +384,8 @@ public final class QServicesPool implements IRmiCommander {
     final Task getServicesTask = new Task(Uses.TASK_GET_SERVICES) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             final Element el = serviceTree.getXML();
             el.addAttribute(Uses.TAG_START_TIME, String.valueOf(netProp.getStartTime().getTime()));
             el.addAttribute(Uses.TAG_FINISH_TIME, String.valueOf(netProp.getFinishTime().getTime()));
@@ -463,13 +398,12 @@ public final class QServicesPool implements IRmiCommander {
     final Task aboutTask = new Task(Uses.TASK_ABOUT_SERVICE) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String serviceName = task.attributeValue(Uses.TAG_SERVICE);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             // Проверим оказывается ли сейчас эта услуга
             int min = Uses.LOCK_INT;
             final Date day = new Date();
-            final QService srv = serviceTree.getByName(serviceName);
+            final QService srv = serviceTree.getByName(cmdParams.serviceName);
             // Если нет расписания, календаря или выходной то отказ по расписанию
             if (srv.getSchedule() == null || checkFreeDay(day, new Long(1)) || (srv.getCalendar() != null && checkFreeDay(day, srv.getCalendar().getId()))) {
                 min = Uses.LOCK_FREE_INT;
@@ -541,7 +475,7 @@ public final class QServicesPool implements IRmiCommander {
             }
             // Если не работаем, то отправим ответ и прекратим выполнение
             if (min == Uses.LOCK_FREE_INT) {
-                Uses.log.logger.warn("Услуга \"" + serviceName + "\" не обрабатывается исходя из рабочего расписания.");
+                Uses.log.logger.warn("Услуга \"" + cmdParams.serviceName + "\" не обрабатывается исходя из рабочего расписания.");
                 return "<Ответ " + Uses.TAG_DESCRIPTION + "=\"" + min + "\"/>";
             }
             // бежим по юзерам и смотрим обрабатывают ли они услугу
@@ -549,7 +483,7 @@ public final class QServicesPool implements IRmiCommander {
             // самую маленькую сумму отправим в ответ по запросу.
             for (Object o : userList.toArray()) {
                 final QUser user = (QUser) o;
-                if (user.hasService(serviceName)) {
+                if (user.hasService(cmdParams.serviceName)) {
                     // теперь по услугам юзера
                     final Iterator<IProperty> itr = user.getUserPlan();
                     int sum = 0;
@@ -564,7 +498,7 @@ public final class QServicesPool implements IRmiCommander {
                 }
             }
             if (min == Uses.LOCK_INT) {
-                Uses.log.logger.warn("Услуга \"" + serviceName + "\" не обрабатывается ни одним пользователем.");
+                Uses.log.logger.warn("Услуга \"" + cmdParams.serviceName + "\" не обрабатывается ни одним пользователем.");
             }
             return "<Ответ " + Uses.TAG_DESCRIPTION + "=\"" + min + "\"/>";
         }
@@ -575,11 +509,10 @@ public final class QServicesPool implements IRmiCommander {
     final Task getSelfTask = new Task(Uses.TASK_GET_SELF) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String password = task.attributeValue(Uses.TAG_PASSWORD);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             for (Object o : userList.toArray()) {
-                if (((QUser) o).getPassword().equals(password)) {
+                if (((QUser) o).getPassword().equals(cmdParams.password)) {
                     return ((QUser) o).getXML().asXML();
                 }
             }
@@ -592,8 +525,8 @@ public final class QServicesPool implements IRmiCommander {
     final Task getUsersTask = new Task(Uses.TASK_GET_USERS) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             checkUserLive.refreshUsers();
             return userList.getXML().asXML();
         }
@@ -604,9 +537,9 @@ public final class QServicesPool implements IRmiCommander {
     private final Task getServerState = new Task(Uses.TASK_SERVER_STATE) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             count = 0;
-            super.process(task, ipAdress, IP);
+            super.process(cmdParams, ipAdress, IP);
             final Element root;
             try {
                 root = DocumentHelper.parseText("<" + Uses.TAG_PROP_SERVICES + "/>").getRootElement();
@@ -755,11 +688,10 @@ public final class QServicesPool implements IRmiCommander {
         }
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String userName = task.attributeValue(Uses.TAG_USER);
-            addrByName.put(userName, ipAdress);
-            nameByAddr.put(ipAdress, userName);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            addrByName.put(cmdParams.userName, ipAdress);
+            nameByAddr.put(ipAdress, cmdParams.userName);
             ipByAddr.put(ipAdress, IP);
             return "<Ответ>\n</Ответ>";
         }
@@ -787,11 +719,10 @@ public final class QServicesPool implements IRmiCommander {
         private static final String TEMP = "    <" + Uses.TAG_SERVICE + " " + Uses.TAG_NAME + "=\"" + NAME + "\" " + Uses.TAG_DESCRIPTION + "=\"" + COUNT + "\"/>\n";
 
         @Override
-        protected String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        protected String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             String res = "";
-            final String userName = task.attributeValue(Uses.TAG_USER);
-            final QUser user = userList.getByName(userName);
+            final QUser user = userList.getByName(cmdParams.userName);
 
             //*************************************************************************
             final Iterator<IProperty> itr = user.getUserPlan();
@@ -815,17 +746,16 @@ public final class QServicesPool implements IRmiCommander {
         }
 
         @Override
-        protected String process(Element task, String ipAdress, byte[] IP) {
-            final String userName = task.attributeValue(Uses.TAG_USER);
+        protected String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             // Отсечем дубляжи запуска от одних и тех же юзеров. но с разных компов
             // пришло с запросом от юзера имеющегося в региных
             //System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" + userName);
-            if (checkUserLive.hasName(userName)) {
+            if (checkUserLive.hasName(cmdParams.userName)) {
                 Uses.log.logger.debug(Uses.ACCESS_DENY);
                 return "<Ответ>\n" + Uses.ACCESS_DENY + "\n</Ответ>";
             }
 
-            return super.process(task, ipAdress, IP);
+            return super.process(cmdParams, ipAdress, IP);
         }
     }
     /**
@@ -834,10 +764,9 @@ public final class QServicesPool implements IRmiCommander {
     final Task killCustomerTask = new Task(Uses.TASK_KILL_NEXT_CUSTOMER) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String userName = task.attributeValue(Uses.TAG_USER);
-            final QUser user = userList.getByName(userName);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final QUser user = userList.getByName(cmdParams.userName);
             // кастомер переходит в состояние "умерщвленности"
             user.getCustomer().setState(Uses.STATE_DEAD);
 
@@ -851,7 +780,7 @@ public final class QServicesPool implements IRmiCommander {
                 // сохраняем состояния очередей.
                 savePool();
                 //Запишим в статистику этот момент
-                statistic.processingKillCustomer(serviceName, userName);
+                statistic.processingKillCustomer(serviceName, cmdParams.userName);
                 statistic.processingSetWaitCustomers(serviceName, size);
                 //разослать оповещение о том, что посетитель откланен
                 //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
@@ -867,10 +796,9 @@ public final class QServicesPool implements IRmiCommander {
     final Task getStartCustomerTask = new Task(Uses.TASK_START_CUSTOMER) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String userName = task.attributeValue(Uses.TAG_USER);
-            final QUser user = userList.getByName(userName);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final QUser user = userList.getByName(cmdParams.userName);
             // Время старта работы с юзера с кастомером.
             user.getCustomer().setStartTime(new Date());
             // редиректенный ли или возвращенный
@@ -896,11 +824,10 @@ public final class QServicesPool implements IRmiCommander {
     final Task getFinishCustomerTask = new Task(Uses.TASK_FINISH_CUSTOMER) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String userName = task.attributeValue(Uses.TAG_USER);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             // вот он все это творит
-            final QUser user = userList.getByName(userName);
+            final QUser user = userList.getByName(cmdParams.userName);
             // вот над этим пациентом
             final ICustomer customer = user.getCustomer();
             // надо посмотреть не требует ли этот кастомер возврата в какую либо очередь.
@@ -949,7 +876,7 @@ public final class QServicesPool implements IRmiCommander {
                 // в этом случае завершаем с пациентом
                 //"все что хирург забыл в вас - ваше"
                 // но сначала обозначим результат работы юзера с кастомером, если такой результат найдется в списке результатов
-                final QResult result = getResultsList().getByID(Long.parseLong(task.attributeValue(Uses.TAG_RESULT_ITEM)));
+                final QResult result = getResultsList().getByID(cmdParams.resultId);
                 ((QCustomer) customer).setResult(result);
                 customer.setFinishTime(new Date());
                 // кастомер переходит в состояние "Завершенности", но не "мертвости"
@@ -964,7 +891,7 @@ public final class QServicesPool implements IRmiCommander {
                 //какие-то манипуляции по сохранению статистики
                 //Запишим в статистику этот момент
                 statistic.processingFinishCustomerOrRedirect(serviceName,
-                        userName,
+                        cmdParams.userName,
                         new Double(new Double(System.currentTimeMillis()
                         - startTime)
                         / 1000 / 60));
@@ -984,18 +911,17 @@ public final class QServicesPool implements IRmiCommander {
     final Task redirectCustomerTask = new Task(Uses.TASK_REDIRECT_CUSTOMER) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String userName = task.attributeValue(Uses.TAG_USER);
-            final QUser user = userList.getByName(userName);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final QUser user = userList.getByName(cmdParams.userName);
             final ICustomer customer = user.getCustomer();
             // Переставка в другую очередь
             // Название новой очереди
-            final String newServiceName = task.attributeValue(Uses.TAG_SERVICE);
+            final String newServiceName = cmdParams.serviceName;
             // Название старой очереди
             final String oldServiceName = customer.getServiceName();
             // требует ли возврата в прежнюю очередь
-            final boolean requestBack = "1".equals(task.attributeValue(Uses.TAG_REQUEST_BACK));
+            final boolean requestBack = cmdParams.requestBack;
             // вот она новая очередь.
             final QService newService = serviceTree.getByName(newServiceName);
             // действия по завершению работы юзера над кастомером
@@ -1046,7 +972,7 @@ public final class QServicesPool implements IRmiCommander {
 
             try {
                 //Запишим в статистику этот момент
-                statistic.processingFinishCustomerOrRedirect(oldServiceName, userName,
+                statistic.processingFinishCustomerOrRedirect(oldServiceName, cmdParams.userName,
                         new Double(new Double(System.currentTimeMillis()
                         - startTime)
                         / 1000 / 60));
@@ -1070,33 +996,28 @@ public final class QServicesPool implements IRmiCommander {
     final Task setServiceFire = new Task(Uses.TASK_SET_SERVICE_FIRE) {
 
         @Override
-        synchronized String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            //Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\" " + Uses.TAG_SERVICE + "=\"" + PARAM_SERVICE + "\" " + Uses.TAG_PROP_KOEF
-            final String userName = task.attributeValue(Uses.TAG_USER);
-            final String serviceName = task.attributeValue(Uses.TAG_SERVICE);
-            final String kf = task.attributeValue(Uses.TAG_PROP_KOEF);
-            if (userName == null || serviceName == null || kf == null) {
+        synchronized String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            if (cmdParams.userName == null || cmdParams.serviceName == null) {
                 return "<Ответ>\nНеверные попараметры запроса.\n</Ответ>";
             }
-            final int koeff = Integer.parseInt(kf);
-            if (!serviceTree.hasByName(serviceName)) {
+            if (!serviceTree.hasByName(cmdParams.serviceName)) {
                 return "<Ответ>\nТребуемая услуга не присутствует в текущей загруженной конфигурации сервера.\n</Ответ>";
             }
-            final QService service = serviceTree.getByName(serviceName);
-            if (!userList.hasByName(userName)) {
+            final QService service = serviceTree.getByName(cmdParams.serviceName);
+            if (!userList.hasByName(cmdParams.userName)) {
                 return "<Ответ>\nТребуемый пользователь не присутствует в текущей загруженной конфигурации сервера.\n</Ответ>";
             }
-            final QUser user = userList.getByName(userName);
+            final QUser user = userList.getByName(cmdParams.userName);
 
-            if (user.getServiceList().hasByName(serviceName)) {
+            if (user.getServiceList().hasByName(cmdParams.serviceName)) {
                 return "<Ответ>\nТребуемая услуга уже назначена этому пользователю.\n</Ответ>";
             }
-            user.addPlanService(service, koeff);
+            user.addPlanService(service, cmdParams.coeff);
             //разослать оповещение о том, что у пользователя поменялась конфигурация услуг
             //рассылаем широковещетельно по UDP на определенный порт
-            Uses.sendUDPBroadcast(userName, netProp.getClientPort());
-            return "<Ответ>\nУслуга \"" + serviceName + "\" назначена пользователю \"" + userName + "\" успешно.\n</Ответ>";
+            Uses.sendUDPBroadcast(cmdParams.userName, netProp.getClientPort());
+            return "<Ответ>\nУслуга \"" + cmdParams.serviceName + "\" назначена пользователю \"" + cmdParams.userName + "\" успешно.\n</Ответ>";
         }
     };
     /**
@@ -1105,30 +1026,27 @@ public final class QServicesPool implements IRmiCommander {
     final Task deleteServiceFire = new Task(Uses.TASK_DELETE_SERVICE_FIRE) {
 
         @Override
-        synchronized String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            //Uses.TAG_USER + "=\"" + PARAM_USERNAME + "\" " + Uses.TAG_SERVICE
-            final String userName = task.attributeValue(Uses.TAG_USER);
-            final String serviceName = task.attributeValue(Uses.TAG_SERVICE);
-            if (userName == null || serviceName == null) {
+        synchronized String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            if (cmdParams.userName == null || cmdParams.serviceName == null) {
                 return "<Ответ>\nНеверные попараметры запроса.\n</Ответ>";
             }
-            if (!serviceTree.hasByName(serviceName)) {
+            if (!serviceTree.hasByName(cmdParams.serviceName)) {
                 return "<Ответ>\nТребуемая услуга не присутствует в текущей загруженной конфигурации сервера.\n</Ответ>";
             }
-            if (!userList.hasByName(userName)) {
+            if (!userList.hasByName(cmdParams.userName)) {
                 return "<Ответ>\nТребуемый пользователь не присутствует в текущей загруженной конфигурации сервера.\n</Ответ>";
             }
-            final QUser user = userList.getByName(userName);
+            final QUser user = userList.getByName(cmdParams.userName);
 
-            if (!user.getServiceList().hasByName(serviceName)) {
+            if (!user.getServiceList().hasByName(cmdParams.serviceName)) {
                 return "<Ответ>\nТребуемая услуга не назначена этому пользователю.\n</Ответ>";
             }
-            user.deletePlanService(serviceName);
+            user.deletePlanService(cmdParams.serviceName);
             //разослать оповещение о том, что у пользователя поменялась конфигурация услуг
             //рассылаем широковещетельно по UDP на определенный порт
-            Uses.sendUDPBroadcast(userName, netProp.getClientPort());
-            return "<Ответ>\nУслуга \"" + serviceName + "\" удалена у пользователя \"" + userName + "\" успешно.\n</Ответ>";
+            Uses.sendUDPBroadcast(cmdParams.userName, netProp.getClientPort());
+            return "<Ответ>\nУслуга \"" + cmdParams.serviceName + "\" удалена у пользователя \"" + cmdParams.userName + "\" успешно.\n</Ответ>";
         }
     };
     /**
@@ -1138,10 +1056,9 @@ public final class QServicesPool implements IRmiCommander {
     final Task getBoardConfig = new Task(Uses.TASK_GET_BOARD_CONFIG) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             return getIndicatorBoard().getConfig().asXML();
-
         }
     };
     /**
@@ -1151,9 +1068,13 @@ public final class QServicesPool implements IRmiCommander {
     final Task saveBoardConfig = new Task(Uses.TASK_SAVE_BOARD_CONFIG) {
 
         @Override
-        synchronized String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            getIndicatorBoard().saveConfig(task);
+        synchronized String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            try {
+                getIndicatorBoard().saveConfig(DocumentHelper.parseText(cmdParams.textData).getRootElement());
+            } catch (DocumentException ex) {
+                Uses.log.logger.error("Не сохранилась конфигурация табло.", ex);
+            }
             return "<Ответ></Ответ>";
         }
     };
@@ -1163,29 +1084,16 @@ public final class QServicesPool implements IRmiCommander {
     final Task getGridOfWeek = new Task(Uses.TASK_GET_GRID_OF_WEEK) {
 
         @Override
-        String process(final Element task, String ipAdress, byte[] IP) {
-
-            super.process(task, ipAdress, IP);
-
+        String process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             //Определим услугу
-            final String serviceName = task.attributeValue(Uses.TAG_SERVICE);
-            if (!serviceTree.hasByName(serviceName)) {
-                return "<Ответ>\nТребуемая услуга " + serviceName + " не присутствует в текущей загруженной конфигурации сервера.\n</Ответ>";
-            }
-            final QService service = serviceTree.getByName(serviceName);
+            final QService service = serviceTree.getByName(cmdParams.serviceName);
             final QSchedule sch = service.getSchedule();
             if (sch == null) {
                 return "<Ответ>\nТребуемая услуга не имеет расписания.\n</Ответ>";
             }
 
-            final String time = task.attributeValue(Uses.TAG_START_TIME);
-            final DateFormat dateFormat = new SimpleDateFormat(Uses.DATE_FORMAT_ONLY);
-            final Date startWeek;
-            try {
-                startWeek = dateFormat.parse(time);
-            } catch (ParseException ex) {
-                throw new Uses.ServerException("Неправильный парсинг даты начала недели для определения ранее записавшихся.");
-            }
+            final Date startWeek = new Date(cmdParams.date);
             final GregorianCalendar gc = new GregorianCalendar();
             gc.setTime(startWeek);
             gc.set(GregorianCalendar.DAY_OF_YEAR, gc.get(GregorianCalendar.DAY_OF_YEAR) + 7);
@@ -1277,9 +1185,6 @@ public final class QServicesPool implements IRmiCommander {
                     // Если работаем в этот день то определим часы на которые еще можно записаться
                     if (!(start == null || end == null)) {
 
-                        // Определим ID авторизованного пользователя, если небыло авторизации, то оно = -1
-                        final Long authCustonerID = Long.parseLong(task.attributeValue(Uses.TAG_AUTH_CUSTOMER_ID));
-
                         // бежим по часам внутри дня
                         while (start.before(end)) {
                             int cnt = 0;
@@ -1292,12 +1197,12 @@ public final class QServicesPool implements IRmiCommander {
                                 // Если совпел день и час, то увеличим счетчик записавшихся на этот час
                                 if (gc.get(GregorianCalendar.DAY_OF_YEAR) == gc_day.get(GregorianCalendar.DAY_OF_YEAR) && s == e) {
                                     cnt++;
-                                    // Защита от того чтобы один и тодже клиент не записался предварительно в одну услугу на одну дата.
+                                    // Защита от того чтобы один и тодже клиент не записался предварительно в одну услугу на одну дату.
                                     // данный предв.кастомер не должен быть таким же как и авторизовавшийся на этот час
-                                    if (authCustonerID != -1
+                                    if (cmdParams.customerId != -1
                                             && advCustomer.getAuthorizationCustomer() != null
                                             && advCustomer.getAuthorizationCustomer().getId() != null
-                                            && advCustomer.getAuthorizationCustomer().getId().equals(authCustonerID)) {
+                                            && advCustomer.getAuthorizationCustomer().getId().equals(cmdParams.customerId)) {
                                         cnt = 1999999999;
                                         break;
                                     }
@@ -1355,34 +1260,27 @@ public final class QServicesPool implements IRmiCommander {
     final Task standAdvanceInService = new Task(Uses.TASK_ADVANCE_STAND_IN) {
 
         @Override
-        synchronized String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        synchronized String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
 
-            final String serviceName = task.attributeValue(Uses.TAG_SERVICE);
-            final QService service = serviceTree.getByName(serviceName);
-            Uses.log.logger.trace("Предварительно записываем к услуге \"" + serviceName + "\" -> " + service.getPrefix() + ' ' + service.getName() + '\'');
+            final QService service = serviceTree.getByName(cmdParams.serviceName);
+            Uses.log.logger.trace("Предварительно записываем к услуге \"" + cmdParams.serviceName + "\" -> " + service.getPrefix() + ' ' + service.getName() + '\'');
             // Создадим вновь испеченного кастомера
             final QAdvanceCustomer customer = new QAdvanceCustomer();
-            // Определим дату и время для кастомера
-            final String time = task.attributeValue(Uses.TAG_START_TIME);
+
             // Определим ID авторизованного пользователя, если небыло авторизации, то оно = -1
-            final Long authCustonerID = Long.parseLong(task.attributeValue(Uses.TAG_AUTH_CUSTOMER_ID));
+            final Long authCustonerID = cmdParams.customerId;
             // выкачаем из базы зарегинова
             final Session session = Uses.getSessionFactory().getSessionFactory().openSession();
             customer.setAuthorizationCustomer((QAuthorizationCustomer) session.get(QAuthorizationCustomer.class, authCustonerID));
-            final Date startTime;
-            try {
-                startTime = Uses.format_for_trans.parse(time);
-            } catch (ParseException ex) {
-                throw new Uses.ServerException("Неправильный парсинг даты начала недели для определения ранее записавшихся.");
-            }
+            // Определим дату и время для кастомера
+            final Date startTime = new Date(cmdParams.date);
             //хорошо бы отсекать повторную запись к этому же специалиста на этот же день
             customer.setAdvanceTime(startTime);
             customer.setService(service);
             // время постановки проставляется автоматом при создании кастомера.
             // Приоритет "как все"
             customer.setPriority(2);
-            customer.setSiteMark(task.attributeValue(Uses.TASK_FOR_SITE));
 
             //сохраним нового предварительного пользователя
             Uses.log.logger.debug("Старт сохранения предварительной записи в СУБД.");
@@ -1407,13 +1305,12 @@ public final class QServicesPool implements IRmiCommander {
     final Task standAdvanceCheckAndStand = new Task(Uses.TASK_ADVANCE_CHECK_AND_STAND) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
 
-            final Long advCustID = Long.parseLong(task.attributeValue(Uses.TAG_ID));
             // Вытащим из базы предварительного кастомера
             final Session session = Uses.getSessionFactory().getSessionFactory().openSession();
-            final QAdvanceCustomer advCust = (QAdvanceCustomer) session.get(QAdvanceCustomer.class, advCustID);
+            final QAdvanceCustomer advCust = (QAdvanceCustomer) session.get(QAdvanceCustomer.class, cmdParams.customerId);
             final GregorianCalendar gc = new GregorianCalendar();
             if (advCust != null) {
                 gc.setTime(advCust.getAdvanceTime());
@@ -1436,21 +1333,13 @@ public final class QServicesPool implements IRmiCommander {
                 }
                 // создаем кастомера вызвав задание по созданию кастомера
                 // загрузим задание
-                Element taskForCustomer;
-                String mes = NetCommander.TASK_STAND_IN;
-                mes = mes.replaceFirst(NetCommander.PARAM_SERVICE, advCust.getService().getName());
-                mes = mes.replaceFirst(NetCommander.PARAM_PASSWORD, "");
-                mes = mes.replaceFirst(NetCommander.PARAM_PRIORITY, String.valueOf(advCust.getPriority()));
-                mes = mes.replaceFirst(NetCommander.PARAM_SITE_MARK, "");
-                mes = mes.replaceFirst(NetCommander.PARAM_SUPER_SITE, Uses.TASK_SITE);
+                final CmdParams params = new CmdParams();
+                params.serviceName = advCust.getService().getName();
+                params.password = "";
+                params.priority = advCust.getPriority();
+                final String txtCustomer = tasks.get(Uses.TASK_STAND_IN).process(params, ipAdress, IP);
                 try {
-                    taskForCustomer = DocumentHelper.parseText(mes).getRootElement();
-                } catch (Exception e) {
-                    throw new Uses.ServerException("Не возможно интерпритировать задание для местного использования при постановке ранее раписанного.\n" + e.getMessage());
-                }
-                final String txtCustomer = tasks.get(Uses.TASK_STAND_IN).process(taskForCustomer, ipAdress, IP);
-                try {
-                    taskForCustomer = DocumentHelper.parseText(txtCustomer).getRootElement();
+                    final Element taskForCustomer = DocumentHelper.parseText(txtCustomer).getRootElement();
                 } catch (Exception e) {
                     throw new Uses.ServerException("Не возможно интерпритировать ответ от для местного использования при постановке ранее раписанного.\n" + e.getMessage());
                 }
@@ -1459,7 +1348,7 @@ public final class QServicesPool implements IRmiCommander {
             } else {
                 String answer;
                 if (advCust == null) {
-                    Uses.log.logger.trace("Не найдена предварительная запись по введеному коду ID = " + advCustID);
+                    Uses.log.logger.trace("Не найдена предварительная запись по введеному коду ID = " + cmdParams.customerId);
                     answer = "Не найдена предварительная запись по введеному коду";
                 } else {
                     Uses.log.logger.trace("Предваритело записанный клиент пришел не в свое время");
@@ -1476,8 +1365,8 @@ public final class QServicesPool implements IRmiCommander {
     final Task getResponseList = new Task(Uses.TASK_GET_RESPONSE_LIST) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             return getResponseList().getXML().asXML();
         }
     };
@@ -1487,12 +1376,11 @@ public final class QServicesPool implements IRmiCommander {
     final Task setResponseAnswer = new Task(Uses.TASK_SET_RESPONSE_ANSWER) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             final QRespEvent event = new QRespEvent();
             event.setDate(new Date());
-            final String respId = task.attributeValue(Uses.TAG_ID);
-            event.setRespID(Long.parseLong(respId));
+            event.setRespID(cmdParams.responseId);
             Session session = Uses.getSessionFactory().getSessionFactory().openSession();
             session.beginTransaction();
             try {
@@ -1514,8 +1402,8 @@ public final class QServicesPool implements IRmiCommander {
     final Task getInfoTree = new Task(Uses.TASK_GET_INFO_TREE) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             return getInfoTree().getXML().asXML();
         }
     };
@@ -1525,14 +1413,9 @@ public final class QServicesPool implements IRmiCommander {
     final Task getClientAuthorization = new Task(Uses.TASK_GET_CLIENT_AUTHORIZATION) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final Long authCustID;
-            try {
-                authCustID = Long.parseLong(task.attributeValue(Uses.TAG_ID).trim());
-            } catch (Exception ex) {
-                return "<Ответ>\n" + "<![CDATA[<html><b><p align=center><span style='font-size:40.0pt;color:red'>Номер не обнаружен.</span><br><span style='font-size:60.0pt;color:purple'>Обратитесь в регистратуру.</span>]]>" + "\n</Ответ>";
-            }
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final Long authCustID = Long.parseLong(cmdParams.clientAuthId);
             // Вытащим из базы предварительного кастомера
             final Session session = Uses.getSessionFactory().getSessionFactory().openSession();
             QAuthorizationCustomer authCust;
@@ -1563,8 +1446,8 @@ public final class QServicesPool implements IRmiCommander {
     final Task getResultsList = new Task(Uses.TASK_GET_RESULTS_LIST) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             return getResultsList().getXML().asXML();
         }
     };
@@ -1574,16 +1457,10 @@ public final class QServicesPool implements IRmiCommander {
     final Task setCustomerPriority = new Task(Uses.TASK_SET_CUSTOMER_PRIORITY) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final int custPriority;
-            try {
-                custPriority = Integer.parseInt(task.attributeValue(Uses.TAG_PRIORITY).trim());
-            } catch (Exception ex) {
-                return "<Ответ>Приоритет не распознан</Ответ>";
-            }
+        String process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
             // Вытащим из базы предварительного кастомера
-            final String num = task.attributeValue(Uses.TAG_NUMBER).trim();
+            final String num = cmdParams.clientAuthId.trim();
             final StringBuilder sb = new StringBuilder("");
 
             getServices().sailToStorm(getServices().getRoot(), new ISailListener() {
@@ -1592,7 +1469,7 @@ public final class QServicesPool implements IRmiCommander {
                 public void actionPerformed(QService service) {
                     for (ICustomer customer : service.getCustomers()) {
                         if (num.equals(customer.getPrefix() + customer.getNumber())) {
-                            customer.setPriority(custPriority);
+                            customer.setPriority(cmdParams.priority);
                             service.removeCustomer(customer); // убрать из очереди
                             service.addCustomer(customer);// перепоставили чтобы очередность переинлексиловалась
                             sb.append("<Ответ>Клиенту с номером \"").append(num).append("\" в услуге \"").append(customer.getServiceName()).append("\" изменен приоритет.</Ответ>");
@@ -1610,9 +1487,9 @@ public final class QServicesPool implements IRmiCommander {
     final Task getpreinfoForServiceTask = new Task(Uses.TASK_GET_SERVICE_PREINFO) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final String serviceName = task.attributeValue(Uses.TAG_SERVICE);
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final String serviceName = cmdParams.serviceName;
             // Проверим оказывается ли сейчас эта услуга
             final QService srv = serviceTree.getByName(serviceName);
 
@@ -1625,9 +1502,9 @@ public final class QServicesPool implements IRmiCommander {
     final Task getPtintInfoItem = new Task(Uses.TASK_GET_INFO_PRINT) {
 
         @Override
-        String process(Element task, String ipAdress, byte[] IP) {
-            super.process(task, ipAdress, IP);
-            final QInfoItem item = infoTree.getByName(task.attributeValue(Uses.TAG_INFO_ITEM));
+        String process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final QInfoItem item = infoTree.getByName(cmdParams.infoItemName);
             return "<Ответ><![CDATA[" + item.getTextPrint() + "]]></Ответ>";
         }
     };
@@ -1652,10 +1529,6 @@ public final class QServicesPool implements IRmiCommander {
         resultsList = QResultList.resetResultList();
         scheduleList = QScheduleList.resetScheduleList();
         calendarList = QCalendarList.resetCalendarList();
-        // Вдруг если у нас суперсайт, то надо загрузить список сайтов домена
-        if (netProp.IsSuperSite()) {
-            setSiteList();
-        }
 
         if (ignoreWork) {
             statistic = null;
@@ -1663,7 +1536,7 @@ public final class QServicesPool implements IRmiCommander {
             //пробуем восстановить состояние системы
             loadPool();
             // создаем ведение текущей статистики
-            statistic = CurrentStatistic.startCurrentStatistic(property.getUsersGetter(), netProp.getWebServerPort(), property.getReports(), (netProp.IsSuperSite()) ? getSiteList() : null);
+            statistic = CurrentStatistic.startCurrentStatistic(property.getUsersGetter(), netProp.getWebServerPort(), property.getReports());
             // запускаем движок индикации сообщения для кастомеров
             indicatorBoard.showBoard();
         }
@@ -1896,190 +1769,31 @@ public final class QServicesPool implements IRmiCommander {
 //**********************************************************************************************    
     /**
      * Выполнение всех заданий, пришедших на обработку
-     * @param strTask xml-строка задания
+     * @param rpc объект задания
      * @param ipAdress адрес того кто прислал задание
      * @param IP  адрес того кто прислал задание
      * @return xml-строку результата выполнения задания
      */
-    public String doTask(String strTask, String ipAdress, byte[] IP) {
+    public String doTask(JsonRPC20 rpc, String ipAdress, byte[] IP) {
         final long start = System.currentTimeMillis();
-        // загрузим задание
-        final Element task;
-        try {
-            task = DocumentHelper.parseText(strTask).getRootElement();
-        } catch (Exception e) {
-            throw new Uses.ServerException("Не возможно интерпритировать задание.\n" + e.getMessage());
+        if (!Uses.isDebug) {
+            System.out.println("Task processing: '" + rpc.getMethod());
+        }
+        Uses.log.logger.info("Обработка задания: '" + rpc.getMethod() + "'");
+        if (tasks.get(rpc.getMethod()) == null) {
+            throw new Uses.ServerException("В задании не верно указано название действия: '" + rpc.getMethod() + "'");
         }
 
-        final String taskName = task.attributeValue(Uses.TAG_NAME);
-        if (!Uses.isDebug) {
-            System.out.println("Task processing: '" + taskName);
-        }
-        Uses.log.logger.info("Обработка задания: '" + taskName + "'");
-        if (tasks.get(taskName) == null) {
-            throw new Uses.ServerException("В задании не верно указано название действия: '" + taskName + "'");
-        }
-// теперь у нас есть XML-задание, которое правильное, т.е. у него найден обработчик в списке обработчиков заданий tasks.
-// посмотрим на то, для кого задание, суперсайта или нет. / как маркируются задания для суперсайта? - имя корневого элемента = Uses.TASK_SUPER_SITE
-// Если для суперсайта, то передадим обрабатываться это задание рассылке суперсайтом на остальные сайты.
-// Суперсайт определит всем или одному сайту предназначено задание.
-// если только одному сайту, то редиректит задание на сайт и вернет редеректенный ответ засылателю задания.
-// Если многим сайтам(всем), то опросит все сайты, собирет ответы, и вернет засылателю.
-// Если задание для простого сайта, то просто вызовет process найденного обработчика и вернет ответ.
         final String result;
 
-        if (Uses.TASK_SUPER_SITE.equals(task.getName())) {
-            result = getSuperTask(task.createCopy(Uses.TASK_SITE), ipAdress, IP);
-        } else {
-            // Вызов обработчика задания не синхронизирован
-            // Синхронизация переехала внутрь самих обработчиков с помощью блокировок
-            // Это сделано потому что появилось много заданий, которые не надо синхронизировать.
-            // А то что необходимо синхронизировать, то синхронизится в самих обработчиках.
-            result = tasks.get(taskName).process(task, ipAdress, IP);
-        }
+
+        // Вызов обработчика задания не синхронизирован
+        // Синхронизация переехала внутрь самих обработчиков с помощью блокировок
+        // Это сделано потому что появилось много заданий, которые не надо синхронизировать.
+        // А то что необходимо синхронизировать, то синхронизится в самих обработчиках.
+        result = tasks.get(rpc.getMethod()).process(rpc.getParams(), ipAdress, IP);
+
         Uses.log.logger.info("Задание завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
         return result;
-    }
-    /**
-     * Ключ блокировки для манипуляции с кстомерами
-     */
-    private final Lock clientTaskLock = new ReentrantLock();
-
-    synchronized private String getSuperTask(Element task, String ipAdress, byte[] IP) {
-        // Суперсайт определит всем или одному сайту предназначено задание
-        final String siteMark = task.attributeValue(Uses.TASK_FOR_SITE);
-        if (siteMark != null && !"".equals(siteMark)) {
-            Uses.log.logger.debug("Редирект задания персонально для сайта \"" + siteMark + "\".");
-            // команда персонально для какого-то сайта домена,
-            // надо заредиректить и вернуть результат редиректа
-            // выберем требуемый сайт, если нет такой маркировки, то будет ругань.
-            QSite perposeSite = getSiteList().getByMark(siteMark);
-            try {
-                return send(perposeSite, task);
-            } catch (IOException ex) {
-                throw new Uses.ServerException("Ошибка отправки задания на сайт \"" + perposeSite + "\". " + ex);
-            }
-
-        } else if (siteMark == null || Uses.TASK_FOR_ALL_SITE.equals(siteMark) || "".equals(siteMark)) {
-            Uses.log.logger.debug("Редирект задания для всех сайтов.");
-            // вот тут надо разослать всем сайтам и собрать общий ответ
-            // все задания на сайты шлем в разных патоках и синхронизируемокончание их выполнения
-
-            // Создадим барьер по числу сайтов в домене с событием синхронизации результатов
-            final CyclicBarrier barrier = new CyclicBarrier(getSiteList().size());
-            // Создадим блокирующую очередь для результатов
-            final LinkedBlockingDeque<Element> result = new LinkedBlockingDeque<Element>();
-            // отсылаем в потоках
-            for (Object o : getSiteList().toArray()) {
-                new SendToSiteThread((QSite) o, task, barrier, result).start();
-            }
-            // Это консолидированный ответ.
-            final Element answers = DocumentHelper.createElement(Uses.TASK_SUPER_ANSWER);
-            final QSite site = getSuperSite();
-            answers.setText(site.getButtonText());
-            answers.addAttribute(Uses.TAG_NAME, site.getName());
-            answers.addAttribute(Uses.TAG_DESCRIPTION, site.getDescription());
-            // Принимаем из блокирующей очереди. Поставил тайм аут на случай не отклика.
-            // Если отклика нет, то и не надо, будем считать что сайт недоступен.
-            for (Object o : getSiteList().toArray()) {
-                try {
-                    final Element res = result.poll(15, TimeUnit.SECONDS);
-                    if (res != null) {
-                        answers.add(res);
-                    } else {
-                        Uses.log.logger.error("Не получен ответ от сайта.");
-                    }
-                } catch (InterruptedException ex) {
-                    Uses.log.logger.error("Истек таймаут ожидания ответа от сайтов. " + ex);
-                }
-            }
-            return answers.asXML();
-        }
-        return "<Ответ>Какая-то ошибка.</ответ>";
-    }
-
-    /**
-     *  основная работа по отсылки и получению редиректа заданий и результата.
-     * @param site  параметры соединения с сервером
-     * @param task отсылаемое сообщение.
-     * @return XML-ответ
-     */
-    private static String send(QSite site, Element message) throws IOException {
-        // открываем сокет и коннектимся к localhost:3128
-        // получаем сокет сервера
-        Socket socket = new Socket(site.getServerAddress(), site.getServerPort());
-        // Передача данных запроса
-        final PrintWriter writer = new PrintWriter(socket.getOutputStream());
-        final Scanner in = new Scanner(socket.getInputStream());
-        StringBuilder sb = new StringBuilder();
-        writer.print(message.asXML());
-        writer.flush();
-        // Чтение ответа.
-        while (in.hasNextLine()) {
-            sb = sb.append(in.nextLine()).append("\n");
-        }
-
-        final String data = URLDecoder.decode(sb.toString(), "utf-8");
-        socket.close();
-        // преобразуем ответ в XML
-        return data;
-    }
-
-    /**
-     * Класс потока для широковещательной рассылки заданий на сайты домена.
-     * Ответ от сайта возвращается промаркированным этим сайтом.
-     */
-    private class SendToSiteThread
-            extends Thread {
-
-        // этот поток засылает на этот сайт задание
-        private final QSite site;
-        // это задание шлеццо на сайт в этом потоке
-        private final Element task;
-        // способ синхронизации.
-        private final CyclicBarrier barrier;
-        private LinkedBlockingDeque<Element> result;
-
-        public SendToSiteThread(QSite site, Element task, CyclicBarrier barrier, LinkedBlockingDeque<Element> result) {
-            this.site = site;
-            this.task = task;
-            this.barrier = barrier;
-            this.result = result;
-        }
-
-        @Override
-        public void run() {
-            Uses.log.logger.trace("Часть широковещательного редиректа для сайта \"" + site + "\".");
-            final String answer;
-            try {
-                answer = send(site, task);
-            } catch (IOException ex) {
-                throw new Uses.ServerException("Ошибка отправки задания на сайт \"" + site + "\". " + ex);
-            }
-            try {
-                final Element res = DocumentHelper.parseText(answer).getRootElement();
-                // промаркируем все узлы ответа маркировкой сайта с которого пришол ответ. Понятное дело рекурентно.
-                markAnswer(res);
-                result.put(res);
-            } catch (InterruptedException ex) {
-                throw new Uses.ServerException("Ошибка разрушения потока. " + ex);
-            } catch (DocumentException ex) {
-                throw new Uses.ServerException("Не возможно интерпритировать ответ с сайта \"" + site + "\". \n" + ex);
-            }
-            try {
-                barrier.await();
-            } catch (InterruptedException ex) {
-                throw new Uses.ServerException("Ошибка разрушения потока. " + ex);
-            } catch (BrokenBarrierException ex) {
-                throw new Uses.ServerException("Ошибка разрушения барьера синхронизации. " + ex);
-            }
-        }
-
-        private void markAnswer(Element root) {
-            root.addAttribute(Uses.TASK_FOR_SITE, site.toString());
-            for (Object o : root.elements()) {
-                markAnswer((Element) o);
-            }
-        }
     }
 }
