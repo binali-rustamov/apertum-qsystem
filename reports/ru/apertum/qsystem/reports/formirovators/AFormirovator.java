@@ -25,6 +25,7 @@ import java.util.Map;
 import net.sf.jasperreports.engine.JRDataSource;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.net.NetUtil;
 
@@ -87,7 +88,7 @@ abstract public class AFormirovator implements IFormirovator {
         try {
             result = Uses.readInputStream(inStream);
         } catch (IOException ex) {
-            throw new Uses.ReportException("Ошибка чтения ресурса для диалогового ввода периода. " + ex);
+            throw new ReportException("Ошибка чтения ресурса для диалогового ввода периода. " + ex);
         }
         if (errorMessage == null) {
             errorMessage = "";

@@ -30,14 +30,13 @@ import java.awt.image.MemoryImageSource;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.border.EtchedBorder;
-import org.dom4j.Element;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
-import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.server.model.infosystem.QInfoItem;
 
 /**
  * Created on 18.09.2009, 11:33:46
@@ -61,7 +60,7 @@ public class FInfoDialog extends javax.swing.JDialog {
 
     }
 
-    public static void setRoot(Element rootEl) {
+    public static void setRoot(QInfoItem rootEl) {
         root = rootEl;
         preLevel = rootEl;
     }
@@ -70,16 +69,15 @@ public class FInfoDialog extends javax.swing.JDialog {
     /**
      * Корень справочной системы
      */
-    private static Element root;
+    private static QInfoItem root;
     /**
      * Предыдущий уровень кнопок
      */
-    private static Element preLevel;
+    private static QInfoItem preLevel;
     /**
      * Текущий уровень кнопок
      */
-    private static Element level;
-
+    private static QInfoItem level;
     private static ResourceMap localeMap = null;
 
     private static String getLocaleMessage(String key) {
@@ -98,7 +96,7 @@ public class FInfoDialog extends javax.swing.JDialog {
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
      * @return XML-описание результата предварительной записи, по сути это номерок. если null, то отказались от предварительной записи
      */
-    public static Long showResponseDialog(Frame parent, Element respList, boolean modal, boolean fullscreen, int delay) {
+    public static Long showResponseDialog(Frame parent, QInfoItem respList, boolean modal, boolean fullscreen, int delay) {
         FInfoDialog.delay = delay;
         Uses.log.logger.info("Чтение информации");
         if (infoDialog == null) {
@@ -125,13 +123,16 @@ public class FInfoDialog extends javax.swing.JDialog {
         return result;
     }
 
-    private void showLevel(Element level) {
+    private void showLevel(QInfoItem level) {
         infoDialog.panelMain.removeAll();
         infoDialog.panelMain.repaint();
+        if (level.getParent() == null && level != root) {
+            level.setParent(FInfoDialog.level);
+        }
         FInfoDialog.level = level;
-        buttonPrint.setVisible(level.elements().isEmpty());
-        if (level.elements().isEmpty()) {
-            final JLabel label = new JLabel(level.getText());
+        buttonPrint.setVisible(level.isLeaf() && level.getTextPrint() != null && !level.getTextPrint().isEmpty());
+        if (level.isLeaf()) {
+            final JLabel label = new JLabel(level.getHTMLText());
             final GridBagLayout gl = new GridBagLayout();
             final GridBagConstraints c = new GridBagConstraints();
             gl.setConstraints(label, c);
@@ -158,22 +159,21 @@ public class FInfoDialog extends javax.swing.JDialog {
             }
             int cols = 3;
             int rows = 5;
-            if (level.elements().size() < 4) {
+            if (level.getChildCount() < 4) {
                 cols = 1;
                 rows = 3;
             }
-            if (level.elements().size() > 3 && level.elements().size() < 11) {
+            if (level.getChildCount() > 3 && level.getChildCount() < 11) {
                 cols = 2;
-                rows = Math.round(new Float(level.elements().size()) / 2);
+                rows = Math.round(new Float(level.getChildCount()) / 2);
             }
-            if (level.elements().size() > 10) {
+            if (level.getChildCount() > 10) {
                 cols = 3;
-                rows = Math.round(new Float(0.3) + level.elements().size() / 3);
+                rows = Math.round(new Float(0.3) + level.getChildCount() / 3);
             }
             infoDialog.panelMain.setLayout(new GridLayout(rows, cols, delta, delta / 2));
-            for (Object o : level.elements()) {
-                final Element el = (Element) o;
-                final InfoButton button = new InfoButton(el);
+            for (QInfoItem item : level.getChildren()) {
+                final InfoButton button = new InfoButton(item);
                 infoDialog.panelMain.add(button);
             }
             if (level != root) {
@@ -196,11 +196,11 @@ public class FInfoDialog extends javax.swing.JDialog {
      */
     private static class InfoButton extends JButton {
 
-        final Element el;
+        final QInfoItem el;
 
-        public InfoButton(final Element el) {
+        public InfoButton(final QInfoItem el) {
             this.el = el;
-            setText(el.getTextTrim());
+            setText(el.getHTMLText());
             setBorder(new EtchedBorder(EtchedBorder.LOWERED));
             addActionListener(new ActionListener() {
 
@@ -423,7 +423,11 @@ public class FInfoDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_buttonInRootActionPerformed
 
     private void buttonBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBackActionPerformed
-        showLevel(preLevel);
+        if (level.isLeaf()) {
+            showLevel(level.getParent());
+        } else {
+            showLevel(preLevel);
+        }
         if (infoDialog.clockBack.isActive()) {
             infoDialog.clockBack.stop();
         }
@@ -442,15 +446,9 @@ public class FInfoDialog extends javax.swing.JDialog {
     @Action
     public void printInfo() {
         Uses.log.logger.info("Печать информации");
-
-        // Узнать у сервера, есть ли информация для печати
-        // Если текст информации не пустой, то показать диалог сэтим текстом
-        // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
-        final Element printInfo = NetCommander.getPintForInfoItem(FWelcome.netProperty, level.attributeValue(Uses.TAG_NAME));
-        if (printInfo != null) {
-            String printedText = printInfo.getText();
-            printedText = "".equals(printedText.trim()) ? getLocaleMessage("dialog.no_info") : printedText;
-            FWelcome.printPreInfoText(printedText);
+        // Узнать, есть ли информация для печати
+        if (level.getTextPrint() != null && !level.getTextPrint().isEmpty()) {
+            FWelcome.printPreInfoText(level.getTextPrint());
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

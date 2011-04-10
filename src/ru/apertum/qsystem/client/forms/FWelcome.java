@@ -41,10 +41,11 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Scanner;
@@ -59,7 +60,6 @@ import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeException;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.output.OutputException;
-import org.dom4j.Element;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
@@ -70,8 +70,19 @@ import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
+import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
+import ru.apertum.qsystem.common.cmd.RpcGetSrt;
+import ru.apertum.qsystem.common.cmd.RpcStandInService;
+import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
+import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.server.model.QAdvanceCustomer;
+import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
+import ru.apertum.qsystem.server.model.QService;
+import ru.apertum.qsystem.server.model.infosystem.QInfoItem;
+import ru.apertum.qsystem.server.model.response.QRespItem;
 import ru.evgenic.rxtx.serialPort.ISerialPort;
 import ru.evgenic.rxtx.serialPort.RxtxSerialPort;
 
@@ -119,13 +130,13 @@ public class FWelcome extends javax.swing.JFrame {
     private static final String INFO_BUTTON = "info_button";// кнопка информационной системы на пункте регистрации
     private static final String RESPONSE_BUTTON = "response_button";// - кнопка обратной связи на пункте регистрации
     private static final String ADVANCE_BUTTON = "advance_button";// - кнопка предварительной записи на пункте регистрации
-    public static Element root;
+    public static QService root;
     /**
      * XML-список отзывов. перврначально null, грузится при первом обращении. Использовать через геттер.
      */
-    private static Element response = null;
+    private static LinkedList<QRespItem> response = null;
 
-    public static Element getResponse() {
+    public static LinkedList<QRespItem> getResponse() {
         if (response == null) {
             response = NetCommander.getResporseList(netProperty);
         }
@@ -134,15 +145,15 @@ public class FWelcome extends javax.swing.JFrame {
     /**
      * XML- дерево информации. перврначально null, грузится при первом обращении. Использовать через геттер.
      */
-    private static Element infoTree = null;
+    private static QInfoItem infoTree = null;
 
-    public static Element getInfoTree() {
+    public static QInfoItem getInfoTree() {
         if (infoTree == null) {
             infoTree = NetCommander.getInfoTree(netProperty);
         }
         return infoTree;
     }
-    protected static Element current;
+    protected static QService current;
     /**
      * это печатаем под картинкой если без домена
      */
@@ -183,7 +194,7 @@ public class FWelcome extends javax.swing.JFrame {
                 server = new ServerSocket(netProperty.getClientPort());
                 server.setSoTimeout(500);
             } catch (IOException e) {
-                throw new Uses.ClientException("Ошибка при создании серверного сокета: " + e);
+                throw new ClientException("Ошибка при создании серверного сокета: " + e);
             }
 
             System.out.println("Server for managment of registration point started.\n");
@@ -195,7 +206,9 @@ public class FWelcome extends javax.swing.JFrame {
                 // в новый вычислительный поток и увеличиваем счётчик на единичку
                 try {
                     doCommand(server.accept());
+                } catch (SocketTimeoutException e) {
                 } catch (IOException e) {
+                    Uses.log.logger.error("Управлялка пунктом чет подглючила.", e);
                 }
             }
         }
@@ -207,7 +220,7 @@ public class FWelcome extends javax.swing.JFrame {
                 try {
                     is = socket.getInputStream();
                 } catch (IOException e) {
-                    throw new Uses.ServerException("Ошибка при получении входного потока: " + e.getStackTrace());
+                    throw new ServerException("Ошибка при получении входного потока: " + e.getStackTrace());
                 }
 
                 final String data;
@@ -221,9 +234,9 @@ public class FWelcome extends javax.swing.JFrame {
                     Thread.sleep(100);//бля
                     data = URLDecoder.decode(new String(Uses.readInputStream(is)).trim(), "utf-8");
                 } catch (IOException ex) {
-                    throw new Uses.ServerException("Ошибка при чтении из входного потока: " + ex.getStackTrace());
+                    throw new ServerException("Ошибка при чтении из входного потока: " + ex.getStackTrace());
                 } catch (InterruptedException ex) {
-                    throw new Uses.ServerException("Проблема со сном: " + ex.getStackTrace());
+                    throw new ServerException("Проблема со сном: " + ex.getStackTrace());
                 }
                 Uses.log.logger.trace("Задание:\n" + data);
 
@@ -254,13 +267,20 @@ public class FWelcome extends javax.swing.JFrame {
 
                 // выводим данные:
                 Uses.log.logger.trace("Ответ:\n" + stateWindow);
+                final String rpc_resp;
+                final Gson gson_resp = GsonPool.getInstance().borrowGson();
+                try {
+                    rpc_resp = gson.toJson(new RpcGetSrt(stateWindow));
+                } finally {
+                    GsonPool.getInstance().returnGson(gson_resp);
+                }
                 try {
                     // Передача данных ответа
                     final PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-                    writer.print("<Ответ>" + stateWindow + "</Ответ>");
+                    writer.print(rpc_resp);
                     writer.flush();
                 } catch (IOException e) {
-                    throw new Uses.ServerException("Ошибка при записи в поток: " + e.getStackTrace());
+                    throw new ServerException("Ошибка при записи в поток: " + e.getStackTrace());
                 }
             } finally {
                 // завершаем соединение
@@ -326,7 +346,10 @@ public class FWelcome extends javax.swing.JFrame {
                 }
             }
         }
-        root = NetCommander.getServiсes(netProperty);
+        final RpcGetAllServices.ServicesForWelcome servs = NetCommander.getServiсes(netProperty);
+        root = servs.getRoot();
+        FWelcome.startTime = servs.getStartTime();
+        FWelcome.finishTime = servs.getFinishTime();
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             @Override
@@ -349,7 +372,7 @@ public class FWelcome extends javax.swing.JFrame {
         FWelcome.caption = "";
     }
 
-    public FWelcome(Element root) {
+    public FWelcome(QService root) {
         Uses.log.logger.info("Создаем окно приглашения.");
         if (!Uses.isDebug) {
             if (!Uses.isDemo) {
@@ -463,14 +486,14 @@ public class FWelcome extends javax.swing.JFrame {
                 in = new FileInputStream("config" + File.separator + "welcome.properties");
                 inR = new InputStreamReader(in, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
-                throw new Uses.ClientException("Проблемы с кодировкой при чтении. " + ex);
+                throw new ClientException("Проблемы с кодировкой при чтении. " + ex);
             } catch (FileNotFoundException ex) {
-                throw new Uses.ClientException("Проблемы с файлом при чтении. " + ex);
+                throw new ClientException("Проблемы с файлом при чтении. " + ex);
             }
             try {
                 settings.load(inR);
             } catch (IOException ex) {
-                throw new Uses.ClientException("Проблемы с чтением параметров. " + ex);
+                throw new ClientException("Проблемы с чтением параметров. " + ex);
             }
             leftMargin = Integer.parseInt(settings.getProperty(LEFT_MARGIN)); // отступ слева
             topMargin = Integer.parseInt(settings.getProperty(TOP_MARGIN)); //  отступ сверху
@@ -503,8 +526,8 @@ public class FWelcome extends javax.swing.JFrame {
      * Загрузка и инициализация неких параметров из корня дерева описания для старта или реинициализации.
      */
     private void loadRootParam() {
-        loadRootParamSimple();
-        labelCaption.setText(root.getText().trim());
+        FWelcome.caption = root.getName();
+        labelCaption.setText(root.getButtonText());
         setStateWindow(UNLOCK);
         showButtons(root, panelMain);
     }
@@ -516,38 +539,26 @@ public class FWelcome extends javax.swing.JFrame {
      */
     public long advancedCustomer = -1;
 
-    public void showMed() {
+    public final void showMed() {
         if (isMed) {
             final ATalkingClock cl = new ATalkingClock(10, 1) {
 
                 @Override
                 public void run() {
                     if (!FMedCheckIn.isShowen()) {
-                        final Element customer = FMedCheckIn.showMedCheckIn(null, true, netProperty, false, serialPort);
+                        final QAuthorizationCustomer customer = FMedCheckIn.showMedCheckIn(null, true, netProperty, false, serialPort);
                         if (customer != null) {
-                            advancedCustomer = Long.parseLong(customer.attributeValue(Uses.TAG_ID));
+                            advancedCustomer = customer.getId();
                             setAdvanceRegim(true);
-                            labelCaption.setText("<html><b><p align=center><span style='font-size:35.0pt;color:green'>" + customer.attributeValue(Uses.TAG_SURNAME) + " " + customer.attributeValue(Uses.TAG_NAME) + " " + customer.attributeValue(Uses.TAG_OTCHESTVO) + "<br></span><span style='font-size:30.0pt;color:red'>" + getLocaleMessage("messages.select_adv_servece"));
+                            labelCaption.setText("<html><b><p align=center><span style='font-size:35.0pt;color:green'>" + customer.getSurname() + " " + customer.getName() + " " + customer.getOtchestvo() + "<br></span><span style='font-size:30.0pt;color:red'>" + getLocaleMessage("messages.select_adv_servece"));
                         } else {
-                            throw new Uses.ClientException("Нельзя выбирать услугу если не идентифицирован клиент.");
+                            throw new ClientException("Нельзя выбирать услугу если не идентифицирован клиент.");
                         }
                     }
                 }
             };
             cl.start();
         }
-    }
-
-    /**
-     * Загрузка и инициализация без отображения на форме неких параметров из корня дерева описания для старта или реинициализации.
-     */
-    private static void loadRootParamSimple() {
-        // Блокировку пункта регистрации проводить по настройкам суперсайта если работаем с таковым
-
-        FWelcome.startTime = new Date(Long.parseLong(root.attributeValue(Uses.TAG_START_TIME)));
-        FWelcome.finishTime = new Date(Long.parseLong(root.attributeValue(Uses.TAG_FINISH_TIME)));
-
-        FWelcome.caption = root.attributeValue(Uses.TAG_NAME);
     }
 
     @Override
@@ -559,7 +570,7 @@ public class FWelcome extends javax.swing.JFrame {
                 serialPort.free();
             }
         } catch (Exception ex) {
-            throw new Uses.ClientException("Ошибка освобождения порта. " + ex);
+            throw new ClientException("Ошибка освобождения порта. " + ex);
         }
         super.finalize();
     }
@@ -569,10 +580,14 @@ public class FWelcome extends javax.swing.JFrame {
      * @param current уровень отображения кнопок.
      * @param panel
      */
-    public void showButtons(Element current, JPanel panel) {
+    public void showButtons(QService current, JPanel panel) {
 
-        Uses.log.logger.info("Показываем набор кнопок уровня: " + current.getTextTrim());
+        Uses.log.logger.info("Показываем набор кнопок уровня: " + current.getName());
+        if (current != root && current.getParent() == null) {
+            current.setParent(FWelcome.current);
+        }
         FWelcome.current = current;
+
         clearPanel(panel);
         int delta = 10;
         switch (Toolkit.getDefaultToolkit().getScreenSize().width) {
@@ -594,24 +609,23 @@ public class FWelcome extends javax.swing.JFrame {
         }
         int cols = 3;
         int rows = 5;
-        if (current.elements().size() < 4) {
+        if (current.getChildCount() < 4) {
             cols = 1;
             rows = 3;
         }
-        if (current.elements().size() > 3 && current.elements().size() < 11) {
+        if (current.getChildCount() > 3 && current.getChildCount() < 11) {
             cols = 2;
-            rows = Math.round(new Float(current.elements().size()) / 2);
+            rows = Math.round(new Float(current.getChildCount()) / 2);
         }
-        if (current.elements().size() > 10) {
+        if (current.getChildCount() > 10) {
             cols = 3;
-            rows = Math.round(new Float(0.3) + current.elements().size() / 3);
+            rows = Math.round(new Float(0.3) + current.getChildCount() / 3);
         }
 
         GridLayout la = new GridLayout(rows, cols, delta, delta / 2);
         panel.setLayout(la);
-        for (Object o : current.elements()) {
-            Element el = (Element) o;
-            final QButton button = new QButton(el, this, panelMain, "");
+        for (QService service : current.getChildren()) {
+            final QButton button = new QButton(service, this, panelMain, "");
             if (button.isIsVisible()) {
                 panel.add(button);
             }
@@ -624,13 +638,12 @@ public class FWelcome extends javax.swing.JFrame {
         panel.repaint();
     }
 
-    public static void printTicket(Element elTicket, String caption) {
+    public static void printTicket(QCustomer customer, String caption) {
         FWelcome.caption = caption;
-        printTicket(elTicket);
+        printTicket(customer);
     }
 
-    public static synchronized void printTicket(Element elTicket) {
-        final Element el = elTicket;
+    public static synchronized void printTicket(final QCustomer customer) {
         Printable canvas = new Printable() {
 
             private int write(String text, int line, int x, double kx, double ky) {
@@ -661,10 +674,7 @@ public class FWelcome extends javax.swing.JFrame {
                 write(getLocaleMessage("ticket.your_number"), ++line, 115, 1, 1);
 
                 int x;
-                final String suff = el.attributeValue(Uses.TAG_NUMBER);
-                String pref = el.attributeValue(Uses.TAG_PREFIX);
-                pref = "".equals(pref) ? "" : pref + "-";
-                final String num = pref + suff;
+                final String num = ("".equals(customer.getPrefix()) ? "" : customer.getPrefix() + "-") + customer.getNumber();
                 switch (num.length()) {
                     case 1:
                         x = 21;
@@ -697,7 +707,7 @@ public class FWelcome extends javax.swing.JFrame {
                 line = line + 3;
 
                 write(getLocaleMessage("ticket.service"), ++line, welcomeParams.leftMargin, 1.5, 1);
-                String name = el.attributeValue(Uses.TAG_SERVICE);
+                String name = customer.getServiceName();
                 while (name.length() != 0) {
                     String prn;
                     if (name.length() > welcomeParams.lineLenght) {
@@ -721,10 +731,10 @@ public class FWelcome extends javax.swing.JFrame {
 
                 write(getLocaleMessage("ticket.time"), ++line, welcomeParams.leftMargin, 1.5, 1);
 
-                write(el.attributeValue(Uses.TAG_STAND_TIME), ++line, welcomeParams.leftMargin, 1, 1);
-                if (el.attributeValue(Uses.TAG_PROP_INPUT_CAPTION) != null) {
-                    write(el.attributeValue(Uses.TAG_PROP_INPUT_CAPTION), ++line, welcomeParams.leftMargin, 1, 1);
-                    write(el.attributeValue(Uses.TAG_INPUT_DATA), ++line, welcomeParams.leftMargin, 1, 1);
+                write(Uses.format_for_label.format(customer.getStandTime()), ++line, welcomeParams.leftMargin, 1, 1);
+                if (customer.getService().getInput_required()) {
+                    write(customer.getService().getInput_caption(), ++line, welcomeParams.leftMargin, 1, 1);
+                    write(customer.getInput_data(), ++line, welcomeParams.leftMargin, 1, 1);
                 }
                 write(getLocaleMessage("ticket.wait"), ++line, welcomeParams.leftMargin, 1.8, 1);
                 write(welcomeParams.promoText, ++line, welcomeParams.leftMargin, 0.7, 0.4);
@@ -733,7 +743,7 @@ public class FWelcome extends javax.swing.JFrame {
                     Barcode barcode = null;
                     try {
 
-                        barcode = BarcodeFactory.createCode128B(el.attributeValue(Uses.TAG_ID));
+                        barcode = BarcodeFactory.createCode128B(customer.getId().toString());
                     } catch (BarcodeException ex) {
                         Uses.log.logger.error("Ошибка создания штрихкода. " + ex);
                     }
@@ -797,13 +807,12 @@ public class FWelcome extends javax.swing.JFrame {
         }
     }
 
-    public static void printTicketAdvance(Element elTicket, String caption) {
+    public static void printTicketAdvance(QAdvanceCustomer advCustomer, String caption) {
         FWelcome.caption = caption;
-        printTicketAdvance(elTicket);
+        printTicketAdvance(advCustomer);
     }
 
-    public static synchronized void printTicketAdvance(Element elTicket) {
-        final Element el = elTicket;
+    public static synchronized void printTicketAdvance(final QAdvanceCustomer advCustomer) {
         Printable canvas = new Printable() {
 
             private int write(String text, int line, int x, double kx, double ky) {
@@ -833,15 +842,8 @@ public class FWelcome extends javax.swing.JFrame {
                 line++;
                 write(getLocaleMessage("ticket.adv_purpose"), ++line, 20, 1, 1);
 
-                final String time = el.attributeValue(Uses.TAG_START_TIME);
-                final Date date;
-                try {
-                    date = Uses.format_for_trans.parse(time);
-                } catch (ParseException ex) {
-                    throw new Uses.ServerException("Неправильный парсинг даты начала недели для определения ранее записавшихся.");
-                }
                 final GregorianCalendar gc_time = new GregorianCalendar();
-                gc_time.setTime(date);
+                gc_time.setTime(advCustomer.getAdvanceTime());
                 int t = gc_time.get(GregorianCalendar.HOUR_OF_DAY);
                 if (t == 0) {
                     t = 24;
@@ -854,7 +856,7 @@ public class FWelcome extends javax.swing.JFrame {
                 line = line + 2;
 
                 write(getLocaleMessage("ticket.service"), ++line, welcomeParams.leftMargin, 1.5, 1);
-                String name = el.attributeValue(Uses.TAG_SERVICE);
+                String name = advCustomer.getService().getName();
                 while (name.length() != 0) {
                     String prn;
                     if (name.length() > welcomeParams.lineLenght) {
@@ -886,7 +888,7 @@ public class FWelcome extends javax.swing.JFrame {
                     Barcode barcode = null;
                     try {
 
-                        barcode = BarcodeFactory.createCode128B(el.attributeValue(Uses.TAG_ID));
+                        barcode = BarcodeFactory.createCode128B(advCustomer.getId().toString());
                     } catch (BarcodeException ex) {
                         Uses.log.logger.error("Ошибка создания штрихкода. " + ex);
                     }
@@ -1101,11 +1103,14 @@ public class FWelcome extends javax.swing.JFrame {
      * Инициализация заново пункта постановки в очередь.
      */
     public void reinit() {
-        final Element reroot = NetCommander.getServiсes(netProperty);
+        final RpcGetAllServices.ServicesForWelcome servs = NetCommander.getServiсes(netProperty);
+        final QService reroot = servs.getRoot();
         FWelcome.root = reroot;
         FWelcome.current = reroot;
         FWelcome.response = null;
         FWelcome.infoTree = null;
+        FWelcome.startTime = servs.getStartTime();
+        FWelcome.finishTime = servs.getFinishTime();
         loadRootParam();
         Uses.log.logger.info("Пункт регистрации реинициализирован. Состояние \"" + stateWindow + "\"");
     }
@@ -1398,7 +1403,7 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             if (clockBack.isActive()) {
                 clockBack.stop();
             }
-            labelCaption.setText(root.getTextTrim());
+            labelCaption.setText(root.getButtonText());
             buttonAdvance.setText("<html><p align=center>" + getLocaleMessage("lable.adv_reg"));
         }
         //кнопка регистрации пришедших которые записались давно видна только в стандартном режиме и вместе с кнопкой предварительной записи
@@ -1446,15 +1451,15 @@ private void buttonAdvanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_buttonAdvanceActionPerformed
 
 private void buttonStandAdvanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStandAdvanceActionPerformed
-    final Element res = FStandAdvance.showAdvanceStandDialog(this, true, FWelcome.netProperty, true, FWelcome.welcomeParams.delayBack * 2);
+    final RpcStandInService res = FStandAdvance.showAdvanceStandDialog(this, true, FWelcome.netProperty, true, FWelcome.welcomeParams.delayBack * 2);
 
     if (res != null) {
 
-        if (res.attributeValue(Uses.TAG_ID) != null) {
+        if (res.getMethod() == null) {// костыль. тут приедет текст запрета если нельзя встать в очередь
 
             showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:green'>" + getLocaleMessage("ticket.get_caption") + "<br></span>"
                     + "<span style='font-size:20.0pt;color:blue'>" + getLocaleMessage("ticket.get_caption_number") + "<br></span>"
-                    + "<span style='font-size:100.0pt;color:blue'>" + res.attributeValue(Uses.TAG_PREFIX) + res.attributeValue(Uses.TAG_NUMBER) + "</span></p>",
+                    + "<span style='font-size:100.0pt;color:blue'>" + res.getResult().getPrefix() + res.getResult().getNumber() + "</span></p>",
                     "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
 
             Uses.log.logger.info("Печать этикетки.");
@@ -1463,12 +1468,11 @@ private void buttonStandAdvanceActionPerformed(java.awt.event.ActionEvent evt) {
 
                 @Override
                 public void run() {
-                    // Для доменной системы на этикетке под картинкой выводим наименование с своего сайта
-                    FWelcome.printTicket(res);
+                    // todo FWelcome.printTicket(res);
                 }
             }).start();
         } else {
-            showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:red'>" + res.getTextTrim(),
+            showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:red'>" + res.getMethod(),
                     "/ru/apertum/qsystem/client/forms/resources/noActive.png");
         }
     }

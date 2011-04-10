@@ -16,7 +16,7 @@
  */
 package ru.apertum.qsystem.server.model.results;
 
-import java.util.List;
+import java.util.LinkedList;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import org.dom4j.DocumentHelper;
@@ -25,6 +25,7 @@ import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  *
@@ -63,24 +64,29 @@ public class QResultList extends DefaultListModel implements ComboBoxModel {
     /**
      * Все информационные узлы
      */
-    protected final List<QResult> items = loadResultsItems();
+    protected final LinkedList<QResult> items = loadResultsItems();
+
+    public LinkedList<QResult> getItems() {
+        return items;
+    }
 
     /**
      * Загрузка из базы всех результатов
      * @return список всех отзывов выкаченных из базы
      * @throws DataAccessException
      */
-    private List<QResult> loadResultsItems() throws DataAccessException {
+    private LinkedList<QResult> loadResultsItems() throws DataAccessException {
 
-        return (List<QResult>) Uses.getSessionFactory().execute(new HibernateCallback() {
+        return (LinkedList<QResult>) Uses.getSessionFactory().execute(new HibernateCallback() {
 
             @Override
             public Object doInHibernate(Session session) {
-                return (List<QResult>) session.createCriteria(QResult.class).list();
+                return new LinkedList<QResult>(session.createCriteria(QResult.class).list());
             }
         });
     }
 
+    @Deprecated
     public Element getXML() {
         // Соберем xml список для плана
         Uses.log.logger.debug("Формируется XML-список для результатов.");
@@ -100,7 +106,7 @@ public class QResultList extends DefaultListModel implements ComboBoxModel {
             }
         }
         if (res == null) {
-            throw new Uses.ServerException("Не найден результат с текстом: \"" + text + "\"");
+            throw new ServerException("Не найден результат с текстом: \"" + text + "\"");
         }
         return res;
     }

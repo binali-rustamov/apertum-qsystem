@@ -27,6 +27,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.ParseException;
 import org.apache.http.util.EntityUtils;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 
 /**
  *
@@ -45,9 +46,9 @@ public class NetUtil {
                 try {
                     result = EntityUtils.toString(entity);
                 } catch (IOException ex) {
-                    throw new Uses.ReportException(ex.toString());
+                    throw new ReportException(ex.toString());
                 } catch (ParseException ex) {
-                    throw new Uses.ReportException(ex.toString());
+                    throw new ReportException(ex.toString());
                 }
             } else {
                 result = "";
@@ -55,7 +56,7 @@ public class NetUtil {
             try {
                 result = URLDecoder.decode(result, "utf-8");
             } catch (UnsupportedEncodingException ex) {
-                throw new Uses.ReportException(ex.toString());
+                throw new ReportException(ex.toString());
             }
             map_ec.put(request, result);
         }
@@ -99,7 +100,7 @@ public class NetUtil {
                 try {
                     data = URLDecoder.decode(request.getRequestLine().getUri().split("\\?")[1], "utf-8");
                 } catch (UnsupportedEncodingException ex) {
-                    throw new Uses.ReportException(ex.toString());
+                    throw new ReportException(ex.toString());
                 }
             } else {
                 data = "";

@@ -16,6 +16,7 @@
  */
 package ru.apertum.qsystem.common;
 
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -57,7 +58,7 @@ abstract public class AUDPServer implements Runnable {
             socket = new DatagramSocket(port);
         } catch (SocketException ex) {
             isActive = false;
-            throw new Uses.ServerException("Невозможно создать UDP-сокет на порту " + port + ". " + ex.getMessage());
+            throw new ServerException("Невозможно создать UDP-сокет на порту " + port + ". " + ex.getMessage());
         }
         while (true) {
             //Receive request from client
@@ -65,13 +66,17 @@ abstract public class AUDPServer implements Runnable {
             try {
                 socket.receive(packet);
             } catch (IOException ex) {
-                throw new Uses.ServerException("Невозможно отослать UDP-сообщение. " + ex.getMessage());
+                if (!Thread.interrupted()) {
+                    throw new ServerException("Невозможно принять UDP-сообщение. " + ex.getMessage());
+                }
             }
             InetAddress client = packet.getAddress();
-            int client_port = packet.getPort();
-            final String message = new String(buffer, packet.getOffset(), packet.getLength());
-            Uses.log.logger.trace("Приём UDP сообшение \"" + message + "\" ОТ адреса \"" + client.getHostName() + "\" с порта \"" + port + "\"");
-            getData(message, client, client_port);
+            if (client != null) {// это когда закрывает прогу .. грязный хак
+                int client_port = packet.getPort();
+                final String message = new String(buffer, packet.getOffset(), packet.getLength());
+                Uses.log.logger.trace("Приём UDP сообшение \"" + message + "\" ОТ адреса \"" + client.getHostName() + "\" с порта \"" + port + "\"");
+                getData(message, client, client_port);
+            }
         }
 
     }
@@ -89,9 +94,8 @@ abstract public class AUDPServer implements Runnable {
      */
     @SuppressWarnings("static-access")
     public void stop() {
-        thread.interrupted();
+        thread.interrupt();
         socket.close();
         Uses.log.logger.trace("Остановка UDP сервера на порту \"" + port + "\"");
     }
-}    
-
+}

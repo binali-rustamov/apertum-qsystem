@@ -72,6 +72,7 @@ public interface INetProperty {
     /**
      * Описание параметра в виде XML.
      * @return XML-элемент корень параметра
+     * @deprecated 
      */
     public Element getXML();
     

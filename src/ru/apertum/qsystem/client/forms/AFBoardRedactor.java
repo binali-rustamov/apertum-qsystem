@@ -19,6 +19,7 @@ package ru.apertum.qsystem.client.forms;
 import java.io.IOException;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
@@ -80,9 +81,9 @@ abstract public class AFBoardRedactor extends javax.swing.JDialog {
     /**
      * Метод передачи данных в редактор для ихменения
      * @param netProperty параметры сети для получения с сервера конфигурации
-     * @throws IOException
+     * @throws DocumentException
      */
-    public void setParams(INetProperty netProperty) throws IOException {
+    public void setParams(INetProperty netProperty) throws DocumentException {
         this.netProperty = netProperty;
         this.params = NetCommander.getBoardConfig(netProperty);
         refresh();

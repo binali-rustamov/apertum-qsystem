@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.server.model.infosystem;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
@@ -43,6 +45,8 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
 
     @Id
     @Column(name = "id")
+    @Expose
+    @SerializedName("id")
     //@GeneratedValue(strategy = GenerationType.AUTO) авто нельзя, т.к. id нужны для формирования дерева
     private Long id = new Date().getTime();
 
@@ -69,6 +73,8 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
     /**
      * Наименование узла справки
      */
+    @Expose
+    @SerializedName("name")
     @Column(name = "name")
     private String name;
 
@@ -87,6 +93,8 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
     /**
      * Текст HTML
      */
+    @Expose
+    @SerializedName("html")
     @Column(name = "text")
     private String htmlText;
 
@@ -101,6 +109,8 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
     /**
      * Текст для печати
      */
+    @Expose
+    @SerializedName("print")
     @Column(name = "text_print")
     private String textPrint;
 
@@ -115,6 +125,7 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
     //*******************************************************************************************************************
     //********************** Реализация сервисных методов ***************************************************************
 
+    @Deprecated
     public Element getXML() {
         final Element item = DocumentHelper.createElement(Uses.TAG_INFO_ITEM);
         item.addAttribute(Uses.TAG_ID, String.valueOf(getId()));
@@ -131,6 +142,8 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
      */
     @Transient
     private QInfoItem parentService;
+    @Expose
+    @SerializedName("child_items")
     @Transient
     private LinkedList<QInfoItem> childrenOfService = new LinkedList<QInfoItem>();
 

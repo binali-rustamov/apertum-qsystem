@@ -186,6 +186,9 @@ public class QPlanService implements IProperty, Serializable {
 
     @Transient
     @Override
+    /**
+     * @deprecated 
+     */
     public Element getXML() {
         //<Услуга Наименование="Секретарь" КоэффициентУчастия="100"/>
         final Element onePlan = DocumentHelper.createElement(Uses.TAG_SERVICE);

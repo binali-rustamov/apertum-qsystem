@@ -23,6 +23,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.net.RunnableSocket;
 
 /**
@@ -78,7 +79,7 @@ public class WebServer /*extends Thread*/ {
         try {
             reportSocket = new ServerSocket(port, 0);
         } catch (Exception e) {
-            throw new Uses.ReportException("Ошибка при создании серверного сокета для вэбсервера: " + e);
+            throw new ReportException("Ошибка при создании серверного сокета для вэбсервера: " + e);
         }
         // поток вэбсервера, весит параллельно и обслуживает запросы
         webTread = new Thread() {
@@ -105,7 +106,7 @@ public class WebServer /*extends Thread*/ {
                         thread.start();
                     } catch (SocketTimeoutException ex) {
                     } catch (IOException ex) {
-                        throw new Uses.ReportException("Ошибка при работе сокета для вэбсервера: " + ex);
+                        throw new ReportException("Ошибка при работе сокета для вэбсервера: " + ex);
                     }
                 }
                 try {

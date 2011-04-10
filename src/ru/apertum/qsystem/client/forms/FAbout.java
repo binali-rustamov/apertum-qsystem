@@ -30,6 +30,7 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
  * Created on 3 Март 2009 г., 14:54
@@ -112,7 +113,7 @@ public class FAbout extends javax.swing.JDialog {
         try {
             settings.load(inStream);
         } catch (IOException ex) {
-            throw new Uses.ClientException("Проблемы с чтением версии. " + ex);
+            throw new ClientException("Проблемы с чтением версии. " + ex);
         }
         labelDate.setText(getLocaleMessage("about.data") + " : " + settings.getProperty(DATE));
         labelVersion.setText(getLocaleMessage("about.version") + " : " + settings.getProperty(VERSION));

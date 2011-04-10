@@ -23,15 +23,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.text.ParseException;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
-import org.dom4j.Element;
 import ru.apertum.qsystem.client.forms.FAdvanceCalendar;
 import ru.apertum.qsystem.client.forms.FConfirmationStart;
 import ru.apertum.qsystem.client.forms.FInputDialog;
@@ -39,6 +36,9 @@ import ru.apertum.qsystem.client.forms.FPreInfoDialog;
 import ru.apertum.qsystem.client.forms.FWelcome;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
+import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.server.model.QAdvanceCustomer;
+import ru.apertum.qsystem.server.model.QService;
 
 /**
  * Сдесь реализован класс кнопки пользователя при выборе услуги.
@@ -51,7 +51,7 @@ public class QButton extends JButton {
     /**
      * XML - описание кнопки
      */
-    private final Element element;
+    private final QService service;
     /**
      * Маркировка сайта, который соотверствует услуге, которая висит на этой кнопке.
      */
@@ -70,14 +70,14 @@ public class QButton extends JButton {
     public boolean isIsVisible() {
         return isVisible;
     }
-    private final static String NO_ACTIVE = "0";
-    private final static String NO_VISIBLE = "-1";
+    private final static int NO_ACTIVE = 0;
+    private final static int NO_VISIBLE = -1;
 
-    public QButton(final Element element, FWelcome frm, JPanel prt, String resourceName) {
+    public QButton(final QService service, FWelcome frm, JPanel prt, String resourceName) {
         super();
         setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new BevelBorder(BevelBorder.RAISED)));
         this.form = frm;
-        this.element = element;
+        this.service = service;
         this.parent = prt;
         // Нарисуем картинку на кнопке если надо
         if ("".equals(resourceName)) {
@@ -94,15 +94,15 @@ public class QButton extends JButton {
             background = new ImageIcon(b).getImage();
         }
         // посмотрим доступна ли данная услуга или группа услуг
-        isVisible = !NO_VISIBLE.equals(element.attributeValue(Uses.TAG_PROP_STATUS));
-        isActive = !NO_ACTIVE.equals(element.attributeValue(Uses.TAG_PROP_STATUS)) && isVisible;
+        isVisible = NO_VISIBLE != service.getStatus();
+        isActive = NO_ACTIVE != service.getStatus() && isVisible;
         if (!isVisible) {
             setVisible(false);
             return;
         }
-        setText(element.getTextTrim());
+        setText(service.getButtonText());
         setSize(1, 1);
-        if (Uses.TAG_SERVICE.equals(element.getName())) {
+        if (service.isLeaf()) {
             setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/service.png")));
         } else {
             setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/inFolder.png")));
@@ -113,14 +113,14 @@ public class QButton extends JButton {
             public void actionPerformed(ActionEvent e) {
                 try {
                     // "Услуги" и "Группа" это одно и тоже.
-                    if (Uses.TAG_GROUP.equals(element.getName()) || Uses.TAG_PROP_SERVICES.equals(element.getName())) {
-                        form.showButtons(element, (JPanel) getParent());
+                    if (!service.isLeaf()) {
+                        form.showButtons(service, (JPanel) getParent());
                         if (form.clockBack.isActive()) {
                             form.clockBack.stop();
                         }
                         form.clockBack.start();
                     }
-                    if (Uses.TAG_SERVICE.equals(element.getName())) {
+                    if (service.isLeaf()) {
 
                         //  в зависимости от активности формируем сообщение и шлем запрос на сервер об статистике
                         if (isActive) {
@@ -128,23 +128,15 @@ public class QButton extends JButton {
                             // Если Предварительная запись, то пытаемся предватительно встать и выходим из обработке кнопки.
                             if (FWelcome.isAdvanceRegim()) {
                                 form.setAdvanceRegim(false);
-                                final Element res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, element.attributeValue(Uses.TAG_NAME), true, FWelcome.welcomeParams.delayBack * 2, form.advancedCustomer);
+                                final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service.getName(), true, FWelcome.welcomeParams.delayBack * 2, form.advancedCustomer);
                                 //Если res == null значит отказались от выбора
                                 if (res == null) {
                                     form.showMed();
                                     return;
                                 }
                                 //вешаем заставку
-                                final String time = res.attributeValue(Uses.TAG_START_TIME);
-                                final Date date;
-                                try {
-                                    date = Uses.format_for_trans.parse(time);
-                                } catch (ParseException ex) {
-                                    throw new Uses.ServerException("Неправильный парсинг даты начала недели для определения ранее записавшихся.");
-                                }
-
                                 final GregorianCalendar gc_time = new GregorianCalendar();
-                                gc_time.setTime(date);
+                                gc_time.setTime(res.getAdvanceTime());
                                 int t = gc_time.get(GregorianCalendar.HOUR_OF_DAY);
                                 if (t == 0) {
                                     t = 24;
@@ -167,24 +159,12 @@ public class QButton extends JButton {
                                 return;
                             }
 
-                            // Узнать у сервера, есть ли информация для прочнения в этой услуге.
+                            // Узнать, есть ли информация для прочнения в этой услуге.
                             // Если текст информации не пустой, то показать диалог сэтим текстом
                             // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
-                            final Element preInfo;
-                            try {
-                                preInfo = NetCommander.getPreInfoForService(FWelcome.netProperty, element.attributeValue(Uses.TAG_PROP_NAME));
-                            } catch (Exception ex) {
-                                // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
-                                Uses.log.logger.error("Невозможно отправить команду на сервер. ", ex);
-                                form.lock(FWelcome.LOCK_MESSAGE);
-                                return;
-                            }
-                            final String html = preInfo.elementTextTrim("html");
-                            // Trim - убивает много чего лишнего а не только пробелы в конце и в начале, еще ПЕРЕНОС СТРОКИ убивает
-                            final String print = preInfo.elementTextTrim("print");
                             // если есть текст, то показываем диалог
-                            if (!"".equals(html)) {
-                                if (!FPreInfoDialog.showPreInfoDialog(form, html, print, true, true, FWelcome.welcomeParams.delayBack)) {
+                            if (service.getPreInfoHtml() != null && !"".equals(service.getPreInfoHtml())) {
+                                if (!FPreInfoDialog.showPreInfoDialog(form, service.getPreInfoHtml(), service.getPreInfoPrintText(), true, true, FWelcome.welcomeParams.delayBack)) {
                                     // выходим т.к. кастомер отказался продолжать
                                     return;
                                 }
@@ -192,16 +172,15 @@ public class QButton extends JButton {
 
                             // узнать статистику по предлагаемой услуги и спросить потенциального кастомера
                             // будет ли он стоять или нет
-                            final Element statistic;
+                            final int count;
                             try {
-                                statistic = NetCommander.aboutService(FWelcome.netProperty, element.attributeValue(Uses.TAG_PROP_NAME));
+                                count = NetCommander.aboutService(FWelcome.netProperty, service.getName());
                             } catch (Exception ex) {
                                 // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
                                 Uses.log.logger.error("Невозможно отправить команду на сервер. ", ex);
                                 form.lock(FWelcome.LOCK_MESSAGE);
                                 return;
                             }
-                            final int count = Integer.parseInt(statistic.attributeValue(Uses.TAG_DESCRIPTION));
                             // Если услуга не обрабатывается ни одним пользователем то в count вернется Uses.LOCK_INT
                             // вот трех еще потерплю, а больше низачто!
                             if (count == Uses.LOCK_INT) {
@@ -233,8 +212,8 @@ public class QButton extends JButton {
                             clock = form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:50.0pt;color:green'>В данный момент услуга не может быть оказана!</span>", "/ru/apertum/qsystem/client/forms/resources/noActive.png");
                         } else {
                             //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
-                            if ("1".equals(element.attributeValue(Uses.TAG_PROP_INPUT_REQUIRED)) || "true".equals(element.attributeValue(Uses.TAG_PROP_INPUT_REQUIRED).toLowerCase())) {
-                                inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, FWelcome.welcomeParams.delayBack, element.attributeValue(Uses.TAG_PROP_INPUT_CAPTION));
+                            if (service.getInput_required()) {
+                                inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, FWelcome.welcomeParams.delayBack, service.getInput_caption());
                                 if (inputData == null) {
                                     return;
                                 }
@@ -244,9 +223,9 @@ public class QButton extends JButton {
 
                         //выполним задание если услуга активна
                         if (isActive) {
-                            final Element res;
+                            final QCustomer res;
                             try {
-                                res = NetCommander.standInService(FWelcome.netProperty, element.attributeValue(Uses.TAG_NAME), "1", 1, inputData);
+                                res = NetCommander.standInService(FWelcome.netProperty, service.getName(), "1", 1, inputData);
                             } catch (Exception ex) {
                                 // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
                                 Uses.log.logger.error("Невозможно отправить команду на сервер. ", ex);
@@ -257,7 +236,7 @@ public class QButton extends JButton {
                             clock.stop();
                             clock = form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:green'>Пожалуйста возьмите талон!<br></span>"
                                     + "<span style='font-size:20.0pt;color:blue'>ваш номер<br></span>"
-                                    + "<span style='font-size:100.0pt;color:blue'>" + res.attributeValue(Uses.TAG_PREFIX) + res.attributeValue(Uses.TAG_NUMBER) + "</span></p>",
+                                    + "<span style='font-size:100.0pt;color:blue'>" + res.getPrefix() + res.getNumber() + "</span></p>",
                                     "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
 
 

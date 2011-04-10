@@ -25,7 +25,6 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
 import javax.swing.JComponent;
-import org.dom4j.Element;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
@@ -33,6 +32,7 @@ import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.evgenic.rxtx.serialPort.IReceiveListener;
 import ru.evgenic.rxtx.serialPort.ISerialPort;
 
@@ -56,7 +56,7 @@ public class FMedCheckIn extends javax.swing.JDialog {
     public static boolean isShowen() {
         return medCheckIn != null && medCheckIn.isVisible();
     }
-    private static Element result = null;
+    private static QAuthorizationCustomer result = null;
     private static INetProperty netProperty;
     private ISerialPort port;
 
@@ -96,7 +96,7 @@ public class FMedCheckIn extends javax.swing.JDialog {
      * @param port 
      * @return XML-описание результата предварительной записи. если null, то отказались от предварительной записи
      */
-    public static Element showMedCheckIn(Frame parent, boolean modal, INetProperty netProperty, boolean fullscreen, ISerialPort port) {
+    public static QAuthorizationCustomer showMedCheckIn(Frame parent, boolean modal, INetProperty netProperty, boolean fullscreen, ISerialPort port) {
         Uses.log.logger.info("Показать форму идентификации клиента для предварительной записи");
         if (medCheckIn == null) {
             medCheckIn = new FMedCheckIn(parent, modal);
@@ -480,15 +480,13 @@ public class FMedCheckIn extends javax.swing.JDialog {
             return;
         }
         //Послать запрос на идентификацию клиента и отработать результат
-        final Element res;
-        try {
-            res = NetCommander.getClientAuthorization(netProperty, textFieldNumber.getText().trim());
-        } catch (Exception ex) {
-            throw new Uses.ClientException("Загнулась команда идентификации кента. " + ex);
-        }
-        if (res.attributeValue(Uses.TAG_ID) == null) {
+        final QAuthorizationCustomer res = NetCommander.getClientAuthorization(netProperty, textFieldNumber.getText().trim());
+            // Шлем отказ
+        final String notFound = "<Ответ><![CDATA[<html><b><p align=center><span style='font-size:40.0pt;color:red'>Номер не обнаружен.</span><br><span style='font-size:60.0pt;color:purple'>Обратитесь в регистратуру.</span>]]></Ответ>";
+
+        if (res == null) {
             Uses.log.logger.debug("Не идентифицирован клиент по номеру \"" + textFieldNumber.getText() + "\"");
-            FTimedDialog.showTimedDialog(null, true, res.getTextTrim(), 5000);
+            FTimedDialog.showTimedDialog(null, true, notFound, 5000);
         } else {
             Uses.log.logger.debug("Клиент опознан, предлагаем выбрать услугу");
             result = res;

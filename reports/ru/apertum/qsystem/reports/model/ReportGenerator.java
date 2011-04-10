@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.generators.RepCurrentUsers;
 import ru.apertum.qsystem.reports.generators.ReportCurrentServices;
@@ -124,7 +125,7 @@ public class ReportGenerator {
             try {
                 result = Uses.readInputStream(inStream);
             } catch (IOException ex) {
-                throw new Uses.ReportException("Ошибка чтения ресурса логирования. " + ex);
+                throw new ReportException("Ошибка чтения ресурса логирования. " + ex);
             }
         } else {
             final String s = "<html><head><meta http-equiv = \"Content-Type\" content = \"text/html; charset=windows-1251\" ></head><p align=center>Ресурс для входа не найден.</p></html>";

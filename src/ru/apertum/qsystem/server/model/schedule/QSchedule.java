@@ -24,7 +24,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Класс плана для расписания.
@@ -51,7 +51,7 @@ public class QSchedule implements Serializable {
             return false;
         }
         if (!(o instanceof QSchedule)){
-            throw new TypeNotPresentException("Неправильный тип для сравнения", new Uses.ServerException("Неправильный тип для сравнения"));
+            throw new TypeNotPresentException("Неправильный тип для сравнения", new ServerException("Неправильный тип для сравнения"));
         }
         return id.equals(((QSchedule)o).id);
     }
@@ -96,6 +96,7 @@ public class QSchedule implements Serializable {
      * Тип плана
      * 0 - недельный
      * 1 - четные/нечетные дни
+     * @return Тип плана
      */
     public Integer getType() {
         return type;

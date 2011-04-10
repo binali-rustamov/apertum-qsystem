@@ -18,16 +18,18 @@ package ru.apertum.qsystem.client.forms;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import org.dom4j.Element;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.server.model.ISailListener;
+import ru.apertum.qsystem.server.model.QService;
+import ru.apertum.qsystem.server.model.QServiceTree;
 
 /**
  * Диалог получения названия услуги для переадресации и сопутствующих параметров.
@@ -46,7 +48,6 @@ public class FRedirect extends JDialog {
      * Используемая ссылка на диалоговое окно.
      */
     private static FRedirect servicesForm;
-
     private static ResourceMap localeMap = null;
 
     private static String getLocaleMessage(String key) {
@@ -81,16 +82,20 @@ public class FRedirect extends JDialog {
             }
         });
 
-        final Element services = NetCommander.getServiсes(netProperty);
-        if (services == null) {
-            throw new Uses.ClientException("Невозможно получить список предлагаемых услуг.");
+        final QService service = NetCommander.getServiсes(netProperty).getRoot();
+        if (service == null) {
+            throw new ClientException("Невозможно получить список предлагаемых услуг.");
         }
-        final List<Element> elUsers = Uses.elements(services, Uses.TAG_SERVICE);
+        QServiceTree.sailToStorm(service, new ISailListener() {
 
-        for (int i = 0; i < elUsers.size(); i++) {
-            final String s = elUsers.get(i).attributeValue(Uses.TAG_NAME);
-            comboBoxServices.addItem(s);
-        }
+            @Override
+            public void actionPerformed(QService service) {
+                if (service.isLeaf()) {
+                    comboBoxServices.addItem(service.getName());
+                }
+            }
+        });
+
         comboBoxServices.setSelectedIndex(0);
 
         setLocation(Math.round(owner.getLocation().x + owner.getWidth() / 2 - getWidth() / 2),
@@ -101,15 +106,24 @@ public class FRedirect extends JDialog {
      * Выбор услуги для перенаправления.
      * @param netProperty свойства коннекта
      * @param owner относительно этого контрола модальность и позиционирование
+     * @param tempComments это если были комменты с прошлых редиректов
+     * @param onlyComments показывать или нет что-то другое ктоме вводе комментария
      * @return класс полусения свойств
      */
-    public static FRedirect getService(INetProperty netProperty, JFrame owner) {
+    public static FRedirect getService(INetProperty netProperty, JFrame owner, String tempComments, boolean onlyComments) {
         Uses.log.logger.info("Выбор услуги для перенаправления.");
         if (servicesForm == null) {
             servicesForm = new FRedirect(netProperty, owner);
         }
         servicesForm.setLocation(Math.round(owner.getLocation().x + owner.getWidth() / 2 - servicesForm.getWidth() / 2),
                 Math.round(owner.getLocation().y + owner.getHeight() / 2 - servicesForm.getHeight() / 2));
+        servicesForm.textAreaTempComments.setText((tempComments == null || tempComments.isEmpty() ? "" : "\n\n__________________________________\n") + tempComments);
+        servicesForm.checkBoxBack.setSelected(false);
+        servicesForm.checkBoxBack.setVisible(!onlyComments);
+        servicesForm.comboBoxServices.setVisible(!onlyComments);
+        servicesForm.buttonCancel.setVisible(!onlyComments);
+        servicesForm.jLabel1.setVisible(!onlyComments);
+        servicesForm.textAreaTempComments.setCaretPosition(0);
         servicesForm.setVisible(true);
         return ok ? servicesForm : null;
     }
@@ -120,6 +134,10 @@ public class FRedirect extends JDialog {
 
     public boolean getRequestBack() {
         return servicesForm.checkBoxBack.isSelected();
+    }
+
+    public String getTempComments() {
+        return (checkBoxBack.isSelected() ? checkBoxBack.getText() : (checkBoxBack.isVisible() ? "" : getLocaleMessage("redirect.message"))) + "\n" + textAreaTempComments.getText();
     }
 
     /** This method is called from within the constructor to
@@ -137,11 +155,13 @@ public class FRedirect extends JDialog {
         comboBoxServices = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        textAreaTempComments = new javax.swing.JTextArea();
 
-        ResourceMap resourceMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FRedirect.class);
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FRedirect.class);
         setTitle(resourceMap.getString("Form.title")); // NOI18N
         setName("Form"); // NOI18N
-        setResizable(false);
 
         buttonOk.setText(resourceMap.getString("buttonOk.text")); // NOI18N
         buttonOk.setName("buttonOk"); // NOI18N
@@ -161,43 +181,70 @@ public class FRedirect extends JDialog {
         jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
         jLabel2.setName("jLabel2"); // NOI18N
 
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel1.border.title"))); // NOI18N
+        jPanel1.setName("jPanel1"); // NOI18N
+
+        jScrollPane1.setName("jScrollPane1"); // NOI18N
+
+        textAreaTempComments.setColumns(20);
+        textAreaTempComments.setLineWrap(true);
+        textAreaTempComments.setRows(5);
+        textAreaTempComments.setWrapStyleWord(true);
+        textAreaTempComments.setName("textAreaTempComments"); // NOI18N
+        jScrollPane1.setViewportView(textAreaTempComments);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2)
-                .addGap(14, 14, 14)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(checkBoxBack)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel1))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(buttonOk)
                         .addGap(18, 18, 18)
                         .addComponent(buttonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel1)
-                    .addComponent(checkBoxBack)
-                    .addComponent(comboBoxServices, 0, 262, Short.MAX_VALUE))
+                    .addComponent(comboBoxServices, 0, 432, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(comboBoxServices, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comboBoxServices, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(checkBoxBack)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(32, 32, 32)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(buttonOk)
                             .addComponent(buttonCancel)))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel2)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(checkBoxBack)))
+                .addContainerGap())
         );
 
         pack();
@@ -209,5 +256,8 @@ public class FRedirect extends JDialog {
     private javax.swing.JComboBox comboBoxServices;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea textAreaTempComments;
     // End of variables declaration//GEN-END:variables
 }

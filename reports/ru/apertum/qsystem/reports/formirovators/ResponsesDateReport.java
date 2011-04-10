@@ -32,6 +32,7 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 
 /**
@@ -172,9 +173,9 @@ public class ResponsesDateReport extends AFormirovator {
                     }
                 }
             } catch (SQLException ex) {
-                throw new Uses.ReportException("Ошибка выполнения запроса ResponsesDateDataSource" + ex);
+                throw new ReportException("Ошибка выполнения запроса ResponsesDateDataSource" + ex);
             } catch (Exception ex) {
-                throw new Uses.ReportException("Ошибка обработки запроса ResponsesDateDataSource" + ex);
+                throw new ReportException("Ошибка обработки запроса ResponsesDateDataSource" + ex);
             }
         }
         private ArrayList<ArrayList<Object>> data;
@@ -254,9 +255,9 @@ public class ResponsesDateReport extends AFormirovator {
             Class.forName(driverClassName);
             connection = DriverManager.getConnection(url + (url.indexOf("?") == -1 ? "" : "&") + "user=" + username + "&password=" + password);
         } catch (SQLException ex) {
-            throw new Uses.ReportException(StatisticServices.class.getName() + " " + ex);
+            throw new ReportException(StatisticServices.class.getName() + " " + ex);
         } catch (ClassNotFoundException ex) {
-            throw new Uses.ReportException(StatisticServices.class.getName() + " " + ex);
+            throw new ReportException(StatisticServices.class.getName() + " " + ex);
         }
         return connection;
     }

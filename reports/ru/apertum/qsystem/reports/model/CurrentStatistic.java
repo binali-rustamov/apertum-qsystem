@@ -33,6 +33,7 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.common.model.IProperty;
 import ru.apertum.qsystem.reports.common.Report;
 import ru.apertum.qsystem.server.model.IUserProperty;
@@ -68,7 +69,7 @@ public class CurrentStatistic {
 
     private static CurrentStatistic getCurrentStatistic() {
         if (currentStatistic == null) {
-            throw new Uses.ReportException("Сервер обработки статистики не запущен.");
+            throw new ReportException("Сервер обработки статистики не запущен.");
         }
         return currentStatistic;
     }
@@ -165,7 +166,7 @@ public class CurrentStatistic {
                 //создаем корневой элемент для статистики
                 stat = DocumentHelper.createElement(Uses.TAG_REP_STATISTIC);
             } catch (Exception e) {
-                throw new Uses.ReportException("Не создан XML-элемент для статистики.");
+                throw new ReportException("Не создан XML-элемент для статистики.");
             }
             // Дорабатываем по количеству услуг и пользователям их обрабатывающих.
             for (Iterator<IUserProperty> i = userGetter.iterator(); i.hasNext();) {
@@ -238,14 +239,14 @@ public class CurrentStatistic {
         try {
             fos = new FileOutputStream(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATATISTIC_FILE);
         } catch (FileNotFoundException ex) {
-            throw new Uses.ReportException("Не возможно создать временный файл состояния. " + ex.getMessage());
+            throw new ReportException("Не возможно создать временный файл состояния. " + ex.getMessage());
         }
         try {
             fos.write(statistic.asXML().getBytes("UTF-8"));
             fos.flush();
             fos.close();
         } catch (IOException ex) {
-            throw new Uses.ReportException("Не возможно сохранить изменения в поток." + ex.getMessage());
+            throw new ReportException("Не возможно сохранить изменения в поток." + ex.getMessage());
         }
         Uses.logRep.logger.debug("Статистика сохранена. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
     }
@@ -263,14 +264,14 @@ public class CurrentStatistic {
     private boolean checkRecords(Element record, String serviceName, String userName) {
         List<Element> nodeList = record.elements(Uses.TAG_SERVICE);
         if (nodeList.size() != 1) {
-            throw new Uses.ReportException("Ошибка идентификации записи по услуге \"" + serviceName + "\"");
+            throw new ReportException("Ошибка идентификации записи по услуге \"" + serviceName + "\"");
         }
         if (!(serviceName.equals(nodeList.get(0).getTextTrim()) || "".equals(serviceName))) {
             return false;
         }
         nodeList = record.elements(Uses.TAG_USER);
         if (nodeList.size() != 1) {
-            throw new Uses.ReportException("Ошибка идентификации записи по пользователю \"" + userName + "\"");
+            throw new ReportException("Ошибка идентификации записи по пользователю \"" + userName + "\"");
         }
         if (userName.equals(nodeList.get(0).getTextTrim()) || "".equals(userName)) {
             return true;
@@ -292,7 +293,7 @@ public class CurrentStatistic {
             if (checkRecords(record, serviceName, userName)) {
                 final List<Element> nodeList = record.elements(paramName);
                 if (nodeList.size() != 1) {
-                    throw new Uses.ReportException("Ошибка поиска поля \"" + paramName + "\" в записи с услугой \"" + serviceName + "\" с юзером \"" + userName + "\"");
+                    throw new ReportException("Ошибка поиска поля \"" + paramName + "\" в записи с услугой \"" + serviceName + "\" с юзером \"" + userName + "\"");
                 }
                 nodeList.get(0).setText(value);
             }
@@ -316,7 +317,7 @@ public class CurrentStatistic {
             if (checkRecords(record, serviceName, userName)) {
                 final List<Element> nodeList = record.elements(paramName);
                 if (nodeList.size() != 1) {
-                    throw new Uses.ReportException("Ошибка поиска поля \"" + paramName + "\" в записи");
+                    throw new ReportException("Ошибка поиска поля \"" + paramName + "\" в записи");
                 }
                 final Element param = nodeList.get(0);
                 final String cnt = param.attributeValue(Uses.TAG_REP_PARAM_COUNT);
@@ -358,7 +359,7 @@ public class CurrentStatistic {
             if (checkRecords(record, serviceName, userName)) {
                 final List<Element> nodeList = record.elements(paramName);
                 if (nodeList.size() != 1) {
-                    throw new Uses.ReportException("Ошибка поиска поля \"" + paramName + "\" в записи");
+                    throw new ReportException("Ошибка поиска поля \"" + paramName + "\" в записи");
                 }
                 nodeList.get(0).setText(String.valueOf(Integer.parseInt(nodeList.get(0).getTextTrim()) + (increase ? 1 * count : -1 * count)));
             }

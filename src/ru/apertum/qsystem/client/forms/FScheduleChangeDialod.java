@@ -23,6 +23,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
 /**
@@ -131,7 +132,7 @@ public class FScheduleChangeDialod extends javax.swing.JDialog {
             schedule.setTime_begin_7(c7.isSelected() ? Uses.format_HH_mm.parse(s7.getText()) : null);
             schedule.setTime_end_7(c7.isSelected() ? Uses.format_HH_mm.parse(e7.getText()) : null);
         } catch (ParseException ex) {
-            throw new Uses.ServerException(ex.toString());
+            throw new ServerException(ex.toString());
         }
 
         /*

@@ -29,6 +29,7 @@ import ru.apertum.qsystem.client.forms.AFBoardRedactor;
 import ru.apertum.qsystem.client.forms.FBoardConfig;
 import ru.apertum.qsystem.client.forms.FIndicatorBoard;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Вывод информации на мониторы.
@@ -139,14 +140,14 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
         try {
             fos = new FileOutputStream(getConfigFile());
         } catch (FileNotFoundException ex) {
-            throw new Uses.ServerException("Не возможно создать файл конфигурации главного табло. " + ex.getMessage());
+            throw new ServerException("Не возможно создать файл конфигурации главного табло. " + ex.getMessage());
         }
         try {
             fos.write(element.asXML().getBytes("UTF-8"));
             fos.flush();
             fos.close();
         } catch (IOException ex) {
-            throw new Uses.ServerException("Не возможно сохранить изменения в поток при сохранении файла конфигурации главного табло." + ex.getMessage());
+            throw new ServerException("Не возможно сохранить изменения в поток при сохранении файла конфигурации главного табло." + ex.getMessage());
         }
     }
 

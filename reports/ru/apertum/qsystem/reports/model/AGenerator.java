@@ -38,6 +38,7 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.net.NetUtil;
 
@@ -198,7 +199,7 @@ public abstract class AGenerator implements IGenerator {
                 inStr = getClass().getResourceAsStream(template);
             }
             if (inStr == null) {
-                throw new Uses.ReportException("Шаблон не найден. \"" + template + "\" Либо отсутствует требуемый файл, либо некорректная запись в базе данных.");
+                throw new ReportException("Шаблон не найден. \"" + template + "\" Либо отсутствует требуемый файл, либо некорректная запись в базе данных.");
             }
             // теперь посмотрим, не сформировали ли коннект 
             //если есть коннект, то строим отчет по коннекту, иначе формируем данные формироватором.
@@ -258,11 +259,11 @@ public abstract class AGenerator implements IGenerator {
             }
             return new Response(result, dataType);
         } catch (FileNotFoundException ex) {
-            throw new Uses.ReportException("Не найден файл шрифтов для генерации PDF. " + ex);
+            throw new ReportException("Не найден файл шрифтов для генерации PDF. " + ex);
         } catch (IOException ex) {
-            throw new Uses.ReportException("Ошибка декодирования при вводе/выводе. " + ex);
+            throw new ReportException("Ошибка декодирования при вводе/выводе. " + ex);
         } catch (JRException ex) {
-            throw new Uses.ReportException("Ошибка генерации. " + ex);
+            throw new ReportException("Ошибка генерации. " + ex);
         }
 
     }

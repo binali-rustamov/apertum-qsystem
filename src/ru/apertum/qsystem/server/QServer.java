@@ -26,6 +26,8 @@ import ru.apertum.qsystem.common.CodepagePrintStream;
 import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
+import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.reports.model.CurrentStatistic;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.controller.QServicesPool;
@@ -65,7 +67,7 @@ public class QServer extends Thread {
         try {
             settings.load(inStream);
         } catch (IOException ex) {
-            throw new Uses.ClientException("Проблемы с чтением версии. " + ex);
+            throw new ClientException("Проблемы с чтением версии. " + ex);
         }
         System.out.println("Server version: " + settings.getProperty("version") + "-community QSystem Server (GPL)");
         System.out.println("Database version: " + settings.getProperty("version_db") + " for MySQL 5.1-community Server (GPL)");
@@ -128,9 +130,9 @@ public class QServer extends Thread {
                 Uses.log.logger.info("Сервер системы захватывает порт \"" + pool.getNetPropetry().getServerPort() + "\".");
                 server = new ServerSocket(pool.getNetPropetry().getServerPort());
             } catch (IOException e) {
-                throw new Uses.ServerException("Ошибка при создании серверного сокета: " + e);
+                throw new ServerException("Ошибка при создании серверного сокета: " + e);
             } catch (Exception e) {
-                throw new Uses.ServerException("Ошибка сети: " + e);
+                throw new ServerException("Ошибка сети: " + e);
             }
             server.setSoTimeout(500);
             System.out.println("Server QSystem started.\n");
@@ -152,7 +154,7 @@ public class QServer extends Thread {
                 } catch (SocketTimeoutException e) {
                     // ничего страшного, гасим исключение стобы дать возможность отработать входному/выходному потоку
                 } catch (Exception e) {
-                    throw new Uses.ServerException("Ошибка сети: " + e);
+                    throw new ServerException("Ошибка сети: " + e);
                 }
 
 
@@ -253,7 +255,7 @@ public class QServer extends Thread {
             try {
                 is = socket.getInputStream();
             } catch (IOException e) {
-                throw new Uses.ServerException("Ошибка при получении входного потока: " + e.getStackTrace());
+                throw new ServerException("Ошибка при получении входного потока: " + e.getStackTrace());
             }
 
             final String data;
@@ -273,32 +275,36 @@ public class QServer extends Thread {
                 }
                 data = URLDecoder.decode(sb.toString(), "utf-8");
             } catch (IOException ex) {
-                throw new Uses.ServerException("Ошибка при чтении из входного потока: " + ex);
+                throw new ServerException("Ошибка при чтении из входного потока: " + ex);
             } catch (InterruptedException ex) {
-                throw new Uses.ServerException("Проблема со сном: " + ex);
+                throw new ServerException("Проблема со сном: " + ex);
             } catch (IllegalArgumentException ex) {
-                throw new Uses.ServerException("Ошибка декодирования сетевого сообщения: " + ex);
+                throw new ServerException("Ошибка декодирования сетевого сообщения: " + ex);
             }
             Uses.log.logger.trace("Задание:\n" + data);
 
+            final String answer;
             final JsonRPC20 rpc;
             final Gson gson = GsonPool.getInstance().borrowGson();
             try {
                 rpc = gson.fromJson(data, JsonRPC20.class);
+
+                // полученное задание передаем в пул, если это не признак жизни
+                final Object result;
+
+                // Проверка на задание для рестарта
+                if (Uses.TASK_RESTART.equals(rpc.getMethod())) {
+                    Uses.log.logger.debug("Пришла команда на рестарт сервера");
+                    restart = true;
+                    result = new JsonRPC20();
+                } else {
+                    result = managersPool.doTask(rpc, socket.getInetAddress().getHostAddress(), socket.getInetAddress().getAddress());
+                }
+
+                answer = gson.toJson(result);
+
             } finally {
                 GsonPool.getInstance().returnGson(gson);
-            }
-
-            // полученное задание передаем в пул, если это не признак жизни
-            final String answer;
-
-            // Проверка на задание для рестарта
-            if (Uses.TASK_RESTART.equals(rpc.getMethod())) {
-                Uses.log.logger.debug("Пришла команда на рестарт сервера");
-                restart = true;
-                answer = "<Ответ>\n</Ответ>";
-            } else {
-                answer = managersPool.doTask(rpc, socket.getInetAddress().getHostAddress(), socket.getInetAddress().getAddress());
             }
 
             // выводим данные:
@@ -309,7 +315,7 @@ public class QServer extends Thread {
                 writer.print(URLEncoder.encode(answer, "utf-8"));
                 writer.flush();
             } catch (IOException e) {
-                throw new Uses.ServerException("Ошибка при записи в поток: " + e.getStackTrace());
+                throw new ServerException("Ошибка при записи в поток: " + e.getStackTrace());
             }
         } catch (Exception ex) {
             final StringBuilder sb = new StringBuilder("\nStackTrace:\n");
@@ -318,7 +324,7 @@ public class QServer extends Thread {
             }
             final String err = sb.toString() + "\n";
             sb.setLength(0);
-            throw new Uses.ServerException("Ошибка при выполнении задания.\n" + ex + err);
+            throw new ServerException("Ошибка при выполнении задания.\n" + ex + err);
         } finally {
             // завершаем соединение
             try {

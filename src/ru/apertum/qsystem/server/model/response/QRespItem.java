@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.server.model.response;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -38,6 +40,8 @@ public class QRespItem implements Serializable {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)// авто нельзя, т.к. id нужны для формирования дерева
+    @Expose
+    @SerializedName("id")
     private Long id;
 
     public Long getId() {
@@ -50,6 +54,8 @@ public class QRespItem implements Serializable {
     /**
      * Наименование узла справки
      */
+    @Expose
+    @SerializedName("name")
     @Column(name = "name")
     private String name;
 
@@ -68,6 +74,8 @@ public class QRespItem implements Serializable {
     /**
      * Текст HTML
      */
+    @Expose
+    @SerializedName("html")
     @Column(name = "text")
     private String htmlText;
 
@@ -83,6 +91,7 @@ public class QRespItem implements Serializable {
     //*******************************************************************************************************************
     //*******************************************************************************************************************
     //********************** Реализация сервисных методов ***************************************************************
+    @Deprecated
     public Element getXML() {
         final Element item = DocumentHelper.createElement(Uses.TAG_INFO_ITEM);
         item.addAttribute(Uses.TAG_ID, String.valueOf(getId()));

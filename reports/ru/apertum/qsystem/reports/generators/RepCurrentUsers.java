@@ -22,7 +22,7 @@ import java.util.HashMap;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.http.HttpRequest;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.model.AGenerator;
 import ru.apertum.qsystem.reports.model.CurrentStatistic;
@@ -42,9 +42,9 @@ public class RepCurrentUsers extends AGenerator {
         try {
             return CurrentStatistic.getDataSourceCurrentUsers();
         } catch (JRException ex) {
-            throw new Uses.ReportException("Ошибка генерации. " + ex);
+            throw new ReportException("Ошибка генерации. " + ex);
         } catch (UnsupportedEncodingException ex) {
-            throw new Uses.ReportException("Ошибка генерации. Не поддерживается кодировка. " + ex);
+            throw new ReportException("Ошибка генерации. Не поддерживается кодировка. " + ex);
         }
     }
 

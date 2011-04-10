@@ -16,10 +16,14 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.DefaultListModel;
+import org.apache.commons.collections.CollectionUtils;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Список услуг, обрабатываемых пользователем.
@@ -31,6 +35,9 @@ import ru.apertum.qsystem.common.Uses;
  */
 public class QServiceList extends DefaultListModel {
 
+    QServiceList() {
+    }
+
     public QPlanService getByName(String name) {
         QPlanService res = null;
         for (Object o : toArray()) {
@@ -39,7 +46,7 @@ public class QServiceList extends DefaultListModel {
             }
         }
         if (res == null) {
-            throw new Uses.ServerException("Не найдена услуга пользователя по имени: \"" + name + "\"");
+            throw new ServerException("Не найдена услуга пользователя по имени: \"" + name + "\"");
         }
         return res;
     }
@@ -53,7 +60,29 @@ public class QServiceList extends DefaultListModel {
         }
         return res != null;
     }
-    
+
+    public QServiceList(List<QPlanService> services) {
+        super();
+        for (QPlanService qPlanService : services) {
+            addElement(qPlanService);
+        }
+    }
+
+    /**
+     * Специально что бы получить список
+     * @return
+     */
+    public LinkedList<QPlanService> getPlanServices() {
+        final LinkedList<QPlanService> list = new LinkedList<QPlanService>();
+        CollectionUtils.addAll(list, elements());
+        return list;
+    }
+
+    /**
+     *
+     * @return
+     * @deprecated 
+     */
     public Element getXML() {
         // Соберем xml дерево пользователей
         Uses.log.logger.debug("Формируется XML-список услуг пользователя.");

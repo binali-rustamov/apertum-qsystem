@@ -24,6 +24,7 @@ import java.util.HashMap;
 import net.sf.jasperreports.engine.JRDataSource;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.model.AGenerator;
 import ru.apertum.qsystem.reports.model.WebServer;
@@ -41,7 +42,7 @@ public class ReportsList extends AGenerator {
 
     @Override
     protected JRDataSource getDataSource(HttpRequest request) {
-        throw new Uses.ReportException("Ошибочное обращение к методу.");
+        throw new ReportException("Ошибочное обращение к методу.");
     }
 
     @Override
@@ -75,24 +76,24 @@ public class ReportsList extends AGenerator {
                 result = new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_COOCIES, coocie).getBytes("UTF-8");
             }
         } catch (IOException ex) {
-            throw new Uses.ReportException("Ошибка чтения ресурса для диалогового выбора отчета. " + ex);
+            throw new ReportException("Ошибка чтения ресурса для диалогового выбора отчета. " + ex);
         }
         return new Response(result);
     }
 
     @Override
     protected HashMap getParameters(HttpRequest request) {
-        throw new Uses.ReportException("Ошибочное обращение к методу.");
+        throw new ReportException("Ошибочное обращение к методу.");
     }
 
     @Override
     protected Connection getConnection(HttpRequest request) {
-        throw new Uses.ReportException("Ошибочное обращение к методу.");
+        throw new ReportException("Ошибочное обращение к методу.");
     }
 
     @Override
     protected Response getDialog(HttpRequest request, String errorMessage) {
-        throw new Uses.ReportException("Ошибочное обращение к методу.");
+        throw new ReportException("Ошибочное обращение к методу.");
     }
 
     @Override

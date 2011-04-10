@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 
 import java.util.Date;
@@ -46,6 +48,8 @@ public class QAdvanceCustomer implements Serializable {
     @Id
     @Column(name = "id")
     //@GeneratedValue(strategy = GenerationType.AUTO)
+    @Expose
+    @SerializedName("id")
     private Long id = new Date().getTime();
 
     public Long getId() {
@@ -57,6 +61,8 @@ public class QAdvanceCustomer implements Serializable {
     }
     @Column(name = "advance_time")
     @Temporal(TemporalType.TIMESTAMP)
+    @Expose
+    @SerializedName("advance_time")
     private Date advanceTime;
 
     public Date getAdvanceTime() {
@@ -67,6 +73,8 @@ public class QAdvanceCustomer implements Serializable {
         this.advanceTime = advanceTime;
     }
     @Column(name = "priority")
+    @Expose
+    @SerializedName("priority")
     private Integer priority;
 
     public Integer getPriority() {
@@ -78,6 +86,8 @@ public class QAdvanceCustomer implements Serializable {
     }
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "service_id")
+    @Expose
+    @SerializedName("service")
     private QService service;
 
     public QService getService() {
@@ -92,6 +102,8 @@ public class QAdvanceCustomer implements Serializable {
      */
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "clients_authorization_id")
+    @Expose
+    @SerializedName("authorization")
     private QAuthorizationCustomer authorizationCustomer;
 
     public QAuthorizationCustomer getAuthorizationCustomer() {
@@ -102,6 +114,11 @@ public class QAdvanceCustomer implements Serializable {
         this.authorizationCustomer = authorizationCustomer;
     }
 
+    /**
+     *
+     * @return
+     * @deprecated 
+     */
     public Element getXML() {
         final Element user = DocumentHelper.createElement(Uses.TAG_CUSTOMER);
         user.addAttribute(Uses.TAG_START_TIME, Uses.format_for_trans.format(getAdvanceTime()));

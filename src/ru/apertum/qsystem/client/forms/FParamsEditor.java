@@ -25,6 +25,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
  * Редактор параметров. Универсальный для простых параметров
@@ -184,7 +185,7 @@ public class FParamsEditor extends AFBoardRedactor {
                         param.setValue("1".equals(value) || "true".equals(value));
                         break;
                     default:
-                        throw new Uses.ClientException("Неправильный тип \"" + param.getType() + "\" параметра \"" + value + "\"");
+                        throw new ClientException("Неправильный тип \"" + param.getType() + "\" параметра \"" + value + "\"");
                 }
             } catch (NumberFormatException ex) {
                 Uses.log.logger.error("Попытка ввода параметра неправильного типа. " + ex);

@@ -19,6 +19,8 @@ package ru.apertum.qsystem.client.forms;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,6 +33,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Properties;
 import javax.swing.ButtonGroup;
@@ -63,10 +66,15 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.help.Helper;
+import ru.apertum.qsystem.common.cmd.RpcGetServerState.ServiceInfo;
+import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.common.exceptions.ClientWarning;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.IProperty;
+import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.NetProperty;
+import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QPlanService;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 import ru.apertum.qsystem.server.model.QService;
@@ -81,6 +89,7 @@ import ru.apertum.qsystem.server.model.calendar.TableСell;
 import ru.apertum.qsystem.server.model.calendar.FreeDay;
 import ru.apertum.qsystem.server.model.infosystem.QInfoItem;
 import ru.apertum.qsystem.server.model.infosystem.QInfoTree;
+import ru.apertum.qsystem.server.model.postponed.QPostponedList;
 import ru.apertum.qsystem.server.model.response.QRespItem;
 import ru.apertum.qsystem.server.model.response.QResponseList;
 import ru.apertum.qsystem.server.model.results.QResult;
@@ -101,7 +110,6 @@ public class FAdmin extends javax.swing.JFrame {
         }
         return localeMap.getString(key);
     }
-
     /**
      * Константы хранения параметров в файле.
      */
@@ -117,7 +125,7 @@ public class FAdmin extends javax.swing.JFrame {
     //***************************************** таймер автоматического запроса******************************************
     private static final int DELAY_BLINK = 30000;
     /**
-     * Таймер вывода времени.
+     * Таймер опроса компонент системы.
      */
     private final StartTimer timer = new StartTimer(DELAY_BLINK, new TimerPrinter());
 
@@ -176,6 +184,37 @@ public class FAdmin extends javax.swing.JFrame {
      * Creates new form FAdmin 
      */
     public FAdmin() {
+        addWindowListener(new WindowListener() {
+
+            @Override
+            public void windowOpened(WindowEvent e) {
+            }
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                timer.stop();
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+            }
+
+            @Override
+            public void windowActivated(WindowEvent e) {
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+            }
+        });
         initComponents();
 
         // Отцентирируем
@@ -395,7 +434,6 @@ public class FAdmin extends javax.swing.JFrame {
             saveUser();
         }
     }
-
     /**
      * вспомогательные для отсечения событий сохранения
      */
@@ -516,8 +554,8 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     private void showServiceInfo(QService service) {
-        labelServiceInfo.setText("<html>"+ getLocaleMessage("service.service")+": \"" + service.getName() + "\"    " + (service.getStatus() == 1 ? getLocaleMessage("service.kind.active") : (service.getStatus() == 0 ? getLocaleMessage("service.kind.not_active") : getLocaleMessage("service.kind.unavailable")))
-                + ";    " + getLocaleMessage("service.prefix") + ": " + service.getPrefix() + ";<br>" + getLocaleMessage("service.restrict_adv_reg") + ": " + service.getAdvanceLinit()
+        labelServiceInfo.setText("<html>" + getLocaleMessage("service.service") + ": \"" + service.getName() + "\"    " + (service.getStatus() == 1 ? getLocaleMessage("service.kind.active") : (service.getStatus() == 0 ? getLocaleMessage("service.kind.not_active") : getLocaleMessage("service.kind.unavailable")))
+                + ";    " + getLocaleMessage("service.prefix") + ": " + service.getPrefix() + ";<br>" + getLocaleMessage("service.restrict_adv_reg") + ": " + service.getAdvanceLimit()
                 + ";  " + getLocaleMessage("service.restrict_adv_period") + ": " + service.getAdvanceLimitPeriod()
                 + ";<br>" + getLocaleMessage("service.description") + ": " + service.getDescription() + "<br>" + getLocaleMessage("service.work_calendar") + ": " + (service.getCalendar() == null ? getLocaleMessage("service.work_calendar.no") : service.getCalendar().toString()) + ";  " + getLocaleMessage("service.work_calendar.plan") + ": " + (service.getSchedule() == null ? getLocaleMessage("service.work_calendar.no") : service.getSchedule().toString()) + "<br>"
                 + (service.getInput_required() ? getLocaleMessage("service.required_client_data") + ": \"" + service.getInput_caption() + "\"" : getLocaleMessage("service.required_client_data.not")) + ";   "
@@ -543,8 +581,6 @@ public class FAdmin extends javax.swing.JFrame {
         textPaneInfoItem.setText(item.getHTMLText());
         textPaneInfoPrint.setText(item.getTextPrint());
     }
-
-    
     /**
      * Ограничение ввода время начала и конце работы системы.
      */
@@ -554,10 +590,10 @@ public class FAdmin extends javax.swing.JFrame {
         public boolean verify(JComponent input) {
             final DateFormat dateFormat = new SimpleDateFormat("HH:mm");
             try {
-                if (input==textFieldStartTime) {
+                if (input == textFieldStartTime) {
                     dateFormat.parse(textFieldStartTime.getText());
                 }
-                if (input==textFieldFinishTime) {
+                if (input == textFieldFinishTime) {
                     dateFormat.parse(textFieldFinishTime.getText());
                 }
             } catch (ParseException ex) {
@@ -569,12 +605,6 @@ public class FAdmin extends javax.swing.JFrame {
         }
     };
 
-    @Override
-    protected void finalize() throws Throwable {
-        timer.stop();
-        super.finalize();
-    }
-
     /**
      * Загрузим настройки.
      */
@@ -584,12 +614,12 @@ public class FAdmin extends javax.swing.JFrame {
         try {
             in = new FileInputStream("config" + File.separator + "admin.properties");
         } catch (FileNotFoundException ex) {
-            throw new Uses.ClientException(getLocaleMessage("error.file_not_read") + ". " + ex);
+            throw new ClientException(getLocaleMessage("error.file_not_read") + ". " + ex);
         }
         try {
             settings.load(in);
         } catch (IOException ex) {
-            throw new Uses.ClientException(getLocaleMessage("error.params_not_read") + ". " + ex);
+            throw new ClientException(getLocaleMessage("error.params_not_read") + ". " + ex);
         }
         textFieldServerAddr.setText(settings.getProperty(SERVER_ADRESS));
         spinnerServerPort.setValue(Integer.parseInt(settings.getProperty(SERVER_PORT)));
@@ -608,7 +638,7 @@ public class FAdmin extends javax.swing.JFrame {
         try {
             out = new FileOutputStream("config" + File.separator + "admin.properties");
         } catch (FileNotFoundException ex) {
-            throw new Uses.ClientException(getLocaleMessage("error.file_not_save") + ". " + ex);
+            throw new ClientException(getLocaleMessage("error.file_not_save") + ". " + ex);
         }
         settings.put(SERVER_ADRESS, textFieldServerAddr.getText());
         settings.put(SERVER_PORT, String.valueOf(spinnerServerPort.getValue()));
@@ -619,7 +649,7 @@ public class FAdmin extends javax.swing.JFrame {
         try {
             settings.store(out, "Settings of admining and monitoring");
         } catch (IOException ex) {
-            throw new Uses.ClientException(getLocaleMessage("error.file_output") + ". " + ex);
+            throw new ClientException(getLocaleMessage("error.file_output") + ". " + ex);
         }
     }
 
@@ -634,7 +664,7 @@ public class FAdmin extends javax.swing.JFrame {
         treeInfo.setModel(QServicesPool.getServicesPool(true).getInfoTree());
         listSchedule.setModel(QServicesPool.getServicesPool(true).getScheduleList());
         listCalendar.setModel(QServicesPool.getServicesPool(true).getCalendarList());
-        
+
         spinnerPropServerPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getServerPort());
         spinnerPropClientPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getClientPort());
         spinnerWebServerPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getWebServerPort());
@@ -691,7 +721,7 @@ public class FAdmin extends javax.swing.JFrame {
             try {
                 adr = InetAddress.getByName(textFieldServerAddr.getText());
             } catch (UnknownHostException ex) {
-                throw new Uses.ClientException("Error! " + ex);
+                throw new ClientException("Error! " + ex);
             }
             return adr;
         }
@@ -736,10 +766,12 @@ public class FAdmin extends javax.swing.JFrame {
     protected void checkServer() {
         Uses.log.logger.info("Запрос о состоянии на сервер.");
         //элемент ответа.
-        final Element root;
+        final LinkedList<ServiceInfo> srvs;
         try {
-            root = NetCommander.getServerState(new ServerNetProperty());
+            srvs = NetCommander.getServerState(new ServerNetProperty());
+            listPostponed.setModel(QPostponedList.getInstance().loadPostponedList(NetCommander.getPostponedPoolInfo(new ServerNetProperty())));
         } catch (Exception ex) {
+            listPostponed.setModel(QPostponedList.getInstance().loadPostponedList(new LinkedList<QCustomer>()));
             labelServerState.setText("<HTML><b><span style='font-size:20.0pt;color:red;'>" + getLocaleMessage("admin.message.server_not_start") + "</span></b>");
             Uses.log.logger.error("Сервер ответил на запрос о состоянии: \"" + ex + "\"");
             tray.showMessageTray(getLocaleMessage("tray.server"), getLocaleMessage("tray.message.stop_server"), QTray.MessageType.WARNING);
@@ -748,18 +780,16 @@ public class FAdmin extends javax.swing.JFrame {
         //Сформируем ответ
         final String red = "<td align=\"center\"><span style='font-size:12.0pt;color:red;'>";
         final String green = "<td align=\"center\"><span style='font-size:12.0pt;color:green;'>";
-        String col = root.attributeValue(Uses.TAG_REP_SERVICE_WAIT);
-        final String first = "<html>" + getLocaleMessage("admin.info.total_clients") + ": " + ("0".equals(col) ? "<span style='font-size:12.0pt;color:green;'>" : "<span style='font-size:12.0pt;color:red;'>") + col + "</span>";
+        int col = 0;
         String html = "";
-        for (Object o : root.elements(Uses.TAG_SERVICE)) {
-            final Element el = (Element) o;
-            col = el.attributeValue(Uses.TAG_REP_SERVICE_WAIT);
-            String n = el.attributeValue(Uses.TAG_PROP_NAME);
+        for (ServiceInfo inf : srvs) {
+            col = +inf.getCountWait();
             html = html
-                    + "<tr><td>" + (n.length() > 80 ? el.attributeValue(Uses.TAG_PROP_NAME).substring(0, 80) + " ..." : n) + "</span></td>"
-                    + ("0".equals(col) ? green : red) + col + "</span></td>"
-                    + "<td align=\"center\">" + el.attributeValue(Uses.TAG_CUSTOMER) + "</span></td></tr>";
+                    + "<tr><td>" + (inf.getServiceName().length() > 80 ? inf.getServiceName().substring(0, 80) + "..." : inf.getServiceName()) + "</span></td>"
+                    + (0 == inf.getCountWait() ? green : red) + inf.getCountWait() + "</span></td>"
+                    + "<td align=\"center\">" + inf.getFirstNumber() + "</span></td></tr>";
         }
+        final String first = "<html>" + getLocaleMessage("admin.info.total_clients") + ": " + (0 == col ? "<span style='font-size:12.0pt;color:green;'>" : "<span style='font-size:12.0pt;color:red;'>") + col + "</span>";
         labelServerState.setText(first
                 + "<table border=\"1\"><tr>  <td align=\"center\"<span style='font-size:16.0pt;color:red;'>" + getLocaleMessage("service.service") + "</span></td>  <td align=\"center\"><span style='font-size:16.0pt;color:red;'>" + getLocaleMessage("admin.info.total_wait") + "</span></td>  <td align=\"center\"><span style='font-size:16.0pt;color:red;'>" + getLocaleMessage("admin.info.next_number") + "</span></td></tr>"
                 + html
@@ -768,16 +798,17 @@ public class FAdmin extends javax.swing.JFrame {
 
     protected void checkWelcome(String command) {
         Uses.log.logger.info("Запрос о состоянии на пункт регистрации.");
-        final Element root;
+        command = command == null ? "Empty" : command;
+        final String result;
         try {
-            root = command == null ? NetCommander.getWelcomeState(netPropWelcome(), "Empty") : NetCommander.getWelcomeState(netPropWelcome(), command);
+            result = NetCommander.getWelcomeState(netPropWelcome(), command);
         } catch (Exception ex) {
             labelWelcomeState.setText("<HTML><b><span style='font-size:20.0pt;color:red;'>" + getLocaleMessage("admin.message.welcome_not_start") + "</span></b>");
             Uses.log.logger.error("Пункт регистрации не ответил на запрос о состоянии или поризошла ошибка. \"" + ex + "\"");
             tray.showMessageTray(getLocaleMessage("tray.message_stop_server.title"), getLocaleMessage("tray.message_stop_server.caption"), QTray.MessageType.WARNING);
             return;
         }
-        labelWelcomeState.setText("<HTML><span style='font-size:20.0pt;color:green;'>" + getLocaleMessage("admin.welcome") + " \"" + root.getTextTrim() + "\"</span>");
+        labelWelcomeState.setText("<HTML><span style='font-size:20.0pt;color:green;'>" + getLocaleMessage("admin.welcome") + " \"" + result + "\"</span>");
     }
 
     protected INetProperty netPropWelcome() {
@@ -800,7 +831,7 @@ public class FAdmin extends javax.swing.JFrame {
                 try {
                     adr = InetAddress.getByName(textFieldClientAdress.getText());
                 } catch (UnknownHostException ex) {
-                    throw new Uses.ClientException("Error! " + ex);
+                    throw new ClientException("Error! " + ex);
                 }
                 return adr;
             }
@@ -1085,7 +1116,7 @@ public class FAdmin extends javax.swing.JFrame {
      * @param service удаляемая услуга
      */
     private void deleteServicesFromUsers(QService service) {
-        ((QServiceTree) treeServices.getModel()).sailToStorm(service, new ISailListener() {
+        QServiceTree.sailToStorm(service, new ISailListener() {
 
             @Override
             public void actionPerformed(QService service) {
@@ -1225,7 +1256,7 @@ public class FAdmin extends javax.swing.JFrame {
             }
         }
         if (service != null && !service.isLeaf() && listUsers.getSelectedIndex() != -1 && !((QServiceList) listUserService.getModel()).hasByName(service.getName())) {
-            ((QServiceTree) treeServices.getModel()).sailToStorm(service, new ISailListener() {
+            QServiceTree.sailToStorm(service, new ISailListener() {
 
                 @Override
                 public void actionPerformed(QService service) {
@@ -1245,7 +1276,7 @@ public class FAdmin extends javax.swing.JFrame {
     public void deleteServiseFromUser() {
         if (listUserService.getSelectedIndex() != -1) {
             if (JOptionPane.showConfirmDialog(this,
-                    getLocaleMessage("admin.remove_service_from_user.title") + " \"" + listUserService.getSelectedValue().toString() + "\" " + getLocaleMessage("admin.remove_service_from_user.title_1") +" \"" + listUsers.getSelectedValue().toString() + "\"?",
+                    getLocaleMessage("admin.remove_service_from_user.title") + " \"" + listUserService.getSelectedValue().toString() + "\" " + getLocaleMessage("admin.remove_service_from_user.title_1") + " \"" + listUsers.getSelectedValue().toString() + "\"?",
                     getLocaleMessage("admin.remove_service_from_user.caption"),
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
@@ -1269,28 +1300,21 @@ public class FAdmin extends javax.swing.JFrame {
             String inputData = null;
             if (service.getInput_required()) {
                 inputData = FInputDialog.showInputDialog(this, true, FWelcome.netProperty, false, FWelcome.welcomeParams.delayBack, service.getInput_caption());
-                if (inputData != null) {
+                if (inputData == null || inputData.isEmpty()) {
                     return;
                 }
             }
 
-
-            final Element res;
+            final QCustomer customer;
             try {
-                res = NetCommander.standInService(new ServerNetProperty(), service.getName(), "1", 1, inputData);
-                // костыль. если услуга требует ввода пользователем, то на пичать отправлять не просто кастомера,
-                // а еще и с капшеном того что он вводил для печати на номерке
-                if (service.getInput_required()) {
-                    res.addAttribute(Uses.TAG_PROP_INPUT_CAPTION, service.getInput_caption());
-                }
+                customer = NetCommander.standInService(new ServerNetProperty(), service.getName(), "1", 1, inputData);
             } catch (Exception ex) {
-                throw new Uses.ClientException(getLocaleMessage("admin.print_ticket_error") + " " + ex);
+                throw new ClientException(getLocaleMessage("admin.print_ticket_error") + " " + ex);
             }
-            FWelcome.printTicket(res, ((QService) treeServices.getModel().getRoot()).getName());
-            final String suff = res.attributeValue(Uses.TAG_NUMBER);
-            String pref = res.attributeValue(Uses.TAG_PREFIX);
+            FWelcome.printTicket(customer, ((QService) treeServices.getModel().getRoot()).getName());
+            String pref = customer.getPrefix();
             pref = "".equals(pref) ? "" : pref + "-";
-            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.print_ticket.title") + " \"" + service.getName() + "\". " + getLocaleMessage("admin.print_ticket.title_1") + " \"" + pref + suff + "\".", getLocaleMessage("admin.print_ticket.captionru"), JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.print_ticket.title") + " \"" + service.getName() + "\". " + getLocaleMessage("admin.print_ticket.title_1") + " \"" + pref + customer.getNumber() + "\".", getLocaleMessage("admin.print_ticket.captionru"), JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -1366,6 +1390,8 @@ public class FAdmin extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         labelServerState = new javax.swing.JLabel();
         buttonRestartServer = new javax.swing.JButton();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        listPostponed = new javax.swing.JList();
         jPanel4 = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
         jSplitPane2 = new javax.swing.JSplitPane();
@@ -1848,6 +1874,12 @@ public class FAdmin extends javax.swing.JFrame {
             }
         });
 
+        jScrollPane5.setName("jScrollPane5"); // NOI18N
+
+        listPostponed.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("listPostponed.border.title"))); // NOI18N
+        listPostponed.setName("listPostponed"); // NOI18N
+        jScrollPane5.setViewportView(listPostponed);
+
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
@@ -1855,7 +1887,6 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 992, Short.MAX_VALUE)
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(jPanel6Layout.createSequentialGroup()
@@ -1873,8 +1904,11 @@ public class FAdmin extends javax.swing.JFrame {
                                 .addComponent(buttonServerRequest)
                                 .addGap(18, 18, 18)
                                 .addComponent(buttonRestartServer)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 526, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addContainerGap(526, Short.MAX_VALUE))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 749, Short.MAX_VALUE))))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1890,7 +1924,9 @@ public class FAdmin extends javax.swing.JFrame {
                     .addComponent(buttonServerRequest)
                     .addComponent(buttonRestartServer))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -3130,12 +3166,12 @@ private void treeServicesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRS
 private void buttonRestartServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRestartServerActionPerformed
 
     NetCommander.restartServer(new ServerNetProperty());
-    final ATalkingClock clock = new ATalkingClock(2500, 1) {
+    final ATalkingClock clock = new ATalkingClock(4000, 1) {
 
         @Override
         public void run() {
-            checkServer();
             JOptionPane.showConfirmDialog(null, getLocaleMessage("admin.server_restart.title"), getLocaleMessage("admin.server_restart.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+            checkServer();
         }
     };
     clock.start();
@@ -3277,15 +3313,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         if (plan == null) {
             return;
         }
-
-        final Element res;
-        try {
-            res = NetCommander.setServiseFire(new ServerNetProperty(), plan.getService().getName(), plan.getUser().getName(), plan.getCoefficient());
-        } catch (Exception ex) {
-            throw new Uses.ClientException(getLocaleMessage("admin.send_cmd.err") + " " + ex);
-        }
-        JOptionPane.showMessageDialog(this, res.getTextTrim(), getLocaleMessage("admin.add_service_to_user.title"), JOptionPane.INFORMATION_MESSAGE);
-
+        final String res = NetCommander.setServiseFire(new ServerNetProperty(), plan.getService().getName(), plan.getUser().getName(), plan.getCoefficient());
+        JOptionPane.showMessageDialog(this, res, getLocaleMessage("admin.add_service_to_user.title"), JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Action
@@ -3294,15 +3323,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         if (plan == null) {
             return;
         }
-
-        final Element res;
-        try {
-            res = NetCommander.deleteServiseFire(new ServerNetProperty(), plan.getService().getName(), plan.getUser().getName());
-        } catch (Exception ex) {
-            throw new Uses.ClientException(getLocaleMessage("admin.send_cmd_remove.err") + " " + ex);
-        }
-        JOptionPane.showMessageDialog(this, res.getTextTrim(), getLocaleMessage("admin.remove_service_to_user.title"), JOptionPane.INFORMATION_MESSAGE);
-
+        final String res = NetCommander.deleteServiseFire(new ServerNetProperty(), plan.getService().getName(), plan.getUser().getName());
+        JOptionPane.showMessageDialog(this, res, getLocaleMessage("admin.remove_service_to_user.title"), JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Action
@@ -3330,11 +3352,11 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     public void standAdvance() {
         final QService service = (QService) treeServices.getLastSelectedPathComponent();
         if (service != null && service.isLeaf()) {
-            final Element res;
+            final QAdvanceCustomer res;
             try {
                 res = FAdvanceCalendar.showCalendar(this, true, new ServerNetProperty(), service.getName(), false, 0, -1);
             } catch (Exception ex) {
-                throw new Uses.ClientException(getLocaleMessage("admin.send_cmd_adv.err") + " " + ex);
+                throw new ClientException(getLocaleMessage("admin.send_cmd_adv.err") + " " + ex);
             }
             if (res == null) {
                 return;
@@ -3348,7 +3370,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                 }
             }).start();
 
-            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.client_adv_dialog.msg_1") + " \"" + service.getName() + "\". " + getLocaleMessage("admin.client_adv_dialog.msg_2") + " \"" + res.attributeValue(Uses.TAG_ID) + "\".", getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.client_adv_dialog.msg_1") + " \"" + service.getName() + "\". " + getLocaleMessage("admin.client_adv_dialog.msg_2") + " \"" + res.getAdvanceTime() + "\".", getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.INFORMATION_MESSAGE);
         }
     }
     /**
@@ -3378,7 +3400,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
             }
         } catch (Exception e) {
             board = null;
-            Uses.ClientWarning.showWarning(getLocaleMessage("admin.open_editor.wern") + "\n" + e);
+            ClientWarning.showWarning(getLocaleMessage("admin.open_editor.wern") + "\n" + e);
             return;
         }
         // Отцентирируем
@@ -3506,7 +3528,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
             }
 
             // Уберем удаленный план у услуг
-            ((QServiceTree) treeServices.getModel()).sailToStorm(((QServiceTree) treeServices.getModel()).getRoot(), new ISailListener() {
+            QServiceTree.sailToStorm(((QServiceTree) treeServices.getModel()).getRoot(), new ISailListener() {
 
                 @Override
                 public void actionPerformed(QService service) {
@@ -3646,7 +3668,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
             }
 
             // Уберем удаленный календарь у услуг
-            ((QServiceTree) treeServices.getModel()).sailToStorm(((QServiceTree) treeServices.getModel()).getRoot(), new ISailListener() {
+            QServiceTree.sailToStorm(((QServiceTree) treeServices.getModel()).getRoot(), new ISailListener() {
 
                 @Override
                 public void actionPerformed(QService service) {
@@ -3710,7 +3732,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
             if (name != null) {
                 for (int i = 0; i < Uses.PRIORITYS_WORD.size(); i++) {
                     if (name.equals(Uses.PRIORITYS_WORD.get(i))) {
-                        JOptionPane.showMessageDialog(this, NetCommander.setCustomerPriority(new ServerNetProperty(), i, num).getTextTrim(), getLocaleMessage("admin.action.change_priority.title"), JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(this, NetCommander.setCustomerPriority(new ServerNetProperty(), i, num), getLocaleMessage("admin.action.change_priority.title"), JOptionPane.INFORMATION_MESSAGE);
 
                     }
                 }
@@ -3847,6 +3869,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
@@ -3876,6 +3899,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JLabel labelServiceInfo;
     private javax.swing.JLabel labelWelcomeState;
     private javax.swing.JList listCalendar;
+    private javax.swing.JList listPostponed;
     private javax.swing.JList listResponse;
     private javax.swing.JList listResults;
     private javax.swing.JList listSchedule;

@@ -12,6 +12,13 @@
             <line>594</line>
         </file>
         <file>
+            <url>src/ru/apertum/qsystem/server/controller/QServicesPool.java</url>
+            <line>288</line>
+            <line>386</line>
+            <line>820</line>
+            <line>950</line>
+        </file>
+        <file>
             <url>src/ru/ccrs/client/forms/FIndicatorBoard.java</url>
             <line>237</line>
             <line>451</line>
@@ -34,6 +41,10 @@
             <line>197</line>
         </file>
         <file>
+            <url>src/ru/apertum/qsystem/common/model/NetCommander.java</url>
+            <line>724</line>
+        </file>
+        <file>
             <url>src/ru/ccrs/client/forms/FClient.java</url>
             <line>440</line>
             <line>454</line>
@@ -41,6 +52,11 @@
             <line>491</line>
             <line>513</line>
             <line>534</line>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/client/forms/FClient.java</url>
+            <line>504</line>
+            <line>1248</line>
         </file>
         <file>
             <url>src/ru/ccrs/client/forms/FBoardConfig.java</url>
@@ -63,7 +79,10 @@
         </file>
         <file>
             <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
-            <line>1148</line>
+            <line>795</line>
+            <line>3295</line>
+            <line>3305</line>
+            <line>3703</line>
         </file>
         <file>
             <url>src/ru/ccrs/server/model/QServicesPool.java</url>

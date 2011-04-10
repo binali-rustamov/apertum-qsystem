@@ -22,6 +22,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
@@ -87,7 +88,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         textAreaTextPrint.setText(service.getPreInfoPrintText());
         comboBoxEnabled.setSelectedIndex(service.getStatus() * (-1) + 1);
         comboBoxEnabled.setEnabled(!service.isRoot());
-        spinnerLimit.setValue(service.getAdvanceLinit());
+        spinnerLimit.setValue(service.getAdvanceLimit());
         spinnerLimitPeriod.setValue(service.getAdvanceLimitPeriod());
         if (service.getSchedule() == null) {
             comboBoxSchedule.setSelectedIndex(-1);
@@ -112,16 +113,16 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         service.setAdvanceLinit((Integer) spinnerLimit.getValue());
         service.setAdvanceLimitPeriod((Integer) spinnerLimitPeriod.getValue() < 0 ? 0 : (Integer) spinnerLimitPeriod.getValue());
         if ("".equals(textAreaButtonCaption.getText())) {
-            throw new Uses.ClientException(getLocaleMessage("dialog.message1"));
+            throw new ClientException(getLocaleMessage("dialog.message1"));
         }
         if (textAreaButtonCaption.getText().length() > 2500) {
-            throw new Uses.ClientException(getLocaleMessage("dialog.message2"));
+            throw new ClientException(getLocaleMessage("dialog.message2"));
         }
         if (textAreaInfoHtml.getText().length() > 2500) {
-            throw new Uses.ClientException(getLocaleMessage("dialog.message3"));
+            throw new ClientException(getLocaleMessage("dialog.message3"));
         }
         if (textAreaTextPrint.getText().length() > 2500) {
-            throw new Uses.ClientException(getLocaleMessage("dialog.message4"));
+            throw new ClientException(getLocaleMessage("dialog.message4"));
         }
         if (textAreaButtonCaption.getText().length() < 2500 && !"".equals(textAreaButtonCaption.getText())) {
             service.setButtonText(textAreaButtonCaption.getText());

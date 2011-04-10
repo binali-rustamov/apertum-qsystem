@@ -24,6 +24,7 @@ import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  *
@@ -47,7 +48,6 @@ public class QInfoTree extends DefaultTreeModel {
 
     /**
      * Доступ до Singleton
-     * @param poolGetter свойства услуг, по которым построится дерево услуг.
      * @return класс - деерво услуг.
      */
     public static QInfoTree getInfoTree() {
@@ -59,7 +59,6 @@ public class QInfoTree extends DefaultTreeModel {
 
     /**
      * Перегрузка принудительно. Доступ до Singleton
-     * @param poolGetter свойства услуг, по которым построится дерево услуг.
      * @return класс - деерво услуг.
      */
     public static QInfoTree resetInfoTree() {
@@ -100,7 +99,7 @@ public class QInfoTree extends DefaultTreeModel {
      * Строит все дерево рекурсивно.
      * @param parent корень(для рекурсии), первый запуск с root
      */
-    protected void addChildren(QInfoItem parent) {
+    protected final void addChildren(QInfoItem parent) {
         for (QInfoItem item : items) {
             if (((parent.getId() == null && item.getParentId() == null) || (parent.getId() != null && item.getParentId() != null)) && (parent.getId() == item.getParentId() || parent.getId().equals(item.getParentId()))) {
                 parent.insert(item, parent.getChildCount());
@@ -122,7 +121,7 @@ public class QInfoTree extends DefaultTreeModel {
         itemByNameName = name;
         go(getRoot(), 2);
         if (itemByName == null) {
-            throw new Uses.ServerException("Не найден информационный узел по имени \"" + name + "\"");
+            throw new ServerException("Не найден информационный узел по имени \"" + name + "\"");
         }
         return itemByName;
     }
@@ -148,6 +147,7 @@ public class QInfoTree extends DefaultTreeModel {
     /**
      * Сохранить деорево услуг в виде XML
      * @return Element - корень всех услуг.
+     * @deprecated
      */
     public Element getXML() {
         final Element rootServ = getRoot().getXML();
@@ -155,6 +155,7 @@ public class QInfoTree extends DefaultTreeModel {
         return rootServ;
     }
 
+    @Deprecated
     private void setXML(Element elRoot, QInfoItem infoRoot) {
         for (QInfoItem item : infoRoot.getChildren()) {
             final Element child = item.getXML();
@@ -194,6 +195,8 @@ public class QInfoTree extends DefaultTreeModel {
 
     /**
      * Перебор всех услуг до одной включая корень и узлы
+     * @param root
+     * @param listener
      */
     public void sailToStorm(QInfoItem root, ISailListener listener) {
         seil(root, listener);

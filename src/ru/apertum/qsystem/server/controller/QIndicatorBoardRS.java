@@ -27,6 +27,7 @@ import javax.swing.Timer;
 import org.dom4j.Element;
 import ru.apertum.qsystem.client.forms.AFBoardRedactor;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.ICustomer;
 import ru.apertum.qsystem.server.model.IUserProperty;
 import ru.evgenic.rxtx.serialPort.ISerialExceptionListener;
@@ -250,7 +251,7 @@ public class QIndicatorBoardRS extends AIndicatorBoard {
 
             @Override
             public void actionPerformed(String message) {
-                throw new Uses.ServerException(message);
+                throw new ServerException(message);
             }
         });
     }
@@ -270,7 +271,7 @@ public class QIndicatorBoardRS extends AIndicatorBoard {
                 try {
                     send();
                 } catch (Exception ex) {
-                    throw new Uses.ServerException("Не возможно отправить сообщение. " + ex);
+                    throw new ServerException("Не возможно отправить сообщение. " + ex);
                 }
             }
 

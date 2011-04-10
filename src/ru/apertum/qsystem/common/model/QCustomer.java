@@ -16,9 +16,11 @@
  */
 package ru.apertum.qsystem.common.model;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.Date;
-import java.text.ParseException;
+import java.util.LinkedList;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -52,6 +54,8 @@ public class QCustomer extends ACustomer implements Serializable {
     /**
      * К какой услуге стоит. Нужно для статистики.
      */
+    @Expose
+    @SerializedName("to_service")
     private QService service;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -65,15 +69,15 @@ public class QCustomer extends ACustomer implements Serializable {
      * Причем префикс ставится раз и навсегда.
      * При добавлении кастомера в услугу addCustomer() происходит тоже самое + выставляется префикс, если такой
      * атрибут не добавлен в XML-узел кастомера
-     * @param service
+     * @param service не передавать тут NULL
      */
     public void setService(QService service) {
         this.service = service;
-        xmlElement.addAttribute(Uses.TAG_SERVICE, service.getName());
-        xmlElement.addAttribute(Uses.TAG_DESCRIPTION, service.getDescription());
+        setServiceName(service.getName());
+        setServiceDescription(service.getDescription());
         // Префикс для кастомера проставится при его создании, один раз и на всегда.
-        if (xmlElement.attributeValue(Uses.TAG_PREFIX) == null) {
-            xmlElement.addAttribute(Uses.TAG_PREFIX, service.getPrefix());
+        if (getPrefix() == null) {
+            setPrefix(service.getPrefix());
         }
         Uses.log.logger.debug("Клиента \"" + getPrefix() + getNumber() + "\" поставили к услуге \"" + service.getName() + "\"");
     }
@@ -99,6 +103,8 @@ public class QCustomer extends ACustomer implements Serializable {
     /**
      * Кто его обрабатывает. Нужно для статистики.
      */
+    @Expose
+    @SerializedName("from_user")
     private QUser user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -122,119 +128,205 @@ public class QCustomer extends ACustomer implements Serializable {
 
     /**
      * Создаем клиента имея его XML-представление
-     * @param elemment XML-представление кастомера
+     * @param element XML-представление кастомера
+     * @deprecated
      */
     public QCustomer(Element element) {
         super(element);
         Uses.log.logger.debug("Создали кастомера по его описанию\n" + element.asXML());
     }
-
     /**
      * Префикс услуги, к которой стоит кастомер.
      * @return Строка префикса.
      */
+    @Expose
+    @SerializedName("prefix")
+    private String prefix;
+
     @Column(name = "service_prefix")
     @Override
     public String getPrefix() {
-        return xmlElement.attributeValue(Uses.TAG_PREFIX);
+        return prefix;
     }
 
     public void setPrefix(String prefix) {
-        xmlElement.addAttribute(Uses.TAG_PREFIX, prefix == null ? "" : prefix);
+        this.prefix = prefix == null ? "" : prefix;
     }
-
     /**
      * Название услуги, к которой стоит кастомер.
      * @return Строка названия.
      */
+    @Expose
+    @SerializedName("service_name")
+    private String serviceName;
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
     @Transient
     @Override
     public String getServiceName() {
-        return xmlElement.attributeValue(Uses.TAG_SERVICE);
+        return serviceName;
     }
-
     /**
      * Описание услуги, к которой стоит кастомер.
      * @return Строка описания.
      */
+    @Expose
+    @SerializedName("service_description")
+    private String serviceDescription;
+
     @Transient
     @Override
     public String getServiceDescription() {
-        return xmlElement.attributeValue(Uses.TAG_DESCRIPTION);
+        return serviceDescription;
     }
+
+    public void setServiceDescription(String serviceDescription) {
+        this.serviceDescription = serviceDescription;
+    }
+    @Expose
+    @SerializedName("stand_time")
+    private Date standTime;
 
     @Column(name = "stand_time")
     @Temporal(TemporalType.TIMESTAMP)
     @Override
     public Date getStandTime() {
-        try {
-            return loadAttrDate(Uses.TAG_STAND_TIME);
-        } catch (ParseException ex) {
-            throw new Uses.ServerException("Проблема с преобразованием даты в строку. " + ex.getMessage());
-        }
+        return standTime;
     }
 
     @Override
     public void setStandTime(Date date) {
-        saveAttrDate(date, Uses.TAG_STAND_TIME);
+        this.standTime = date;
     }
+    @Expose
+    @SerializedName("start_time")
+    private Date startTime;
 
     @Column(name = "start_time")
     @Temporal(TemporalType.TIMESTAMP)
     @Override
     public Date getStartTime() {
-        try {
-            return loadAttrDate(Uses.TAG_START_TIME);
-        } catch (ParseException ex) {
-            throw new Uses.ServerException("Проблема с преобразованием даты в строку. " + ex.getMessage());
-        }
+        return startTime;
     }
 
     @Override
     public void setStartTime(Date date) {
-        saveAttrDate(date, Uses.TAG_START_TIME);
+        this.startTime = date;
     }
+    private Date callTime;
 
     @Override
     public void setCallTime(Date date) {
-        saveAttrDate(date, Uses.TAG_CALL_TIME);
+        this.callTime = date;
     }
 
     @Transient
     @Override
     public Date getCallTime() {
-        try {
-            return loadAttrDate(Uses.TAG_CALL_TIME);
-        } catch (ParseException ex) {
-            throw new Uses.ServerException("Проблема с преобразованием даты в строку. " + ex.getMessage());
-        }
+        return callTime;
     }
+    @Expose
+    @SerializedName("finish_time")
+    private Date finishTime;
 
     @Column(name = "finish_time")
     @Temporal(TemporalType.TIMESTAMP)
     @Override
     public Date getFinishTime() {
-        try {
-            return loadAttrDate(Uses.TAG_FINISH_TIME);
-        } catch (ParseException ex) {
-            throw new Uses.ServerException("Проблема с преобразованием даты в строку. " + ex.getMessage());
-        }
+        return finishTime;
     }
 
     @Override
     public void setFinishTime(Date date) {
-        saveAttrDate(date, Uses.TAG_FINISH_TIME);
+        this.finishTime = date;
     }
+    @Expose
+    @SerializedName("input_data")
+    private String input_data;
 
     /**
      * Введенные кастомером данные на пункте регистрации.
+     * @return
      */
     @Column(name = "input_data")
     public String getInput_data() {
-        return xmlElement.attributeValue(Uses.TAG_INPUT_DATA);
+        return input_data;
     }
 
     public void setInput_data(String input_data) {
-        xmlElement.addAttribute(Uses.TAG_INPUT_DATA, input_data);
+        this.input_data = input_data;
+    }
+    /**
+     * Список услуг в которые необходимо вернуться после редиректа
+     * Новые услуги для возврата добвляются в начало списка.
+     * При возврате берем первую из списка и удаляем ее.
+     */
+    private final LinkedList<QService> serviceBack = new LinkedList<QService>();
+
+    /**
+     * При редиректе если есть возврат. то добавим услугу для возврата
+     * @param service в эту услугу нужен возврат
+     */
+    public void addServiceForBack(QService service) {
+        serviceBack.addFirst(service);
+        needBack = !serviceBack.isEmpty();
+    }
+
+    /**
+     * Куда вернуть если работу закончили но кастомер редиректенный
+     * @return вернуть в эту услугу
+     */
+    @Transient
+    public QService getServiceForBack() {
+        needBack = serviceBack.size() > 1;
+        return serviceBack.pollFirst();
+    }
+    @Expose
+    @SerializedName("need_back")
+    private boolean needBack = false;
+
+    public boolean needBack() {
+        return needBack;
+    }
+    /**
+     * Комментариии юзеров о кастомере при редиректе и отправки в отложенные
+     */
+    @Expose
+    @SerializedName("temp_comments")
+    private String tempComments = "";
+
+    @Transient
+    public String getTempComments() {
+        return tempComments;
+    }
+
+    public void setTempComments(String tempComments) {
+        this.tempComments = tempComments;
+    }
+    /**
+     *
+     */
+    @Expose
+    @SerializedName("post_atatus")
+    private String postponedStatus = "";
+
+    @Transient
+    public String getPostponedStatus() {
+        return postponedStatus;
+    }
+
+    public void setPostponedStatus(String postponedStatus) {
+        this.postponedStatus = postponedStatus;
+    }
+
+    /**
+     * Вернет XML-строку, описывающую кастомера
+     */
+    @Override
+    public String toString() {
+        return prefix + getNumber() + " " + postponedStatus;
     }
 }

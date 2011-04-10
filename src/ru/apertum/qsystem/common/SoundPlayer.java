@@ -16,6 +16,7 @@
  */
 package ru.apertum.qsystem.common;
 
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -76,7 +77,9 @@ public class SoundPlayer implements Runnable {
         System.out.println("*****************************************\n");
     }
 
-    /** Asks the user to select a file to play.*/
+    /** Asks the user to select a file to play.
+     * @return 
+     */
     public File getFileToPlay() {
         File file = null;
         JFrame frame = new JFrame();
@@ -110,7 +113,7 @@ public class SoundPlayer implements Runnable {
                 try {
                     inStream = new DataInputStream(new FileInputStream(f));
                 } catch (FileNotFoundException ex) {
-                    throw new Uses.ServerException("Нет звукового файла \"" + resourceName + "\" " + ex);
+                    throw new ServerException("Нет звукового файла \"" + resourceName + "\" " + ex);
                 }
 
             } else {
@@ -317,13 +320,29 @@ public class SoundPlayer implements Runnable {
 
             }
             if (!isZero(elem)) {
-                final String file = path + elem.toLowerCase() + ".wav";
+                String fileName = elem;
+                if (isRus(elem)) {
+                    fileName = reRus(elem.toLowerCase());
+                }
+                final String file = path + fileName.toLowerCase() + ".wav";
                 //System.out.println(elem + " - " + file);
                 res.add(file);
             }
 
         }
         return res;
+    }
+
+    private static boolean isRus(String elem) {
+        return "йцукенгшщзхъфывапролджэячсмитьбю".indexOf(elem.toLowerCase()) != -1;
+    }
+
+    private static String reRus(String elem) {
+        final String is__ru = "й ц у к е н г ш щ з х ъ ф ы в а п р о л д ж э я ч с м и т ь б ю ё ";
+        final String not_ru = "iic u k e n g shghz x zzf yyv a p r o l d jzeeiachs m i t ccb iuio";
+        int pos = is__ru.indexOf(elem.toLowerCase());
+        String ns = not_ru.substring(pos, pos + 2).trim().toLowerCase();
+        return "_rus_" + ns;
     }
 
     private static boolean isNum(char elem) {

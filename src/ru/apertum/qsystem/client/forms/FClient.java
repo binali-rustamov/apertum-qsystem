@@ -19,6 +19,8 @@ package ru.apertum.qsystem.client.forms;
 import java.awt.AWTException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -28,7 +30,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import javax.swing.ButtonGroup;
 import org.dom4j.DocumentException;
@@ -38,7 +39,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.INetProperty;
-import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -50,7 +50,13 @@ import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.client.model.QTray;
 import ru.apertum.qsystem.client.model.QTray.MessageType;
 import ru.apertum.qsystem.common.AUDPServer;
+import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfService;
+import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfSituation;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.server.model.QUser;
+import ru.apertum.qsystem.server.model.postponed.QPostponedList;
+import ru.apertum.qsystem.server.model.results.QResult;
 
 /**
  * Created on 11 Сентябрь 2008 г., 16:57
@@ -107,13 +113,15 @@ public final class FClient extends javax.swing.JFrame {
                 priority = getLocaleMessage("messages.priority.strange");
             }
         }
-        String s = customer.toXML().attributeValue(Uses.TAG_PROP_INPUT_CAPTION);
+        String s = customer.getService().getInput_caption();
         if (s == null) {
             s = "";
         } else {
             s = "<br>" + s + "<br>" + customer.getInput_data();
         }
         labelNextCustomerInfo.setText("<html><b><span style='color:blue'> " + getLocaleMessage("messages.service") + ": " + customer.getServiceName() + "<br>" + getLocaleMessage("messages.priority") + ": " + priority + s + "</span></b>");
+        textAreaComments.setText(customer.getTempComments());
+        textAreaComments.setCaretPosition(0);
         // прикроем кнопки, которые недоступны на этом этапе работы с кастомером.
         // тут в зависимости от состояния кастомера открываем разные наборы кнопок
         switch (customer.getState()) {
@@ -128,7 +136,7 @@ public final class FClient extends javax.swing.JFrame {
                 break;
             }
             default: {
-                throw new Uses.ClientException("Не известное состояние клиента \"" + customer.getState() + "\" для данного случая.");
+                throw new ClientException("Не известное состояние клиента \"" + customer.getState() + "\" для данного случая.");
             }
         }
     }
@@ -152,9 +160,7 @@ public final class FClient extends javax.swing.JFrame {
      */
     private Long setResult() {
         Long rs = new Long(-1);
-        if (customer.toXML().attributeValue(Uses.TAG_PROP_RESULT_REQUIRED) != null
-                && ("1".equals(customer.toXML().attributeValue(Uses.TAG_PROP_RESULT_REQUIRED))
-                || "true".equals(customer.toXML().attributeValue(Uses.TAG_PROP_RESULT_REQUIRED).toLowerCase()))) {
+        if (customer.getService().getResult_required()) {
             getResults();
             Object res = null;
             res = JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
@@ -166,9 +172,8 @@ public final class FClient extends javax.swing.JFrame {
 
     private Object[] getResults() {
         if (results.isEmpty()) {
-            for (Object o : NetCommander.getResultsList(netProperty).elements()) {
-                final Element el = (Element) o;
-                results.put(el.attributeValue(Uses.TAG_PROP_NAME), Long.parseLong(el.attributeValue(Uses.TAG_ID)));
+            for (QResult result : NetCommander.getResultsList(netProperty)) {
+                results.put(result.getName(), result.getId());
             }
         }
         return results.keySet().toArray();
@@ -189,12 +194,18 @@ public final class FClient extends javax.swing.JFrame {
             //Если кастомер встал в очередь, обрабатываемую этим юзером, то апдейтим состояние очередей.
             if (myServices.contains(data) || userName.equals(data)) {
                 //Получаем состояние очередей для юзера
-                final Element usersPlan = NetCommander.getSelfServices(netProperty, user.attributeValue(Uses.TAG_NAME));
-                setSituation(usersPlan);
+                setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+            }
+            if (Uses.TASK_REFRESH_POSTPONED_POOL.equals(data)) {
+                //Получаем состояние пула отложенных
+                listPostponed.setModel(QPostponedList.getInstance().loadPostponedList(NetCommander.getPostponedPoolInfo(netProperty)));
+                if (listPostponed.getModel().getSize() != 0) {
+                    listPostponed.setSelectedIndex(0);
+                }
             }
             if (Uses.HOW_DO_YOU_DO.equals(data)) {
                 //Отправим по TCP/IP
-                NetCommander.setLive(netProperty, user.attributeValue(Uses.TAG_NAME));
+                NetCommander.setLive(netProperty, user.getName());
             }
             if (data.startsWith("message#") && (data.startsWith("message#ALL##") || isMyMessage(data))) {
                 final String mess = data.substring(data.indexOf("##") + 2);
@@ -221,14 +232,14 @@ public final class FClient extends javax.swing.JFrame {
     /**
      * Описание того, кто залогинелся.
      */
-    private final Element user;
+    private final QUser user;
     private final String userName;
     /**
      * Описание того, сколько народу стоит в очередях к этому юзеру, ну и прочее(потом)mess
      * Не использовать на прямую.
      * @see setSituation(Element plan)
      */
-    private Element userPlan;
+    private SelfSituation userPlan;
     private static ResourceMap localeMap = null;
 
     private static String getLocaleMessage(String key) {
@@ -241,16 +252,47 @@ public final class FClient extends javax.swing.JFrame {
     /**
      * Creates new form FClient
      * @param user
-     * @param usersPlan
      * @param netProperty
      * @throws AWTException
      */
-    public FClient(Element user, Element usersPlan, INetProperty netProperty) throws AWTException {
+    public FClient(QUser user, INetProperty netProperty) throws AWTException {
+        addWindowListener(new WindowListener() {
+
+            @Override
+            public void windowOpened(WindowEvent e) {
+            }
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                // остановим UDP сервер
+                udpServer.stop();
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+            }
+
+            @Override
+            public void windowActivated(WindowEvent e) {
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+            }
+        });
         this.user = user;
         this.netProperty = netProperty;
         initComponents();
         // отрехтуем дизайн формы.
-        jPanel1.setVisible(false);
+        //panelBottom.setVisible(false);
         jPanel4.setVisible(false);
         //menuBar.setVisible(false);
         labelNextNumber.setText(getLocaleMessage("messages.noCall"));
@@ -286,9 +328,9 @@ public final class FClient extends javax.swing.JFrame {
                 System.exit(0);
             }
         });
-        userName = user.attributeValue(Uses.TAG_NAME);
-        labelUser.setText(userName + " - " + user.attributeValue(Uses.TAG_USER_IDENTIFIER));
-        setSituation(usersPlan);
+        userName = user.getName();
+        labelUser.setText(userName + " - " + user.getPoint());
+        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
 
         int ii = 1;
         final ButtonGroup bg = new ButtonGroup();
@@ -336,7 +378,7 @@ public final class FClient extends javax.swing.JFrame {
      * Определяет какова ситуация в очереди к пользователю.
      * @param plan - ситуация в XML
      */
-    protected void setSituation(Element plan) {
+    protected void setSituation(SelfSituation plan) {
         Uses.log.logger.trace("Обновляем видимую ситуацию.");
         /**
          * На первую закладку.
@@ -352,10 +394,9 @@ public final class FClient extends javax.swing.JFrame {
         myServices.clear();// очистим удобный списочек
 
         // построим новую html с описанием состояния очередей
-        for (Object ob : plan.elements(Uses.TAG_SERVICE)) {
-            final Element el = (Element) ob;
-            final int count = Integer.parseInt(el.attributeValue(Uses.TAG_DESCRIPTION));
-            final String serviceName = el.attributeValue(Uses.TAG_NAME);
+        for (SelfService serv : plan.getSelfservices()) {
+            final int count = serv.getCountWait();
+            final String serviceName = serv.getServiceName();
             myServices.add(serviceName);//заполним удобный списочек
 
             final String people = " " + getLocaleMessage("messages.people");// множественное
@@ -379,9 +420,8 @@ public final class FClient extends javax.swing.JFrame {
         // определим количество уже стоящих кастомеров в наших очередях
         int count = 0;
         if (userPlan != null) {
-            for (Object ob : userPlan.elements(Uses.TAG_SERVICE)) {
-                final Element el = (Element) ob;
-                count = count + Integer.parseInt(el.attributeValue(Uses.TAG_DESCRIPTION));
+            for (SelfService srv : userPlan.getSelfservices()) {
+                count = count + srv.getCountWait();
             }
         }
         // покажим сообщение в трее если очередь была пуста и кто-то приперся
@@ -390,10 +430,9 @@ public final class FClient extends javax.swing.JFrame {
         }
         // посмотрим, не приехал ли кастомер, который уже вызванный
         // если приехал, то его надо учесть
-        final List<Element> l = plan.elements(Uses.TAG_CUSTOMER);
-        if (l.size() == 1) {
+        if (plan.getCustomer() != null) {
             Uses.log.logger.trace("От сервера приехал кастомер, который обрабатывается юзером.");
-            setCustomer(new QCustomer(l.get(0)));
+            setCustomer(plan.getCustomer());
         } else {
             if (inCount == 0) {
                 setKeyRegim(KEYS_OFF);/* нет клиентов, нечеого вызывать*/
@@ -403,22 +442,30 @@ public final class FClient extends javax.swing.JFrame {
             labelNextNumber.setText(getLocaleMessage("messages.noCall"));
             printCustomerNumber("", -1);
             labelNextCustomerInfo.setText("");
+            textAreaComments.setText("");
         }
         //теперь описание очередей новое
         userPlan = plan;
         labelSituation.setText("<html>" + temp);
         labelSituationAll.setText("<html>" + tempAll);
 
+        // Ну и обновим модель для списка отложенных
+        listPostponed.setModel(QPostponedList.getInstance().loadPostponedList(plan.getPostponedList()));
+        if (listPostponed.getModel().getSize() != 0) {
+            listPostponed.setSelectedIndex(0);
+        }
+        color = plan.getPostponedList().size() == 0 ? "blue" : "purple";
+        labelPost.setText("<html><span style='color:" + color + "'>" + plan.getPostponedList().size() + "</span>");
     }
     /**
      * Возможный состояния кнопок
      * 1 - доступна кнопка, 0 - не доступна
      */
-    private static final String KEYS_OFF = "00000";
-    private static final String KEYS_ALL = "11111";
-    private static final String KEYS_MAY_INVITE = "10000";
-    private static final String KEYS_INVITED = "11100";
-    private static final String KEYS_STARTED = "00011";
+    private static final String KEYS_OFF = "000000";
+    private static final String KEYS_ALL = "111111";
+    private static final String KEYS_MAY_INVITE = "100000";
+    private static final String KEYS_INVITED = "111000";
+    private static final String KEYS_STARTED = "000111";
 
     /**
      * Механизм включения/отключения кнопок
@@ -426,30 +473,20 @@ public final class FClient extends javax.swing.JFrame {
      */
     public void setKeyRegim(String regim) {
         Uses.log.logger.trace("Конфигурация кнопок \"" + regim + "\".");
+        menuItemInvitePostponed.setEnabled(KEYS_MAY_INVITE.equals(regim));
         buttonInvite.setEnabled('1' == regim.charAt(0));
         buttonKill.setEnabled('1' == regim.charAt(1));
         buttonStart.setEnabled('1' == regim.charAt(2));
         buttonRedirect.setEnabled('1' == regim.charAt(3));
-        buttonFinish.setEnabled('1' == regim.charAt(4));
+        buttonMoveToPostponed.setEnabled('1' == regim.charAt(4));
+        buttonFinish.setEnabled('1' == regim.charAt(5));
 
         menuItemInvite.setEnabled('1' == regim.charAt(0));
         menuItemKill.setEnabled('1' == regim.charAt(1));
         menuItemStart.setEnabled('1' == regim.charAt(2));
         menuItemRedirect.setEnabled('1' == regim.charAt(3));
-        menuItemFinish.setEnabled('1' == regim.charAt(4));
-    }
-
-    /**
-     * Убирем иконку из трея по завершению программы,
-     * остановим UDP сервер.
-     * @throws java.lang.Throwable
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        // остановим UDP сервер 
-        udpServer.stop();
-        // и чЁ там в предке ...
-        super.finalize();
+        menuItemMoveToPostponed.setEnabled('1' == regim.charAt(4));
+        menuItemFinish.setEnabled('1' == regim.charAt(5));
     }
 
     /*******************************************************************************************************************
@@ -472,9 +509,9 @@ public final class FClient extends javax.swing.JFrame {
     public void inviteNextCustomer(ActionEvent evt) {
         final long start = go();
         // Вызываем кастомера
-        NetCommander.inviteNextCustomer(netProperty, user.attributeValue(Uses.TAG_NAME));
+        NetCommander.inviteNextCustomer(netProperty, user.getName());
         // Показываем обстановку
-        setSituation(NetCommander.getSelfServices(netProperty, user.attributeValue(Uses.TAG_NAME)));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
         end(start);
     }
 
@@ -493,10 +530,10 @@ public final class FClient extends javax.swing.JFrame {
             return;
         }
         // Убиваем пользователя
-        NetCommander.killNextCustomer(netProperty, user.attributeValue(Uses.TAG_NAME));
+        NetCommander.killNextCustomer(netProperty, user.getName());
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.attributeValue(Uses.TAG_NAME)));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
         end(start);
     }
 
@@ -508,10 +545,10 @@ public final class FClient extends javax.swing.JFrame {
     public void getStartCustomer(ActionEvent evt) {
         final long start = go();
         // Переводим кастомера в разряд обрабатываемых
-        NetCommander.getStartCustomer(netProperty, user.attributeValue(Uses.TAG_NAME));
+        NetCommander.getStartCustomer(netProperty, user.getName());
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.attributeValue(Uses.TAG_NAME)));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
         end(start);
     }
 
@@ -529,10 +566,20 @@ public final class FClient extends javax.swing.JFrame {
         if (res == null) {
             return;
         }
-        NetCommander.getFinishCustomer(netProperty, user.attributeValue(Uses.TAG_NAME), res);
+
+        String resComments = userName + ": \n_______________________\n" + customer.getTempComments();
+        if (customer.needBack()) {
+            //Диалог ввода коментария по кастомеру если он редиректенный и нужно его вернуть
+            final FRedirect dlg = FRedirect.getService(netProperty, this, customer.getTempComments(), true);
+            if (dlg != null) {
+                //Если не выбрали, то выходим
+                resComments = userName + ": " + dlg.getTempComments();
+            }
+        }
+        NetCommander.getFinishCustomer(netProperty, user.getName(), res, resComments);
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.attributeValue(Uses.TAG_NAME)));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
         end(start);
     }
     protected FRedirect servicesForm = null;
@@ -547,16 +594,16 @@ public final class FClient extends javax.swing.JFrame {
         // Переводим кастомера в другую услугу
         // это должно выкинуть кастомера в другую очередь с приоритетом "переведенный"
         //Диалог выбора очереди для редиректа
-        final FRedirect dlg = FRedirect.getService(netProperty, this);
+        final FRedirect dlg = FRedirect.getService(netProperty, this, customer.getTempComments(), false);
         if (dlg == null) {
             //Если не выбрали, то выходим
             return;
         }
 
-        NetCommander.redirectCustomer(netProperty, user.attributeValue(Uses.TAG_NAME), dlg.getServiceName(), dlg.getRequestBack());
+        NetCommander.redirectCustomer(netProperty, user.getName(), dlg.getServiceName(), dlg.getRequestBack(), userName + ": " + dlg.getTempComments());
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.attributeValue(Uses.TAG_NAME)));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
         end(start);
     }
 
@@ -578,9 +625,28 @@ public final class FClient extends javax.swing.JFrame {
         jMenuItem4 = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
         jMenuItem5 = new javax.swing.JMenuItem();
+        popupMenuPostpone = new javax.swing.JPopupMenu();
+        menuItemInvitePostponed = new javax.swing.JMenuItem();
+        jMenuItem7 = new javax.swing.JMenuItem();
         panelDown = new QPanel("/ru/apertum/qsystem/client/forms/resources/fon_client.jpg");
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        panelBottom = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        textAreaComments = new javax.swing.JTextArea();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
+        buttonInvite = new javax.swing.JButton();
+        buttonKill = new javax.swing.JButton();
+        buttonStart = new javax.swing.JButton();
+        buttonFinish = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        labelNextNumber = new javax.swing.JLabel();
+        buttonRedirect = new javax.swing.JButton();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
+        labelNextCustomerInfo = new javax.swing.JLabel();
+        buttonMoveToPostponed = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         labelUser = new javax.swing.JLabel();
@@ -596,18 +662,10 @@ public final class FClient extends javax.swing.JFrame {
         jPanel7 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         labelMessage = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        buttonInvite = new javax.swing.JButton();
-        buttonKill = new javax.swing.JButton();
-        buttonStart = new javax.swing.JButton();
-        buttonFinish = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        labelNextNumber = new javax.swing.JLabel();
-        buttonRedirect = new javax.swing.JButton();
-        jLayeredPane1 = new javax.swing.JLayeredPane();
-        labelNextCustomerInfo = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        labelStatus = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        labelPost = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        listPostponed = new javax.swing.JList();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         menuLangs = new javax.swing.JMenu();
@@ -619,6 +677,7 @@ public final class FClient extends javax.swing.JFrame {
         menuItemKill = new javax.swing.JMenuItem();
         menuItemStart = new javax.swing.JMenuItem();
         menuItemRedirect = new javax.swing.JMenuItem();
+        menuItemMoveToPostponed = new javax.swing.JMenuItem();
         menuItemFinish = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         menuItemHelp = new javax.swing.JMenuItem();
@@ -650,12 +709,21 @@ public final class FClient extends javax.swing.JFrame {
         jMenuItem5.setName("jMenuItem5"); // NOI18N
         popupMenuTray.add(jMenuItem5);
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        popupMenuPostpone.setName("popupMenuPostpone"); // NOI18N
+
+        menuItemInvitePostponed.setAction(actionMap.get("invitePostponed")); // NOI18N
+        menuItemInvitePostponed.setName("menuItemInvitePostponed"); // NOI18N
+        popupMenuPostpone.add(menuItemInvitePostponed);
+
+        jMenuItem7.setAction(actionMap.get("changeStatusForPosponed")); // NOI18N
+        jMenuItem7.setName("jMenuItem7"); // NOI18N
+        popupMenuPostpone.add(jMenuItem7);
+
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FClient.class);
         setTitle(resourceMap.getString("Form.title")); // NOI18N
         setIconImage(getIconImage());
         setIconImages(getIconImages());
-        setMinimumSize(new java.awt.Dimension(400, 400));
+        setMinimumSize(new java.awt.Dimension(510, 400));
         setName("Form"); // NOI18N
 
         panelDown.setBorder(new javax.swing.border.MatteBorder(null));
@@ -675,133 +743,50 @@ public final class FClient extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(163, Short.MAX_VALUE))
+                .addContainerGap(162, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 53, Short.MAX_VALUE)
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jPanel2.setName("jPanel2"); // NOI18N
-        jPanel2.setOpaque(false);
+        jSplitPane1.setBorder(null);
+        jSplitPane1.setDividerLocation(410);
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setContinuousLayout(true);
+        jSplitPane1.setName("jSplitPane1"); // NOI18N
+        jSplitPane1.setOpaque(false);
 
-        jLabel3.setIcon(resourceMap.getIcon("jLabel3.icon")); // NOI18N
-        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
-        jLabel3.setName("jLabel3"); // NOI18N
+        panelBottom.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("panelBottom.border.title"))); // NOI18N
+        panelBottom.setName("panelBottom"); // NOI18N
+        panelBottom.setOpaque(false);
 
-        labelUser.setForeground(resourceMap.getColor("labelUser.foreground")); // NOI18N
-        labelUser.setText(resourceMap.getString("labelUser.text")); // NOI18N
-        labelUser.setName("labelUser"); // NOI18N
+        jScrollPane5.setName("jScrollPane5"); // NOI18N
 
-        jLabel4.setIcon(resourceMap.getIcon("jLabel4.icon")); // NOI18N
-        jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
-        jLabel4.setName("jLabel4"); // NOI18N
+        textAreaComments.setColumns(20);
+        textAreaComments.setEditable(false);
+        textAreaComments.setLineWrap(true);
+        textAreaComments.setRows(5);
+        textAreaComments.setWrapStyleWord(true);
+        textAreaComments.setBorder(null);
+        textAreaComments.setName("textAreaComments"); // NOI18N
+        jScrollPane5.setViewportView(textAreaComments);
 
-        labelResume.setText(resourceMap.getString("labelResume.text")); // NOI18N
-        labelResume.setName("labelResume"); // NOI18N
-
-        jTabbedPane1.setName("jTabbedPane1"); // NOI18N
-
-        jPanel5.setName("jPanel5"); // NOI18N
-        jPanel5.setOpaque(false);
-
-        jScrollPane2.setName("jScrollPane2"); // NOI18N
-        jScrollPane2.setOpaque(false);
-
-        labelSituation.setText(resourceMap.getString("labelSituation.text")); // NOI18N
-        labelSituation.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        labelSituation.setName("labelSituation"); // NOI18N
-        jScrollPane2.setViewportView(labelSituation);
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+        javax.swing.GroupLayout panelBottomLayout = new javax.swing.GroupLayout(panelBottom);
+        panelBottom.setLayout(panelBottomLayout);
+        panelBottomLayout.setHorizontalGroup(
+            panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
         );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+        panelBottomLayout.setVerticalGroup(
+            panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab(resourceMap.getString("jPanel5.TabConstraints.tabTitle"), jPanel5); // NOI18N
+        jSplitPane1.setBottomComponent(panelBottom);
 
-        jPanel6.setName("jPanel6"); // NOI18N
-        jPanel6.setOpaque(false);
-
-        jScrollPane3.setName("jScrollPane3"); // NOI18N
-        jScrollPane3.setOpaque(false);
-
-        labelSituationAll.setText(resourceMap.getString("labelSituationAll.text")); // NOI18N
-        labelSituationAll.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        labelSituationAll.setName("labelSituationAll"); // NOI18N
-        jScrollPane3.setViewportView(labelSituationAll);
-
-        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
-        jPanel6.setLayout(jPanel6Layout);
-        jPanel6Layout.setHorizontalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
-        );
-        jPanel6Layout.setVerticalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab(resourceMap.getString("jPanel6.TabConstraints.tabTitle"), jPanel6); // NOI18N
-
-        jPanel7.setName("jPanel7"); // NOI18N
-
-        jScrollPane1.setName("jScrollPane1"); // NOI18N
-
-        labelMessage.setText(resourceMap.getString("labelMessage.text")); // NOI18N
-        labelMessage.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        labelMessage.setName("labelMessage"); // NOI18N
-        jScrollPane1.setViewportView(labelMessage);
-
-        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
-        jPanel7.setLayout(jPanel7Layout);
-        jPanel7Layout.setHorizontalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
-        );
-        jPanel7Layout.setVerticalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab(resourceMap.getString("jPanel7.TabConstraints.tabTitle"), jPanel7); // NOI18N
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-                    .addComponent(labelUser, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-                    .addComponent(labelResume))
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(labelUser)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(labelResume)
-                .addContainerGap())
-        );
+        jPanel1.setName("jPanel1"); // NOI18N
+        jPanel1.setOpaque(false);
 
         jPanel3.setBorder(new javax.swing.border.MatteBorder(null));
         jPanel3.setName("jPanel3"); // NOI18N
@@ -838,8 +823,12 @@ public final class FClient extends javax.swing.JFrame {
         labelNextCustomerInfo.setText(resourceMap.getString("labelNextCustomerInfo.text")); // NOI18N
         labelNextCustomerInfo.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         labelNextCustomerInfo.setName("labelNextCustomerInfo"); // NOI18N
-        labelNextCustomerInfo.setBounds(0, 0, 193, 320);
+        labelNextCustomerInfo.setBounds(0, 0, 200, 320);
         jLayeredPane1.add(labelNextCustomerInfo, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        buttonMoveToPostponed.setAction(actionMap.get("moveToPOstponed")); // NOI18N
+        buttonMoveToPostponed.setText(resourceMap.getString("buttonMoveToPostponed.text")); // NOI18N
+        buttonMoveToPostponed.setName("buttonMoveToPostponed"); // NOI18N
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -848,14 +837,15 @@ public final class FClient extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLayeredPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                    .addComponent(buttonInvite, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                    .addComponent(buttonKill, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                    .addComponent(buttonStart, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                    .addComponent(buttonFinish, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                    .addComponent(buttonRedirect, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                    .addComponent(labelNextNumber, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE))
+                    .addComponent(jLayeredPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                    .addComponent(buttonInvite, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                    .addComponent(buttonKill, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                    .addComponent(buttonStart, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                    .addComponent(buttonRedirect, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                    .addComponent(buttonMoveToPostponed, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                    .addComponent(buttonFinish, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                    .addComponent(labelNextNumber, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -865,65 +855,207 @@ public final class FClient extends javax.swing.JFrame {
                 .addComponent(buttonInvite)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonKill)
-                .addGap(8, 8, 8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonStart)
-                .addGap(8, 8, 8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonRedirect)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(buttonMoveToPostponed)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonFinish)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(labelNextNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLayeredPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE))
+                .addComponent(jLayeredPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
         );
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jPanel1.setName("jPanel1"); // NOI18N
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel2.setName("jPanel2"); // NOI18N
+        jPanel2.setOpaque(false);
 
-        labelStatus.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        labelStatus.setText(resourceMap.getString("labelStatus.text")); // NOI18N
-        labelStatus.setName("labelStatus"); // NOI18N
+        jLabel3.setIcon(resourceMap.getIcon("jLabel3.icon")); // NOI18N
+        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
+        jLabel3.setName("jLabel3"); // NOI18N
+
+        labelUser.setForeground(resourceMap.getColor("labelUser.foreground")); // NOI18N
+        labelUser.setText(resourceMap.getString("labelUser.text")); // NOI18N
+        labelUser.setName("labelUser"); // NOI18N
+
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/qiui.png"))); // NOI18N
+        jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
+        jLabel4.setName("jLabel4"); // NOI18N
+
+        labelResume.setText(resourceMap.getString("labelResume.text")); // NOI18N
+        labelResume.setName("labelResume"); // NOI18N
+
+        jTabbedPane1.setName("jTabbedPane1"); // NOI18N
+
+        jPanel5.setName("jPanel5"); // NOI18N
+        jPanel5.setOpaque(false);
+
+        jScrollPane2.setName("jScrollPane2"); // NOI18N
+        jScrollPane2.setOpaque(false);
+
+        labelSituation.setText(resourceMap.getString("labelSituation.text")); // NOI18N
+        labelSituation.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        labelSituation.setName("labelSituation"); // NOI18N
+        jScrollPane2.setViewportView(labelSituation);
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab(resourceMap.getString("jPanel5.TabConstraints.tabTitle"), jPanel5); // NOI18N
+
+        jPanel6.setName("jPanel6"); // NOI18N
+        jPanel6.setOpaque(false);
+
+        jScrollPane3.setName("jScrollPane3"); // NOI18N
+        jScrollPane3.setOpaque(false);
+
+        labelSituationAll.setText(resourceMap.getString("labelSituationAll.text")); // NOI18N
+        labelSituationAll.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        labelSituationAll.setName("labelSituationAll"); // NOI18N
+        jScrollPane3.setViewportView(labelSituationAll);
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab(resourceMap.getString("jPanel6.TabConstraints.tabTitle"), jPanel6); // NOI18N
+
+        jPanel7.setName("jPanel7"); // NOI18N
+
+        jScrollPane1.setName("jScrollPane1"); // NOI18N
+
+        labelMessage.setText(resourceMap.getString("labelMessage.text")); // NOI18N
+        labelMessage.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        labelMessage.setName("labelMessage"); // NOI18N
+        jScrollPane1.setViewportView(labelMessage);
+
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+        );
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab(resourceMap.getString("jPanel7.TabConstraints.tabTitle"), jPanel7); // NOI18N
+
+        jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/group.png"))); // NOI18N
+        jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
+        jLabel5.setName("jLabel5"); // NOI18N
+
+        labelPost.setText(resourceMap.getString("labelPost.text")); // NOI18N
+        labelPost.setName("labelPost"); // NOI18N
+
+        jScrollPane4.setName("jScrollPane4"); // NOI18N
+
+        listPostponed.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        listPostponed.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        listPostponed.setComponentPopupMenu(popupMenuPostpone);
+        listPostponed.setName("listPostponed"); // NOI18N
+        jScrollPane4.setViewportView(listPostponed);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(labelPost))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(labelUser, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(labelResume, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(labelUser))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(labelResume))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(labelPost))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(466, Short.MAX_VALUE)
-                .addComponent(labelStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(labelStatus)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
+
+        jSplitPane1.setLeftComponent(jPanel1);
 
         javax.swing.GroupLayout panelDownLayout = new javax.swing.GroupLayout(panelDown);
         panelDown.setLayout(panelDownLayout);
         panelDownLayout.setHorizontalGroup(
             panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelDownLayout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
         );
         panelDownLayout.setVerticalGroup(
             panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelDownLayout.createSequentialGroup()
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE))
         );
 
         menuBar.setName("menuBar"); // NOI18N
@@ -972,6 +1104,10 @@ public final class FClient extends javax.swing.JFrame {
         menuItemRedirect.setName("menuItemRedirect"); // NOI18N
         editMenu.add(menuItemRedirect);
 
+        menuItemMoveToPostponed.setAction(actionMap.get("moveToPOstponed")); // NOI18N
+        menuItemMoveToPostponed.setName("menuItemMoveToPostponed"); // NOI18N
+        editMenu.add(menuItemMoveToPostponed);
+
         menuItemFinish.setAction(actionMap.get("getStopCustomer")); // NOI18N
         menuItemFinish.setName("menuItemFinish"); // NOI18N
         editMenu.add(menuItemFinish);
@@ -1006,7 +1142,7 @@ public final class FClient extends javax.swing.JFrame {
         );
 
         java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds((screenSize.width-540)/2, (screenSize.height-523)/2, 540, 523);
+        setBounds((screenSize.width-539)/2, (screenSize.height-564)/2, 539, 564);
     }// </editor-fold>//GEN-END:initComponents
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -1059,7 +1195,7 @@ public final class FClient extends javax.swing.JFrame {
         }
         socket.close();
         // Определим кто работает на данном месте.
-        final Element user = FLogin.logining(netProperty, null, true, 3, FLogin.LEVEL_USER);
+        final QUser user = FLogin.logining(netProperty, null, true, 3, FLogin.LEVEL_USER);
         Uses.showSplash();
         try {
             //Определим, надо ли выводить кастомера на второй экран.
@@ -1073,16 +1209,15 @@ public final class FClient extends javax.swing.JFrame {
             }
             initIndicatorBoard(cfgFile);
 
-            //Получаем состояние очередей для юзера
-            final Element usersPlan = NetCommander.getSelfServicesCheck(netProperty, user.attributeValue(Uses.TAG_NAME));
             // Посмотрим, не пытались ли влезть под уже имеющейся в системе ролью
-            if (Uses.ACCESS_DENY.equals(usersPlan.getTextTrim()) || Uses.LICENSE_DENY.equals(usersPlan.getTextTrim())) {
+            if (!NetCommander.getSelfServicesCheck(netProperty, user.getName())) {
                 Uses.closeSplash();
-                JOptionPane.showMessageDialog(null, usersPlan.getTextTrim(), getLocaleMessage("messages.stop.mess"), JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, getLocaleMessage("messages.stop.access_denay.mess"), getLocaleMessage("messages.stop.mess"), JOptionPane.INFORMATION_MESSAGE);
                 System.exit(0);
             }
             //Показываем форму и передаем в нее описание того кто залогинился
-            new FClient(user, usersPlan, netProperty).setVisible(true);
+            fClient = new FClient(user, netProperty);
+            fClient.setVisible(true);
         } catch (AWTException ex) {
             Uses.log.logger.error("Ошибка работы с tray: ", ex);
             System.exit(0);
@@ -1093,11 +1228,13 @@ public final class FClient extends javax.swing.JFrame {
         //     }
         //  });
     }
+    private static FClient fClient;
+    private static int panelBottomHeight;
 
     @Action
     public void refreshClient() {
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.attributeValue(Uses.TAG_NAME)));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
     }
 
     @Action
@@ -1112,11 +1249,56 @@ public final class FClient extends javax.swing.JFrame {
             }
         }
     }
+
+    @Action
+    public void moveToPOstponed() {
+        final long start = go();
+
+        String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
+        if (status == null) {
+            return;
+        }
+        NetCommander.сustomerToPostpone(netProperty, user.getName(), status);
+        // Показываем обстановку
+        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+        end(start);
+    }
+
+    @Action
+    public void invitePostponed() {
+        if (listPostponed.getSelectedIndex() != -1) {
+            final long start = go();
+            final QCustomer cust = (QCustomer) listPostponed.getSelectedValue();
+            NetCommander.invitePostponeCustomer(netProperty, user.getName(), cust.getId());
+            // Показываем обстановку
+            setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+            end(start);
+        }
+    }
+
+    @Action
+    public void changeStatusForPosponed() {
+        if (listPostponed.getSelectedIndex() != -1) {
+            final long start = go();
+            final QCustomer cust = (QCustomer) listPostponed.getSelectedValue();
+
+
+            String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
+            if (status == null) {
+                return;
+            }
+            NetCommander.postponeCustomerChangeStatus(netProperty, cust.getId(), status);
+            // Показываем обстановку, должно быть оповешение по udp
+            //setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+            end(start);
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JButton buttonFinish;
     private javax.swing.JButton buttonInvite;
     private javax.swing.JButton buttonKill;
+    private javax.swing.JButton buttonMoveToPostponed;
     private javax.swing.JButton buttonRedirect;
     private javax.swing.JButton buttonStart;
     private javax.swing.JMenu editMenu;
@@ -1127,12 +1309,14 @@ public final class FClient extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1143,27 +1327,36 @@ public final class FClient extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel labelMessage;
     private javax.swing.JLabel labelNextCustomerInfo;
     private javax.swing.JLabel labelNextNumber;
+    private javax.swing.JLabel labelPost;
     private javax.swing.JLabel labelResume;
     private javax.swing.JLabel labelSituation;
     private javax.swing.JLabel labelSituationAll;
-    private javax.swing.JLabel labelStatus;
     private javax.swing.JLabel labelUser;
+    private javax.swing.JList listPostponed;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem menuItemFinish;
     private javax.swing.JMenuItem menuItemHelp;
     private javax.swing.JMenuItem menuItemInvite;
+    private javax.swing.JMenuItem menuItemInvitePostponed;
     private javax.swing.JMenuItem menuItemKill;
+    private javax.swing.JMenuItem menuItemMoveToPostponed;
     private javax.swing.JMenuItem menuItemRedirect;
     private javax.swing.JMenuItem menuItemRefresh;
     private javax.swing.JMenuItem menuItemStart;
     private javax.swing.JMenu menuLangs;
+    private javax.swing.JPanel panelBottom;
     private javax.swing.JPanel panelDown;
+    private javax.swing.JPopupMenu popupMenuPostpone;
     private javax.swing.JPopupMenu popupMenuTray;
+    private javax.swing.JTextArea textAreaComments;
     // End of variables declaration//GEN-END:variables
 }

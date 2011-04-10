@@ -69,6 +69,6 @@ public interface IServiceProperty extends IProperty {
      * Ограничение по количеству предварительно регистрировшихся в час
      * @return 1 - по умолчанию в базе
      */
-    public Integer getAdvanceLinit();
+    public Integer getAdvanceLimit();
     
 }

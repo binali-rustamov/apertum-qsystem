@@ -27,6 +27,7 @@ import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Класс - фабрика сессий для Hibernate.
@@ -64,7 +65,7 @@ public class AnnotationSessionFactoryBean extends LocalSessionFactoryBean {
         super.postProcessConfiguration(config);
 
         if (!(config instanceof AnnotationConfiguration)) {
-            throw new Uses.ServerException("Конфигурация должна быть типа AnnotationConfiguration.");
+            throw new ServerException("Конфигурация должна быть типа AnnotationConfiguration.");
         }
 
         if (annotatedClasses_ == null) {
@@ -78,9 +79,9 @@ public class AnnotationSessionFactoryBean extends LocalSessionFactoryBean {
                 ((AnnotationConfiguration) config).addAnnotatedClass(clazz);
                 Uses.log.logger.debug("Класс \"" + className + "\" добавлен в конфигурацию Hibernate.");
             } catch (MappingException e) {
-                throw new Uses.ServerException("Класс \"" + className + "\" не замаплен. " + e.toString());
+                throw new ServerException("Класс \"" + className + "\" не замаплен. " + e.toString());
             } catch (ClassNotFoundException e) {
-                throw new Uses.ServerException("Класс \"" + className + "\" не найден. " + e.toString());
+                throw new ServerException("Класс \"" + className + "\" не найден. " + e.toString());
             }
         }
     }

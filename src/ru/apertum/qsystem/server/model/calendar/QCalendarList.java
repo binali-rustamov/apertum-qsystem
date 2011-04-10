@@ -16,6 +16,7 @@
  */
 package ru.apertum.qsystem.server.model.calendar;
 
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -23,6 +24,7 @@ import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  *
@@ -68,13 +70,13 @@ public class QCalendarList extends DefaultListModel implements ComboBoxModel {
      * @return список всех календарей выкаченных из базы
      * @throws DataAccessException
      */
-    public static List<QCalendar> loadCalendarItems() throws DataAccessException {
+    public static LinkedList<QCalendar> loadCalendarItems() throws DataAccessException {
 
-        return (List<QCalendar>) Uses.getSessionFactory().execute(new HibernateCallback() {
+        return (LinkedList<QCalendar>) Uses.getSessionFactory().execute(new HibernateCallback() {
 
             @Override
             public Object doInHibernate(Session session) {
-                return (List<QCalendar>) session.createCriteria(QCalendar.class).list();
+                return new LinkedList<QCalendar>(session.createCriteria(QCalendar.class).list());
             }
         });
     }
@@ -87,7 +89,7 @@ public class QCalendarList extends DefaultListModel implements ComboBoxModel {
             }
         }
         if (res == null) {
-            throw new Uses.ServerException("Не найден календарь по имени: \"" + name + "\"");
+            throw new ServerException("Не найден календарь по имени: \"" + name + "\"");
         }
         return res;
     }

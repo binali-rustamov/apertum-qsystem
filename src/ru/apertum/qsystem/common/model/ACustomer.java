@@ -16,9 +16,8 @@
  */
 package ru.apertum.qsystem.common.model;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -40,9 +39,10 @@ import ru.apertum.qsystem.common.Uses;
 public abstract class ACustomer implements ICustomer {
 
     public ACustomer() {
-        xmlElement = DocumentHelper.createElement(Uses.TAG_CUSTOMER);
-        setId(new Date().getTime());
+        id = new Date().getTime();
     }
+    @Expose
+    @SerializedName("id")
     private Long id = new Date().getTime();
 
     @Id
@@ -54,29 +54,26 @@ public abstract class ACustomer implements ICustomer {
     }
 
     public void setId(Long id) {
-        xmlElement.addAttribute(Uses.TAG_ID, id.toString());
         this.id = id;
     }
-    /**
-     * ЭЛЕМЕНТ "ОЧЕРЕДНИКА"
-     */
-    protected final Element xmlElement;
-
     /**
      *  АТРИБУТЫ "ОЧЕРЕДНИКА"
      *  персональный номер, именно по нему система ведет учет и управление очередниками 
      * @param number новер - целое число
      */
+    @Expose
+    @SerializedName("number")
+    private Integer number;
+
     public void setNumber(Integer number) {
-        xmlElement.addAttribute(Uses.TAG_NUMBER, String.valueOf(number));
+        this.number = number;
     }
 
     @Column(name = "number")
     @Override
     public int getNumber() {
-        return new Integer(Integer.parseInt(xmlElement.attributeValue(Uses.TAG_NUMBER)));
+        return number;
     }
-
     /**
      * АТРИБУТЫ "ОЧЕРЕДНИКА"
      *  состояние кастомера, именно по нему система знает что сейчас происходит с кастомером
@@ -87,9 +84,13 @@ public abstract class ACustomer implements ICustomer {
      * @param state - состояние клиента
      * @see ru.apertum.qsystem.common.Uses
      */
+    @Expose
+    @SerializedName("state")
+    private Integer state;
+
     @Override
     public void setState(int state) {
-        xmlElement.addAttribute(Uses.TAG_STATE, String.valueOf(state));
+        this.state = state;
         // сохраним кастомера в базе
         if (Uses.isDBconnected() && state == Uses.STATE_FINISH) {
             Uses.log.logger.debug("Старт сохранения кастомера с номером \"" + getPrefix() + getNumber() + "\" в СУБД при статусе \"" + state + "\"");
@@ -112,7 +113,7 @@ public abstract class ACustomer implements ICustomer {
     @Transient
     @Override
     public int getState() {
-        return Integer.parseInt(xmlElement.attributeValue(Uses.TAG_STATE));
+        return state;
     }
 
     /**
@@ -121,41 +122,36 @@ public abstract class ACustomer implements ICustomer {
      * @param number номер клиента в очереди
      */
     public ACustomer(int number) {
-        try {
-            this.xmlElement = DocumentHelper.createElement(Uses.TAG_CUSTOMER);// создаем корневой элемент для кастомера
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Uses.ServerException("Не создан XML-элемент для кастомера.");
-        }
-        setNumber(number);
-        setId(new Date().getTime());
+        this.number = number;
+        id = new Date().getTime();
         setStandTime(new Date()); // действия по инициализации при постановке
-    // все остальные всойства кастомера об услуге куда попал проставятся в самой услуге при помещении кастомера в нее
+        // все остальные всойства кастомера об услуге куда попал проставятся в самой услуге при помещении кастомера в нее
 
     }
 
     /**
      * Создаем клиента имея его XML-представление
      * @param elemment XML-представление кастомера
+     * @deprecated 
      */
     public ACustomer(Element elemment) {
-        this.xmlElement = elemment;
-        setId(Long.parseLong(elemment.attributeValue(Uses.TAG_ID)));
     }
-
     /**
      *  ПРИОРИТЕТ "ОЧЕРЕДНИКА"  
      */
+    @Expose
+    @SerializedName("priority")
+    private Integer priority;
+
     @Override
     public void setPriority(int priority) {
-        xmlElement.addAttribute(Uses.TAG_PRIORITY, String.valueOf(priority));
+        this.priority = priority;
     }
 
     @Transient
     @Override
     public IPriority getPriority() {
-        return new Priority(Integer.parseInt(xmlElement.attributeValue(Uses.TAG_PRIORITY)));
+        return new Priority(priority);
     }
 
     /**
@@ -185,37 +181,13 @@ public abstract class ACustomer implements ICustomer {
         return result;
     }
 
-    protected void saveAttrDate(Date date, String attrName) {
-        DateFormat dateFormat = new SimpleDateFormat(Uses.DATE_FORMAT);
-        xmlElement.addAttribute(attrName, dateFormat.format(date));
-    }
-
-    protected Date loadAttrDate(String attrName) throws ParseException {
-        String df = xmlElement.attributeValue(attrName);
-        if (df == null) {
-            return null;
-        }
-        DateFormat dateFormat = new SimpleDateFormat(Uses.DATE_FORMAT);
-        return dateFormat.parse(df);
-    //java.util.Date formatedDate = dateFormat.parse(df);
-    //Date date = new Date(formatedDate.getTime());
-    //return date;
-    }
-
-    /**
-     * Вернет XML-строку, описывающую кастомера
-     */
-    @Override
-    public String toString() {
-        return xmlElement.asXML();
-    }
-
     /**
      * Вернет XML, описывающую кастомера.
      * @return описание кастомера в XML виде
+     * @deprecated 
      */
     @Override
     public Element toXML() {
-        return xmlElement;
+        return null;
     }
 }

@@ -25,6 +25,7 @@ import org.apache.http.impl.DefaultHttpServerConnection;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.BasicHttpContext;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 
 /**
  * Класс приема данных для Apache-HTTP Core
@@ -55,7 +56,7 @@ public class RunnableSocket implements Runnable {
         try {
             conn.bind(socket, QSystemHtmlInstance.htmlInstance().getParams());
         } catch (IOException ex) {
-            throw new Uses.ReportException("Not bind socket to connection." + ex);
+            throw new ReportException("Not bind socket to connection." + ex);
         }
 
         final HttpContext context = new BasicHttpContext(null);

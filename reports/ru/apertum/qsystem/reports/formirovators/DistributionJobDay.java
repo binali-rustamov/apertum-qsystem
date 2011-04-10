@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 
 /**
@@ -60,9 +61,9 @@ public class DistributionJobDay extends AFormirovator {
             Class.forName(driverClassName);
             connection = DriverManager.getConnection(url + (url.indexOf("?") == -1 ? "" : "&") + "user=" + username + "&password=" + password);
         } catch (SQLException ex) {
-            throw new Uses.ReportException(StatisticServices.class.getName() + " " + ex);
+            throw new ReportException(StatisticServices.class.getName() + " " + ex);
         } catch (ClassNotFoundException ex) {
-            throw new Uses.ReportException(StatisticServices.class.getName() + " " + ex);
+            throw new ReportException(StatisticServices.class.getName() + " " + ex);
         }
         return connection;
     }

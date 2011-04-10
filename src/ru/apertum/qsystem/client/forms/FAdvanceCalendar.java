@@ -23,12 +23,10 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import org.dom4j.Element;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -36,9 +34,11 @@ import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.IAdviceEvent;
 import ru.apertum.qsystem.client.model.QAvancePanel;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.cmd.RpcGetGridOfWeek.GridAndParams;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 
 /**
  * Created on 27.08.2009, 10:15:34
@@ -70,7 +70,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
     private static INetProperty netProperty;
     private static String serviceName;
     private static String siteMark;
-    private static Element result = null;
+    private static QAdvanceCustomer result = null;
     private static int delay = 10000;
     private static long advancedCustomer = -1;
 
@@ -83,9 +83,9 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
      * @param fullscreen растягивать форму на весь экран и прятать мышку или нет
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
      * @param advCustomer ID клиента предварительно идентифицированного, например в регистратуре по медполису
-     * @return XML-описание результата предварительной записи. если null, то отказались от предварительной записи
+     * @return  если null, то отказались от предварительной записи
      */
-    public static Element showCalendar(Frame parent, boolean modal, INetProperty netProperty, String serviceName, boolean fullscreen, int delay, long advCustomer) {
+    public static QAdvanceCustomer showCalendar(Frame parent, boolean modal, INetProperty netProperty, String serviceName, boolean fullscreen, int delay, long advCustomer) {
         FAdvanceCalendar.delay = delay;
         FAdvanceCalendar.advancedCustomer = advCustomer;
         Uses.log.logger.info("Выбор времени для предварительной записи");
@@ -518,10 +518,10 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         /**
          * Получим грид доступности часов для записи
          */
-        final Element res = NetCommander.getGridOfWeek(netProperty, serviceName, this.firstWeekDay, advancedCustomer);
-        if (res.attributeValue(Uses.TAG_START_TIME) == null) {
-            Uses.log.logger.error(res.getTextTrim());
-            JOptionPane.showConfirmDialog(this, res.getTextTrim(), getLocaleMessage("dialog.message.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+        final GridAndParams res = NetCommander.getGridOfWeek(netProperty, serviceName, this.firstWeekDay, advancedCustomer);
+        if (res.getSpError() != null) {
+            Uses.log.logger.error(res.getSpError());
+            JOptionPane.showConfirmDialog(this, res.getSpError(), getLocaleMessage("dialog.message.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
             return false;
         }
         showWeek(res, gc);
@@ -533,7 +533,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
      * @param res структура допустимых часов
      * @param gc первый день недели
      */
-    private void showWeek(Element res, GregorianCalendar gc) {
+    private void showWeek(GridAndParams res, GregorianCalendar gc) {
         // таймер закрытия диалога по таймауту
         if (delay != 0) {
             if (clockBack.isActive()) {
@@ -547,26 +547,10 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         /*
          * Часы работы услуги
          */
-
-        String time = res.attributeValue(Uses.TAG_START_TIME);
-
-        Date startWork;
-        try {
-            startWork = Uses.format_HH_mm.parse(time);
-        } catch (ParseException ex) {
-            throw new Uses.ServerException("Неправильный парсинг даты начала недели для определения ранее записавшихся.");
-        }
         final GregorianCalendar gc_time = new GregorianCalendar();
-        gc_time.setTime(startWork);
+        gc_time.setTime(res.getStartTime());
         int start = gc_time.get(GregorianCalendar.HOUR_OF_DAY);
-
-        time = res.attributeValue(Uses.TAG_FINISH_TIME);
-        try {
-            startWork = Uses.format_HH_mm.parse(time);
-        } catch (ParseException ex) {
-            throw new Uses.ServerException("Неправильный парсинг даты начала недели для определения ранее записавшихся.");
-        }
-        gc_time.setTime(startWork);
+        gc_time.setTime(res.getFinishTime());
         int finish = gc_time.get(GregorianCalendar.HOUR_OF_DAY) - 1;
 
         int finish_temp = 0;
@@ -581,7 +565,6 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         gc_now.set(GregorianCalendar.HOUR_OF_DAY, 24);
 
         Uses.log.logger.debug("Предварительная запись с " + start + " до " + finish + " часов.");
-        final int limit = Integer.parseInt(res.attributeValue(Uses.TAG_PROP_ADVANCE_LIMIT));
         /*
          * Разложим панельки-часы
          */
@@ -705,28 +688,20 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
      * Проверить время на доступность.
      * Нужно для реализации ограничения количества предварительно записанных в один час и кучерявого расписания.
      * @param date время предварительной записи для проверки
-     * @param el XML-список всех разрешенных времен
+     * @param params список всех разрешенных времен + параметры
      * @return количество предварительных на опр. время
      */
-    protected boolean checkTime(Date date, Element el) {
+    protected boolean checkTime(Date date, GridAndParams params) {
         final GregorianCalendar gc_client = new GregorianCalendar();
         final GregorianCalendar gc_now = new GregorianCalendar();
         gc_client.setTime(date);
         gc_now.setTime(new Date());
         // проверим не отлистал ли пользователь слишком далеко, куда уже нельзя
-        if (Math.abs(gc_client.get(GregorianCalendar.DAY_OF_YEAR) - gc_now.get(GregorianCalendar.DAY_OF_YEAR)) > Integer.parseInt(el.attributeValue(Uses.TAG_PROP_ADVANCE_PERIOD_LIMIT))
-                && Integer.parseInt(el.attributeValue(Uses.TAG_PROP_ADVANCE_PERIOD_LIMIT)) != 0) {
+        if (Math.abs(gc_client.get(GregorianCalendar.DAY_OF_YEAR) - gc_now.get(GregorianCalendar.DAY_OF_YEAR)) > params.getAdvanceLimitPeriod()
+                && params.getAdvanceLimitPeriod() != 0) {
             return false;
         }
-        for (Object o : el.elements(Uses.TAG_STAND_TIME)) {
-            final Element tm = (Element) o;
-            final String time = tm.attributeValue(Uses.TAG_START_TIME);
-            final Date clientTime;
-            try {
-                clientTime = Uses.format_for_trans.parse(time);
-            } catch (ParseException ex) {
-                throw new Uses.ServerException("Неправильный парсинг даты свободной для записи.");
-            }
+        for (Date clientTime : params.getTimes()) {
             final GregorianCalendar gc = new GregorianCalendar();
             gc.setTime(clientTime);
 

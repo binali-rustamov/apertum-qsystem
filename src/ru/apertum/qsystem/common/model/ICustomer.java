@@ -48,6 +48,7 @@ public interface ICustomer extends Comparable<ICustomer> {
     /**
      * этод метод должен возвращать XML - описание очередника
      * @return XML элемент, описывающий очередника
+     * @deprecated 
      */
     public Element toXML();
 

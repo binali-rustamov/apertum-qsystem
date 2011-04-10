@@ -16,14 +16,17 @@
  */
 package ru.apertum.qsystem.server.model.response;
 
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import org.apache.commons.collections.CollectionUtils;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  *
@@ -31,7 +34,7 @@ import ru.apertum.qsystem.common.Uses;
  */
 public class QResponseList extends DefaultListModel {
 
-    /**
+   /**
      * Singleton.
      */
     private static QResponseList instance = null;
@@ -80,6 +83,7 @@ public class QResponseList extends DefaultListModel {
         });
     }
 
+    @Deprecated
     public Element getXML() {
         // Соберем xml список для обратной связи
         Uses.log.logger.debug("Формируется XML-список для обратной связи.");
@@ -91,6 +95,12 @@ public class QResponseList extends DefaultListModel {
         return rootItem;
     }
 
+    public LinkedList<QRespItem> getQRespItems(){
+        final LinkedList<QRespItem> list = new LinkedList<QRespItem>();
+        CollectionUtils.addAll(list, elements());
+        return list;
+    }
+
     public QRespItem getByName(String name) {
         QRespItem res = null;
         for (Object o : toArray()) {
@@ -99,7 +109,7 @@ public class QResponseList extends DefaultListModel {
             }
         }
         if (res == null) {
-            throw new Uses.ServerException("Не найден отзыв по имени: \"" + name + "\"");
+            throw new ServerException("Не найден отзыв по имени: \"" + name + "\"");
         }
         return res;
     }

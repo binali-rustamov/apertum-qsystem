@@ -28,6 +28,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import ru.apertum.qsystem.client.forms.FBoardConfig;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Старт редактора конфигурации клиентского табло
@@ -41,16 +42,16 @@ public class TabloRedactor {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
 
         // проверить есть ли файл /config/clientboard.xml и если есть отправить его на редактирование
         if (args.length == 0) {
-            throw new Uses.ServerException("No param file context.");
+            throw new ServerException("No param file context.");
         }
         final File file = new File(args[0]);
         if (!file.exists()) {
-            throw new Uses.ServerException("File context not exist.");
+            throw new ServerException("File context not exist.");
         }
         filePath = args[0];
         Uses.log.logger.info("Загрузим файл " + file.getAbsolutePath());
@@ -58,7 +59,7 @@ public class TabloRedactor {
         try {
             root = reader.read(file).getRootElement();
         } catch (DocumentException ex) {
-            throw new Uses.ServerException("Невозможно прочитать файл настроек. " + ex.getMessage());
+            throw new ServerException("Невозможно прочитать файл настроек. " + ex.getMessage());
         }
         /*
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -106,14 +107,14 @@ public class TabloRedactor {
         try {
             fos = new FileOutputStream(new File(filePath));
         } catch (FileNotFoundException ex) {
-            throw new Uses.ServerException("Не возможно создать файл настроек табло. " + ex.getMessage());
+            throw new ServerException("Не возможно создать файл настроек табло. " + ex.getMessage());
         }
         try {
             fos.write(root.asXML().getBytes("UTF-8"));
             fos.flush();
             fos.close();
         } catch (IOException ex) {
-            throw new Uses.ServerException("Не возможно сохранить изменения в поток." + ex.getMessage());
+            throw new ServerException("Не возможно сохранить изменения в поток." + ex.getMessage());
         }
         Uses.log.logger.info("Состояние сохранено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
     }

@@ -16,13 +16,14 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import javax.persistence.Id;
-import ru.apertum.qsystem.common.model.ICustomer;
 import java.util.PriorityQueue;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -37,6 +38,8 @@ import javax.swing.tree.TreeNode;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
@@ -69,14 +72,29 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * множество кастомеров, вставших в очередь к этой услуге
      */
     @Transient
-    private final PriorityQueue<ICustomer> customers = new PriorityQueue<ICustomer>();
+    private final PriorityQueue<QCustomer> customers = new PriorityQueue<QCustomer>();
 
-    public ICustomer[] getCustomers() {
-        return customers.toArray(new ICustomer[0]);
+    public PriorityQueue<QCustomer> getCustomers() {
+        return customers;
     }
+    @Transient
+    //@Expose
+    //@SerializedName("clients")
+    private final LinkedList<QCustomer> clients = new LinkedList<QCustomer>(customers);
+
+    /**
+     * Это все кастомеры стоящие к этой услуге в виде списка
+     * @return
+     */
+    public LinkedList<QCustomer> getClients() {
+        return clients;
+    }
+
     @Id
     @Column(name = "id")
     //@GeneratedValue(strategy = GenerationType.AUTO) авто нельзя, т.к. id нужны для формирования дерева
+    @Expose
+    @SerializedName("id")
     private Long id = new Date().getTime();
 
     @Override
@@ -84,10 +102,12 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
         return id;
     }
 
-    public void setId(Long id) {
+    public final void setId(Long id) {
         this.id = id;
     }
     @Column(name = "status")
+    @Expose
+    @SerializedName("status")
     private Integer status;
 
     @Override
@@ -95,14 +115,16 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public final void setStatus(Integer status) {
         this.status = status;
     }
     @Column(name = "advance_limit")
+    @Expose
+    @SerializedName("advance_limit")
     private Integer advanceLimit = 1;
 
     @Override
-    public Integer getAdvanceLinit() {
+    public Integer getAdvanceLimit() {
         return advanceLimit;
     }
 
@@ -115,6 +137,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * может быть null или 0 если нет ограничения
      */
     @Column(name = "advance_limit_period")
+    @Expose
+    @SerializedName("advance_limit_period")
     private Integer advanceLimitPeriod = 0;
 
     public Integer getAdvanceLimitPeriod() {
@@ -134,6 +158,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      *  Только для БД.
      */
     @Column(name = "enable")
+    @Expose
+    @SerializedName("enable")
     private Integer enable = 1;
 
     public Integer getEnable() {
@@ -148,6 +174,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * обозначить результат этой работы выбрав пункт из словаря результатов
      */
     @Column(name = "result_required")
+    @Expose
+    @SerializedName("result_required")
     private Boolean result_required = false;
 
     public Boolean getResult_required() {
@@ -162,6 +190,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * данных перед постановкой в очередь после выбора услуги.
      */
     @Column(name = "input_required")
+    @Expose
+    @SerializedName("input_required")
     private Boolean input_required = false;
 
     public Boolean getInput_required() {
@@ -177,6 +207,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * Также печатается на талоне рядом с введенными данными.
      */
     @Column(name = "input_caption")
+    @Expose
+    @SerializedName("input_caption")
     private String input_caption = "";
 
     public String getInput_caption() {
@@ -191,6 +223,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * Если этот параметр пустой, то не требуется показывать информационную напоминалку на пункте регистрации
      */
     @Column(name = "pre_info_html")
+    @Expose
+    @SerializedName("pre_info_html")
     private String preInfoHtml = "";
 
     public String getPreInfoHtml() {
@@ -204,6 +238,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * текст для печати при необходимости перед постановкой в очередь
      */
     @Column(name = "pre_info_print_text")
+    @Expose
+    @SerializedName("pre_info_print_text")
     private String preInfoPrintText = "";
 
     public String getPreInfoPrintText() {
@@ -215,9 +251,11 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     }
     /**
      * последний номер, выданный последнему кастомеру при номерировании клиентов обособлено в услуге.
+     * тут такой замут. когда услугу создаешь из json где-то на клиенте, то там же спринг-контекст не поднят
+     * да и нужно это только в качестве данных.
      */
     @Transient
-    private int lastNumber = Uses.getNumeration().getFirstNumber() - 1;
+    private int lastNumber = Uses.spring.factory == null ? 0 : Uses.getNumeration().getFirstNumber() - 1;
     /**
      * последний номер, выданный последнему кастомеру при номерировании клиентов общем рядом для всех услуг.
      * Ограничение самого минимально возможного номера клиента при сквозном нумерировании
@@ -248,6 +286,10 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
         Uses.log.logger.trace("Очередь: \"" + service.getPrefix() + "\" \" " + service.getName() + "\" \" " + service.getDescription() + "\"");
     }
 
+    /**
+     * Получить номер для сделующего кастомера. Произойдет инкремент счетчика номеров.
+     * @return
+     */
     synchronized public int getNextNumber() {
         if (lastNumber >= Uses.getNumeration().getLastNumber()) {
             clearNextNumber();
@@ -280,13 +322,13 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * @param element XML-представление чего-либо требующее внесения в него информации
      * о услуге.
      */
-    private void updateInfo(Element elCustomer) {
-        final int number = Integer.parseInt(elCustomer.attributeValue(Uses.TAG_NUMBER));
-        if (elCustomer.attributeValue(Uses.TAG_PREFIX) == null) {
-            elCustomer.addAttribute(Uses.TAG_PREFIX, getPrefix());
+    private void updateInfo(QCustomer customer) {
+        final int number = customer.getNumber();
+        if (customer.getPrefix() == null) {
+            customer.setPrefix(getPrefix());
         } else {
             // тут бы не нужно проверять последний выданный если это происходит с редиректенныйм
-            if (Uses.STATE_REDIRECT != Integer.parseInt(elCustomer.attributeValue(Uses.TAG_STATE))) {
+            if (Uses.STATE_REDIRECT != customer.getState()) {
                 if (number > lastNumber) {
                     lastNumber = number;
                 }
@@ -295,8 +337,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
                 }
             }
         }
-        elCustomer.addAttribute(Uses.TAG_SERVICE, getName());
-        elCustomer.addAttribute(Uses.TAG_DESCRIPTION, getDescription());
+        customer.setServiceName(getName());
+        customer.setServiceDescription(getDescription());
     }
 
     // ***************************************************************************************
@@ -307,53 +349,61 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * при этом проставится название сервиса, в который всрал, и его описание,
      * если у кастомера нету префикса, то проставится и префикс.
      * @param customer это кастомер которого добавляем в очередь к услуге
-     * @return возвращаем XML-представление только что поставленного кастомера. Оно могло измениться в момент постановки.
      */
-    public Element addCustomer(ICustomer customer) {
-        updateInfo(customer.toXML());
-        if (!customers.add(customer)) {
-            throw new Uses.ServerException("Невозможно добавить нового кастомера в хранилище кастомеров.");
+    public void addCustomer(QCustomer customer) {
+        updateInfo(customer);
+        if (!getCustomers().add(customer)) {
+            throw new ServerException("Невозможно добавить нового кастомера в хранилище кастомеров.");
         }
-        return customer.toXML();
+        clients.clear();
+        clients.addAll(customers);
     }
 
     /**
      * Всего хорошего, все свободны!
      */
     public void freeCustomers() {
-        customers.clear();
+        getCustomers().clear();
+        clients.clear();
+        clients.addAll(customers);
     }
 
     /**
      * Получить, но не удалять.  NoSuchElementException при неудаче
      * @return первого в очереди кастомера
      */
-    public ICustomer getCustomer() {
-        return customers.element();
+    public QCustomer getCustomer() {
+        return getCustomers().element();
     }
 
     /**
      * Получить и удалить.  NoSuchElementException при неудаче
      * @return первого в очереди кастомера
      */
-    public ICustomer removeCustomer() {
-        return customers.remove();
+    public QCustomer removeCustomer() {
+        final QCustomer customer = getCustomers().remove();
+        clients.clear();
+        clients.addAll(customers);
+        return customer;
     }
 
     /**
      * Получить но не удалять. null при неудаче
      * @return первого в очереди кастомера
      */
-    public ICustomer peekCustomer() {
-        return customers.peek();
+    public QCustomer peekCustomer() {
+        return getCustomers().peek();
     }
 
     /** 
      * Получить и удалить. может вернуть null при неудаче
      * @return первого в очереди кастомера
      */
-    public ICustomer polCustomer() {
-        return customers.poll();
+    public QCustomer polCustomer() {
+        final QCustomer customer = getCustomers().poll();
+        clients.clear();
+        clients.addAll(customers);
+        return customer;
     }
 
     /**
@@ -361,15 +411,20 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * @param customer удаляемый кастомер
      * @return может вернуть false при неудаче
      */
-    public boolean removeCustomer(ICustomer customer) {
-        return customers.remove(customer);
+    public boolean removeCustomer(QCustomer customer) {
+        final Boolean res = getCustomers().remove(customer);
+        clients.clear();
+        clients.addAll(customers);
+        return res;
     }
 
     /** 
      *  Простая очистка очереди
      */
     public void clear() {
-        customers.clear();
+        getCustomers().clear();
+        clients.clear();
+        clients.addAll(customers);
     }
 
     /** 
@@ -377,26 +432,29 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * @return количество кастомеров в этой услуге
      */
     public int getCountCustomers() {
-        return customers.size();
+        return getCustomers().size();
     }
 
     /**
      * Сохранение всех кастомеров из очереди.
      * Все кастомеры в xml-виде помещаются в узел root.
      * @param root узел к которому помещаются xml-описания кастомеров в виде дочерних элементов
+     * @deprecated 
      */
     public void saveService(Element root) {
-        for (ICustomer customer : customers) {
+        for (QCustomer customer : getCustomers()) {
             root.add((Element) customer.toXML().clone());
         }
     }
     /**
      * Описание услуги.
      */
+    @Expose
+    @SerializedName("description")
     @Column(name = "description")
     private String description;
 
-    public void setDescription(String description) {
+    public final void setDescription(String description) {
         this.description = description;
     }
 
@@ -407,10 +465,12 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     /**
      * Префикс услуги.
      */
+    @Expose
+    @SerializedName("service_prefix")
     @Column(name = "service_prefix")
     private String prefix = "";
 
-    public void setPrefix(String prefix) {
+    public final void setPrefix(String prefix) {
         this.prefix = prefix == null ? "" : prefix;
     }
 
@@ -421,10 +481,12 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     /**
      * Наименование услуги.
      */
+    @Expose
+    @SerializedName("name")
     @Column(name = "name")
     private String name;
 
-    public void setName(String name) {
+    public final void setName(String name) {
         this.name = name;
     }
 
@@ -435,6 +497,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     /**
      * Надпись на кнопке услуги.
      */
+    @Expose
+    @SerializedName("buttonText")
     @Column(name = "button_text")
     private String buttonText;
 
@@ -443,7 +507,7 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
         return buttonText;
     }
 
-    public void setButtonText(String buttonText) {
+    public final void setButtonText(String buttonText) {
         this.buttonText = buttonText;
     }
     /**
@@ -492,6 +556,7 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
         return new Integer(100);
     }
 
+    @Deprecated
     @Override
     public Element getXML() {
 
@@ -531,6 +596,8 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     @Transient
     private QService parentService;
     @Transient
+    @Expose
+    @SerializedName("inner_services")
     private LinkedList<QService> childrenOfService = new LinkedList<QService>();
 
     public LinkedList<QService> getChildren() {

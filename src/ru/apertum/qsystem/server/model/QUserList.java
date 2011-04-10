@@ -17,10 +17,13 @@
 package ru.apertum.qsystem.server.model;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import javax.swing.DefaultListModel;
+import org.apache.commons.collections.CollectionUtils;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Список пользователей системы
@@ -36,7 +39,7 @@ public class QUserList extends DefaultListModel {
 
     /**
      * Доступ до Singleton
-     * @param poolGetter свойства услуг, по которым построится дерево услуг.
+     * @param usersGetter свойства услуг, по которым построится дерево услуг.
      * @return класс - деерво услуг.
      */
     public static QUserList getUserList(IUsersGetter usersGetter) {
@@ -44,6 +47,12 @@ public class QUserList extends DefaultListModel {
             resetUserList(usersGetter);
         }
         return instance;
+    }
+
+    public LinkedList<QUser> getUsers() {
+        final LinkedList<QUser> list = new LinkedList<QUser>();
+        CollectionUtils.addAll(list, elements());
+        return list;
     }
 
     /**
@@ -63,6 +72,11 @@ public class QUserList extends DefaultListModel {
         return instance;
     }
 
+    /**
+     *
+     * @return
+     * @deprecated 
+     */
     public Element getXML() {
         // Соберем xml дерево пользователей
         Uses.log.logger.debug("Формируется XML-дерево пользователей.");
@@ -82,7 +96,7 @@ public class QUserList extends DefaultListModel {
             }
         }
         if (res == null) {
-            throw new Uses.ServerException("Не найден пользователь по имени: \"" + name + "\"");
+            throw new ServerException("Не найден пользователь по имени: \"" + name + "\"");
         }
         return res;
     }

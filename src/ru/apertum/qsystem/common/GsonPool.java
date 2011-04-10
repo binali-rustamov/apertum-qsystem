@@ -4,6 +4,7 @@
  */
 package ru.apertum.qsystem.common;
 
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.pool.BasePoolableObjectFactory;
@@ -41,7 +42,7 @@ public class GsonPool extends SoftReferenceObjectPool {
         try {
             return (Gson) instance.borrowObject();
         } catch (Exception ex) {
-            throw new Uses.ServerException("Проблемы с gson pool. ", ex);
+            throw new ServerException("Проблемы с gson pool. ", ex);
         }
     }
 
@@ -49,7 +50,7 @@ public class GsonPool extends SoftReferenceObjectPool {
         try {
             instance.returnObject(gson);
         } catch (Exception ex) {
-            throw new Uses.ServerException("Проблемы с  gson pool. ", ex);
+            throw new ServerException("Проблемы с  gson pool. ", ex);
         }
     }
 }

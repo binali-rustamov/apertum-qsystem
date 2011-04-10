@@ -31,6 +31,7 @@ import java.io.Serializable;
 import javax.swing.JPanel;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.VideoPlayer;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Панель, имеющая фон, загруженный из ресурсов или из файла.
@@ -197,7 +198,7 @@ public class QPanel extends JPanel implements Serializable {
     public void setVideoFileName(String videoFile) {
         final File f = new File(videoFile);
         if (!f.exists()) {
-            throw new Uses.ServerException("Файл не сущестувет \"" + videoFile + "\"");
+            throw new ServerException("Файл не сущестувет \"" + videoFile + "\"");
         }
         final String oldValue = videoFile;
         this.videoFileName = videoFile;

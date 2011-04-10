@@ -34,9 +34,8 @@ public class JsonRPC20 {
         this.error = error;
     }
 
-    public JsonRPC20(String id, Object result) {
+    public JsonRPC20(String id) {
         this.id = id;
-        this.result = result;
     }
 
     public JsonRPC20(String method, CmdParams params) {
@@ -61,7 +60,7 @@ public class JsonRPC20 {
     }
     @Expose
     @SerializedName("method")
-    private String method;
+    protected String method;
 
     public void setMethod(String method) {
         this.method = method;
@@ -81,17 +80,6 @@ public class JsonRPC20 {
 
     public CmdParams getParams() {
         return params;
-    }
-    @Expose
-    @SerializedName("result")
-    private Object result;
-
-    public void setResult(Object result) {
-        this.result = result;
-    }
-
-    public Object getResult() {
-        return result;
     }
     @Expose
     @SerializedName("error")

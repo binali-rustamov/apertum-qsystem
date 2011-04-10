@@ -16,31 +16,22 @@
  */
 package ru.apertum.qsystem.server.model;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import javax.persistence.Id;
-import javax.xml.bind.JAXBException;
 import ru.apertum.qsystem.common.model.IProperty;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedList;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.dom4j.Attribute;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.hibernate.Criteria;
@@ -49,7 +40,7 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import ru.apertum.qsystem.common.Uses;
-import ru.apertum.qsystem.common.model.ICustomer;
+import ru.apertum.qsystem.common.model.QCustomer;
 
 /**
  * Это пользователь. По большому счету роль и пользователь совпадают в системе.
@@ -61,6 +52,8 @@ import ru.apertum.qsystem.common.model.ICustomer;
 @XmlRootElement(name = Uses.TAG_USER)
 public class QUser implements IUserProperty, Serializable {
 
+    @Expose
+    @SerializedName("id")
     private Long id;
 
     @Id
@@ -81,6 +74,8 @@ public class QUser implements IUserProperty, Serializable {
      * 1 - действующий
      * Только для БД.
      */
+    @Expose
+    @SerializedName("enable")
     private Integer enable = 1;
 
     @Column(name = "enable")
@@ -94,6 +89,8 @@ public class QUser implements IUserProperty, Serializable {
     /**
      * Параметр доступа к администрированию системы.
      */
+    @Expose
+    @SerializedName("is_admin")
     private Boolean adminAccess = false;
 
     public final void setAdminAccess(Boolean adminAccess) {
@@ -109,6 +106,8 @@ public class QUser implements IUserProperty, Serializable {
     /**
      * Параметр доступа к отчетам системы.
      */
+    @Expose
+    @SerializedName("is_report_access")
     private Boolean reportAccess = false;
 
     public final void setReportAccess(Boolean reportAccess) {
@@ -129,21 +128,40 @@ public class QUser implements IUserProperty, Serializable {
      * По наименованию услуги получаем Класс - описалово участия юзера в этой услуге/
      * Имя услуги -> IProperty
      */
-    private final QServiceList serviceList = new QServiceList();
+    private QServiceList serviceList = new QServiceList();
+    /**
+     * Количество услуг, которые обрабатывает юзер. // едет на коиента при логине
+     */
+    @Expose
+    @SerializedName("services_cnt")
+    private int servicesCnt = 0;
 
+    /**
+     * Количество услуг, которые обрабатывает юзер. // едет на коиента при логине
+     * @return
+     */
+    @Transient
+    public int getServicesCnt() {
+        return servicesCnt;
+    }
+
+    /**
+     * Множество услуг, которые обрабатывает юзер.
+     * По наименованию услуги получаем Класс - описалово участия юзера в этой услуге/
+     * Имя услуги -> IProperty
+     * @return Множество услуг, которые обрабатывает юзер.
+     */
     @Transient
     public final QServiceList getServiceList() {
+
         // определим сервисы пользователя
         // Их могли уже определить в конструкторе из файла.
         // Если из базы, то они еще пустые.
         if (flag && Uses.isDBconnected() && serviceList.size() == 0) {
             flag = false;
-            for (Iterator<QPlanService> itr = getPlanServices().iterator(); itr.hasNext();) {
-                final QPlanService planService = itr.next();
-                serviceList.addElement(planService);
-                Uses.log.logger.trace("\"" + name + "\" участвует в \"" + planService.getName() + "\" с коэфициентом \'" + planService.getValue() + "\'");
-            }
+            serviceList = new QServiceList(getPlanServices());
         }
+        servicesCnt = serviceList.size();
         return serviceList;
     }
     private boolean flag = true;
@@ -196,6 +214,7 @@ public class QUser implements IUserProperty, Serializable {
     public void deletePlanService(String serviceName) {
         final QPlanService planService = getServiceList().getByName(serviceName);
         serviceList.removeElement(planService);
+        servicesCnt = serviceList.size();
     }
     //************************************** Услуги юзера **************************************************************
     /**
@@ -206,7 +225,7 @@ public class QUser implements IUserProperty, Serializable {
      * возможно, с другим приоритетом, а эта ссылка становится null.
      */
     //@Transient
-    private ICustomer customer = null;
+    private QCustomer customer = null;
 
     /**
      * Конструктор для формирования из БД.
@@ -269,52 +288,43 @@ public class QUser implements IUserProperty, Serializable {
      * @return список услуг пользователя
      */
     @Transient
-    public List<QPlanService> getPlanServices() {
-        //return new LinkedList<QPlanService>();
+    public LinkedList<QPlanService> getPlanServices() {
 
-        return (List<QPlanService>) Uses.getSessionFactory().execute(new HibernateCallback() {
+        return (LinkedList<QPlanService>) Uses.getSessionFactory().execute(new HibernateCallback() {
 
             @Override
             public Object doInHibernate(Session session) {
                 Criteria crit = session.createCriteria(QPlanService.class);
                 Criterion user_id = Restrictions.eq("userId", id);
-                //Criterion name = Restrictions.like("name","P%");
-                //LogicalExpression orExp = Restrictions.or(price,name);
-                //crit.add(orExp);
                 crit.add(user_id);
-                //crit.add(Restrictions.ilike("description","for%"));
-                return crit.list();
+                return new LinkedList<QPlanService>(crit.list());
             }
         });
-        //return planServices;
-
     }
 
-    public void setCustomer(ICustomer customer) {
+    public void setCustomer(QCustomer customer) {
         if (customer == null && this.customer == null) {
             return;
         }
         if (customer == null && this.customer != null) {
             // если убирается кастомер, то надо убрать признак юзера, который работает с кастомером
-            Attribute attr = this.customer.toXML().attribute(Uses.TAG_USER);
-            if (attr != null) {
-                this.customer.toXML().remove(attr);
+            if (getCustomer().getUser() != null) {
+                getCustomer().setUser(null);
             }
             // раз юзера убрали, то и время начала работы этого юзера тож убирать
-            attr = this.customer.toXML().attribute(Uses.TAG_START_TIME);
-            if (attr != null) {
-                this.customer.toXML().remove(attr);
+            if (getCustomer().getStartTime() != null) {
+                getCustomer().setStartTime(null);
             }
         } else {
             // иначе кастомеру, определившимуся к юзеру, надо поставить признак работы с опред. юзером.
-            customer.toXML().addAttribute(Uses.TAG_USER, getName());
+            customer.setUser(this);
         }
         this.customer = customer;
     }
 
     @Transient
     @XmlTransient
-    public ICustomer getCustomer() {
+    public QCustomer getCustomer() {
         return customer;
     }
 
@@ -326,6 +336,7 @@ public class QUser implements IUserProperty, Serializable {
      * Сохранение обрабатываемого кастомера.
      * Кастомер в xml-виде помещаются в узел root.
      * @param root узел к которому помещается xml-описание кастомера в виде дочернего элемента
+     * @deprecated 
      */
     public void saveCastomer(Element root) {
         if (customer != null) {
@@ -337,6 +348,8 @@ public class QUser implements IUserProperty, Serializable {
      * В базе и xml зашифрован.
      */
     //@Column(name = "password")
+    @Expose
+    @SerializedName("pass")
     private String password = "";
 
     /**
@@ -344,13 +357,6 @@ public class QUser implements IUserProperty, Serializable {
      * @param password - зашифрованное слово
      */
     public final void setPassword(String password) {
-        /*final byte[] b = password.getBytes();
-        final byte col = b[b.length - 1];
-        for (byte i = 0; i < b.length - 2; i++) {
-        b[i] = (byte) ((-1) * (b[i] - (i + col * (i % 3))));
-        }
-        String res = new String(b);
-        this.password = res.substring(0, res.length() - 1 - col);*/
         this.password = password;
     }
 
@@ -360,28 +366,7 @@ public class QUser implements IUserProperty, Serializable {
      */
     @Override
     @Column(name = "password")
-    //@XmlAttribute(name = Uses.TAG_PASSWORD, required = true)
     public String getPassword() {
-        /*String up = this.password;
-        for (int i = 0; i < 21; i++) {
-        if (i > up.length()) {
-        up = up + '~';
-        }
-        }
-        final byte col;
-        if (password.length() > 20) {
-        col = 0;
-        } else {
-        col = (byte) (20 - password.length());
-        }
-        up = up + 'n';
-        final byte[] b = up.getBytes();
-        b[b.length - 1] = col;
-        
-        for (byte i = 0; i < b.length - 2; i++) {
-        b[i] = (byte) ((-1) * b[i] + (i + col * (i % 3)));
-        }
-        return new String(b);*/
         return password;
     }
 
@@ -396,6 +381,7 @@ public class QUser implements IUserProperty, Serializable {
     /**
      * Перебор всех услуг итератором, которые юзер обслуживает.
      * @return
+     * @deprecated 
      */
     @Override
     @Transient
@@ -425,7 +411,8 @@ public class QUser implements IUserProperty, Serializable {
     /**
      * Идентификатор рабочего места пользователя.
      */
-    //@Column(name = "point")
+    @Expose
+    @SerializedName("point")
     private String point;
 
     public final void setPoint(String point) {
@@ -434,14 +421,14 @@ public class QUser implements IUserProperty, Serializable {
 
     @Override
     @Column(name = "point")
-    //@XmlAttribute(name = Uses.TAG_USER_IDENTIFIER, required = true)
     public String getPoint() {
         return point;
     }
     /**
      * Название пользователя.
      */
-    //@Column(name = "name")
+    @Expose
+    @SerializedName("name")
     private String name;
 
     public final void setName(String name) {
@@ -450,7 +437,6 @@ public class QUser implements IUserProperty, Serializable {
 
     @Override
     @Column(name = "name")
-    //@XmlAttribute(name = Uses.TAG_USER_REPORT_ACCESS, required = true)
     public String getName() {
         return name;
     }
@@ -462,6 +448,11 @@ public class QUser implements IUserProperty, Serializable {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     *
+     * @return
+     * @deprecated 
+     */
     @Transient
     @Override
     public Element getXML() {
@@ -476,63 +467,15 @@ public class QUser implements IUserProperty, Serializable {
         user.add(getServiceList().getXML());
         return user;
     }
-    final static private JAXBContext AXB;
 
-    static {
-        try {
-            AXB = JAXBContext.newInstance(new Class[]{QUser.class});
-        } catch (JAXBException ex) {
-            throw new Uses.ServerException(ex);
-        }
-    }
-
-    public synchronized void marshal(OutputStream outputStream) {
-        try {
-            final Marshaller m = AXB.createMarshaller();
-            m.setProperty("jaxb.formatted.output", true);
-            m.marshal(this, outputStream);
-        } catch (JAXBException ex) {
-            throw new Uses.ServerException(ex);
-        }
-    }
-
-    public synchronized String marshal() {
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        marshal(os);
-        try {
-            return os.toString("utf8");
-        } catch (UnsupportedEncodingException ex) {
-            throw new Uses.ServerException(ex);
-        }
-    }
-
-    public static synchronized QUser unmarshal(InputStream inputStream) {
-        final Unmarshaller u;
-        try {
-            u = AXB.createUnmarshaller();
-            return (QUser) u.unmarshal(inputStream);
-        } catch (JAXBException ex) {
-            throw new Uses.ServerException(ex);
-        }
-    }
-
-    public static synchronized QUser unmarshal(String data) {
-        final Unmarshaller u;
-        try {
-            u = AXB.createUnmarshaller();
-            return (QUser) u.unmarshal(new ByteArrayInputStream(data.getBytes("uts8")));
-        } catch (JAXBException ex) {
-            throw new Uses.ServerException(ex);
-        } catch (UnsupportedEncodingException ex) {
-            throw new Uses.ServerException(ex);
-        }
-    }
-
+    @Deprecated
     @Transient
     @Override
     public Object getInstance() {
         return this;
     }
+    @Expose
+    @SerializedName("adress_rs")
     private Integer adressRS;
 
     public final void setAdressRS(Integer adressRS) {
@@ -541,7 +484,6 @@ public class QUser implements IUserProperty, Serializable {
 
     @Override
     @Column(name = "adress_rs")
-    //@XmlAttribute(name = Uses.TAG_USER_ADRESS_RS, required = true)
     public Integer getAdressRS() {
         return adressRS;
     }

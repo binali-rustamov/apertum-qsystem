@@ -25,15 +25,16 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.MemoryImageSource;
+import java.util.LinkedList;
 import javax.swing.JButton;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
-import org.dom4j.Element;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
+import ru.apertum.qsystem.server.model.response.QRespItem;
 
 /**
  * @author Evgeniy Egorov
@@ -71,15 +72,14 @@ public class FResponseDialog extends javax.swing.JDialog {
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
      * @return XML-описание результата предварительной записи, по сути это номерок. если null, то отказались от предварительной записи
      */
-    public static Long showResponseDialog(Frame parent, Element respList, boolean modal, boolean fullscreen, int delay) {
+    public static Long showResponseDialog(Frame parent, LinkedList<QRespItem> respList, boolean modal, boolean fullscreen, int delay) {
         FResponseDialog.delay = delay;
         Uses.log.logger.info("Выбор отзыва");
         if (respDialog == null) {
             respDialog = new FResponseDialog(parent, modal);
-            respDialog.panelMain.setLayout(new GridLayout(respList.elements().size(), 1));
-            for (Object o : respList.elements()) {
-                final Element el = (Element) o;
-                final RespButton button = new RespButton(el);
+            respDialog.panelMain.setLayout(new GridLayout(respList.size(), 1));
+            for (QRespItem item : respList) {
+                final RespButton button = new RespButton(item);
                 respDialog.panelMain.add(button);
             }
             respDialog.setTitle(getLocaleMessage("dialog.title"));
@@ -106,9 +106,9 @@ public class FResponseDialog extends javax.swing.JDialog {
 
         final Long id;
 
-        public RespButton(Element el) {
-            id = Long.parseLong(el.attributeValue(Uses.TAG_ID));
-            setText(el.getTextTrim());
+        public RespButton(QRespItem item) {
+            id = item.getId();
+            setText(item.getHTMLText());
             setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new BevelBorder(BevelBorder.RAISED)));
             addActionListener(new ActionListener() {
 

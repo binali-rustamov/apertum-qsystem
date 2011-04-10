@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.server.model.results;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -38,6 +40,8 @@ public class QResult implements Serializable {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Expose
+    @SerializedName("id")
     private Long id;
 
     public Long getId() {
@@ -51,6 +55,8 @@ public class QResult implements Serializable {
      * Текст результата работы клиента с пользователем
      */
     @Column(name = "name")
+    @Expose
+    @SerializedName("name")
     private String name;
 
     public String getName() {
@@ -61,7 +67,8 @@ public class QResult implements Serializable {
         this.name = name;
     }
 
-    public Element getXML(){
+    @Deprecated
+    public Element getXML() {
         final Element el = DocumentHelper.createElement(Uses.TAG_RESULT_ITEM);
         el.addAttribute(Uses.TAG_ID, getId().toString());
         el.addAttribute(Uses.TAG_PROP_NAME, getName());
@@ -72,6 +79,4 @@ public class QResult implements Serializable {
     public String toString() {
         return getName();
     }
-
-
 }

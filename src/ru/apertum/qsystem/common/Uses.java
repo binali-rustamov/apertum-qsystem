@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.common;
 
+import ru.apertum.qsystem.common.exceptions.ReportException;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
@@ -56,7 +58,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.transform.OutputKeys;
@@ -72,6 +73,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import ru.apertum.qsystem.client.Locales;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.server.model.Numeration;
 import ru.apertum.qsystem.server.model.QService;
@@ -268,13 +270,18 @@ public final class Uses {
     public static final String TASK_GET_USERS = "Получить перечень пользователей";
     public static final String TASK_GET_SELF = "Получить описание пользователя";
     public static final String TASK_GET_SELF_SERVICES = "Получить состояние очередей";
+    public static final String TASK_GET_POSTPONED_POOL = "Получить состояние пула отложенных";
+    public static final String TASK_INVITE_POSTPONED = "Вызвать отложенного из пула отложенных";
     public static final String TASK_GET_SELF_SERVICES_CHECK = "Получить состояние очередей с проверкой";
     public static final String TASK_INVITE_NEXT_CUSTOMER = "Получить следующего клиента";
     public static final String TASK_KILL_NEXT_CUSTOMER = "Удалить следующего клиента";
+    public static final String TASK_CUSTOMER_TO_POSTPON = "Клиента в пул отложенных";
+    public static final String TASK_POSTPON_CHANGE_STATUS = "Сменить статус отложенному";
     public static final String TASK_START_CUSTOMER = "Начать работу с клиентом";
     public static final String TASK_FINISH_CUSTOMER = "Закончить работу с клиентом";
     public static final String TASK_I_AM_LIVE = "Я горец!";
     public static final String TASK_RESTART = "RESTART";
+    public static final String TASK_REFRESH_POSTPONED_POOL = "NEW_POSTPONED_NOW";
     public static final String TASK_SERVER_STATE = "Получить состояние сервера";
     public static final String TASK_SET_SERVICE_FIRE = "Добавить услугу на горячую";
     public static final String TASK_DELETE_SERVICE_FIRE = "Удалить услугу на горячую";    // Наименования отчетов, сдесь писать исключительно маленькими латинскими буквами без пробелов
@@ -359,7 +366,7 @@ public final class Uses {
     /**
      * временный файл сохранения состояния для помехоустойчивости
      */
-    public static final String TEMP_STATE_FILE = "temp.xml";
+    public static final String TEMP_STATE_FILE = "temp.json";
     /**
      * временный файл сохранения текущей статистики для помехоустойчивости
      */
@@ -380,14 +387,6 @@ public final class Uses {
      * Константа возврата в пункт регистрации кол-во клиентов в очереди, в случае если услуга не оказывается учитывая расписание
      */
     public static final int LOCK_FREE_INT = 1000000011;
-    /**
-     * Ответ о запрете логина
-     */
-    public static final String ACCESS_DENY = "Доступ закрыт. Пользователь с такой ролью уже присутствует в системе.";
-    /**
-     * Ответ о превышении лицензионных пользователей
-     */
-    public static final String LICENSE_DENY = "Доступ закрыт. Ваши действия выходят за рамки действующей лицензии.";
     /**
      * Вопрос о живости
      */
@@ -520,87 +519,6 @@ public final class Uses {
     public static final Log log = new Log();
 
     /**
-     * Этот класс исключения использовать для програмной генерации исклюсений.
-     * Записывает StackTrace и  само исключение в лог.
-     * Это исключение не показывает диологовое окно при возникновении ошибки
-     * Используется в системе статистики и отчетов.
-     * @author Evgeniy Egorov
-     */
-    public static class ServerException extends RuntimeException {
-
-        public ServerException(String textException) {
-            super(textException);
-            //StringWriter out = new StringWriter();
-            //printStackTrace(new PrintWriter(out));
-            //log.logger.error("Error!\n"+out.toString(), this);
-            log.logger.error("Error! " + textException, this);
-        }
-
-        public ServerException(Exception ex) {
-            super(ex);
-            //StringWriter out = new StringWriter();
-            //printStackTrace(new PrintWriter(out));
-            //log.logger.error("Error!\n"+out.toString(), this);
-            log.logger.error("Error! " + ex.toString(), this);
-        }
-
-        public ServerException(String textException, Exception ex) {
-            super(textException, ex);
-            //StringWriter out = new StringWriter();
-            //printStackTrace(new PrintWriter(out));
-            //log.logger.error("Error!\n"+out.toString(), this);
-            log.logger.error("Error! " + textException + "\n" + ex.toString(), this);
-        }
-    }
-
-    /**
-     * Этот класс исключения использовать для програмной генерации исклюсений.
-     * Записывает StackTrace и  само исключение в лог.
-     * Это исключение не показывает диологовое окно при возникновении ошибки
-     * @author Evgeniy Egorov
-     */
-    public static class ReportException extends RuntimeException {
-
-        public ReportException(String textException) {
-            super(textException);
-            //StringWriter out = new StringWriter();
-            //printStackTrace(new PrintWriter(out));
-            //log.logger.error("Error!\n"+out.toString(), this);
-            logRep.logger.error("Error!", this);
-        }
-    }
-
-    /**
-     * Этот класс исключения использовать для програмной генерации исклюсений.
-     * Записывает StackTrace и  само исключение в лог.
-     * При возникновении ошибки показывается диалоговое окно с текстом ошибки.
-     * @author Evgeniy Egorov
-     * @see ServerException
-     */
-    public static class ClientException extends ServerException {
-
-        public ClientException(String textException) {
-            super(textException);
-            JOptionPane.showMessageDialog(null, textException, "Выполнение остановлено", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /**
-     * Этот класс исключения использовать для програмной генерации исклюсений.
-     * Записывает StackTrace и  само исключение в лог.
-     * При возникновении ошибки показывается диалоговое окно с текстом ошибки.
-     * @author Evgeniy Egorov
-     * @see ServerException
-     */
-    public static class ClientWarning {
-
-        public static void showWarning(String textWarning) {
-            log.logger.warn(textWarning);
-            JOptionPane.showMessageDialog(null, textWarning, "Сообщение об исключительной ситуации", JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
-    /**
      * Определение политики логирования.
      * @param args параметры командной строки
      * @param isServer показывает тип логируемого
@@ -633,7 +551,7 @@ public final class Uses {
             try {
                 settings.load(inStream);
             } catch (IOException ex) {
-                throw new Uses.ClientException("Проблемы с чтением версии. " + ex);
+                throw new ClientException("Проблемы с чтением версии. " + ex);
             }
         }
         Uses.log.logger.info("СТАРТ ЛОГИРОВАНИЯ. Логгер: " + Uses.log.logger.getName());
@@ -683,7 +601,7 @@ public final class Uses {
      */
     synchronized public static void setServerContext() {
         if (log == null) {
-            throw new Uses.ServerException("Логирование не определено.");
+            throw new ServerException("Логирование не определено.");
         }
         if (spring.factory == null) {
             try {
@@ -882,7 +800,7 @@ public final class Uses {
         try {
             adr = InetAddress.getByName(adress);
         } catch (UnknownHostException ex) {
-            throw new Uses.ServerException("Ошибка получения адреса по строке \'" + adress + "\". " + ex);
+            throw new ServerException("Ошибка получения адреса по строке \'" + adress + "\". " + ex);
         }
         return adr;
     }
@@ -901,7 +819,7 @@ public final class Uses {
         try {
             socket = new DatagramSocket();
         } catch (SocketException ex) {
-            throw new Uses.ServerException("Проблемы с сокетом UDP." + ex.getMessage());
+            throw new ServerException("Проблемы с сокетом UDP." + ex.getMessage());
         }
         try {
             socket.send(packet);
@@ -921,7 +839,7 @@ public final class Uses {
         try {
             sendUDPMessage(message, InetAddress.getByName("255.255.255.255"), port);
         } catch (UnknownHostException ex) {
-            throw new Uses.ServerException("Проблемы с адресом " + ex.getMessage());
+            throw new ServerException("Проблемы с адресом " + ex.getMessage());
         }
     }
 
@@ -956,7 +874,7 @@ public final class Uses {
                 try {
                     inStream = new DataInputStream(new FileInputStream(f));
                 } catch (FileNotFoundException ex) {
-                    throw new Uses.ServerException("Нет файла картинки \"" + resourceName + "\" " + ex);
+                    throw new ServerException("Нет файла картинки \"" + resourceName + "\" " + ex);
                 }
 
             } else {
@@ -1037,7 +955,7 @@ public final class Uses {
         } else if (request.indexOf("OPTIONS") == 0) {
             return "";
         } else {
-            throw new Uses.ReportException("Неправильный запрос \"" + request + "\".");
+            throw new ReportException("Неправильный запрос \"" + request + "\".");
         }
     }
 
@@ -1053,7 +971,7 @@ public final class Uses {
             try {
                 return URLDecoder.decode(pears[pears.length - 1], "utf-8");
             } catch (UnsupportedEncodingException ex) {
-                throw new Uses.ReportException("Неправильная кодировка запроса. " + ex);
+                throw new ReportException("Неправильная кодировка запроса. " + ex);
             }
         } else if (request.indexOf("GET") == 0) {
             final String in = request.substring(request.indexOf("GET") + 5, request.indexOf("HTTP") - 1);
@@ -1063,10 +981,10 @@ public final class Uses {
             try {
                 return URLDecoder.decode(in.substring(in.indexOf("?") + 1), "utf-8");
             } catch (UnsupportedEncodingException ex) {
-                throw new Uses.ReportException("Неправильная кодировка запроса. " + ex);
+                throw new ReportException("Неправильная кодировка запроса. " + ex);
             }
         } else {
-            throw new Uses.ReportException("Неправильный запрос \"" + request + "\".");
+            throw new ReportException("Неправильный запрос \"" + request + "\".");
         }
     }
 
@@ -1089,7 +1007,7 @@ public final class Uses {
                     try {
                         result.put(URLDecoder.decode(coocie[0], "utf-8"), coocie.length == 1 ? "" : URLDecoder.decode(coocie[1], "utf-8"));
                     } catch (UnsupportedEncodingException ex) {
-                        throw new Uses.ReportException("Неправильная кодировка параметров. " + ex);
+                        throw new ReportException("Неправильная кодировка параметров. " + ex);
                     }
                 }
                 return result;

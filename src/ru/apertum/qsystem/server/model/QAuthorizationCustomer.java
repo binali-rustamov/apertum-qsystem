@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 
 import java.util.Date;
@@ -43,6 +45,8 @@ public class QAuthorizationCustomer implements Serializable {
     @Id
     @Column(name = "id")
     //@GeneratedValue(strategy = GenerationType.AUTO)
+    @Expose
+    @SerializedName("id")
     private Long id;
 
     public Long getId() {
@@ -53,6 +57,8 @@ public class QAuthorizationCustomer implements Serializable {
         this.id = id;
     }
     @Column(name = "name")
+    @Expose
+    @SerializedName("name")
     private String name;
 
     public String getName() {
@@ -63,6 +69,8 @@ public class QAuthorizationCustomer implements Serializable {
         this.name = name;
     }
     @Column(name = "surname")
+    @Expose
+    @SerializedName("surname")
     private String surname;
 
     public String getSurname() {
@@ -73,6 +81,8 @@ public class QAuthorizationCustomer implements Serializable {
         this.surname = surname;
     }
     @Column(name = "otchestvo")
+    @Expose
+    @SerializedName("otchestvo")
     private String otchestvo;
 
     public String getOtchestvo() {
@@ -83,6 +93,8 @@ public class QAuthorizationCustomer implements Serializable {
         this.otchestvo = otchestvo;
     }
     @Column(name = "birthday")
+    @Expose
+    @SerializedName("birthday")
     @Temporal(TemporalType.TIMESTAMP)
     private Date birthday;
 
@@ -107,6 +119,11 @@ public class QAuthorizationCustomer implements Serializable {
     }
      */
 
+    /**
+     *
+     * @return
+     * @deprecated 
+     */
     public Element getXML() {
         final Element user = DocumentHelper.createElement(Uses.TAG_CUSTOMER);
         user.addAttribute(Uses.TAG_ID, getId().toString());

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 
 /**
@@ -61,9 +62,9 @@ public class DistributionWaitDayServices extends AFormirovator {
             Class.forName(driverClassName);
             connection = DriverManager.getConnection(url + (url.indexOf("?") == -1 ? "" : "&") + "user=" + username + "&password=" + password);
         } catch (SQLException ex) {
-            throw new Uses.ReportException(StatisticServices.class.getName() + " " + ex);
+            throw new ReportException(StatisticServices.class.getName() + " " + ex);
         } catch (ClassNotFoundException ex) {
-            throw new Uses.ReportException(StatisticServices.class.getName() + " " + ex);
+            throw new ReportException(StatisticServices.class.getName() + " " + ex);
         }
         return connection;
     }
@@ -167,19 +168,19 @@ public class DistributionWaitDayServices extends AFormirovator {
             }
         } catch (SQLException ex) {
             services_select.setLength(0);
-            throw new Uses.ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
+            throw new ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
         } finally {
             try {
                 conn.close();
             } catch (SQLException ex) {
-                throw new Uses.ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
+                throw new ReportException("Ошибка выполнения запроса для диалога ввода пользователя. " + ex);
             }
         }
         try {
             rs.close();
             stmt.close();
         } catch (SQLException ex) {
-            throw new Uses.ReportException("Ошибка закрытия запроса для диалога ввода пользователя. " + ex);
+            throw new ReportException("Ошибка закрытия запроса для диалога ввода пользователя. " + ex);
         }
         try {
             result.setData(new String(result.getData(), "UTF-8").replaceFirst("#DATA_FOR_TITLE#", "Распределение среднего времени ожидания внутри дня для услуги:").replaceFirst("#DATA_FOR_SERVICES#", services_select.toString()).getBytes("UTF-8"));

@@ -31,6 +31,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.reports.common.Report;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
 import ru.apertum.qsystem.server.model.infosystem.QInfoItem;
@@ -68,7 +70,7 @@ public class FromDBBuilder extends AServerPropertyBuilder {
         try {
             serverGetter.setNetProperty(loadNetByID(new Long(1)));
         } catch (Exception ex) {
-            throw new Uses.ServerException("Не созданы сетевые настройки." + ex.toString());
+            throw new ServerException("Не созданы сетевые настройки." + ex.toString());
         }
     }
 
@@ -88,7 +90,7 @@ public class FromDBBuilder extends AServerPropertyBuilder {
         try {
             serverGetter.setUsersGetter(new UsersGetter());
         } catch (Exception ex) {
-            throw new Uses.ServerException("Не созданы настройки пользователей." + ex.toString());
+            throw new ServerException("Не созданы настройки пользователей." + ex.toString());
         }
     }
 
@@ -97,7 +99,7 @@ public class FromDBBuilder extends AServerPropertyBuilder {
         try {
             serverGetter.setPoolGetter(new PoolGetter());
         } catch (Exception ex) {
-            throw new Uses.ServerException("Не созданы настройки сервисов." + ex.toString());
+            throw new ServerException("Не созданы настройки сервисов." + ex.toString());
         }
     }
 
@@ -118,7 +120,7 @@ public class FromDBBuilder extends AServerPropertyBuilder {
     }
 
     @Override
-    public void buildPoolSaver() throws Uses.ClientException {
+    public void buildPoolSaver() throws ClientException {
         serverGetter.setPoolSaver(new IPoolSaver() {
 
             @Override
@@ -193,17 +195,17 @@ public class FromDBBuilder extends AServerPropertyBuilder {
                     session.getTransaction().commit();
                 } catch (DataException ex) {
                     session.getTransaction().rollback();
-                    throw new Uses.ClientException("Ошибка выполнения операции изменения данных в БД(JDBC). Возможно введенные вами параметры не могут быть сохранены.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nSQL: " + ex.getSQL());
+                    throw new ClientException("Ошибка выполнения операции изменения данных в БД(JDBC). Возможно введенные вами параметры не могут быть сохранены.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nSQL: " + ex.getSQL());
                 } catch (HibernateException ex) {
                     session.getTransaction().rollback();
                     String ss = "";
                     for (StackTraceElement s : ex.getStackTrace()) {
                         ss = ss + "\n" + s.toString();
                     }
-                    throw new Uses.ClientException("Ошибка системы взаимодействия с БД(Hibetnate). Возможно некорректное поведение соответствующей библиотеки.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nMessages: " + ss);
+                    throw new ClientException("Ошибка системы взаимодействия с БД(Hibetnate). Возможно некорректное поведение соответствующей библиотеки.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nMessages: " + ss);
                 } catch (Exception ex) {
                     session.getTransaction().rollback();
-                    throw new Uses.ClientException("Ошибка при сохранении \n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + "\n" + ex.getStackTrace() + ")");
+                    throw new ClientException("Ошибка при сохранении \n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + "\n" + ex.getStackTrace() + ")");
                 } finally {
                     session.close();
                 }
@@ -273,7 +275,7 @@ public class FromDBBuilder extends AServerPropertyBuilder {
                 }
             }
             if (srv == null) {
-                throw new Uses.ServerException("Невозможно определить корень описчания услуг.");
+                throw new ServerException("Невозможно определить корень описчания услуг.");
             }
             return srv;
         }

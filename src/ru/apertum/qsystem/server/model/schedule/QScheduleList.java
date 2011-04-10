@@ -16,6 +16,7 @@
  */
 package ru.apertum.qsystem.server.model.schedule;
 
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -23,6 +24,7 @@ import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  *
@@ -68,13 +70,13 @@ public class QScheduleList extends DefaultListModel implements ComboBoxModel {
      * @return список всех отзывов выкаченных из базы
      * @throws DataAccessException
      */
-    private List<QSchedule> loadScheduleItems() throws DataAccessException {
+    private LinkedList<QSchedule> loadScheduleItems() throws DataAccessException {
 
-        return (List<QSchedule>) Uses.getSessionFactory().execute(new HibernateCallback() {
+        return (LinkedList<QSchedule>) Uses.getSessionFactory().execute(new HibernateCallback() {
 
             @Override
             public Object doInHibernate(Session session) {
-                return (List<QSchedule>) session.createCriteria(QSchedule.class).list();
+                return new LinkedList<QSchedule>(session.createCriteria(QSchedule.class).list());
             }
         });
     }
@@ -87,7 +89,7 @@ public class QScheduleList extends DefaultListModel implements ComboBoxModel {
             }
         }
         if (res == null) {
-            throw new Uses.ServerException("Не найден план по имени: \"" + name + "\"");
+            throw new ServerException("Не найден план по имени: \"" + name + "\"");
         }
         return res;
     }

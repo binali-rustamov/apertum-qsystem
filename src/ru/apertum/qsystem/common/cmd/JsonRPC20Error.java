@@ -19,6 +19,7 @@ package ru.apertum.qsystem.common.cmd;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import java.util.HashMap;
 
 /**
  *
@@ -26,12 +27,31 @@ import com.google.gson.annotations.SerializedName;
  */
 public class JsonRPC20Error {
 
+    public static final Integer UNKNOWN_ERROR = -1;
+    public static final Integer RESPONCE_NOT_SAVE = 2;
+    public static final Integer POSTPONED_NOT_FOUND = 3;
+
+    public static final class ErrorCode {
+
+        private static final HashMap<Integer, String> MESSAGE = new HashMap<Integer, String>();
+
+        public static String getMessage(Integer code) {
+            return MESSAGE.get(code);
+        }
+
+        static {
+            MESSAGE.put(UNKNOWN_ERROR, "Unknown error.");
+            MESSAGE.put(RESPONCE_NOT_SAVE, "Не сохранили отзыв в базе.");
+            MESSAGE.put(POSTPONED_NOT_FOUND, "Отложенный пользователь не найден по его ID.");
+        }
+    }
+
     public JsonRPC20Error() {
     }
 
-    public JsonRPC20Error(Integer code, String message, Object data) {
+    public JsonRPC20Error(Integer code, Object data) {
         this.code = code;
-        this.message = message;
+        this.message = ErrorCode.getMessage(code);
         this.data = data;
     }
 

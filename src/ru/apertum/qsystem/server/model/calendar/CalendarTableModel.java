@@ -19,6 +19,7 @@ package ru.apertum.qsystem.server.model.calendar;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import org.hibernate.Criteria;
@@ -29,6 +30,7 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.DataException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
  * Модель для отображения сетки календаля
@@ -55,16 +57,16 @@ public class CalendarTableModel extends AbstractTableModel {
      * @param calcId id календаря
      * @return список выходных дней определенного календаря
      */
-    public static List<FreeDay> getFreeDays(final Long calcId) {
+    public static LinkedList<FreeDay> getFreeDays(final Long calcId) {
 
-        return (List<FreeDay>) Uses.getSessionFactory().execute(new HibernateCallback() {
+        return (LinkedList<FreeDay>) Uses.getSessionFactory().execute(new HibernateCallback() {
 
             @Override
             public Object doInHibernate(Session session) {
                 Criteria crit = session.createCriteria(FreeDay.class);
                 Criterion calendar_id = Restrictions.eq("calendarId", calcId);
                 crit.add(calendar_id);
-                return crit.list();
+                return new LinkedList<FreeDay>(crit.list());
             }
         });
     }
@@ -195,17 +197,17 @@ public class CalendarTableModel extends AbstractTableModel {
             Uses.log.logger.debug("Сохранили новый календарь");
         } catch (DataException ex) {
             session.getTransaction().rollback();
-            throw new Uses.ClientException("Ошибка выполнения операции изменения данных в БД(JDBC). Возможно введенные вами параметры не могут быть сохранены.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nSQL: " + ex.getSQL());
+            throw new ClientException("Ошибка выполнения операции изменения данных в БД(JDBC). Возможно введенные вами параметры не могут быть сохранены.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nSQL: " + ex.getSQL());
         } catch (HibernateException ex) {
             session.getTransaction().rollback();
             String ss = "";
             for (StackTraceElement s : ex.getStackTrace()) {
                 ss = ss + "\n" + s.toString();
             }
-            throw new Uses.ClientException("Ошибка системы взаимодействия с БД(Hibetnate).\n Возможно существуют вновь добавленные календари которые еще не сохранены.\nПопробуйте предварительно сохранить конфигурацию.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nMessages: " + ss);
+            throw new ClientException("Ошибка системы взаимодействия с БД(Hibetnate).\n Возможно существуют вновь добавленные календари которые еще не сохранены.\nПопробуйте предварительно сохранить конфигурацию.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nMessages: " + ss);
         } catch (Exception ex) {
             session.getTransaction().rollback();
-            throw new Uses.ClientException("Ошибка при сохранении \n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + "\n" + ex.getStackTrace() + ")");
+            throw new ClientException("Ошибка при сохранении \n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + "\n" + ex.getStackTrace() + ")");
         } finally {
             session.close();
         }

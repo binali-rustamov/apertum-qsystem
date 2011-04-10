@@ -39,6 +39,7 @@ import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.CodepagePrintStream;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
  * Created on 25 Май 2009 г., 13:11
@@ -514,14 +515,14 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
     try {
         fos = new FileOutputStream(filePath);
     } catch (FileNotFoundException ex) {
-        throw new Uses.ClientException(getLocaleMessage("servercfg.file.error") + ex.getMessage());
+        throw new ClientException(getLocaleMessage("servercfg.file.error") + ex.getMessage());
     }
     try {
         fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\" \"spring-beans-2.0.dtd\">\n" + root.asXML()).getBytes("UTF-8"));
         fos.flush();
         fos.close();
     } catch (IOException ex) {
-        throw new Uses.ClientException(getLocaleMessage("servercfg.stream.error") + ex.getMessage());
+        throw new ClientException(getLocaleMessage("servercfg.stream.error") + ex.getMessage());
     }
     System.exit(0);
 }//GEN-LAST:event_onClickOK

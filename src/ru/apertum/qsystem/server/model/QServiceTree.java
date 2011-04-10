@@ -20,6 +20,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Дерево услуг.
@@ -95,7 +96,7 @@ public class QServiceTree extends DefaultTreeModel {
         serviceByNameName = name;
         go(getRoot(), 2);
         if (serviceByName == null) {
-            throw new Uses.ServerException("Не найдена услуга по имени \"" + name + "\"");
+            throw new ServerException("Не найдена услуга по имени \"" + name + "\"");
         }
         return serviceByName;
     }
@@ -122,6 +123,7 @@ public class QServiceTree extends DefaultTreeModel {
     /**
      * Сохранить деорево услуг в виде XML
      * @return Element - корень всех услуг.
+     * @deprecated
      */
     public Element getXML() {
         final Element rootServ = getRoot().getXML();
@@ -130,6 +132,12 @@ public class QServiceTree extends DefaultTreeModel {
         return rootServ;
     }
 
+    /**
+     *
+     * @param elRoot
+     * @param servRoot
+     * @deprecated
+     */
     private void setXML(Element elRoot, QService servRoot) {
         for (QService service : servRoot.getChildren()) {
             final Element child = service.getXML();
@@ -169,12 +177,14 @@ public class QServiceTree extends DefaultTreeModel {
 
     /**
      * Перебор всех услуг до одной включая корень и узлы
+     * @param root
+     * @param listener 
      */
-    public void sailToStorm(QService root, ISailListener listener) {
+    public static void sailToStorm(QService root, ISailListener listener) {
         seil(root, listener);
     }
 
-    private void seil(QService parent, ISailListener listener) {
+    private static void seil(QService parent, ISailListener listener) {
         listener.actionPerformed(parent);
         for (QService service : parent.getChildren()) {
             seil(service, listener);

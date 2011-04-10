@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
@@ -37,6 +38,7 @@ import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.QUserList;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
  * Created on 27 Февраль 2009 г., 14:32
@@ -62,7 +64,7 @@ public class FLogin extends javax.swing.JDialog {
     /**
      * Описание юзера по его названию.
      */
-    private HashMap<String, Element> usersEls = new HashMap<String, Element>();
+    private HashMap<String, QUser> usersEls = new HashMap<String, QUser>();
     /**
      * Уровни логирования
      */
@@ -131,34 +133,27 @@ public class FLogin extends javax.swing.JDialog {
         this.userGetter = new GetUserFromServer();
         setLevel(level);
 
-        final Element users = NetCommander.getUsers(netProperty);
-
-        final List<Element> elUsers = users.elements(Uses.TAG_USER);
+        final LinkedList<QUser> users = NetCommander.getUsers(netProperty);
 
         String str = "";
-        final HashMap<String, Integer> map = new HashMap<String, Integer>();
-        for (int i = 0; i < elUsers.size(); i++) {
-            final Element usr = elUsers.get(i);
-            final String adm = usr.attributeValue(Uses.TAG_USER_ADMIN_ACCESS);
-            final String rpt = usr.attributeValue(Uses.TAG_USER_REPORT_ACCESS);
+        for (QUser user : users) {
             boolean flag = false;
             switch (getLevel()) {
                 case LEVEL_ADMIN:
-                    flag = "1".equals(adm) || "true".equals(adm.toLowerCase());
+                    flag = user.getAdminAccess();
                     break;
                 case LEVEL_REPORT:
-                    flag = "1".equals(rpt) || "true".equals(rpt.toLowerCase());
+                    flag = user.getReportAccess();
                     break;
                 case LEVEL_USER:
-                    flag = !Uses.elements(usr, Uses.TAG_PROP_OWN_SRV).isEmpty();
+                    flag = user.getServicesCnt() != 0;
                     break;
             }
 
             if (flag) {
-                final String s = elUsers.get(i).attributeValue(Uses.TAG_NAME);
+                final String s = user.getName();
                 str = str + s + '#';
-                map.put(s, i);
-                usersEls.put(s, elUsers.get(i));
+                usersEls.put(s, user);
             }
         }
         afterCreate(str);
@@ -230,9 +225,9 @@ public class FLogin extends javax.swing.JDialog {
      * @param modal режим модальности
      * @param count количество неудачных попыток, если 0 то бесконечно
      * @param level Уровень доступа, см. LEVEL_USER, LEVEL_REPORT, LEVEL_ADMIN
-     * @return XML-описание залогиневшегося юзера.
+     * @return залогиневшiйся юзер.
      */
-    public static Element logining(INetProperty netProperty, JFrame owner, boolean modal, int count, int level) {
+    public static QUser logining(INetProperty netProperty, JFrame owner, boolean modal, int count, int level) {
         Uses.log.logger.info("Вход в систему.");
         if (loginForm == null) {
             loginForm = new FLogin(netProperty, owner, modal, level);
@@ -264,9 +259,9 @@ public class FLogin extends javax.swing.JDialog {
      * @param modal режим модальности
      * @param count количество неудачных попыток, если 0 то бесконечно
      * @param level Уровень доступа, см. LEVEL_USER, LEVEL_REPORT, LEVEL_ADMIN
-     * @return XML-описание залогиневшегося юзера.
+     * @return залогиневшийся юзер.
      */
-    public static Element logining(QUserList userList, JFrame owner, boolean modal, int count, int level) {
+    public static QUser logining(QUserList userList, JFrame owner, boolean modal, int count, int level) {
         Uses.log.logger.info("Вход в систему.");
         if (loginForm == null) {
             loginForm = new FLogin(userList, owner, modal, level);
@@ -296,14 +291,14 @@ public class FLogin extends javax.swing.JDialog {
      */
     private interface IGetUser {
 
-        public Element getUser();
+        public QUser getUser();
     }
     private IGetUser userGetter;
 
     private class GetUserFromServer implements IGetUser {
 
         @Override
-        public Element getUser() {
+        public QUser getUser() {
             return usersEls.get((String) comboBoxUser.getSelectedItem());
         }
     }
@@ -311,24 +306,22 @@ public class FLogin extends javax.swing.JDialog {
     private class GetUserFromList implements IGetUser {
 
         @Override
-        public Element getUser() {
-            return userList.getByName((String) comboBoxUser.getSelectedItem()).getXML();
+        public QUser getUser() {
+            return userList.getByName((String) comboBoxUser.getSelectedItem());
         }
     }
 
     private boolean checkLogin() {
-        final Element user = userGetter.getUser();
-        final String adm = user.attributeValue(Uses.TAG_USER_ADMIN_ACCESS);
-        final String rpt = user.attributeValue(Uses.TAG_USER_REPORT_ACCESS);
+        final QUser user = userGetter.getUser();
         switch (getLevel()) {
             case LEVEL_ADMIN:
-                if (!("1".equals(adm) || "true".equals(adm.toLowerCase()))) {
+                if (!user.getAdminAccess()) {
                     JOptionPane.showMessageDialog(this, getLocaleMessage("messages.noAccess.mess"), getLocaleMessage("messages.noAccess.caption"), JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
                 break;
             case LEVEL_REPORT:
-                if (!("1".equals(rpt) || "true".equals(rpt.toLowerCase()))) {
+                if (!user.getReportAccess()) {
                     JOptionPane.showMessageDialog(this, getLocaleMessage("messages.noAccess.mess"), getLocaleMessage("messages.noAccess.caption"), JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
@@ -336,11 +329,11 @@ public class FLogin extends javax.swing.JDialog {
             case LEVEL_USER:
                 break;
             default:
-                throw new Uses.ClientException("Нет такого уровня доступа.");
+                throw new ClientException("Нет такого уровня доступа.");
 
         }
 
-        final String userPass = user.attributeValue(Uses.TAG_PASSWORD);
+        final String userPass = user.getPassword();
         if (!userPass.equals(new String(passwordField.getPassword()))) {
             JOptionPane.showMessageDialog(this, getLocaleMessage("messages.noAccessUser.mess"), getLocaleMessage("messages.noAccess.caption"), JOptionPane.ERROR_MESSAGE);
             return false;

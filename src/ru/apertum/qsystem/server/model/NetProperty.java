@@ -139,6 +139,7 @@ public class NetProperty implements INetProperty, Serializable {
     public NetProperty() {
     }
 
+    @Deprecated
     public NetProperty(Element netProp) throws Exception {
         // выберем параметры коннекта
         serverPort = Integer.parseInt(netProp.attributeValue(Uses.TAG_PROP_SERV_PORT));
@@ -180,6 +181,7 @@ public class NetProperty implements INetProperty, Serializable {
         return serverAddress;
     }
 
+    @Deprecated
     @Override
     public Element getXML() {
         //<Сеть ПортСервера="3128" ПортВебСервера="8080" ПортКлиента="3129" АдресСервера="localhost" ВремяНачалаРаботы="8:45" ВремяЗавершенияРаботы="20:45"/>

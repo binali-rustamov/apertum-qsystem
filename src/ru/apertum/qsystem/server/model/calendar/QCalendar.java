@@ -22,7 +22,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Класс календаря для расписания.
@@ -71,7 +71,7 @@ public class QCalendar implements Serializable {
             return false;
         }
         if (!(o instanceof QCalendar)){
-            throw new TypeNotPresentException("Неправильный тип для сравнения", new Uses.ServerException("Неправильный тип для сравнения"));
+            throw new TypeNotPresentException("Неправильный тип для сравнения", new ServerException("Неправильный тип для сравнения"));
         }
         return id.equals(((QCalendar)o).id);
     }

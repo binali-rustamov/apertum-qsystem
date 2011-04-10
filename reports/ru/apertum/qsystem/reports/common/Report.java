@@ -29,6 +29,7 @@ import javax.persistence.Table;
 import net.sf.jasperreports.engine.JRDataSource;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.formirovators.IFormirovator;
 import ru.apertum.qsystem.reports.model.AGenerator;
 
@@ -64,12 +65,12 @@ public class Report extends AGenerator implements Serializable {
         try {
             formirovator = (IFormirovator) Class.forName(getClassName()).newInstance();
         } catch (InstantiationException ex) {
-            throw new Uses.ReportException("Чет не в порядке \"" + className + "\". " + ex);
+            throw new ReportException("Чет не в порядке \"" + className + "\". " + ex);
         } catch (IllegalAccessException ex) {
-            throw new Uses.ReportException("Нет доступа \"" + className + "\". " + ex);
+            throw new ReportException("Нет доступа \"" + className + "\". " + ex);
 
         } catch (ClassNotFoundException ex) {
-            throw new Uses.ReportException("Класс не найден \"" + className + "\". " + ex);
+            throw new ReportException("Класс не найден \"" + className + "\". " + ex);
         }
     }
     private IFormirovator formirovator;

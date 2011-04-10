@@ -22,11 +22,11 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
-import org.dom4j.Element;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.common.model.NetCommander;
@@ -53,7 +53,7 @@ public class FStandAdvance extends javax.swing.JDialog {
     private static INetProperty netProperty;
     private static String serviceName;
     private static String siteMark;
-    private static Element result = null;
+    private static RpcStandInService result = null;
     private static int delay = 10000;
 
     private static ResourceMap localeMap = null;
@@ -74,7 +74,7 @@ public class FStandAdvance extends javax.swing.JDialog {
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
      * @return XML-описание результата предварительной записи, по сути это номерок. если null, то отказались от предварительной записи
      */
-    public static Element showAdvanceStandDialog(Frame parent, boolean modal, INetProperty netProperty, boolean fullscreen, int delay) {
+    public static RpcStandInService showAdvanceStandDialog(Frame parent, boolean modal, INetProperty netProperty, boolean fullscreen, int delay) {
         FStandAdvance.delay = delay;
         Uses.log.logger.info("Ввод кода предварительной записи");
         if (standAdvance == null) {
@@ -459,15 +459,6 @@ public class FStandAdvance extends javax.swing.JDialog {
                 clockBack.stop();
             }
             result = NetCommander.standAndCheckAdvance(netProperty, Long.parseLong(labelKod.getText()));
-            if (result.nodeCount() != 0) {
-                for (Object o : result.elements()) {
-                    final Element el = (Element) o;
-                    if (el.attributeValue(Uses.TAG_ID) != null) {
-                        result = el;
-                        break;
-                    }
-                }
-            }
             setVisible(false);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
