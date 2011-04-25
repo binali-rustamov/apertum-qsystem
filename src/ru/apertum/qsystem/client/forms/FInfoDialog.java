@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.server.model.infosystem.QInfoItem;
 
@@ -98,7 +99,7 @@ public class FInfoDialog extends javax.swing.JDialog {
      */
     public static Long showResponseDialog(Frame parent, QInfoItem respList, boolean modal, boolean fullscreen, int delay) {
         FInfoDialog.delay = delay;
-        Uses.log.logger.info("Чтение информации");
+        QLog.l().logger().info("Чтение информации");
         if (infoDialog == null) {
             infoDialog = new FInfoDialog(parent, modal);
             infoDialog.setTitle(getLocaleMessage("dialog.title"));
@@ -106,7 +107,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         FInfoDialog.setRoot(respList);
         FInfoDialog.result = null;
         Uses.setLocation(infoDialog);
-        if (!(Uses.isDebug || Uses.isDemo && !fullscreen)) {
+        if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {
             Uses.setFullSize(infoDialog);
             int[] pixels = new int[16 * 16];
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
@@ -206,9 +207,9 @@ public class FInfoDialog extends javax.swing.JDialog {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    //if (!el.elements().isEmpty()) {
-                    infoDialog.showLevel(el);
-                    //}
+                    if (!el.isLeaf() || (el.isLeaf() && el.getTextPrint() != null && !"".equals(el.getTextPrint()))) {
+                        infoDialog.showLevel(el);
+                    }
                 }
             });
         }
@@ -445,7 +446,7 @@ public class FInfoDialog extends javax.swing.JDialog {
 
     @Action
     public void printInfo() {
-        Uses.log.logger.info("Печать информации");
+        QLog.l().logger().info("Печать информации");
         // Узнать, есть ли информация для печати
         if (level.getTextPrint() != null && !level.getTextPrint().isEmpty()) {
             FWelcome.printPreInfoText(level.getTextPrint());

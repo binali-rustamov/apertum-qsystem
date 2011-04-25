@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,9 +30,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import ru.apertum.qsystem.common.Uses;
 
 /**
  * Класс предварительно записанного кастомера.
@@ -113,19 +110,4 @@ public class QAdvanceCustomer implements Serializable {
     public void setAuthorizationCustomer(QAuthorizationCustomer authorizationCustomer) {
         this.authorizationCustomer = authorizationCustomer;
     }
-
-    /**
-     *
-     * @return
-     * @deprecated 
-     */
-    public Element getXML() {
-        final Element user = DocumentHelper.createElement(Uses.TAG_CUSTOMER);
-        user.addAttribute(Uses.TAG_START_TIME, Uses.format_for_trans.format(getAdvanceTime()));
-        user.addAttribute(Uses.TAG_PRIORITY, getPriority().toString());
-        user.addAttribute(Uses.TAG_ID, getId().toString());
-        user.addAttribute(Uses.TAG_SERVICE, getService().getName());
-        user.addAttribute(Uses.TAG_AUTH_CUSTOMER_ID, getAuthorizationCustomer() == null ? "-1" : getAuthorizationCustomer().getId().toString());
-        return user;
-    }
-}
+ }

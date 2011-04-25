@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  */
 package ru.apertum.qsystem.client.model;
 
+import ru.apertum.qsystem.client.common.WelcomeParams;
 import ru.apertum.qsystem.common.model.NetCommander;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -34,7 +35,7 @@ import ru.apertum.qsystem.client.forms.FConfirmationStart;
 import ru.apertum.qsystem.client.forms.FInputDialog;
 import ru.apertum.qsystem.client.forms.FPreInfoDialog;
 import ru.apertum.qsystem.client.forms.FWelcome;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
@@ -89,7 +90,7 @@ public class QButton extends JButton {
                 b = new byte[inStream.available()];
                 inStream.readFully(b);
             } catch (IOException ex) {
-                Uses.log.logger.error(ex);
+                QLog.l().logger().error(ex);
             }
             background = new ImageIcon(b).getImage();
         }
@@ -128,7 +129,7 @@ public class QButton extends JButton {
                             // Если Предварительная запись, то пытаемся предватительно встать и выходим из обработке кнопки.
                             if (FWelcome.isAdvanceRegim()) {
                                 form.setAdvanceRegim(false);
-                                final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service.getName(), true, FWelcome.welcomeParams.delayBack * 2, form.advancedCustomer);
+                                final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service, true, WelcomeParams.getInstance().delayBack * 2, form.advancedCustomer);
                                 //Если res == null значит отказались от выбора
                                 if (res == null) {
                                     form.showMed();
@@ -151,7 +152,7 @@ public class QButton extends JButton {
 
                                     @Override
                                     public void run() {
-                                        Uses.log.logger.info("Печать этикетки бронирования.");
+                                        QLog.l().logger().info("Печать этикетки бронирования.");
                                         FWelcome.printTicketAdvance(res);
                                     }
                                 }).start();
@@ -164,7 +165,7 @@ public class QButton extends JButton {
                             // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
                             // если есть текст, то показываем диалог
                             if (service.getPreInfoHtml() != null && !"".equals(service.getPreInfoHtml())) {
-                                if (!FPreInfoDialog.showPreInfoDialog(form, service.getPreInfoHtml(), service.getPreInfoPrintText(), true, true, FWelcome.welcomeParams.delayBack)) {
+                                if (!FPreInfoDialog.showPreInfoDialog(form, service.getPreInfoHtml(), service.getPreInfoPrintText(), true, true, WelcomeParams.getInstance().delayBack)) {
                                     // выходим т.к. кастомер отказался продолжать
                                     return;
                                 }
@@ -174,10 +175,10 @@ public class QButton extends JButton {
                             // будет ли он стоять или нет
                             final int count;
                             try {
-                                count = NetCommander.aboutService(FWelcome.netProperty, service.getName());
+                                count = NetCommander.aboutService(FWelcome.netProperty, service.getId());
                             } catch (Exception ex) {
                                 // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
-                                Uses.log.logger.error("Невозможно отправить команду на сервер. ", ex);
+                                QLog.l().logger().error("Невозможно отправить команду на сервер. ", ex);
                                 form.lock(FWelcome.LOCK_MESSAGE);
                                 return;
                             }
@@ -193,7 +194,7 @@ public class QButton extends JButton {
                                 form.clockUnlockBack.start();
                                 return;
                             }
-                            if (count >= FWelcome.welcomeParams.askLimit) {
+                            if (count >= WelcomeParams.getInstance().askLimit) {
                                 // Выведем диалог о том будет чел сотять или пошлет нахер всю контору.
                                 if (!FConfirmationStart.getMayContinue(form, count)) {
                                     return;
@@ -213,7 +214,7 @@ public class QButton extends JButton {
                         } else {
                             //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
                             if (service.getInput_required()) {
-                                inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, FWelcome.welcomeParams.delayBack, service.getInput_caption());
+                                inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getInput_caption());
                                 if (inputData == null) {
                                     return;
                                 }
@@ -225,10 +226,10 @@ public class QButton extends JButton {
                         if (isActive) {
                             final QCustomer res;
                             try {
-                                res = NetCommander.standInService(FWelcome.netProperty, service.getName(), "1", 1, inputData);
+                                res = NetCommander.standInService(FWelcome.netProperty, service.getId(), "1", 1, inputData);
                             } catch (Exception ex) {
                                 // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
-                                Uses.log.logger.error("Невозможно отправить команду на сервер. ", ex);
+                                QLog.l().logger().error("Невозможно отправить команду на сервер. ", ex);
                                 form.lock(FWelcome.LOCK_MESSAGE);
                                 clock.stop();
                                 return;
@@ -240,7 +241,7 @@ public class QButton extends JButton {
                                     "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
 
 
-                            Uses.log.logger.info("Печать этикетки.");
+                            QLog.l().logger().info("Печать этикетки.");
 
                             new Thread(new Runnable() {
 
@@ -252,7 +253,7 @@ public class QButton extends JButton {
                         }
                     }
                 } catch (Exception ex) {
-                    Uses.log.logger.error("Ошибка при попытки обработать нажатие кнопки постановки в ачередь. " + ex.toString());
+                    QLog.l().logger().error("Ошибка при попытки обработать нажатие кнопки постановки в ачередь. " + ex.toString());
                 }
             }
         });//addActionListener

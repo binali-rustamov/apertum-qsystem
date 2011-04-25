@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 
 /**
  *
@@ -45,7 +45,7 @@ public class Locales {
             if (f.exists()) {
                 config.setFileName(configFileName);
             } else {
-                Uses.log.logger.error(new FileNotFoundException(configFileName));
+                QLog.l().logger().error(new FileNotFoundException(configFileName));
                 throw new RuntimeException(new FileNotFoundException(configFileName));
             }
         }
@@ -53,7 +53,7 @@ public class Locales {
         try {
             config.load();
         } catch (ConfigurationException ex) {
-            Uses.log.logger.error(ex);
+            QLog.l().logger().error(ex);
             throw new RuntimeException(ex);
         }
         config.setAutoSave(true);

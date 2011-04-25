@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.net.NetUtil;
@@ -82,7 +83,6 @@ public abstract class AGenerator implements IGenerator {
     public AGenerator(String href, String resourceNameTemplate) {
         this.href = href;
         this.template = resourceNameTemplate;
-        ReportGenerator.addGenerator(this);
     }
 
     /**
@@ -139,7 +139,7 @@ public abstract class AGenerator implements IGenerator {
      */
     @Override
     public Response process(HttpRequest request) {
-        Uses.logRep.logger.debug("Генерируем : \"" + href + "\"");
+        QLog.l().logRep().debug("Генерируем : \"" + href + "\"");
 
         /*
          * Перед формированием отчета возможно необходимо получить некие параметры.

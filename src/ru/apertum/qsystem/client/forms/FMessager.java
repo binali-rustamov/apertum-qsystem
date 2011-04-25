@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,16 +20,17 @@ package ru.apertum.qsystem.client.forms;
 import javax.swing.JFrame;
 import javax.swing.ListModel;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.server.model.ISailListener;
-import ru.apertum.qsystem.server.model.IServiceProperty;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
+import ru.apertum.qsystem.server.model.QUser;
 
 /**
  * Created on 16.10.2009, 19:35:45
@@ -37,7 +38,13 @@ import ru.apertum.qsystem.server.model.QServiceTree;
  */
 public class FMessager extends javax.swing.JDialog {
 
-    /** Creates new form FMessager */
+    /** Creates new form FMessager
+     * @param parent
+     * @param modal
+     * @param port
+     * @param users
+     * @param services
+     */
     public FMessager(java.awt.Frame parent, boolean modal, int port, ListModel users, TreeModel services) {
         super(parent, modal);
         initComponents();
@@ -203,7 +210,7 @@ public class FMessager extends javax.swing.JDialog {
      * @param owner относительно этого контрола модальность и позиционирование
      */
     public static void getMessager(JFrame owner, int port, ListModel users, TreeModel services) {
-        Uses.log.logger.info("Выбор услуги для перенаправления.");
+        QLog.l().logger().info("Выбор услуги для перенаправления.");
         if (messagerForm == null) {
             messagerForm = new FMessager(owner, true, port, users, services);
         }
@@ -220,18 +227,18 @@ public class FMessager extends javax.swing.JDialog {
             s = s + "ALL";
         } else {
             for (Object o : listUsers.getSelectedValues()) {
-                s = s + "@" + o.toString() + "@";
+                s = s + "@" + ((QUser)o).getId().toString() + "@";
             }
             if (treeServices.getSelectionPaths() != null) {
                 for (Object o : treeServices.getSelectionPaths()) {
                     final TreePath selectedPath = (TreePath) o;
                     final QService service = (QService) selectedPath.getLastPathComponent();
 
-                    ((QServiceTree) treeServices.getModel()).sailToStorm(service, new ISailListener() {
+                    QServiceTree.sailToStorm(service, new ISailListener() {
 
                         @Override
-                        public void actionPerformed(QService service) {
-                            s = s + "@" + service.getName() + "@";
+                        public void actionPerformed(TreeNode service) {
+                            s = s + "@" + ((QService)service).getId().toString() + "@";
                         }
                     });
                 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,20 +20,18 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import org.dom4j.Element;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.client.help.Helper;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.client.model.QPanel;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.QUserList;
@@ -61,10 +59,7 @@ public class FLogin extends javax.swing.JDialog {
     private INetProperty netProperty;
     private QUserList userList;
     private JFrame parent;
-    /**
-     * Описание юзера по его названию.
-     */
-    private HashMap<String, QUser> usersEls = new HashMap<String, QUser>();
+    
     /**
      * Уровни логирования
      */
@@ -135,7 +130,7 @@ public class FLogin extends javax.swing.JDialog {
 
         final LinkedList<QUser> users = NetCommander.getUsers(netProperty);
 
-        String str = "";
+        ArrayList<QUser>users_ = new ArrayList<QUser>();
         for (QUser user : users) {
             boolean flag = false;
             switch (getLevel()) {
@@ -151,20 +146,18 @@ public class FLogin extends javax.swing.JDialog {
             }
 
             if (flag) {
-                final String s = user.getName();
-                str = str + s + '#';
-                usersEls.put(s, user);
+                users_.add(user);
             }
         }
-        afterCreate(str);
+        afterCreate(users_.toArray());
     }
 
     /**
      * Чтоб не дублировать код
      * @param str список пользователей
      */
-    private void afterCreate(String str) {
-        DefaultComboBoxModel m = new DefaultComboBoxModel(str.split("#"));
+    private void afterCreate(Object[] users) {
+        DefaultComboBoxModel m = new DefaultComboBoxModel(users);
         comboBoxUser.setModel(m);
         //привязка помощи к форме.
         final Helper helper = Helper.getHelp(level == LEVEL_ADMIN ? "ru/apertum/qsystem/client/help/admin.hs" : "ru/apertum/qsystem/client/help/client.hs");
@@ -194,9 +187,8 @@ public class FLogin extends javax.swing.JDialog {
         this.userGetter = new GetUserFromList();
         setLevel(level);
 
-        String str = "";
-        for (int i = 0; i < userList.size(); i++) {
-            final QUser usr = (QUser) userList.get(i);
+        ArrayList<QUser>users_ = new ArrayList<QUser>();
+        for (QUser usr : userList.getItems()) {
             boolean flag = false;
             switch (getLevel()) {
                 case LEVEL_ADMIN:
@@ -211,10 +203,10 @@ public class FLogin extends javax.swing.JDialog {
             }
 
             if (flag) {
-                str = str + usr.getName() + '#';
+                users_.add(usr);
             }
         }
-        afterCreate(str);
+        afterCreate(users_.toArray());
     }
 
     /**
@@ -228,7 +220,7 @@ public class FLogin extends javax.swing.JDialog {
      * @return залогиневшiйся юзер.
      */
     public static QUser logining(INetProperty netProperty, JFrame owner, boolean modal, int count, int level) {
-        Uses.log.logger.info("Вход в систему.");
+        QLog.l().logger().info("Вход в систему.");
         if (loginForm == null) {
             loginForm = new FLogin(netProperty, owner, modal, level);
         } else {
@@ -248,8 +240,8 @@ public class FLogin extends javax.swing.JDialog {
         if (!ok) {
             System.exit(0);
         }
-        Uses.log.logger.info("Вход в систему выполнен. Пользователь \"" + loginForm.comboBoxUser.getSelectedItem() + "\", уровень доступа \"" + level + "\".");
-        return loginForm.usersEls.get((String) loginForm.comboBoxUser.getSelectedItem());
+        QLog.l().logger().info("Вход в систему выполнен. Пользователь \"" + loginForm.comboBoxUser.getSelectedItem() + "\", уровень доступа \"" + level + "\".");
+        return  (QUser) loginForm.comboBoxUser.getSelectedItem();
     }
 
     /**
@@ -262,7 +254,7 @@ public class FLogin extends javax.swing.JDialog {
      * @return залогиневшийся юзер.
      */
     public static QUser logining(QUserList userList, JFrame owner, boolean modal, int count, int level) {
-        Uses.log.logger.info("Вход в систему.");
+        QLog.l().logger().info("Вход в систему.");
         if (loginForm == null) {
             loginForm = new FLogin(userList, owner, modal, level);
         } else {
@@ -282,7 +274,7 @@ public class FLogin extends javax.swing.JDialog {
         if (!ok) {
             System.exit(0);
         }
-        Uses.log.logger.info("Вход в систему выполнен. Пользователь \"" + loginForm.comboBoxUser.getSelectedItem() + "\", уровень доступа \"" + level + "\".");
+        QLog.l().logger().info("Вход в систему выполнен. Пользователь \"" + loginForm.comboBoxUser.getSelectedItem() + "\", уровень доступа \"" + level + "\".");
         return loginForm.userGetter.getUser();
     }
 
@@ -299,7 +291,7 @@ public class FLogin extends javax.swing.JDialog {
 
         @Override
         public QUser getUser() {
-            return usersEls.get((String) comboBoxUser.getSelectedItem());
+            return (QUser) comboBoxUser.getSelectedItem();
         }
     }
 
@@ -307,7 +299,7 @@ public class FLogin extends javax.swing.JDialog {
 
         @Override
         public QUser getUser() {
-            return userList.getByName((String) comboBoxUser.getSelectedItem());
+            return (QUser) comboBoxUser.getSelectedItem();
         }
     }
 

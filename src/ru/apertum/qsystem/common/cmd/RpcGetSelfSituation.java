@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -94,10 +94,23 @@ public class RpcGetSelfSituation extends JsonRPC20 {
         public SelfService(QService service, int countWait) {
             this.serviceName = service.getName();
             this.countWait = countWait;
+            this.id = service.getId();
         }
         @Expose
         @SerializedName("service_name")
         private String serviceName;
+
+        @Expose
+        @SerializedName("id")
+        private long id;
+
+        public long getId() {
+            return id;
+        }
+
+        public void setId(long id) {
+            this.id = id;
+        }
 
         public int getCountWait() {
             return countWait;

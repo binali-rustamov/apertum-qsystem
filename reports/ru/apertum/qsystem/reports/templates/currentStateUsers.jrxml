@@ -1,48 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Текущее состояние услуг" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
 	<style name="Arial_Normal" isDefault="true" fontName="Arial" fontSize="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
-	<field name="service_killed" class="java.lang.String">
-		<fieldDescription><![CDATA[ОтклоненныхПоУслуге]]></fieldDescription>
-	</field>
-	<field name="service_worked" class="java.lang.String">
-		<fieldDescription><![CDATA[ОбслуженоПоУслуге]]></fieldDescription>
-	</field>
-	<field name="service_wait" class="java.lang.String">
-		<fieldDescription><![CDATA[ОжидаютПоУслуге]]></fieldDescription>
-	</field>
-	<field name="service_average_work" class="java.lang.String">
-		<fieldDescription><![CDATA[СрВрОбслуживанияПоУслуге]]></fieldDescription>
-	</field>
-	<field name="service_average_wait" class="java.lang.String">
-		<fieldDescription><![CDATA[СрВрОжиданияПоУслуге]]></fieldDescription>
-	</field>
-	<field name="service" class="java.lang.String">
-		<fieldDescription><![CDATA[Услуга]]></fieldDescription>
-	</field>
-	<field name="user" class="java.lang.String">
-		<fieldDescription><![CDATA[Пользователь]]></fieldDescription>
-	</field>
-	<field name="user_worked" class="java.lang.String">
-		<fieldDescription><![CDATA[ОбслуженоПользователем]]></fieldDescription>
-	</field>
-	<field name="user_average_work" class="java.lang.String">
-		<fieldDescription><![CDATA[СрВрОбслуживанияПользователем]]></fieldDescription>
-	</field>
-	<field name="user_killed" class="java.lang.String">
-		<fieldDescription><![CDATA[ОтклоненныхПользователем]]></fieldDescription>
-	</field>
-	<field name="worked" class="java.lang.String">
-		<fieldDescription><![CDATA[Обслуженных]]></fieldDescription>
-	</field>
-	<field name="killed" class="java.lang.String">
-		<fieldDescription><![CDATA[Отклоненных]]></fieldDescription>
-	</field>
-	<field name="avg_time_work" class="java.lang.String">
-		<fieldDescription><![CDATA[СрВрОбслуживания]]></fieldDescription>
-	</field>
+	<field name="service_killed" class="java.lang.Integer"/>
+	<field name="service_worked" class="java.lang.Integer"/>
+	<field name="service_wait" class="java.lang.Integer"/>
+	<field name="service_average_work" class="java.lang.Long"/>
+	<field name="service_average_wait" class="java.lang.Long"/>
+	<field name="service" class="java.lang.String"/>
+	<field name="user" class="java.lang.String"/>
+	<field name="user_worked" class="java.lang.Integer"/>
+	<field name="user_average_work" class="java.lang.Long"/>
+	<field name="user_killed" class="java.lang.Integer"/>
+	<field name="worked" class="java.lang.Integer"/>
+	<field name="killed" class="java.lang.Integer"/>
+	<field name="avg_time_work" class="java.lang.Long"/>
 	<group name="StateGroup">
 		<groupExpression><![CDATA[$F{user}]]></groupExpression>
 		<groupHeader>
@@ -52,16 +29,17 @@
 					<textElement>
 						<font size="12" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Персонал:]]></text>
+					<text><![CDATA[Персонал:
+                    ]]></text>
 				</staticText>
-				<textField hyperlinkType="None">
+				<textField>
 					<reportElement x="47" y="25" width="508" height="18"/>
 					<textElement>
 						<font size="12"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Обслужено: " + $F{user_worked} + "  Отклонено по неявке: " +  $F{user_killed} + "  Среднее время работы: " + $F{user_average_work}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Обслужено: " + $F{user_worked} + "  Отклонено по неявке: " +  $F{user_killed} + "  Среднее время работы: " + $F{user_average_work} + " мин."]]></textFieldExpression>
 				</textField>
-				<textField hyperlinkType="None">
+				<textField>
 					<reportElement x="72" y="5" width="364" height="20"/>
 					<textElement>
 						<font size="12" isUnderline="true"/>
@@ -95,16 +73,17 @@
 					<font size="18" isBold="true" isStrikeThrough="false" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R"/>
 				</textElement>
 				<text><![CDATA[Отчет по текущему состоянию системы автоматизации работы с клиетами в разрезе персонала
-                
-                
-                
+
+
+
+
                 ]]></text>
 			</staticText>
 		</band>
 	</title>
 	<pageHeader>
 		<band height="21">
-			<textField pattern="" isBlankWhenNull="false" hyperlinkType="None">
+			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField" x="58" y="0" width="128" height="15" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -122,7 +101,8 @@
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<text><![CDATA[Составлен]]></text>
+				<text><![CDATA[Составлен
+                ]]></text>
 			</staticText>
 			<line>
 				<reportElement x="0" y="17" width="555" height="1"/>
@@ -136,8 +116,8 @@
 		<band/>
 	</columnHeader>
 	<detail>
-		<band height="39" isSplitAllowed="false">
-			<textField isBlankWhenNull="false" hyperlinkType="None">
+		<band height="39" splitType="Prevent">
+			<textField isBlankWhenNull="false">
 				<reportElement x="83" y="0" width="466" height="20"/>
 				<textElement>
 					<font size="12" isUnderline="true"/>
@@ -150,15 +130,16 @@
 					<font size="12" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Услуга:
-                    
-                    ]]></text>
+
+
+                ]]></text>
 			</staticText>
-			<textField hyperlinkType="None">
+			<textField>
 				<reportElement x="47" y="20" width="508" height="18"/>
 				<textElement>
 					<font size="12"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Обслужено: " + $F{worked} + "  Отклонено по неявке: " +  $F{killed} + "  Среднее время работы: " + $F{avg_time_work}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Обслужено: " + $F{worked} + "  Отклонено по неявке: " +  $F{killed} + "  Среднее время работы: " + $F{avg_time_work} + " мин."]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -167,7 +148,7 @@
 	</columnFooter>
 	<pageFooter>
 		<band height="24">
-			<textField pattern="" isBlankWhenNull="false" hyperlinkType="None">
+			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField" x="296" y="2" width="216" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -180,7 +161,7 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Страница " + $V{PAGE_NUMBER} + " из "]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false" hyperlinkType="None">
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
 				<reportElement key="textField" x="516" y="2" width="36" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -193,7 +174,7 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false" hyperlinkType="None">
+			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField" x="1" y="2" width="209" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

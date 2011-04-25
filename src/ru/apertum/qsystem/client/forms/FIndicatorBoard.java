@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.RunningLabel;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
 /**
@@ -111,7 +111,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      */
     private FIndicatorBoard(Element rootParams) {
 
-        Uses.log.logger.info("Создаем окно для информации.");
+        QLog.l().logger().info("Создаем окно для информации.");
 
         topElement = rootParams.element(Uses.TAG_BOARD_TOP);
         bottomElement = rootParams.element(Uses.TAG_BOARD_BOTTOM);
@@ -127,12 +127,13 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         this.fgColorLeft = Color.decode("#" + Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_LEFT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
         this.fgColorRight = Color.decode("#" + Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_RIGHT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
         this.borderLine = "1".equals(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_BORDER).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
+        this.delimiter = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_DELIMITER).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
 
         // Определим форму нв монитор
         setLocation(Integer.parseInt(rootParams.attributeValue("x")), Integer.parseInt(rootParams.attributeValue("y")));
 
         // Отрехтуем форму в зависимости от режима.
-        if (!Uses.isDebug) {
+        if (!QLog.l().isDebug()) {
             setUndecorated(true);
             setAlwaysOnTop(true);
             setResizable(false);
@@ -203,7 +204,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         File f = new File(filePath);
         if (f.exists()) {
             panelCommon.setBackgroundImgage(filePath);
-        }
+        } 
 
         loadPanel(topElement, rlTop, panelUp);
         loadPanel(bottomElement, rlDown, panelDown);
@@ -306,7 +307,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         public void setLineData(String text) {
             if (isMain) {
-                final String[] ss = text.split(Uses.getNumeration().getDelimiter());
+                final String[] ss = text.split(indicatorBoard.delimiter);
                 if (ss.length == 2) {
                     left.setText(ss[0]);
                     right.setText(ss[1]);
@@ -398,6 +399,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Окантовка Строк
      */
     private final boolean borderLine;
+    /**
+     * Чем разделяются столбци клиента и пункта вызова на главном табло
+     */
+    private final String delimiter;
 
     public int getLinesCount() {
         return linesCount;
@@ -415,7 +420,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Создаем и расставляем контролы для строк по форме.
      */
     public void showLines() {
-        Uses.log.logger.info("Показываем набор строк.");
+        QLog.l().logger().info("Показываем набор строк.");
         GridLayout la = new GridLayout(indicatorBoard.linesCount + (isMain ? 1 : 0), 1, 0, 0);
         indicatorBoard.panelMain.setLayout(la);
         if (isMain) {
@@ -464,16 +469,17 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     /**
      * Метод вывода инфы на табло.
      * @param index номер строки.
-     * @param text выводимый текст.
+     * @param number номер клиента - часть выводимого текста
+     * @param point пункт куда позвали клиента - часть выводимого текста
      * @param blinkCount 0 - постоянное мигание, -1 не мигает. число - количество миганий
      */
-    public static void printRecord(int index, String text, int blinkCount) {
+    public static void printRecord(int index, String number, String point, int blinkCount) {
         if (indicatorBoard == null) {
-            Uses.log.logger.warn("Попытка вывода на табло. Табло не демонстрируется. Отключено в настройках.");
+            QLog.l().logger().warn("Попытка вывода на табло. Табло не демонстрируется. Отключено в настройках.");
             return;
         }
         if (index < indicatorBoard.linesCount) {
-            indicatorBoard.labels.get(index).setLineData(text);
+            indicatorBoard.labels.get(index).setLineData(number + (isMain ? indicatorBoard.delimiter  + point : ""));
             indicatorBoard.labels.get(index).setBlinkCount(blinkCount == -1 ? -1 : blinkCount * 2);
             if (blinkCount != -1) {
                 indicatorBoard.labels.get(index).startBlink();
@@ -840,7 +846,7 @@ private void panelRightComponentResized(java.awt.event.ComponentEvent evt) {//GE
     private Point p = null;
 
 private void mouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mouseMoved
-    if (p != null && !Uses.isDebug) {
+    if (p != null && !QLog.l().isDebug()) {
         try {
             Robot rob = new Robot();
             rob.mouseMove(p.x, p.y);

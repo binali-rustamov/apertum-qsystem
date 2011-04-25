@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,98 +16,43 @@
  */
 package ru.apertum.qsystem.server.model;
 
-import java.util.Iterator;
 import java.util.LinkedList;
-import javax.swing.DefaultListModel;
-import org.apache.commons.collections.CollectionUtils;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import ru.apertum.qsystem.common.Uses;
-import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.server.Spring;
 
 /**
  * Список пользователей системы
  * Класс, управляющий пользователями системы.
  * @author Evgeniy Egorov
  */
-public class QUserList extends DefaultListModel {
+public class QUserList extends ATListModel<QUser> {
 
-    /**
-     * Singleton.
-     */
-    private static QUserList instance = null;
-
-    /**
-     * Доступ до Singleton
-     * @param usersGetter свойства услуг, по которым построится дерево услуг.
-     * @return класс - деерво услуг.
-     */
-    public static QUserList getUserList(IUsersGetter usersGetter) {
-        if (instance == null) {
-            resetUserList(usersGetter);
-        }
-        return instance;
+    public static QUserList getInstance() {
+        return QUserListHolder.INSTANCE;
     }
 
-    public LinkedList<QUser> getUsers() {
-        final LinkedList<QUser> list = new LinkedList<QUser>();
-        CollectionUtils.addAll(list, elements());
-        return list;
+    @Override
+    protected LinkedList<QUser> load() {
+        return new LinkedList<QUser>(Spring.getInstance().getHt().loadAll(QUser.class));
     }
 
-    /**
-     * Принудительное пересоздание списка пользователей. Доступ до Singleton
-     * @param usersGetter свойства юзеров, по которым построится дерево услуг.
-     * @return класс - деерво услуг.
-     */
-    public static QUserList resetUserList(IUsersGetter usersGetter) {
+    private static class QUserListHolder {
 
-        instance = new QUserList();
-        for (Iterator<IUserProperty> itr = usersGetter.iterator(); itr.hasNext();) {
-            IUserProperty user = itr.next();
-            instance.addElement(user instanceof QUser ? user : new QUser(user));
-        }
-        Uses.log.logger.debug("Создали список пользователей.");
-
-        return instance;
+        private static final QUserList INSTANCE = new QUserList();
     }
 
-    /**
-     *
-     * @return
-     * @deprecated 
-     */
-    public Element getXML() {
-        // Соберем xml дерево пользователей
-        Uses.log.logger.debug("Формируется XML-дерево пользователей.");
-        // Найдем корень
-        final Element rootUsers = DocumentHelper.createElement(Uses.TAG_PROP_USERS);
-        for (Object o : toArray()) {
-            rootUsers.add(((QUser) o).getXML());
+    private QUserList() {
+        super();
+        for (QUser qUser : getItems()) {
+            qUser.setServicesCnt(qUser.getPlanServiceList().getSize());
         }
-        return rootUsers;
     }
 
-    public QUser getByName(String name) {
-        QUser res = null;
-        for (Object o : toArray()) {
-            if (name.equals(((QUser) o).getName())) {
-                res = (QUser) o;
-            }
+    @Override
+    public void save() {
+        for (QUser qUser : getItems()) {
+            qUser.savePlan();
         }
-        if (res == null) {
-            throw new ServerException("Не найден пользователь по имени: \"" + name + "\"");
-        }
-        return res;
+        super.save();
     }
 
-    public boolean hasByName(String name) {
-        QUser res = null;
-        for (Object o : toArray()) {
-            if (name.equals(((QUser) o).getName())) {
-                res = (QUser) o;
-            }
-        }
-        return res != null;
-    }
 }

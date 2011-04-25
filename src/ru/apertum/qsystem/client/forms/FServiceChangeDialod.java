@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ import javax.swing.ComboBoxModel;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
@@ -64,7 +64,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
      * @param calendarModel
      */
     public static void changeService(Frame parent, boolean modal, QService service, ComboBoxModel scheduleModel, ComboBoxModel calendarModel) {
-        Uses.log.logger.info("Редактирование услуги \"" + service.getName() + "\"");
+        QLog.l().logger().info("Редактирование услуги \"" + service.getName() + "\"");
         if (serviceChangeDialod == null) {
             serviceChangeDialod = new FServiceChangeDialod(parent, modal);
             serviceChangeDialod.setTitle("Редактирование параметров услуги");

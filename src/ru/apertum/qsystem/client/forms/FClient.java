@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -38,12 +37,14 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.INetProperty;
 import org.dom4j.io.SAXReader;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
+import ru.apertum.qsystem.client.common.ClientNetProperty;
 import ru.apertum.qsystem.client.help.Helper;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.client.model.QPanel;
@@ -53,6 +54,7 @@ import ru.apertum.qsystem.common.AUDPServer;
 import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfService;
 import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfSituation;
 import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.common.model.IClientNetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.postponed.QPostponedList;
@@ -74,16 +76,12 @@ public final class FClient extends javax.swing.JFrame {
      */
     private final QTray tray;
     /**
-     * Это удобный списочек всех услуг, обслуживаемых юзером
-     */
-    private final ArrayList<String> myServices = new ArrayList<String>();
-    /**
      * Кастомер, с которым работает юзер.
      */
     private QCustomer customer = null;
 
     public void setCustomer(QCustomer customer) {
-        Uses.log.logger.trace("Установливаем кастомера работающему клиенту и выводем его.");
+        QLog.l().logger().trace("Установливаем кастомера работающему клиенту и выводем его.");
         this.customer = customer;
         // выведем на экран некую инфу о приглашенном кастомере
         final String textCust = customer.getPrefix() + customer.getNumber();
@@ -119,18 +117,28 @@ public final class FClient extends javax.swing.JFrame {
         } else {
             s = "<br>" + s + "<br>" + customer.getInput_data();
         }
-        labelNextCustomerInfo.setText("<html><b><span style='color:blue'> " + getLocaleMessage("messages.service") + ": " + customer.getServiceName() + "<br>" + getLocaleMessage("messages.priority") + ": " + priority + s + "</span></b>");
+        labelNextCustomerInfo.setText("<html><b><span style='color:blue'> " + getLocaleMessage("messages.service") + ": " + customer.getService().getName() + "<br>" + getLocaleMessage("messages.priority") + ": " + priority + s + "</span></b>");
         textAreaComments.setText(customer.getTempComments());
         textAreaComments.setCaretPosition(0);
         // прикроем кнопки, которые недоступны на этом этапе работы с кастомером.
         // тут в зависимости от состояния кастомера открываем разные наборы кнопок
         switch (customer.getState()) {
-            case Uses.STATE_INVITED: {
+            case STATE_INVITED: {
                 setBlinkBoard(true);
                 setKeyRegim(KEYS_INVITED);
                 break;
             }
-            case Uses.STATE_WORK: {
+            case STATE_INVITED_SECONDARY: {
+                setBlinkBoard(true);
+                setKeyRegim(KEYS_INVITED);
+                break;
+            }
+            case STATE_WORK: {
+                setBlinkBoard(false);
+                setKeyRegim(KEYS_STARTED);
+                break;
+            }
+            case STATE_WORK_SECONDARY: {
                 setBlinkBoard(false);
                 setKeyRegim(KEYS_STARTED);
                 break;
@@ -147,7 +155,7 @@ public final class FClient extends javax.swing.JFrame {
      */
     private void setBlinkBoard(boolean blinked) {
         if (indicatorBoard != null) {
-            FIndicatorBoard.printRecord(0, customer.getPrefix() + customer.getNumber(), blinked ? 0 : -1);
+            FIndicatorBoard.printRecord(0, customer.getPrefix() + customer.getNumber(), "", blinked ? 0 : -1);
         }
     }
 
@@ -191,10 +199,17 @@ public final class FClient extends javax.swing.JFrame {
         @Override
         synchronized protected void getData(String data, InetAddress clientAddress, int clientPort) {
             //Определяем, по нашей ли услуге пришел кастомер
+            boolean my = false;
+            for (SelfService srv : plan.getSelfservices()) {
+                if (String.valueOf(srv.getId()).equals(data)) {
+                    my = true;
+                }
+            }
             //Если кастомер встал в очередь, обрабатываемую этим юзером, то апдейтим состояние очередей.
-            if (myServices.contains(data) || userName.equals(data)) {
+            if (my || user.getId().toString().equals(data)) {
                 //Получаем состояние очередей для юзера
-                setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+                setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
+                return;
             }
             if (Uses.TASK_REFRESH_POSTPONED_POOL.equals(data)) {
                 //Получаем состояние пула отложенных
@@ -202,10 +217,11 @@ public final class FClient extends javax.swing.JFrame {
                 if (listPostponed.getModel().getSize() != 0) {
                     listPostponed.setSelectedIndex(0);
                 }
+                return;
             }
             if (Uses.HOW_DO_YOU_DO.equals(data)) {
                 //Отправим по TCP/IP
-                NetCommander.setLive(netProperty, user.getName());
+                NetCommander.setLive(netProperty, user.getId());
             }
             if (data.startsWith("message#") && (data.startsWith("message#ALL##") || isMyMessage(data))) {
                 final String mess = data.substring(data.indexOf("##") + 2);
@@ -217,11 +233,11 @@ public final class FClient extends javax.swing.JFrame {
 
         private boolean isMyMessage(String txt) {
             final String adr = txt.substring(0, txt.indexOf("##"));
-            if (adr.indexOf("@" + userName + "@") != -1) {
+            if (adr.indexOf("@" + user.getId() + "@") != -1) {
                 return true;
             }
-            for (String serv : myServices) {
-                if (adr.indexOf("@" + serv + "@") != -1) {
+            for (SelfService srv : plan.getSelfservices()) {
+                if (adr.indexOf("@" + srv.getId() + "@") != -1) {
                     return true;
                 }
             }
@@ -233,7 +249,6 @@ public final class FClient extends javax.swing.JFrame {
      * Описание того, кто залогинелся.
      */
     private final QUser user;
-    private final String userName;
     /**
      * Описание того, сколько народу стоит в очередях к этому юзеру, ну и прочее(потом)mess
      * Не использовать на прямую.
@@ -255,7 +270,7 @@ public final class FClient extends javax.swing.JFrame {
      * @param netProperty
      * @throws AWTException
      */
-    public FClient(QUser user, INetProperty netProperty) throws AWTException {
+    public FClient(QUser user, IClientNetProperty netProperty) throws AWTException {
         addWindowListener(new WindowListener() {
 
             @Override
@@ -328,9 +343,8 @@ public final class FClient extends javax.swing.JFrame {
                 System.exit(0);
             }
         });
-        userName = user.getName();
-        labelUser.setText(userName + " - " + user.getPoint());
-        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+        labelUser.setText(user.getName() + " - " + user.getPoint());
+        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
 
         int ii = 1;
         final ButtonGroup bg = new ButtonGroup();
@@ -373,13 +387,15 @@ public final class FClient extends javax.swing.JFrame {
             });
         }
     }
+    private SelfSituation plan;
 
     /**
      * Определяет какова ситуация в очереди к пользователю.
      * @param plan - ситуация в XML
      */
     protected void setSituation(SelfSituation plan) {
-        Uses.log.logger.trace("Обновляем видимую ситуацию.");
+        QLog.l().logger().trace("Обновляем видимую ситуацию.");
+        this.plan = plan;
         /**
          * На первую закладку.
          */
@@ -391,13 +407,11 @@ public final class FClient extends javax.swing.JFrame {
         String temp1 = "";
         String color = "blue";
         int inCount = 0;
-        myServices.clear();// очистим удобный списочек
 
         // построим новую html с описанием состояния очередей
         for (SelfService serv : plan.getSelfservices()) {
             final int count = serv.getCountWait();
             final String serviceName = serv.getServiceName();
-            myServices.add(serviceName);//заполним удобный списочек
 
             final String people = " " + getLocaleMessage("messages.people");// множественное
             if (count != 0) {
@@ -431,7 +445,7 @@ public final class FClient extends javax.swing.JFrame {
         // посмотрим, не приехал ли кастомер, который уже вызванный
         // если приехал, то его надо учесть
         if (plan.getCustomer() != null) {
-            Uses.log.logger.trace("От сервера приехал кастомер, который обрабатывается юзером.");
+            QLog.l().logger().trace("От сервера приехал кастомер, который обрабатывается юзером.");
             setCustomer(plan.getCustomer());
         } else {
             if (inCount == 0) {
@@ -454,6 +468,8 @@ public final class FClient extends javax.swing.JFrame {
         if (listPostponed.getModel().getSize() != 0) {
             listPostponed.setSelectedIndex(0);
         }
+        menuItemInvitePostponed.setEnabled(listPostponed.getModel().getSize() != 0);
+        menuItemChangeStatusPostponed.setEnabled(listPostponed.getModel().getSize() != 0);
         color = plan.getPostponedList().size() == 0 ? "blue" : "purple";
         labelPost.setText("<html><span style='color:" + color + "'>" + plan.getPostponedList().size() + "</span>");
     }
@@ -472,7 +488,7 @@ public final class FClient extends javax.swing.JFrame {
      * @param regim
      */
     public void setKeyRegim(String regim) {
-        Uses.log.logger.trace("Конфигурация кнопок \"" + regim + "\".");
+        QLog.l().logger().trace("Конфигурация кнопок \"" + regim + "\".");
         menuItemInvitePostponed.setEnabled(KEYS_MAY_INVITE.equals(regim));
         buttonInvite.setEnabled('1' == regim.charAt(0));
         buttonKill.setEnabled('1' == regim.charAt(1));
@@ -493,12 +509,12 @@ public final class FClient extends javax.swing.JFrame {
     /*******************************************************************************************************************
     /************************************      Обработчики кнопок      ************************************************/
     private long go() {
-        Uses.log.logger.trace("Начало действия");
+        QLog.l().logger().trace("Начало действия");
         return System.currentTimeMillis();
     }
 
     private void end(long start) {
-        Uses.log.logger.trace("Действие завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.\n");
+        QLog.l().logger().trace("Действие завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.\n");
     }
 
     /**
@@ -509,9 +525,9 @@ public final class FClient extends javax.swing.JFrame {
     public void inviteNextCustomer(ActionEvent evt) {
         final long start = go();
         // Вызываем кастомера
-        NetCommander.inviteNextCustomer(netProperty, user.getName());
+        NetCommander.inviteNextCustomer(netProperty, user.getId());
         // Показываем обстановку
-        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
         end(start);
     }
 
@@ -530,10 +546,10 @@ public final class FClient extends javax.swing.JFrame {
             return;
         }
         // Убиваем пользователя
-        NetCommander.killNextCustomer(netProperty, user.getName());
+        NetCommander.killNextCustomer(netProperty, user.getId());
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
         end(start);
     }
 
@@ -545,10 +561,10 @@ public final class FClient extends javax.swing.JFrame {
     public void getStartCustomer(ActionEvent evt) {
         final long start = go();
         // Переводим кастомера в разряд обрабатываемых
-        NetCommander.getStartCustomer(netProperty, user.getName());
+        NetCommander.getStartCustomer(netProperty, user.getId());
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
         end(start);
     }
 
@@ -567,19 +583,19 @@ public final class FClient extends javax.swing.JFrame {
             return;
         }
 
-        String resComments = userName + ": \n_______________________\n" + customer.getTempComments();
+        String resComments = user.getName() + ": \n_______________________\n" + customer.getTempComments();
         if (customer.needBack()) {
             //Диалог ввода коментария по кастомеру если он редиректенный и нужно его вернуть
             final FRedirect dlg = FRedirect.getService(netProperty, this, customer.getTempComments(), true);
             if (dlg != null) {
                 //Если не выбрали, то выходим
-                resComments = userName + ": " + dlg.getTempComments();
+                resComments = user.getName() + ": " + dlg.getTempComments();
             }
         }
-        NetCommander.getFinishCustomer(netProperty, user.getName(), res, resComments);
+        NetCommander.getFinishCustomer(netProperty, user.getId(), res, resComments);
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
         end(start);
     }
     protected FRedirect servicesForm = null;
@@ -600,10 +616,10 @@ public final class FClient extends javax.swing.JFrame {
             return;
         }
 
-        NetCommander.redirectCustomer(netProperty, user.getName(), dlg.getServiceName(), dlg.getRequestBack(), userName + ": " + dlg.getTempComments());
+        NetCommander.redirectCustomer(netProperty, user.getId(), dlg.getServiceId(), dlg.getRequestBack(), user.getName() + ": " + dlg.getTempComments());
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
         end(start);
     }
 
@@ -627,7 +643,7 @@ public final class FClient extends javax.swing.JFrame {
         jMenuItem5 = new javax.swing.JMenuItem();
         popupMenuPostpone = new javax.swing.JPopupMenu();
         menuItemInvitePostponed = new javax.swing.JMenuItem();
-        jMenuItem7 = new javax.swing.JMenuItem();
+        menuItemChangeStatusPostponed = new javax.swing.JMenuItem();
         panelDown = new QPanel("/ru/apertum/qsystem/client/forms/resources/fon_client.jpg");
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -715,9 +731,9 @@ public final class FClient extends javax.swing.JFrame {
         menuItemInvitePostponed.setName("menuItemInvitePostponed"); // NOI18N
         popupMenuPostpone.add(menuItemInvitePostponed);
 
-        jMenuItem7.setAction(actionMap.get("changeStatusForPosponed")); // NOI18N
-        jMenuItem7.setName("jMenuItem7"); // NOI18N
-        popupMenuPostpone.add(jMenuItem7);
+        menuItemChangeStatusPostponed.setAction(actionMap.get("changeStatusForPosponed")); // NOI18N
+        menuItemChangeStatusPostponed.setName("menuItemChangeStatusPostponed"); // NOI18N
+        popupMenuPostpone.add(menuItemChangeStatusPostponed);
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FClient.class);
         setTitle(resourceMap.getString("Form.title")); // NOI18N
@@ -780,7 +796,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         panelBottomLayout.setVerticalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
         );
 
         jSplitPane1.setBottomComponent(panelBottom);
@@ -868,7 +884,7 @@ public final class FClient extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(labelNextNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLayeredPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
+                .addComponent(jLayeredPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -911,7 +927,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel5.TabConstraints.tabTitle"), jPanel5); // NOI18N
@@ -935,7 +951,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel6.TabConstraints.tabTitle"), jPanel6); // NOI18N
@@ -957,7 +973,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel7.TabConstraints.tabTitle"), jPanel7); // NOI18N
@@ -1016,7 +1032,7 @@ public final class FClient extends javax.swing.JFrame {
                     .addComponent(jLabel4)
                     .addComponent(labelResume))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
@@ -1055,7 +1071,7 @@ public final class FClient extends javax.swing.JFrame {
             .addGroup(panelDownLayout.createSequentialGroup()
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE))
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE))
         );
 
         menuBar.setName("menuBar"); // NOI18N
@@ -1142,7 +1158,7 @@ public final class FClient extends javax.swing.JFrame {
         );
 
         java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds((screenSize.width-539)/2, (screenSize.height-564)/2, 539, 564);
+        setBounds((screenSize.width-539)/2, (screenSize.height-568)/2, 539, 568);
     }// </editor-fold>//GEN-END:initComponents
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -1161,7 +1177,7 @@ public final class FClient extends javax.swing.JFrame {
      */
     private void printCustomerNumber(String text, int blinkCount) {
         if (indicatorBoard != null) {
-            FIndicatorBoard.printRecord(0, text, blinkCount);
+            FIndicatorBoard.printRecord(0, text, "", blinkCount);
         }
     }
 
@@ -1172,14 +1188,14 @@ public final class FClient extends javax.swing.JFrame {
     public static void main(String args[]) throws DocumentException {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.startSplash();
-        Uses.isDebug = Uses.setLogining(args, false);
-        final INetProperty netProperty = Uses.getClientNetProperty(args);
+        QLog.initial(args, false);
+        final IClientNetProperty netProperty = new ClientNetProperty(args);
         // это заплата на баг с коннектом.
         // без предконнекта из main в дальнейшем сокет не хочет работать,
         // долго висит и вываливает минут через 15-20 эксепшн java.net.SocketException: Malformed reply from SOCKS server  
         Socket skt = null;
         try {
-            skt = new Socket(netProperty.getServerAddress(), 61111);
+            skt = new Socket(netProperty.getAddress(), 61111);
             skt.close();
         } catch (IOException ex) {
         }
@@ -1189,7 +1205,7 @@ public final class FClient extends javax.swing.JFrame {
         try {
             socket = new DatagramSocket(netProperty.getClientPort());
         } catch (SocketException ex) {
-            Uses.log.logger.error("Сервер UDP не запустился, вторая копия не позволяется.");
+            QLog.l().logger().error("Сервер UDP не запустился, вторая копия не позволяется.");
             JOptionPane.showMessageDialog(null, getLocaleMessage("messages.restart.mess"), getLocaleMessage("messages.restart.caption"), JOptionPane.INFORMATION_MESSAGE);
             System.exit(0);
         }
@@ -1210,7 +1226,7 @@ public final class FClient extends javax.swing.JFrame {
             initIndicatorBoard(cfgFile);
 
             // Посмотрим, не пытались ли влезть под уже имеющейся в системе ролью
-            if (!NetCommander.getSelfServicesCheck(netProperty, user.getName())) {
+            if (!NetCommander.getSelfServicesCheck(netProperty, user.getId())) {
                 Uses.closeSplash();
                 JOptionPane.showMessageDialog(null, getLocaleMessage("messages.stop.access_denay.mess"), getLocaleMessage("messages.stop.mess"), JOptionPane.INFORMATION_MESSAGE);
                 System.exit(0);
@@ -1219,10 +1235,10 @@ public final class FClient extends javax.swing.JFrame {
             fClient = new FClient(user, netProperty);
             fClient.setVisible(true);
         } catch (AWTException ex) {
-            Uses.log.logger.error("Ошибка работы с tray: ", ex);
+            QLog.l().logger().error("Ошибка работы с tray: ", ex);
             System.exit(0);
         } catch (Exception ex) {
-            Uses.log.logger.error("Ошибка при старте: ", ex);
+            QLog.l().logger().error("Ошибка при старте: ", ex);
             System.exit(0);
         }
         //     }
@@ -1234,7 +1250,7 @@ public final class FClient extends javax.swing.JFrame {
     @Action
     public void refreshClient() {
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
     }
 
     @Action
@@ -1258,9 +1274,9 @@ public final class FClient extends javax.swing.JFrame {
         if (status == null) {
             return;
         }
-        NetCommander.сustomerToPostpone(netProperty, user.getName(), status);
+        NetCommander.сustomerToPostpone(netProperty, user.getId(), status);
         // Показываем обстановку
-        setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
         end(start);
     }
 
@@ -1269,9 +1285,9 @@ public final class FClient extends javax.swing.JFrame {
         if (listPostponed.getSelectedIndex() != -1) {
             final long start = go();
             final QCustomer cust = (QCustomer) listPostponed.getSelectedValue();
-            NetCommander.invitePostponeCustomer(netProperty, user.getName(), cust.getId());
+            NetCommander.invitePostponeCustomer(netProperty, user.getId(), cust.getId());
             // Показываем обстановку
-            setSituation(NetCommander.getSelfServices(netProperty, user.getName()));
+            setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
             end(start);
         }
     }
@@ -1316,7 +1332,6 @@ public final class FClient extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
-    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1343,6 +1358,7 @@ public final class FClient extends javax.swing.JFrame {
     private javax.swing.JLabel labelUser;
     private javax.swing.JList listPostponed;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenuItem menuItemChangeStatusPostponed;
     private javax.swing.JMenuItem menuItemFinish;
     private javax.swing.JMenuItem menuItemHelp;
     private javax.swing.JMenuItem menuItemInvite;

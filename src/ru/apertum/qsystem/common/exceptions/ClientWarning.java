@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 package ru.apertum.qsystem.common.exceptions;
 
 import javax.swing.JOptionPane;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 
 /**
  * Этот класс исключения использовать для програмной генерации исклюсений.
@@ -29,7 +29,7 @@ import ru.apertum.qsystem.common.Uses;
 public class ClientWarning {
 
     public static void showWarning(String textWarning) {
-        Uses.log.logger.warn(textWarning);
+        QLog.l().logger().warn(textWarning);
         JOptionPane.showMessageDialog(null, textWarning, "\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u043e\u0431 \u0438\u0441\u043a\u043b\u044e\u0447\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0439 \u0441\u0438\u0442\u0443\u0430\u0446\u0438\u0438", JOptionPane.WARNING_MESSAGE);
     }
 }

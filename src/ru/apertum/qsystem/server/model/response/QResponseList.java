@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,110 +17,30 @@
 package ru.apertum.qsystem.server.model.response;
 
 import java.util.LinkedList;
-import java.util.List;
-import javax.swing.DefaultListModel;
-import org.apache.commons.collections.CollectionUtils;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.hibernate.Session;
-import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import ru.apertum.qsystem.common.Uses;
-import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.server.Spring;
+import ru.apertum.qsystem.server.model.ATListModel;
 
 /**
  *
  * @author Evgeniy Egorov
  */
-public class QResponseList extends DefaultListModel {
+public class QResponseList extends ATListModel<QRespItem> {
 
-   /**
-     * Singleton.
-     */
-    private static QResponseList instance = null;
-
-    /**
-     * Доступ до Singleton
-     * @return класс - список для обратной связи.
-     */
-    public static QResponseList getUserList() {
-        if (instance == null) {
-            resetResponseList();
-        }
-        return instance;
+    private QResponseList() {
+        super();
     }
 
-    /**
-     * Принудительное пересоздание списка для обратной связи. Доступ до Singleton
-     * @return класс - список для обратной связи.
-     */
-    public static QResponseList resetResponseList() {
-        instance = new QResponseList();
-        for (QRespItem item : instance.items) {
-            instance.addElement(item);
-        }
-        Uses.log.logger.debug("Создали список для обратной связи.");
-        return instance;
-    }
-    /**
-     * Все информационные узлы
-     */
-    protected final List<QRespItem> items = loadRespItems();
-
-    /**
-     * Загрузка из базы всех отзывов
-     * @return список всех отзывов выкаченных из базы
-     * @throws DataAccessException
-     */
-    private List<QRespItem> loadRespItems() throws DataAccessException {
-
-        return (List<QRespItem>) Uses.getSessionFactory().execute(new HibernateCallback() {
-
-            @Override
-            public Object doInHibernate(Session session) {
-                return (List<QRespItem>) session.createCriteria(QRespItem.class).list();
-            }
-        });
+    public static QResponseList getInstance() {
+        return QResponseListHolder.INSTANCE;
     }
 
-    @Deprecated
-    public Element getXML() {
-        // Соберем xml список для обратной связи
-        Uses.log.logger.debug("Формируется XML-список для обратной связи.");
-        // Найдем корень
-        final Element rootItem = DocumentHelper.createElement(Uses.TAG_INFO_ITEM);
-        for (Object o : toArray()) {
-            rootItem.add(((QRespItem) o).getXML());
-        }
-        return rootItem;
+    private static class QResponseListHolder {
+
+        private static final QResponseList INSTANCE = new QResponseList();
     }
 
-    public LinkedList<QRespItem> getQRespItems(){
-        final LinkedList<QRespItem> list = new LinkedList<QRespItem>();
-        CollectionUtils.addAll(list, elements());
-        return list;
-    }
-
-    public QRespItem getByName(String name) {
-        QRespItem res = null;
-        for (Object o : toArray()) {
-            if (name.equals(((QRespItem) o).getName())) {
-                res = (QRespItem) o;
-            }
-        }
-        if (res == null) {
-            throw new ServerException("Не найден отзыв по имени: \"" + name + "\"");
-        }
-        return res;
-    }
-
-    public boolean hasByName(String name) {
-        QRespItem res = null;
-        for (Object o : toArray()) {
-            if (name.equals(((QRespItem) o).getName())) {
-                res = (QRespItem) o;
-            }
-        }
-        return res != null;
+    @Override
+    protected LinkedList<QRespItem> load() {
+        return new LinkedList<QRespItem>(Spring.getInstance().getHt().loadAll(QRespItem.class));
     }
 }

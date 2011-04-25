@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
@@ -188,7 +188,7 @@ public class FParamsEditor extends AFBoardRedactor {
                         throw new ClientException("Неправильный тип \"" + param.getType() + "\" параметра \"" + value + "\"");
                 }
             } catch (NumberFormatException ex) {
-                Uses.log.logger.error("Попытка ввода параметра неправильного типа. " + ex);
+                QLog.l().logger().error("Попытка ввода параметра неправильного типа. " + ex);
                 JOptionPane.showMessageDialog(null, getLocaleMessage("editor.dialog2.title"), getLocaleMessage("editor.dialog2.caption"), JOptionPane.ERROR_MESSAGE);
             }
         }

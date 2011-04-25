@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.QPanel;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
@@ -81,7 +81,7 @@ public class FAbout extends javax.swing.JDialog {
      * @param modal режим модальности
      */
     private static void getForm(JFrame parent, boolean modal, String verDB) {
-        Uses.log.logger.info("Демонстрация информации о программе.");
+        QLog.l().logger().info("Демонстрация информации о программе.");
         if (aboutForm == null) {
             aboutForm = new FAbout(parent, modal);
         }
@@ -287,9 +287,9 @@ private void labelRightMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:
     try {
         Desktop.getDesktop().browse(new URI("http://www.apertum.ru"));
     } catch (URISyntaxException ex) {
-        Uses.log.logger.error(ex);
+        QLog.l().logger().error(ex);
     } catch (IOException ex) {
-        Uses.log.logger.error(ex);
+        QLog.l().logger().error(ex);
     }
 }//GEN-LAST:event_labelRightMouseClicked
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -158,10 +158,10 @@ public class VideoPlayer {
             mp.setPlayer(Manager.createPlayer(new URL("file:///" + new File(videoFilePath).getAbsolutePath())));
             return true;
         } catch (IOException ex) {
-            Uses.log.logger.error("Невозможно открыть видеофайл " + videoFilePath + ": " + ex);
+            QLog.l().logger().error("Невозможно открыть видеофайл " + videoFilePath + ": " + ex);
             return false;
         } catch (NoPlayerException ex) {
-            Uses.log.logger.error("Проигрыватель не может воспроизвести файл " + videoFilePath + ": " + ex);
+            QLog.l().logger().error("Проигрыватель не может воспроизвести файл " + videoFilePath + ": " + ex);
             return false;
         }
     }
@@ -172,12 +172,12 @@ public class VideoPlayer {
      * @param nativePosition если false, то по всему контролу парента
      */
     public void setVideoSize(boolean nativePosition) {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+        }
         if (nativePosition && mp.getPreferredSize().width == 0 && cnt < 50) {
             mp.start();
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException ex) {
-            }
             mp.close();
             setVideoResource(videoResourcePath);
             setVideoSize(nativePosition);

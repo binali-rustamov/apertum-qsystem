@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,16 +16,18 @@
  */
 package ru.apertum.qsystem.reports.generators;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.http.HttpRequest;
-import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.model.AGenerator;
-import ru.apertum.qsystem.reports.model.CurrentStatistic;
+import ru.apertum.qsystem.reports.model.CurRepRecord;
+import ru.apertum.qsystem.server.model.QPlanService;
+import ru.apertum.qsystem.server.model.QUser;
+import ru.apertum.qsystem.server.model.QUserList;
 
 /**
  *
@@ -39,13 +41,22 @@ public class RepCurrentUsers extends AGenerator {
 
     @Override
     protected JRDataSource getDataSource(HttpRequest request) {
-        try {
-            return CurrentStatistic.getDataSourceCurrentUsers();
-        } catch (JRException ex) {
-            throw new ReportException("Ошибка генерации. " + ex);
-        } catch (UnsupportedEncodingException ex) {
-            throw new ReportException("Ошибка генерации. Не поддерживается кодировка. " + ex);
+        final LinkedList<CurRepRecord> dataSource = new LinkedList<CurRepRecord>();
+        for (QUser user : QUserList.getInstance().getItems()) {
+            int user_worked = 0;
+            int user_killed = 0;
+            long user_avg_time_work = 0;
+            for (QPlanService plan : user.getPlanServices()) {
+                user_worked += plan.getWorked();
+                user_killed += plan.getKilled();
+                user_avg_time_work += (plan.getAvg_work() * plan.getWorked());
+            }
+            user_avg_time_work = user.getPlanServices().isEmpty() || user_worked == 0 ? 0 : user_avg_time_work / user_worked;
+            for (QPlanService plan : user.getPlanServices()) {
+                dataSource.add(new CurRepRecord(user.getName(), plan.getService().getName(), user_worked, user_killed, user_avg_time_work, plan.getWorked(), plan.getKilled(), plan.getAvg_work()));
+            }
         }
+        return new JRBeanCollectionDataSource(dataSource);
     }
 
     @Override

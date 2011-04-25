@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,12 +33,13 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.IAdviceEvent;
 import ru.apertum.qsystem.client.model.QAvancePanel;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.RpcGetGridOfWeek.GridAndParams;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
+import ru.apertum.qsystem.server.model.QService;
 
 /**
  * Created on 27.08.2009, 10:15:34
@@ -68,7 +69,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         initComponents();
     }
     private static INetProperty netProperty;
-    private static String serviceName;
+    private static QService service;
     private static String siteMark;
     private static QAdvanceCustomer result = null;
     private static int delay = 10000;
@@ -79,16 +80,16 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
      * @param parent фрейм относительно которого будет модальность
      * @param modal модальный диалог или нет
      * @param netProperty свойства работы с сервером
-     * @param serviceName имя услуги, в которую происходит предварительная запись
+     * @param service  услугa, в которую происходит предварительная запись
      * @param fullscreen растягивать форму на весь экран и прятать мышку или нет
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
      * @param advCustomer ID клиента предварительно идентифицированного, например в регистратуре по медполису
      * @return  если null, то отказались от предварительной записи
      */
-    public static QAdvanceCustomer showCalendar(Frame parent, boolean modal, INetProperty netProperty, String serviceName, boolean fullscreen, int delay, long advCustomer) {
+    public static QAdvanceCustomer showCalendar(Frame parent, boolean modal, INetProperty netProperty, QService service, boolean fullscreen, int delay, long advCustomer) {
         FAdvanceCalendar.delay = delay;
         FAdvanceCalendar.advancedCustomer = advCustomer;
-        Uses.log.logger.info("Выбор времени для предварительной записи");
+        QLog.l().logger().info("Выбор времени для предварительной записи");
         if (advanceCalendar == null) {
             advanceCalendar = new FAdvanceCalendar(parent, modal);
             advanceCalendar.setTitle("Выбор времени предварительной записи.");
@@ -96,10 +97,10 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         result = null;
         Uses.setLocation(advanceCalendar);
         FAdvanceCalendar.netProperty = netProperty;
-        FAdvanceCalendar.serviceName = serviceName;
+        FAdvanceCalendar.service = service;
         FAdvanceCalendar.siteMark = siteMark;
         if (advanceCalendar.showWeek(new Date())) {
-            if (!(Uses.isDebug || Uses.isDemo) && fullscreen) {
+            if (!(QLog.l().isDebug() || QLog.l().isDemo()) && fullscreen) {
                 Uses.setFullSize(advanceCalendar);
                 int[] pixels = new int[16 * 16];
                 Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
@@ -518,9 +519,9 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         /**
          * Получим грид доступности часов для записи
          */
-        final GridAndParams res = NetCommander.getGridOfWeek(netProperty, serviceName, this.firstWeekDay, advancedCustomer);
+        final GridAndParams res = NetCommander.getGridOfWeek(netProperty, service.getId(), this.firstWeekDay, advancedCustomer);
         if (res.getSpError() != null) {
-            Uses.log.logger.error(res.getSpError());
+            QLog.l().logger().error(res.getSpError());
             JOptionPane.showConfirmDialog(this, res.getSpError(), getLocaleMessage("dialog.message.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
             return false;
         }
@@ -564,7 +565,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         gc_now.set(GregorianCalendar.MINUTE, 00);
         gc_now.set(GregorianCalendar.HOUR_OF_DAY, 24);
 
-        Uses.log.logger.debug("Предварительная запись с " + start + " до " + finish + " часов.");
+        QLog.l().logger().debug("Предварительная запись с " + start + " до " + finish + " часов.");
         /*
          * Разложим панельки-часы
          */
@@ -591,7 +592,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
                             clockBack.stop();
                         }
                         // ставим предварительного кастомера
-                        result = NetCommander.standInServiceAdvance(netProperty, serviceName, date, advancedCustomer);
+                        result = NetCommander.standInServiceAdvance(netProperty, service.getId(), date, advancedCustomer);
                         // закрываем диалог выбора предварительного выбора времени
                         setVisible(false);
                     }
@@ -618,7 +619,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
                             clockBack.stop();
                         }
                         // ставим предварительного кастомера
-                        result = NetCommander.standInServiceAdvance(netProperty, serviceName, date, advancedCustomer);
+                        result = NetCommander.standInServiceAdvance(netProperty, service.getId(), date, advancedCustomer);
                         // закрываем диалог выбора предварительного выбора времени
                         setVisible(false);
                     }

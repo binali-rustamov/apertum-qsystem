@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ import javax.swing.JComponent;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.common.model.NetCommander;
@@ -67,7 +67,7 @@ public class FMedCheckIn extends javax.swing.JDialog {
             @Override
             public void actionPerformed(SerialPortEvent event, byte[] data) {
                 textFieldNumber.setText(new String(data));
-                Uses.log.logger.debug("Приняли сообщение в СОМ-порт \"" + result + "\"");
+                QLog.l().logger().debug("Приняли сообщение в СОМ-порт \"" + result + "\"");
                 buttonEnterActionPerformed(null);
             }
 
@@ -97,7 +97,7 @@ public class FMedCheckIn extends javax.swing.JDialog {
      * @return XML-описание результата предварительной записи. если null, то отказались от предварительной записи
      */
     public static QAuthorizationCustomer showMedCheckIn(Frame parent, boolean modal, INetProperty netProperty, boolean fullscreen, ISerialPort port) {
-        Uses.log.logger.info("Показать форму идентификации клиента для предварительной записи");
+        QLog.l().logger().info("Показать форму идентификации клиента для предварительной записи");
         if (medCheckIn == null) {
             medCheckIn = new FMedCheckIn(parent, modal);
             medCheckIn.setTitle("Идентификация клиента.");
@@ -105,7 +105,7 @@ public class FMedCheckIn extends javax.swing.JDialog {
         result = null;
         Uses.setLocation(medCheckIn);
         FMedCheckIn.netProperty = netProperty;
-        if (!(Uses.isDebug || Uses.isDemo && !fullscreen)) {
+        if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {
             Uses.setFullSize(medCheckIn);
             int[] pixels = new int[16 * 16];
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
@@ -119,7 +119,7 @@ public class FMedCheckIn extends javax.swing.JDialog {
             try {
                 medCheckIn.setPort(port);
             } catch (Exception ex) {
-                Uses.log.logger.error("Ошибка при присвоении порту листенера.");
+                QLog.l().logger().error("Ошибка при присвоении порту листенера.");
             }
         }
         medCheckIn.setVisible(true);
@@ -485,10 +485,10 @@ public class FMedCheckIn extends javax.swing.JDialog {
         final String notFound = "<Ответ><![CDATA[<html><b><p align=center><span style='font-size:40.0pt;color:red'>Номер не обнаружен.</span><br><span style='font-size:60.0pt;color:purple'>Обратитесь в регистратуру.</span>]]></Ответ>";
 
         if (res == null) {
-            Uses.log.logger.debug("Не идентифицирован клиент по номеру \"" + textFieldNumber.getText() + "\"");
+            QLog.l().logger().debug("Не идентифицирован клиент по номеру \"" + textFieldNumber.getText() + "\"");
             FTimedDialog.showTimedDialog(null, true, notFound, 5000);
         } else {
-            Uses.log.logger.debug("Клиент опознан, предлагаем выбрать услугу");
+            QLog.l().logger().debug("Клиент опознан, предлагаем выбрать услугу");
             result = res;
             closeMedCheckIn();
         }

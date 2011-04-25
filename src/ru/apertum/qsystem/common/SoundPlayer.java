@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import java.lang.Thread.*;
 import java.util.LinkedList;
+import ru.apertum.qsystem.server.ServerProps;
 
 /**
  * Класс проигрывания звуковых ресурсов и файлов.
@@ -160,11 +161,11 @@ public class SoundPlayer implements Runnable {
     }
 
     synchronized private static void doSound(Object o, String resourceName) {
-        Uses.log.logger.debug("Пытаемся воспроизвести звуковой ресурс \"" + resourceName + "\"");
+        QLog.l().logger().debug("Пытаемся воспроизвести звуковой ресурс \"" + resourceName + "\"");
         InputStream inStream = getInputStream(o, resourceName);
         AudioInputStream ais = null;
         if (inStream == null) {
-            Uses.log.logger.error("Ресурс не загружен: \"" + resourceName + "\"");
+            QLog.l().logger().error("Ресурс не загружен: \"" + resourceName + "\"");
             return;
         }
         try {
@@ -219,13 +220,13 @@ public class SoundPlayer implements Runnable {
 
             //printAudioFormatInfo(audioformat);
         } catch (InterruptedException ex) {
-            Uses.log.logger.error("InterruptedException: " + ex);
+            QLog.l().logger().error("InterruptedException: " + ex);
         } catch (LineUnavailableException lue) {
-            Uses.log.logger.error("LineUnavailableException: " + lue.toString());
+            QLog.l().logger().error("LineUnavailableException: " + lue.toString());
         } catch (UnsupportedAudioFileException uafe) {
-            Uses.log.logger.error("UnsupportedAudioFileException: " + uafe.toString());
+            QLog.l().logger().error("UnsupportedAudioFileException: " + uafe.toString());
         } catch (IOException ioe) {
-            Uses.log.logger.error("IOException: " + ioe.toString());
+            QLog.l().logger().error("IOException: " + ioe.toString());
         } finally {
             try {
                 if (ais != null) {
@@ -235,7 +236,7 @@ public class SoundPlayer implements Runnable {
                     inStream.close();
                 }
             } catch (IOException ex) {
-                Uses.log.logger.error("IOException при освобождении входного потока медиаресурса: " + ex);
+                QLog.l().logger().error("IOException при освобождении входного потока медиаресурса: " + ex);
             }
         }
     }
@@ -364,19 +365,19 @@ public class SoundPlayer implements Runnable {
      * @param pointNumber  номер кабинета, куда вызвали
      */
     public static void inviteClient(String clientNumber, String pointNumber) {
-        if (Uses.getNumeration().getSound() == 0) {
+        if (ServerProps.getInstance().getProps().getSound() == 0) {
             return;
         }
         final LinkedList<String> res = new LinkedList<String>();
         // путь к звуковым файлам
         final String path = "/ru/apertum/qsystem/server/sound/";
         res.add(path + "ding.wav");
-        if (Uses.getNumeration().getSound() == 2) {
+        if (ServerProps.getInstance().getProps().getSound() == 2) {
             res.add(path + "client.wav");
 
             res.addAll(toSoundSimple(path, clientNumber));
 
-            switch (Uses.getNumeration().getPoint()) {
+            switch (ServerProps.getInstance().getProps().getPoint()) {
                 case 0:
                     res.add(path + "tocabinet.wav");
                     break;

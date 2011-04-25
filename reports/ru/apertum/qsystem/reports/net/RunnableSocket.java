@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ import org.apache.http.HttpException;
 import org.apache.http.impl.DefaultHttpServerConnection;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.BasicHttpContext;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ReportException;
 
 /**
@@ -65,20 +65,20 @@ public class RunnableSocket implements Runnable {
                 QSystemHtmlInstance.htmlInstance().getHttpService().handleRequest(conn, context);
             }
         } catch (ConnectionClosedException ex) {
-            Uses.logRep.logger.error("Client closed connection", ex);
+            QLog.l().logRep().error("Client closed connection", ex);
         } catch (IOException ex) {
-            Uses.logRep.logger.error("I/O error: " + ex.getMessage(), ex);
+            QLog.l().logRep().error("I/O error: " + ex.getMessage(), ex);
         } catch (HttpException ex) {
-            Uses.logRep.logger.error("Unrecoverable HTTP protocol violation: " + ex.getMessage(), ex);
+            QLog.l().logRep().error("Unrecoverable HTTP protocol violation: " + ex.getMessage(), ex);
         } catch (Exception ex) {
-            Uses.logRep.logger.error("Something with HTTP server.", ex);
+            QLog.l().logRep().error("Something with HTTP server.", ex);
         } finally {
             try {
                 conn.shutdown();
             } catch (IOException ex) {
-                Uses.logRep.logger.error("Default Http Server Connection have error then shutdown.", ex);
+                QLog.l().logRep().error("Default Http Server Connection have error then shutdown.", ex);
             } catch (Exception ex) {
-                Uses.logRep.logger.error("Something with runnableSocket.", ex);
+                QLog.l().logRep().error("Something with runnableSocket.", ex);
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,15 +22,14 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.exception.DataException;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import ru.apertum.qsystem.common.Uses;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Property;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.server.Spring;
 
 /**
  * Модель для отображения сетки календаля
@@ -42,7 +41,7 @@ public class CalendarTableModel extends AbstractTableModel {
     private List<FreeDay> days_del;
 
     public CalendarTableModel(long calcId) {
-        Uses.log.logger.debug("Создаем модель для календаря");
+        QLog.l().logger().debug("Создаем модель для календаря");
         this.calcId = calcId;
         days = getFreeDays(calcId);
         days_del = new ArrayList<FreeDay>(days);
@@ -57,18 +56,10 @@ public class CalendarTableModel extends AbstractTableModel {
      * @param calcId id календаря
      * @return список выходных дней определенного календаря
      */
-    public static LinkedList<FreeDay> getFreeDays(final Long calcId) {
-
-        return (LinkedList<FreeDay>) Uses.getSessionFactory().execute(new HibernateCallback() {
-
-            @Override
-            public Object doInHibernate(Session session) {
-                Criteria crit = session.createCriteria(FreeDay.class);
-                Criterion calendar_id = Restrictions.eq("calendarId", calcId);
-                crit.add(calendar_id);
-                return new LinkedList<FreeDay>(crit.list());
-            }
-        });
+    public synchronized static LinkedList<FreeDay> getFreeDays(final Long calcId) {
+        final DetachedCriteria criteria = DetachedCriteria.forClass(FreeDay.class);
+        criteria.add(Property.forName("calendarId").eq(calcId));
+        return new LinkedList<FreeDay>(Spring.getInstance().getHt().findByCriteria(criteria));
     }
 
     /**
@@ -135,7 +126,7 @@ public class CalendarTableModel extends AbstractTableModel {
      * Сбросить выделенные дни в календаре
      */
     public void dropCalendar() {
-        Uses.log.logger.debug("Сбросим календарь");
+        QLog.l().logger().debug("Сбросим календарь");
         days.clear();
         fireTableDataChanged();
     }
@@ -144,7 +135,7 @@ public class CalendarTableModel extends AbstractTableModel {
      * Пометить все субботы выходными
      */
     public void checkSaturday() {
-        Uses.log.logger.debug("Пометив все субботы");
+        QLog.l().logger().debug("Пометив все субботы");
         final GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(new Date());
         final int ye = gc.get(GregorianCalendar.YEAR) % 4 == 0 ? 366 : 365;
@@ -161,7 +152,7 @@ public class CalendarTableModel extends AbstractTableModel {
      * Пометить все воскресенья выходными
      */
     public void checkSunday() {
-        Uses.log.logger.debug("Пометим все воскресенья");
+        QLog.l().logger().debug("Пометим все воскресенья");
         final GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(new Date());
         final int ye = gc.get(GregorianCalendar.YEAR) % 4 == 0 ? 366 : 365;
@@ -178,39 +169,21 @@ public class CalendarTableModel extends AbstractTableModel {
      * Сохранить календарь.
      */
     public void save() {
-        Uses.log.logger.info("Сохраняем календарь ID = " + calcId);
-        final Session session = Uses.getSessionFactory().getSessionFactory().openSession();
-        session.beginTransaction();
-        try {
-            //Удаляем старые
-            for (FreeDay day : days_del) {
-                session.delete(day);
-            }
+        QLog.l().logger().info("Сохраняем календарь ID = " + calcId);
 
-            Uses.log.logger.debug("Удалили старый календарь");
-            // Сохраняем помеченные
-            for (FreeDay day : days) {
-                day.setId(null);
-                session.saveOrUpdate(day);
-            }
-            session.getTransaction().commit();
-            Uses.log.logger.debug("Сохранили новый календарь");
-        } catch (DataException ex) {
-            session.getTransaction().rollback();
-            throw new ClientException("Ошибка выполнения операции изменения данных в БД(JDBC). Возможно введенные вами параметры не могут быть сохранены.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nSQL: " + ex.getSQL());
-        } catch (HibernateException ex) {
-            session.getTransaction().rollback();
-            String ss = "";
-            for (StackTraceElement s : ex.getStackTrace()) {
-                ss = ss + "\n" + s.toString();
-            }
-            throw new ClientException("Ошибка системы взаимодействия с БД(Hibetnate).\n Возможно существуют вновь добавленные календари которые еще не сохранены.\nПопробуйте предварительно сохранить конфигурацию.\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")\nMessages: " + ss);
+        final DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setName("SomeTxName");
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        TransactionStatus status = Spring.getInstance().getTxManager().getTransaction(def);
+        try {
+            Spring.getInstance().getHt().deleteAll(days_del);
+            Spring.getInstance().getHt().saveOrUpdateAll(days);
         } catch (Exception ex) {
-            session.getTransaction().rollback();
-            throw new ClientException("Ошибка при сохранении \n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + "\n" + ex.getStackTrace() + ")");
-        } finally {
-            session.close();
+            Spring.getInstance().getTxManager().rollback(status);
+            throw new ClientException("Ошибка выполнения операции изменения данных в БД(JDBC).\nВозможно Вы добавили новый календарь, изменили его, пытаетесь сохранить содержимое календаря, но общую конфигурацию не сохранили.\nСохраните всю конфигурацию(Ctrl + S) и еще раз попытайтесь сохранить содержимое календаря.\n\n[" + ex.getLocalizedMessage() + "]\n(" + ex.toString() + ")");
         }
+        Spring.getInstance().getTxManager().commit(status);
+        QLog.l().logger().debug("Сохранили новый календарь");
         //типо чтоб были актуальные внутренние данные
         days_del = new ArrayList<FreeDay>(days);
     }

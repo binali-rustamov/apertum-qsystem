@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,11 +18,13 @@ package ru.apertum.qsystem.client.forms;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.tree.TreeNode;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.QSystem;
@@ -89,9 +91,10 @@ public class FRedirect extends JDialog {
         QServiceTree.sailToStorm(service, new ISailListener() {
 
             @Override
-            public void actionPerformed(QService service) {
+            public void actionPerformed(TreeNode service) {
                 if (service.isLeaf()) {
-                    comboBoxServices.addItem(service.getName());
+                    comboBoxServices.addItem(((QService)service).getName());
+                    ids.put(((QService)service).getName(), ((QService)service).getId());
                 }
             }
         });
@@ -102,6 +105,8 @@ public class FRedirect extends JDialog {
                 Math.round(owner.getLocation().y + owner.getHeight() / 2 - getHeight() / 2));
     }
 
+    private final HashMap<String, Long> ids = new HashMap<String, Long>();
+
     /**
      * Выбор услуги для перенаправления.
      * @param netProperty свойства коннекта
@@ -111,7 +116,7 @@ public class FRedirect extends JDialog {
      * @return класс полусения свойств
      */
     public static FRedirect getService(INetProperty netProperty, JFrame owner, String tempComments, boolean onlyComments) {
-        Uses.log.logger.info("Выбор услуги для перенаправления.");
+        QLog.l().logger().info("Выбор услуги для перенаправления.");
         if (servicesForm == null) {
             servicesForm = new FRedirect(netProperty, owner);
         }
@@ -128,8 +133,8 @@ public class FRedirect extends JDialog {
         return ok ? servicesForm : null;
     }
 
-    public String getServiceName() {
-        return (String) servicesForm.comboBoxServices.getSelectedItem();
+    public long getServiceId() {
+        return ids.get((String)servicesForm.comboBoxServices.getSelectedItem());
     }
 
     public boolean getRequestBack() {

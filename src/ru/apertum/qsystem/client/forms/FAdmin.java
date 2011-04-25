@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,11 +28,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Properties;
@@ -47,13 +45,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.TreePath;
 import org.dom4j.DocumentException;
-import org.dom4j.Element;
 import org.jdesktop.application.Action;
 import ru.apertum.qsystem.common.model.NetCommander;
 import ru.apertum.qsystem.client.model.QTray;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.INetProperty;
-import ru.apertum.qsystem.server.controller.QServicesPool;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.event.ChangeListener;
@@ -63,22 +60,26 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.help.Helper;
+import ru.apertum.qsystem.client.common.WelcomeParams;
 import ru.apertum.qsystem.common.cmd.RpcGetServerState.ServiceInfo;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.exceptions.ClientWarning;
 import ru.apertum.qsystem.common.model.ATalkingClock;
-import ru.apertum.qsystem.common.model.IProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.reports.model.QReportsList;
+import ru.apertum.qsystem.server.MainBoard;
+import ru.apertum.qsystem.server.ServerProps;
+import ru.apertum.qsystem.server.Spring;
 import ru.apertum.qsystem.server.model.ISailListener;
-import ru.apertum.qsystem.server.model.NetProperty;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QPlanService;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 import ru.apertum.qsystem.server.model.QService;
-import ru.apertum.qsystem.server.model.QServiceList;
 import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.QUserList;
@@ -463,7 +464,7 @@ public class FAdmin extends javax.swing.JFrame {
             spinnerUserRS.setValue(user.getAdressRS());
             checkBoxAdmin.setSelected(user.getAdminAccess());
             checkBoxReport.setSelected(user.getReportAccess());
-            listUserService.setModel(user.getServiceList());
+            listUserService.setModel(user.getPlanServiceList());
             if (listUserService.getLastVisibleIndex() != -1) {
                 listUserService.setSelectedIndex(0);
             }
@@ -657,19 +658,47 @@ public class FAdmin extends javax.swing.JFrame {
      * Загрузим конфигурацию системы.
      */
     private void loadConfig() {
-        listUsers.setModel(QServicesPool.getServicesPool(true).getUserList());
-        listResponse.setModel(QServicesPool.getServicesPool(true).getResponseList());
-        listResults.setModel(QServicesPool.getServicesPool(true).getResultsList());
-        treeServices.setModel(QServicesPool.getServicesPool(true).getServices());
-        treeInfo.setModel(QServicesPool.getServicesPool(true).getInfoTree());
-        listSchedule.setModel(QServicesPool.getServicesPool(true).getScheduleList());
-        listCalendar.setModel(QServicesPool.getServicesPool(true).getCalendarList());
+        listUsers.setModel(QUserList.getInstance());
+        listResponse.setModel(QResponseList.getInstance());
+        listResults.setModel(QResultList.getInstance());
+        treeServices.setModel(QServiceTree.getInstance());
+        treeInfo.setModel(QInfoTree.getInstance());
+        listSchedule.setModel(QScheduleList.getInstance());
+        listCalendar.setModel(QCalendarList.getInstance());
+        listReposts.setModel(QReportsList.getInstance());
 
-        spinnerPropServerPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getServerPort());
-        spinnerPropClientPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getClientPort());
-        spinnerWebServerPort.setValue(QServicesPool.getServicesPool(true).getNetPropetry().getWebServerPort());
-        textFieldStartTime.setText(Uses.format_HH_mm.format(QServicesPool.getServicesPool(true).getNetPropetry().getStartTime()));
-        textFieldFinishTime.setText(Uses.format_HH_mm.format(QServicesPool.getServicesPool(true).getNetPropetry().getFinishTime()));
+        spinnerPropServerPort.setValue(ServerProps.getInstance().getProps().getServerPort());
+        spinnerPropClientPort.setValue(ServerProps.getInstance().getProps().getClientPort());
+        spinnerWebServerPort.setValue(ServerProps.getInstance().getProps().getWebServerPort());
+        textFieldStartTime.setText(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getStartTime()));
+        textFieldFinishTime.setText(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getFinishTime()));
+
+        spinnerFirstNumber.setValue(ServerProps.getInstance().getProps().getFirstNumber());
+        spinnerLastNumber.setValue(ServerProps.getInstance().getProps().getLastNumber());
+        rbKindCommon.setSelected(!ServerProps.getInstance().getProps().getNumering());
+        rbKindPersonal.setSelected(ServerProps.getInstance().getProps().getNumering());
+        switch (ServerProps.getInstance().getProps().getPoint()) {
+            case 0:
+                rbPointOffice.setSelected(true);
+                break;
+            case 1:
+                rbPointWindow.setSelected(true);
+                break;
+            case 2:
+                rbPointStoika.setSelected(true);
+                break;
+        }
+        switch (ServerProps.getInstance().getProps().getSound()) {
+            case 0:
+                rbNotificationNo.setSelected(true);
+                break;
+            case 1:
+                rbNotificationGong.setSelected(true);
+                break;
+            case 2:
+                rbNotificationGongVoice.setSelected(true);
+                break;
+        }
 
         // выставим начальные позиции в списках
         if (listUsers.getLastVisibleIndex() != -1) {
@@ -705,18 +734,12 @@ public class FAdmin extends javax.swing.JFrame {
     private class ServerNetProperty implements INetProperty {
 
         @Override
-        public Integer getServerPort() {
+        public Integer getPort() {
             return (Integer) spinnerServerPort.getValue();
         }
 
-        @Deprecated
         @Override
-        public Integer getClientPort() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public InetAddress getServerAddress() {
+        public InetAddress getAddress() {
             InetAddress adr = null;
             try {
                 adr = InetAddress.getByName(textFieldServerAddr.getText());
@@ -725,46 +748,10 @@ public class FAdmin extends javax.swing.JFrame {
             }
             return adr;
         }
-
-        @Deprecated
-        @Override
-        public InetAddress getClientAddress() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Deprecated
-        @Override
-        public Integer getWebServerPort() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Deprecated
-        @Override
-        public Date getStartTime() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Deprecated
-        @Override
-        public Date getFinishTime() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Deprecated
-        @Override
-        public Element getXML() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Deprecated
-        @Override
-        public String getVersion() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     }
 
     protected void checkServer() {
-        Uses.log.logger.info("Запрос о состоянии на сервер.");
+        QLog.l().logger().info("Запрос о состоянии на сервер.");
         //элемент ответа.
         final LinkedList<ServiceInfo> srvs;
         try {
@@ -773,7 +760,7 @@ public class FAdmin extends javax.swing.JFrame {
         } catch (Exception ex) {
             listPostponed.setModel(QPostponedList.getInstance().loadPostponedList(new LinkedList<QCustomer>()));
             labelServerState.setText("<HTML><b><span style='font-size:20.0pt;color:red;'>" + getLocaleMessage("admin.message.server_not_start") + "</span></b>");
-            Uses.log.logger.error("Сервер ответил на запрос о состоянии: \"" + ex + "\"");
+            QLog.l().logger().error("Сервер ответил на запрос о состоянии: \"" + ex + "\"");
             tray.showMessageTray(getLocaleMessage("tray.server"), getLocaleMessage("tray.message.stop_server"), QTray.MessageType.WARNING);
             return;
         }
@@ -797,14 +784,14 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     protected void checkWelcome(String command) {
-        Uses.log.logger.info("Запрос о состоянии на пункт регистрации.");
+        QLog.l().logger().info("Запрос о состоянии на пункт регистрации.");
         command = command == null ? "Empty" : command;
         final String result;
         try {
             result = NetCommander.getWelcomeState(netPropWelcome(), command);
         } catch (Exception ex) {
             labelWelcomeState.setText("<HTML><b><span style='font-size:20.0pt;color:red;'>" + getLocaleMessage("admin.message.welcome_not_start") + "</span></b>");
-            Uses.log.logger.error("Пункт регистрации не ответил на запрос о состоянии или поризошла ошибка. \"" + ex + "\"");
+            QLog.l().logger().error("Пункт регистрации не ответил на запрос о состоянии или поризошла ошибка. \"" + ex + "\"");
             tray.showMessageTray(getLocaleMessage("tray.message_stop_server.title"), getLocaleMessage("tray.message_stop_server.caption"), QTray.MessageType.WARNING);
             return;
         }
@@ -815,18 +802,12 @@ public class FAdmin extends javax.swing.JFrame {
         return new INetProperty() {
 
             @Override
-            public Integer getServerPort() {
+            public Integer getPort() {
                 return (Integer) spinnerClientPort.getValue();
             }
 
-            @Deprecated
             @Override
-            public Integer getClientPort() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public InetAddress getServerAddress() {
+            public InetAddress getAddress() {
                 InetAddress adr = null;
                 try {
                     adr = InetAddress.getByName(textFieldClientAdress.getText());
@@ -834,42 +815,6 @@ public class FAdmin extends javax.swing.JFrame {
                     throw new ClientException("Error! " + ex);
                 }
                 return adr;
-            }
-
-            @Deprecated
-            @Override
-            public InetAddress getClientAddress() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Deprecated
-            @Override
-            public Integer getWebServerPort() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Deprecated
-            @Override
-            public Time getStartTime() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Deprecated
-            @Override
-            public Time getFinishTime() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Deprecated
-            @Override
-            public Element getXML() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Deprecated
-            @Override
-            public String getVersion() {
-                throw new UnsupportedOperationException("Not supported yet.");
             }
         };
     }
@@ -893,14 +838,24 @@ public class FAdmin extends javax.swing.JFrame {
      * Сохранение данных о сетевых настройках, повесим на нажатие кнопок элементов ввода.
      */
     public void saveNet() {
-        ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setServerPort((Integer) spinnerPropServerPort.getValue());
-        ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setClientPort((Integer) spinnerPropClientPort.getValue());
-        ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setWebServerPort((Integer) spinnerWebServerPort.getValue());
+
+        ServerProps.getInstance().getProps().setServerPort((Integer) spinnerPropServerPort.getValue());
+        ServerProps.getInstance().getProps().setClientPort((Integer) spinnerPropClientPort.getValue());
+        ServerProps.getInstance().getProps().setWebServerPort((Integer) spinnerWebServerPort.getValue());
+        if ((Integer) spinnerFirstNumber.getValue() > (Integer) spinnerLastNumber.getValue()) {
+            spinnerFirstNumber.setValue(1);
+            spinnerLastNumber.setValue(999);
+        }
+        ServerProps.getInstance().getProps().setFirstNumber((Integer) spinnerFirstNumber.getValue());
+        ServerProps.getInstance().getProps().setLastNumber((Integer) spinnerLastNumber.getValue());
+        ServerProps.getInstance().getProps().setNumering(rbKindPersonal.isSelected());
+        ServerProps.getInstance().getProps().setPoint(rbPointOffice.isSelected() ? 0 : rbPointWindow.isSelected() ? 1 : 2);
+        ServerProps.getInstance().getProps().setSound(rbNotificationNo.isSelected() ? 0 : rbNotificationGong.isSelected() ? 1 : 2);
         try {
-            ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setStartTime(Uses.format_HH_mm.parse(textFieldStartTime.getText()));
-            ((NetProperty) QServicesPool.getServicesPool(true).getNetPropetry()).setFinishTime(Uses.format_HH_mm.parse(textFieldFinishTime.getText()));
+            ServerProps.getInstance().getProps().setStartTime(Uses.format_HH_mm.parse(textFieldStartTime.getText()));
+            ServerProps.getInstance().getProps().setFinishTime(Uses.format_HH_mm.parse(textFieldFinishTime.getText()));
         } catch (ParseException ex) {
-            Uses.log.logger.error("Проблемы с сохранение сетевых настроек. ", ex);
+            QLog.l().logger().error("Проблемы с сохранение сетевых настроек. ", ex);
         }
     }
 
@@ -911,10 +866,9 @@ public class FAdmin extends javax.swing.JFrame {
     public static void main(String args[]) throws Exception {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.startSplash();
-        Uses.isDebug = Uses.setLogining(args, false);
-        Uses.setServerContext();
+        QLog.initial(args, false);
         // Определим кто работает на данном месте.
-        FLogin.logining(QServicesPool.getServicesPool(true).getUserList(), null, true, 3, FLogin.LEVEL_ADMIN);
+        FLogin.logining(QUserList.getInstance(), null, true, 3, FLogin.LEVEL_ADMIN);
         Uses.showSplash();
         java.awt.EventQueue.invokeLater(new Runnable() {
 
@@ -941,7 +895,7 @@ public class FAdmin extends javax.swing.JFrame {
             }
             if ("".equals(userName)) {
                 JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err1.title"), getLocaleMessage("admin.add_user_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-            } else if (QServicesPool.getServicesPool(true).getUserList().hasByName(userName)) {
+            } else if (QUserList.getInstance().hasByName(userName)) {
                 JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err2.title"), getLocaleMessage("admin.add_user_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (userName.indexOf('\"') != -1) {
                 JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err3.title"), getLocaleMessage("admin.add_user_dialog.err3.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
@@ -951,13 +905,13 @@ public class FAdmin extends javax.swing.JFrame {
                 flag = false;
             }
         }
-        Uses.log.logger.debug("Добавляем пользователя \"" + userName + "\"");
+        QLog.l().logger().debug("Добавляем пользователя \"" + userName + "\"");
         final QUser user = new QUser();
         user.setName(userName);
         user.setPassword("");
         user.setPoint("");
         user.setAdressRS(32);
-        QServicesPool.getServicesPool(true).getUserList().addElement(user);
+        QUserList.getInstance().addElement(user);
         listUsers.setSelectedValue(user, true);
     }
 
@@ -974,7 +928,7 @@ public class FAdmin extends javax.swing.JFrame {
                 }
                 if ("".equals(userName)) {
                     JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_user_dialog.err1.title"), getLocaleMessage("admin.rename_user_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-                } else if (QServicesPool.getServicesPool(true).getUserList().hasByName(userName)) {
+                } else if (QUserList.getInstance().hasByName(userName)) {
                     JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_user_dialog.err2.title"), getLocaleMessage("admin.rename_user_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else if (userName.indexOf('\"') != -1) {
                     JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_user_dialog.err3.title"), getLocaleMessage("admin.rename_user_dialog.err3.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
@@ -999,8 +953,7 @@ public class FAdmin extends javax.swing.JFrame {
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
-            Uses.log.logger.debug("Удаляем пользователя \"" + ((QUser) listUsers.getSelectedValue()).getName() + "\"");
-
+            QLog.l().logger().debug("Удаляем пользователя \"" + ((QUser) listUsers.getSelectedValue()).getName() + "\"");
 
             final int del = listUsers.getSelectedIndex();
             final QUserList m = (QUserList) listUsers.getModel();
@@ -1020,11 +973,7 @@ public class FAdmin extends javax.swing.JFrame {
                     return;
                 }
             }
-            if (Uses.isDBconnected()) {
-                QServicesPool.getServicesPool(true).addKilled(user);
-            }
-
-            QServicesPool.getServicesPool(true).getUserList().removeElement(user);
+            QUserList.getInstance().removeElement(user);
 
             if (col != 1) {
                 if (col == del + 1) {
@@ -1048,7 +997,7 @@ public class FAdmin extends javax.swing.JFrame {
             }
             if ("".equals(serviceName)) {
                 JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_service_dialog.err1.title"), getLocaleMessage("admin.add_service_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-            } else if (QServicesPool.getServicesPool(true).getServices().hasByName(serviceName)) {
+            } else if (QServiceTree.getInstance().hasByName(serviceName)) {
                 JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_service_dialog.err2.title"), getLocaleMessage("admin.add_service_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             } else if (serviceName.indexOf('\"') != -1) {
                 JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_service_dialog.err3.title"), getLocaleMessage("admin.add_service_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
@@ -1065,22 +1014,21 @@ public class FAdmin extends javax.swing.JFrame {
         newService.setStatus(1);
         newService.setButtonText("<html><b><p align=center><span style='font-size:20.0pt;color:red'>" + serviceName + "</span></b>");
         final QService parentService = (QService) treeServices.getLastSelectedPathComponent();
-        ((QServiceTree) treeServices.getModel()).insertNodeInto(newService, parentService, parentService.getChildCount());
-        final TreeNode[] nodes = ((QServiceTree) treeServices.getModel()).getPathToRoot(newService);
+        QServiceTree.getInstance().insertNodeInto(newService, parentService, parentService.getChildCount());
+        final TreeNode[] nodes = QServiceTree.getInstance().getPathToRoot(newService);
         final TreePath path = new TreePath(nodes);
         treeServices.scrollPathToVisible(path);
         treeServices.setSelectionPath(path);
         // родительскую услугу к новой услуге нужно исключить из списка привязанных к юзерам, т.к. она стала группой
         deleteServiceFromUsers(parentService);
 
-        Uses.log.logger.debug("Добавлена услуга \"" + serviceName + "\" в группу \"" + parentService.getName() + "\"");
+        QLog.l().logger().debug("Добавлена услуга \"" + serviceName + "\" в группу \"" + parentService.getName() + "\"");
     }
 
     @Action
     public void renameService() {
         final QService service = (QService) treeServices.getLastSelectedPathComponent();
         if (service != null) {
-            final String oldServiceName = service.getName();
             String serviceName = service.getName();
             boolean flag = true;
             while (flag) {
@@ -1090,7 +1038,7 @@ public class FAdmin extends javax.swing.JFrame {
                 }
                 if ("".equals(serviceName)) {
                     JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_service_dialog.err1.title"), getLocaleMessage("admin.rename_service_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-                } else if (QServicesPool.getServicesPool(true).getServices().hasByName(serviceName)) {
+                } else if (QServiceTree.getInstance().hasByName(serviceName)) {
                     JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_service_dialog.err2.title"), getLocaleMessage("admin.rename_service_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 } else if (serviceName.indexOf('\"') != -1) {
                     JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.rename_service_dialog.err3.title"), getLocaleMessage("admin.rename_service_dialog.err3.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
@@ -1101,13 +1049,6 @@ public class FAdmin extends javax.swing.JFrame {
                 }
             }
             service.setName(serviceName);
-            for (Object o : ((QUserList) listUsers.getModel()).toArray()) {
-                QUser user = (QUser) o;
-                if (user.hasService(oldServiceName)) {
-                    user.renamePlanService(oldServiceName, serviceName);
-                }
-            }
-            listUserService.setModel(listUserService.getModel());
         }
     }
 
@@ -1116,11 +1057,12 @@ public class FAdmin extends javax.swing.JFrame {
      * @param service удаляемая услуга
      */
     private void deleteServicesFromUsers(QService service) {
+
         QServiceTree.sailToStorm(service, new ISailListener() {
 
             @Override
-            public void actionPerformed(QService service) {
-                deleteServiceFromUsers(service);
+            public void actionPerformed(TreeNode service) {
+                deleteServiceFromUsers((QService) service);
             }
         });
     }
@@ -1130,13 +1072,9 @@ public class FAdmin extends javax.swing.JFrame {
      * @param service удаляемая услуга
      */
     private void deleteServiceFromUsers(QService service) {
-        for (Object o : ((QUserList) listUsers.getModel()).toArray()) {
-            QUser user = (QUser) o;
-            if (user.hasService(service.getName())) {
-                if (Uses.isDBconnected()) {
-                    QServicesPool.getServicesPool(true).addKilled(user.getServiceList().getByName(service.getName()));
-                }
-                user.deletePlanService(service.getName());
+        for (QUser user : QUserList.getInstance().getItems()) {
+            if (user.hasService(service.getId())) {
+                user.deletePlanService(service.getId());
             }
         }
     }
@@ -1156,9 +1094,6 @@ public class FAdmin extends javax.swing.JFrame {
             // Удалим саму услугу
             final int del = service.getParent().getIndex(service);
             final int col = service.getParent().getChildCount();
-            if (Uses.isDBconnected()) {
-                QServicesPool.getServicesPool(true).addKilled(service);
-            }
             ((QServiceTree) treeServices.getModel()).removeNodeFromParent(service);
             // Выделение в услуги в дереве
             if (col == 1) {
@@ -1168,7 +1103,7 @@ public class FAdmin extends javax.swing.JFrame {
             } else if (col > del + 1) {
                 treeServices.setSelectionPath(new TreePath(((QServiceTree) treeServices.getModel()).getPathToRoot(service.getParent().getChildAt(del))));
             }
-            Uses.log.logger.debug("Удалена услуга \"" + service.getName() + "\" из группы \"" + service.getParent().getName() + "\"");
+            QLog.l().logger().debug("Удалена услуга \"" + service.getName() + "\" из группы \"" + service.getParent().getName() + "\"");
         }
     }
 
@@ -1207,7 +1142,7 @@ public class FAdmin extends javax.swing.JFrame {
         textPaneInfoItem.setEnabled(true);
         textPaneInfoPrint.setEnabled(true);
 
-        Uses.log.logger.debug("Добавлен инфоузел \"" + infoName + "\" в группу \"" + parentItem.getName() + "\"");
+        QLog.l().logger().debug("Добавлен инфоузел \"" + infoName + "\" в группу \"" + parentItem.getName() + "\"");
     }
 
     @Action
@@ -1223,10 +1158,7 @@ public class FAdmin extends javax.swing.JFrame {
             // Удалим сам узел
             final int del = item.getParent().getIndex(item);
             final int col = item.getParent().getChildCount();
-            if (Uses.isDBconnected()) {
-                QServicesPool.getServicesPool(true).addKilled(item);
-            }
-            ((QInfoTree) treeInfo.getModel()).removeNodeFromParent(item);
+            QInfoTree.getInstance().removeNodeFromParent(item);
             // Выделение в узла в дереве
             if (col == 1) {
                 treeInfo.setSelectionPath(new TreePath(((QInfoTree) treeInfo.getModel()).getPathToRoot(item.getParent())));
@@ -1235,34 +1167,77 @@ public class FAdmin extends javax.swing.JFrame {
             } else if (col > del + 1) {
                 treeInfo.setSelectionPath(new TreePath(((QInfoTree) treeInfo.getModel()).getPathToRoot(item.getParent().getChildAt(del))));
             }
-            Uses.log.logger.debug("Удален инфоузел \"" + item.getName() + "\" из группы \"" + item.getParent().getName() + "\"");
+            QLog.l().logger().debug("Удален инфоузел \"" + item.getName() + "\" из группы \"" + item.getParent().getName() + "\"");
         }
     }
 
+    /**
+     * @see http://static.springsource.org/spring/docs/3.0.x/reference/transaction.html#transaction-programmatic
+     */
     @Action
     public void saveConfiguration() {
-        QServicesPool.getServicesPool(true).savePoolConfig();
-        JOptionPane.showMessageDialog(this, getLocaleMessage("admin.save.title"), getLocaleMessage("admin.save.caption"), JOptionPane.INFORMATION_MESSAGE);
+        saveNet();
+        final Exception res;
+        try {
+            res = (Exception) Spring.getInstance().getTt().execute(new TransactionCallback() {
+
+                @Override
+                public Exception doInTransaction(TransactionStatus status) {
+                    try {
+                        //Сохраняем сетевые настройки
+                        Spring.getInstance().getHt().saveOrUpdate(ServerProps.getInstance().getProps());
+                        // Сохраняем планы расписания
+                        QScheduleList.getInstance().save();
+                        // Сохраняем календари услуг
+                        QCalendarList.getInstance().save();
+                        // Сохраняем услуги
+                        QServiceTree.getInstance().save();
+                        // Сохраняем пользователей
+                        QUserList.getInstance().save();
+                        // Сохраняем инфоузлы
+                        QInfoTree.getInstance().save();
+                        // Сохраняем отзывы
+                        QResponseList.getInstance().save();
+                        // Сохраняем результаты работы пользователя с клиентами
+                        QResultList.getInstance().save();
+                        QLog.l().logger().debug("Сохранили конфигурацию.");
+                    } catch (Exception ex) {
+                        QLog.l().logger().error("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
+                        status.setRollbackOnly();
+                        return ex;
+                    }
+                    return null;
+                }
+            });
+        } catch (RuntimeException ex) {
+            throw new ClientException("Ошибка выполнения операции изменения данных в БД(JDBC). Возможно введенные вами параметры не могут быть сохранены.\n(" + ex.toString() + ")");
+        }
+        if (res == null) {
+            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.save.title"), getLocaleMessage("admin.save.caption"), JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            throw new ClientException("Ошибка выполнения операции изменения данных в БД(JDBC). Возможно введенные вами параметры не могут быть сохранены.\n[" + res.getLocalizedMessage() + "]\n(" + res.toString() + ")\nSQL: ");
+        }
     }
 
     @Action
     public void addServiceToUser() {
+        final QUser user = (QUser) listUsers.getSelectedValue();
         final QService service = (QService) treeServices.getLastSelectedPathComponent();
-        if (service != null && service.isLeaf() && listUsers.getSelectedIndex() != -1 && !((QServiceList) listUserService.getModel()).hasByName(service.getName())) {
-            ((QUser) listUsers.getSelectedValue()).addPlanService(service);
+        if (service != null && service.isLeaf() && listUsers.getSelectedIndex() != -1 && !(user.hasService(service))) {
+            user.addPlanService(service);
             if (listUserService.getLastVisibleIndex() != -1) {
                 listUserService.setSelectedIndex(listUserService.getLastVisibleIndex());
-                Uses.log.logger.debug("Пользователю \"" + ((QUser) listUsers.getSelectedValue()).getName() + "\" назначили услугу \"" + service.getName() + "\".");
+                QLog.l().logger().debug("Пользователю \"" + user.getName() + "\" назначили услугу \"" + service.getName() + "\".");
             }
         }
-        if (service != null && !service.isLeaf() && listUsers.getSelectedIndex() != -1 && !((QServiceList) listUserService.getModel()).hasByName(service.getName())) {
+        if (service != null && !service.isLeaf() && listUsers.getSelectedIndex() != -1 && !(user.hasService(service))) {
             QServiceTree.sailToStorm(service, new ISailListener() {
 
                 @Override
-                public void actionPerformed(QService service) {
-                    if (service.isLeaf() && !((QServiceList) listUserService.getModel()).hasByName(service.getName())) {
-                        ((QUser) listUsers.getSelectedValue()).addPlanService(service);
-                        Uses.log.logger.debug("Пользователю \"" + ((QUser) listUsers.getSelectedValue()).getName() + "\" назначили услугу \"" + service.getName() + "\".");
+                public void actionPerformed(TreeNode service) {
+                    if (service.isLeaf() && !user.hasService((QService) service)) {
+                        user.addPlanService((QService) service);
+                        QLog.l().logger().debug("Пользователю \"" + ((QUser) listUsers.getSelectedValue()).getName() + "\" назначили услугу \"" + ((QService) service).getName() + "\".");
                     }
                 }
             });
@@ -1282,10 +1257,7 @@ public class FAdmin extends javax.swing.JFrame {
                 return;
             }
             final int ind = listUserService.getSelectedIndex();
-            if (Uses.isDBconnected()) {
-                QServicesPool.getServicesPool(true).addKilled(listUserService.getSelectedValue());
-            }
-            ((QUser) listUsers.getSelectedValue()).deletePlanService(((IProperty) listUserService.getSelectedValue()).getName());
+            ((QUser) listUsers.getSelectedValue()).deletePlanService(((QPlanService) listUserService.getSelectedValue()).getService().getId());
             if (listUserService.getLastVisibleIndex() != -1) {
                 listUserService.setSelectedIndex(listUserService.getLastVisibleIndex() < ind ? listUserService.getLastVisibleIndex() : ind);
             }
@@ -1299,7 +1271,7 @@ public class FAdmin extends javax.swing.JFrame {
             //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
             String inputData = null;
             if (service.getInput_required()) {
-                inputData = FInputDialog.showInputDialog(this, true, FWelcome.netProperty, false, FWelcome.welcomeParams.delayBack, service.getInput_caption());
+                inputData = FInputDialog.showInputDialog(this, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getInput_caption());
                 if (inputData == null || inputData.isEmpty()) {
                     return;
                 }
@@ -1307,7 +1279,7 @@ public class FAdmin extends javax.swing.JFrame {
 
             final QCustomer customer;
             try {
-                customer = NetCommander.standInService(new ServerNetProperty(), service.getName(), "1", 1, inputData);
+                customer = NetCommander.standInService(new ServerNetProperty(), service.getId(), "1", 1, inputData);
             } catch (Exception ex) {
                 throw new ClientException(getLocaleMessage("admin.print_ticket_error") + " " + ex);
             }
@@ -1365,6 +1337,9 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem35 = new javax.swing.JMenuItem();
         jSeparator13 = new javax.swing.JPopupMenu.Separator();
         jMenuItem36 = new javax.swing.JMenuItem();
+        buttonGroupKindNum = new javax.swing.ButtonGroup();
+        buttonGroupPoint = new javax.swing.ButtonGroup();
+        buttonGroupVoice = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
         tabbedPaneMain = new javax.swing.JTabbedPane();
         jPanel3 = new javax.swing.JPanel();
@@ -1392,6 +1367,7 @@ public class FAdmin extends javax.swing.JFrame {
         buttonRestartServer = new javax.swing.JButton();
         jScrollPane5 = new javax.swing.JScrollPane();
         listPostponed = new javax.swing.JList();
+        buttonResetMainTablo = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
         jSplitPane2 = new javax.swing.JSplitPane();
@@ -1459,6 +1435,24 @@ public class FAdmin extends javax.swing.JFrame {
         jLabel14 = new javax.swing.JLabel();
         textFieldStartTime = new javax.swing.JTextField();
         textFieldFinishTime = new javax.swing.JTextField();
+        jPanel16 = new javax.swing.JPanel();
+        spinnerFirstNumber = new javax.swing.JSpinner();
+        spinnerLastNumber = new javax.swing.JSpinner();
+        jPanel20 = new javax.swing.JPanel();
+        rbPointOffice = new javax.swing.JRadioButton();
+        rbPointWindow = new javax.swing.JRadioButton();
+        rbPointStoika = new javax.swing.JRadioButton();
+        jPanel21 = new javax.swing.JPanel();
+        rbNotificationNo = new javax.swing.JRadioButton();
+        rbNotificationGong = new javax.swing.JRadioButton();
+        rbNotificationGongVoice = new javax.swing.JRadioButton();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jPanel22 = new javax.swing.JPanel();
+        rbKindPersonal = new javax.swing.JRadioButton();
+        rbKindCommon = new javax.swing.JRadioButton();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        listReposts = new javax.swing.JList();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane8 = new javax.swing.JScrollPane();
         treeInfo = new javax.swing.JTree();
@@ -1785,7 +1779,7 @@ public class FAdmin extends javax.swing.JFrame {
                             .addComponent(buttonRestart, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(buttonShutDown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(buttonLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(labelWelcomeState, javax.swing.GroupLayout.DEFAULT_SIZE, 982, Short.MAX_VALUE))
+                    .addComponent(labelWelcomeState, javax.swing.GroupLayout.DEFAULT_SIZE, 985, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -1880,6 +1874,14 @@ public class FAdmin extends javax.swing.JFrame {
         listPostponed.setName("listPostponed"); // NOI18N
         jScrollPane5.setViewportView(listPostponed);
 
+        buttonResetMainTablo.setText(resourceMap.getString("buttonResetMainTablo.text")); // NOI18N
+        buttonResetMainTablo.setName("buttonResetMainTablo"); // NOI18N
+        buttonResetMainTablo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonResetMainTabloActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
@@ -1903,12 +1905,14 @@ public class FAdmin extends javax.swing.JFrame {
                             .addGroup(jPanel6Layout.createSequentialGroup()
                                 .addComponent(buttonServerRequest)
                                 .addGap(18, 18, 18)
-                                .addComponent(buttonRestartServer)))
-                        .addContainerGap(526, Short.MAX_VALUE))
+                                .addComponent(buttonRestartServer)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(buttonResetMainTablo)))
+                        .addContainerGap(358, Short.MAX_VALUE))
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 749, Short.MAX_VALUE))))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 752, Short.MAX_VALUE))))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1922,11 +1926,12 @@ public class FAdmin extends javax.swing.JFrame {
                     .addComponent(jLabel2)
                     .addComponent(spinnerServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buttonServerRequest)
-                    .addComponent(buttonRestartServer))
+                    .addComponent(buttonRestartServer)
+                    .addComponent(buttonResetMainTablo))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -2108,7 +2113,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addComponent(jLabel19)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(spinnerUserRS, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(41, Short.MAX_VALUE))
+                .addContainerGap(42, Short.MAX_VALUE))
         );
 
         jSplitPane3.setLeftComponent(jPanel11);
@@ -2148,8 +2153,8 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(labelServiceInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 1012, Short.MAX_VALUE)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1012, Short.MAX_VALUE)
+                    .addComponent(labelServiceInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 1015, Short.MAX_VALUE)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1015, Short.MAX_VALUE)
                     .addComponent(jLabel6))
                 .addContainerGap())
         );
@@ -2195,7 +2200,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 306, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 309, Short.MAX_VALUE)
                 .addComponent(jButton6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton5)
@@ -2229,15 +2234,15 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1014, Short.MAX_VALUE)
-                    .addComponent(jPanel12, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1014, Short.MAX_VALUE))
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1017, Short.MAX_VALUE)
+                    .addComponent(jPanel12, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1017, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2301,9 +2306,9 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 635, Short.MAX_VALUE)
+                            .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)
                             .addComponent(jLabel21)
-                            .addComponent(textFieldScheduleName, javax.swing.GroupLayout.DEFAULT_SIZE, 635, Short.MAX_VALUE)))
+                            .addComponent(textFieldScheduleName, javax.swing.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)))
                     .addGroup(jPanel17Layout.createSequentialGroup()
                         .addComponent(buttonScheduleAdd)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2320,8 +2325,8 @@ public class FAdmin extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(textFieldScheduleName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE))
-                    .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE))
+                        .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE))
+                    .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buttonScheduleAdd)
@@ -2438,16 +2443,16 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(buttonDeleteCalendar, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
+                    .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 823, Short.MAX_VALUE)
                     .addGroup(jPanel19Layout.createSequentialGroup()
                         .addComponent(jLabel23)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE))
+                        .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 682, Short.MAX_VALUE))
                     .addGroup(jPanel19Layout.createSequentialGroup()
                         .addComponent(jButton15)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton17)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 218, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 221, Short.MAX_VALUE)
                         .addComponent(jButton16)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton18)))
@@ -2458,13 +2463,13 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel19Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane14, javax.swing.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
+                    .addComponent(jScrollPane14, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel19Layout.createSequentialGroup()
                         .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel23)
                             .addComponent(textFieldCalendarName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+                        .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton15)
@@ -2574,8 +2579,178 @@ public class FAdmin extends javax.swing.JFrame {
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
                     .addComponent(textFieldFinishTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(31, Short.MAX_VALUE))
         );
+
+        jPanel16.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel16.border.title"))); // NOI18N
+        jPanel16.setName("jPanel16"); // NOI18N
+
+        spinnerFirstNumber.setModel(new javax.swing.SpinnerNumberModel(1, 1, 10000, 1));
+        spinnerFirstNumber.setName("spinnerFirstNumber"); // NOI18N
+
+        spinnerLastNumber.setModel(new javax.swing.SpinnerNumberModel(99, 99, 10000, 1));
+        spinnerLastNumber.setName("spinnerLastNumber"); // NOI18N
+
+        jPanel20.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel20.border.title"))); // NOI18N
+        jPanel20.setName("jPanel20"); // NOI18N
+
+        buttonGroupPoint.add(rbPointOffice);
+        rbPointOffice.setText(resourceMap.getString("rbPointOffice.text")); // NOI18N
+        rbPointOffice.setName("rbPointOffice"); // NOI18N
+
+        buttonGroupPoint.add(rbPointWindow);
+        rbPointWindow.setText(resourceMap.getString("rbPointWindow.text")); // NOI18N
+        rbPointWindow.setName("rbPointWindow"); // NOI18N
+
+        buttonGroupPoint.add(rbPointStoika);
+        rbPointStoika.setText(resourceMap.getString("rbPointStoika.text")); // NOI18N
+        rbPointStoika.setName("rbPointStoika"); // NOI18N
+
+        javax.swing.GroupLayout jPanel20Layout = new javax.swing.GroupLayout(jPanel20);
+        jPanel20.setLayout(jPanel20Layout);
+        jPanel20Layout.setHorizontalGroup(
+            jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel20Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rbPointOffice)
+                    .addComponent(rbPointWindow)
+                    .addComponent(rbPointStoika))
+                .addContainerGap(87, Short.MAX_VALUE))
+        );
+        jPanel20Layout.setVerticalGroup(
+            jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel20Layout.createSequentialGroup()
+                .addComponent(rbPointOffice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(rbPointWindow)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(rbPointStoika))
+        );
+
+        jPanel21.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel21.border.title"))); // NOI18N
+        jPanel21.setName("jPanel21"); // NOI18N
+
+        buttonGroupVoice.add(rbNotificationNo);
+        rbNotificationNo.setText(resourceMap.getString("rbNotificationNo.text")); // NOI18N
+        rbNotificationNo.setName("rbNotificationNo"); // NOI18N
+
+        buttonGroupVoice.add(rbNotificationGong);
+        rbNotificationGong.setText(resourceMap.getString("rbNotificationGong.text")); // NOI18N
+        rbNotificationGong.setName("rbNotificationGong"); // NOI18N
+
+        buttonGroupVoice.add(rbNotificationGongVoice);
+        rbNotificationGongVoice.setText(resourceMap.getString("rbNotificationGongVoice.text")); // NOI18N
+        rbNotificationGongVoice.setName("rbNotificationGongVoice"); // NOI18N
+
+        javax.swing.GroupLayout jPanel21Layout = new javax.swing.GroupLayout(jPanel21);
+        jPanel21.setLayout(jPanel21Layout);
+        jPanel21Layout.setHorizontalGroup(
+            jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel21Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rbNotificationNo)
+                    .addComponent(rbNotificationGong)
+                    .addComponent(rbNotificationGongVoice))
+                .addContainerGap(45, Short.MAX_VALUE))
+        );
+        jPanel21Layout.setVerticalGroup(
+            jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel21Layout.createSequentialGroup()
+                .addComponent(rbNotificationNo)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(rbNotificationGong)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(rbNotificationGongVoice))
+        );
+
+        jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N
+        jLabel11.setName("jLabel11"); // NOI18N
+
+        jLabel12.setText(resourceMap.getString("jLabel12.text")); // NOI18N
+        jLabel12.setName("jLabel12"); // NOI18N
+
+        jPanel22.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel22.border.title"))); // NOI18N
+        jPanel22.setName("jPanel22"); // NOI18N
+
+        buttonGroupKindNum.add(rbKindPersonal);
+        rbKindPersonal.setText(resourceMap.getString("rbKindPersonal.text")); // NOI18N
+        rbKindPersonal.setName("rbKindPersonal"); // NOI18N
+
+        buttonGroupKindNum.add(rbKindCommon);
+        rbKindCommon.setText(resourceMap.getString("rbKindCommon.text")); // NOI18N
+        rbKindCommon.setName("rbKindCommon"); // NOI18N
+
+        javax.swing.GroupLayout jPanel22Layout = new javax.swing.GroupLayout(jPanel22);
+        jPanel22.setLayout(jPanel22Layout);
+        jPanel22Layout.setHorizontalGroup(
+            jPanel22Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel22Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel22Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rbKindPersonal)
+                    .addComponent(rbKindCommon))
+                .addContainerGap(71, Short.MAX_VALUE))
+        );
+        jPanel22Layout.setVerticalGroup(
+            jPanel22Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel22Layout.createSequentialGroup()
+                .addComponent(rbKindPersonal)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(rbKindCommon))
+        );
+
+        javax.swing.GroupLayout jPanel16Layout = new javax.swing.GroupLayout(jPanel16);
+        jPanel16.setLayout(jPanel16Layout);
+        jPanel16Layout.setHorizontalGroup(
+            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel16Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jPanel21, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel20, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel22, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel16Layout.createSequentialGroup()
+                        .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel11)
+                            .addComponent(jLabel12))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(spinnerFirstNumber)
+                            .addComponent(spinnerLastNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(265, Short.MAX_VALUE))
+        );
+        jPanel16Layout.setVerticalGroup(
+            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel16Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(spinnerFirstNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12)
+                    .addComponent(spinnerLastNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel22, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(127, Short.MAX_VALUE))
+        );
+
+        jScrollPane7.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jScrollPane7.border.title"))); // NOI18N
+        jScrollPane7.setName("jScrollPane7"); // NOI18N
+
+        listReposts.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        listReposts.setName("listReposts"); // NOI18N
+        jScrollPane7.setViewportView(listReposts);
 
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
@@ -2583,19 +2758,29 @@ public class FAdmin extends javax.swing.JFrame {
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jPanel16, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel8Layout.createSequentialGroup()
+                        .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(565, Short.MAX_VALUE))
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(503, Short.MAX_VALUE))
+                .addGap(13, 13, 13)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE)
+                    .addGroup(jPanel8Layout.createSequentialGroup()
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
 
         tabbedPaneMain.addTab(resourceMap.getString("jPanel8.TabConstraints.tabTitle"), jPanel8); // NOI18N
@@ -2637,7 +2822,7 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel14.setLayout(jPanel14Layout);
         jPanel14Layout.setHorizontalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelInfoItem, javax.swing.GroupLayout.DEFAULT_SIZE, 618, Short.MAX_VALUE)
+            .addComponent(labelInfoItem, javax.swing.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2685,14 +2870,14 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(jButton9)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton10))
-                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane16, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                    .addComponent(jScrollPane16, javax.swing.GroupLayout.DEFAULT_SIZE, 631, Short.MAX_VALUE)
                     .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 631, Short.MAX_VALUE)
                     .addComponent(jLabel22)
-                    .addComponent(textFieldInfoItemName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE))
+                    .addComponent(textFieldInfoItemName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 631, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -2701,7 +2886,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
+                        .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton9)
@@ -2715,7 +2900,7 @@ public class FAdmin extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane16, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)))
+                        .addComponent(jScrollPane16, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -2761,13 +2946,13 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel15Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addComponent(labelRespinse, javax.swing.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
-                .addGap(253, 253, 253))
+                .addGap(256, 256, 256))
         );
         jPanel15Layout.setVerticalGroup(
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel15Layout.createSequentialGroup()
                 .addComponent(labelRespinse, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
-                .addGap(90, 90, 90))
+                .addGap(91, 91, 91))
         );
 
         jButton7.setAction(actionMap.get("deleteRespItem")); // NOI18N
@@ -2798,10 +2983,10 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 751, Short.MAX_VALUE)
+                            .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 754, Short.MAX_VALUE)
                             .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel16)
-                            .addComponent(textFieldResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 751, Short.MAX_VALUE)))
+                            .addComponent(textFieldResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 754, Short.MAX_VALUE)))
                     .addGroup(jPanel13Layout.createSequentialGroup()
                         .addComponent(jButton8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -2821,7 +3006,7 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jScrollPane10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE))
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton8)
@@ -2858,7 +3043,7 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel18Layout.setHorizontalGroup(
             jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel18Layout.createSequentialGroup()
-                .addContainerGap(740, Short.MAX_VALUE)
+                .addContainerGap(743, Short.MAX_VALUE)
                 .addComponent(jButton11)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButton12)
@@ -2866,13 +3051,13 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel18Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 1016, Short.MAX_VALUE)
+                    .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 1019, Short.MAX_VALUE)
                     .addContainerGap()))
         );
         jPanel18Layout.setVerticalGroup(
             jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel18Layout.createSequentialGroup()
-                .addContainerGap(584, Short.MAX_VALUE)
+                .addContainerGap(585, Short.MAX_VALUE)
                 .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton11)
                     .addComponent(jButton12))
@@ -2880,7 +3065,7 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel18Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
+                    .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)
                     .addGap(40, 40, 40)))
         );
 
@@ -2890,11 +3075,11 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPaneMain, javax.swing.GroupLayout.DEFAULT_SIZE, 1041, Short.MAX_VALUE)
+            .addComponent(tabbedPaneMain, javax.swing.GroupLayout.DEFAULT_SIZE, 1044, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPaneMain, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
+            .addComponent(tabbedPaneMain, javax.swing.GroupLayout.DEFAULT_SIZE, 644, Short.MAX_VALUE)
         );
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
@@ -3261,7 +3446,7 @@ private void tableCalendarFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRS
     inGrid++;
     for (int i = 0; i < listCalendar.getModel().getSize(); i++) {
         boolean flag = false;
-        for (QCalendar calendar : QCalendarList.loadCalendarItems()) {
+        for (QCalendar calendar : QCalendarList.getInstance().getItems()) {
             if (((QCalendar) listCalendar.getModel().getElementAt(i)).getId().equals(calendar.getId())) {
                 flag = true;
                 continue;
@@ -3280,6 +3465,11 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         item.setTextPrint(textPaneInfoPrint.getText());
     }
 }//GEN-LAST:event_textPaneInfoPrintKeyReleased
+
+private void buttonResetMainTabloActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonResetMainTabloActionPerformed
+    NetCommander.restartMainTablo(new ServerNetProperty());
+    JOptionPane.showConfirmDialog(null, getLocaleMessage("admin.main_tablo_restart.message"), getLocaleMessage("admin.main_tablo_restart.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+}//GEN-LAST:event_buttonResetMainTabloActionPerformed
 
     @Action
     public void changeServicePriority() {
@@ -3313,7 +3503,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         if (plan == null) {
             return;
         }
-        final String res = NetCommander.setServiseFire(new ServerNetProperty(), plan.getService().getName(), plan.getUser().getName(), plan.getCoefficient());
+        final String res = NetCommander.setServiseFire(new ServerNetProperty(), plan.getService().getId(), plan.getUser().getId(), plan.getCoefficient());
         JOptionPane.showMessageDialog(this, res, getLocaleMessage("admin.add_service_to_user.title"), JOptionPane.INFORMATION_MESSAGE);
     }
 
@@ -3323,7 +3513,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         if (plan == null) {
             return;
         }
-        final String res = NetCommander.deleteServiseFire(new ServerNetProperty(), plan.getService().getName(), plan.getUser().getName());
+        final String res = NetCommander.deleteServiseFire(new ServerNetProperty(), plan.getService().getId(), plan.getUser().getId());
         JOptionPane.showMessageDialog(this, res, getLocaleMessage("admin.remove_service_to_user.title"), JOptionPane.INFORMATION_MESSAGE);
     }
 
@@ -3345,7 +3535,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
 
     @Action
     public void getAbout() {
-        FAbout.showAbout(this, true, QServicesPool.getServicesPool(true).getNetPropetry().getVersion());
+        FAbout.showAbout(this, true, ServerProps.getInstance().getProps().getVersion());
     }
 
     @Action
@@ -3354,7 +3544,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
         if (service != null && service.isLeaf()) {
             final QAdvanceCustomer res;
             try {
-                res = FAdvanceCalendar.showCalendar(this, true, new ServerNetProperty(), service.getName(), false, 0, -1);
+                res = FAdvanceCalendar.showCalendar(this, true, new ServerNetProperty(), service, false, 0, -1);
             } catch (Exception ex) {
                 throw new ClientException(getLocaleMessage("admin.send_cmd_adv.err") + " " + ex);
             }
@@ -3382,20 +3572,20 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
 
     @Action
     public void editMainBoard() throws IOException {
-        Uses.log.logger.info("Открыть редактор главного табло.");
+        QLog.l().logger().info("Открыть редактор главного табло.");
         final ServerNetProperty servProp = new ServerNetProperty();
         try {
             if (board == null) {
-                adr = servProp.getServerAddress().getHostAddress();
-                port = servProp.getServerPort();
-                board = QServicesPool.getServicesPool(true).getIndicatorBoard().getRedactor();
+                adr = servProp.getAddress().getHostAddress();
+                port = servProp.getPort();
+                board = MainBoard.getInstance().getRedactor();
                 board.setParams(servProp);
             } else {
-                if (!servProp.getServerAddress().getHostAddress().equals(adr)
-                        || !servProp.getServerPort().equals(port)) {
+                if (!servProp.getAddress().getHostAddress().equals(adr)
+                        || !servProp.getPort().equals(port)) {
                     board.setParams(servProp);
-                    adr = servProp.getServerAddress().getHostAddress();
-                    port = servProp.getServerPort();
+                    adr = servProp.getAddress().getHostAddress();
+                    port = servProp.getPort();
                 }
             }
         } catch (Exception e) {
@@ -3411,8 +3601,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
 
     @Action
     public void sendMessage() {
-        final ServerNetProperty servProp = new ServerNetProperty();
-        FMessager.getMessager(this, QServicesPool.getServicesPool(true).getNetPropetry().getClientPort(), listUsers.getModel(), treeServices.getModel());
+        FMessager.getMessager(this, ServerProps.getInstance().getProps().getClientPort(), listUsers.getModel(), treeServices.getModel());
     }
 
     @Action
@@ -3435,11 +3624,11 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                 flag = false;
             }
         }
-        Uses.log.logger.debug("Добавляем отзыв \"" + respName + "\"");
+        QLog.l().logger().debug("Добавляем отзыв \"" + respName + "\"");
         final QRespItem item = new QRespItem();
         item.setName(respName);
         item.setHTMLText("<html><b><p align=center><span style='font-size:20.0pt;color:green'>" + respName + "</span></b>");
-        QServicesPool.getServicesPool(true).getResponseList().addElement(item);
+        QResponseList.getInstance().addElement(item);
         listResponse.setSelectedValue(item, true);
     }
 
@@ -3452,7 +3641,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
-            Uses.log.logger.debug("Удаляем отзыв \"" + ((QRespItem) listResponse.getSelectedValue()).getName() + "\"");
+            QLog.l().logger().debug("Удаляем отзыв \"" + ((QRespItem) listResponse.getSelectedValue()).getName() + "\"");
 
 
             final int del = listResponse.getSelectedIndex();
@@ -3460,12 +3649,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
             final int col = m.getSize();
 
             final QRespItem item = (QRespItem) listResponse.getSelectedValue();
-
-            if (Uses.isDBconnected()) {
-                QServicesPool.getServicesPool(true).addKilled(item);
-            }
-
-            QServicesPool.getServicesPool(true).getResponseList().removeElement(item);
+            QResponseList.getInstance().removeElement(item);
 
             if (col != 1) {
                 if (col == del + 1) {
@@ -3497,11 +3681,11 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                 flag = false;
             }
         }
-        Uses.log.logger.debug("Добавляем отзыв \"" + scheduleName + "\"");
+        QLog.l().logger().debug("Добавляем отзыв \"" + scheduleName + "\"");
         final QSchedule item = new QSchedule();
         item.setName(scheduleName);
         item.setType(0);
-        QServicesPool.getServicesPool(true).getScheduleList().addElement(item);
+        QScheduleList.getInstance().addElement(item);
         listSchedule.setSelectedValue(item, true);
     }
 
@@ -3514,7 +3698,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
-            Uses.log.logger.debug("Удаляем план \"" + ((QSchedule) listSchedule.getSelectedValue()).getName() + "\"");
+            QLog.l().logger().debug("Удаляем план \"" + ((QSchedule) listSchedule.getSelectedValue()).getName() + "\"");
 
 
             final int del = listSchedule.getSelectedIndex();
@@ -3523,22 +3707,14 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
 
             final QSchedule item = (QSchedule) listSchedule.getSelectedValue();
 
-            if (Uses.isDBconnected()) {
-                QServicesPool.getServicesPool(true).addKilled(item);
+            // Уберем удаленный план у услуг
+            for (QService service : QServiceTree.getInstance().getNodes()) {
+                if (item.equals(service.getSchedule())) {
+                    service.setSchedule(null);
+                }
             }
 
-            // Уберем удаленный план у услуг
-            QServiceTree.sailToStorm(((QServiceTree) treeServices.getModel()).getRoot(), new ISailListener() {
-
-                @Override
-                public void actionPerformed(QService service) {
-                    if (item.equals(service.getSchedule())) {
-                        service.setSchedule(null);
-                    }
-                }
-            });
-
-            QServicesPool.getServicesPool(true).getScheduleList().removeElement(item);
+            QScheduleList.getInstance().removeElement(item);
 
             if (col != 1) {
                 if (col == del + 1) {
@@ -3578,10 +3754,10 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                 flag = false;
             }
         }
-        Uses.log.logger.debug("Добавляем результат \"" + resultText + "\"");
+        QLog.l().logger().debug("Добавляем результат \"" + resultText + "\"");
         final QResult item = new QResult();
         item.setName(resultText);
-        QServicesPool.getServicesPool(true).getResultsList().addElement(item);
+        QResultList.getInstance().addElement(item);
         listResults.setSelectedValue(item, true);
     }
 
@@ -3594,7 +3770,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
-            Uses.log.logger.debug("Удаляем результат \"" + ((QResult) listResults.getSelectedValue()).getName() + "\"");
+            QLog.l().logger().debug("Удаляем результат \"" + ((QResult) listResults.getSelectedValue()).getName() + "\"");
 
 
             final int del = listResults.getSelectedIndex();
@@ -3602,11 +3778,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
             final int col = m.getSize();
 
             final QResult item = (QResult) listResults.getSelectedValue();
+            QResultList.getInstance().removeElement(item);
 
-            if (Uses.isDBconnected()) {
-                QServicesPool.getServicesPool(true).addKilled(item);
-            }
-            QServicesPool.getServicesPool(true).getResultsList().removeElement(item);
             if (col != 1) {
                 if (col == del + 1) {
                     listResults.setSelectedValue(m.getElementAt(del - 1), true);
@@ -3637,10 +3810,10 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                 flag = false;
             }
         }
-        Uses.log.logger.debug("Добавляем отзыв \"" + calendarName + "\"");
+        QLog.l().logger().debug("Добавляем календарь \"" + calendarName + "\"");
         final QCalendar item = new QCalendar();
         item.setName(calendarName);
-        QServicesPool.getServicesPool(true).getCalendarList().addElement(item);
+        QCalendarList.getInstance().addElement(item);
         listCalendar.setSelectedValue(item, true);
     }
 
@@ -3654,7 +3827,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
                     JOptionPane.YES_NO_OPTION) == 1) {
                 return;
             }
-            Uses.log.logger.debug("Удаляем календарь \"" + ((QCalendar) listCalendar.getSelectedValue()).getName() + "\"");
+            QLog.l().logger().debug("Удаляем календарь \"" + ((QCalendar) listCalendar.getSelectedValue()).getName() + "\"");
 
 
             final int del = listCalendar.getSelectedIndex();
@@ -3663,22 +3836,14 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
 
             final QCalendar item = (QCalendar) listCalendar.getSelectedValue();
 
-            if (Uses.isDBconnected()) {
-                QServicesPool.getServicesPool(true).addKilled(item);
+            // Уберем удаленный календарь у услуг
+            for (QService service : QServiceTree.getInstance().getNodes()) {
+                if (item.equals(service.getCalendar())) {
+                    service.setCalendar(null);
+                }
             }
 
-            // Уберем удаленный календарь у услуг
-            QServiceTree.sailToStorm(((QServiceTree) treeServices.getModel()).getRoot(), new ISailListener() {
-
-                @Override
-                public void actionPerformed(QService service) {
-                    if (item.equals(service.getCalendar())) {
-                        service.setCalendar(null);
-                    }
-                }
-            });
-
-            QServicesPool.getServicesPool(true).getCalendarList().removeElement(item);
+            QCalendarList.getInstance().removeElement(item);
 
             if (col != 1) {
                 if (col == del + 1) {
@@ -3754,8 +3919,12 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JButton buttonAddCalendar;
     private javax.swing.JButton buttonClientRequest;
     private javax.swing.JButton buttonDeleteCalendar;
+    private javax.swing.ButtonGroup buttonGroupKindNum;
+    private javax.swing.ButtonGroup buttonGroupPoint;
     private javax.swing.ButtonGroup buttonGroupSource;
+    private javax.swing.ButtonGroup buttonGroupVoice;
     private javax.swing.JButton buttonLock;
+    private javax.swing.JButton buttonResetMainTablo;
     private javax.swing.JButton buttonRestart;
     private javax.swing.JButton buttonRestartServer;
     private javax.swing.JButton buttonScheduleAdd;
@@ -3785,6 +3954,8 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
@@ -3847,10 +4018,14 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
+    private javax.swing.JPanel jPanel16;
     private javax.swing.JPanel jPanel17;
     private javax.swing.JPanel jPanel18;
     private javax.swing.JPanel jPanel19;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel20;
+    private javax.swing.JPanel jPanel21;
+    private javax.swing.JPanel jPanel22;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
@@ -3871,6 +4046,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JSeparator jSeparator1;
@@ -3900,6 +4076,7 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JLabel labelWelcomeState;
     private javax.swing.JList listCalendar;
     private javax.swing.JList listPostponed;
+    private javax.swing.JList listReposts;
     private javax.swing.JList listResponse;
     private javax.swing.JList listResults;
     private javax.swing.JList listSchedule;
@@ -3921,7 +4098,17 @@ private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FI
     private javax.swing.JPopupMenu popupServiceUser;
     private javax.swing.JPopupMenu popupServices;
     private javax.swing.JPopupMenu popupUser;
+    private javax.swing.JRadioButton rbKindCommon;
+    private javax.swing.JRadioButton rbKindPersonal;
+    private javax.swing.JRadioButton rbNotificationGong;
+    private javax.swing.JRadioButton rbNotificationGongVoice;
+    private javax.swing.JRadioButton rbNotificationNo;
+    private javax.swing.JRadioButton rbPointOffice;
+    private javax.swing.JRadioButton rbPointStoika;
+    private javax.swing.JRadioButton rbPointWindow;
     private javax.swing.JSpinner spinnerClientPort;
+    private javax.swing.JSpinner spinnerFirstNumber;
+    private javax.swing.JSpinner spinnerLastNumber;
     private javax.swing.JSpinner spinnerPropClientPort;
     private javax.swing.JSpinner spinnerPropServerPort;
     private javax.swing.JSpinner spinnerServerPort;

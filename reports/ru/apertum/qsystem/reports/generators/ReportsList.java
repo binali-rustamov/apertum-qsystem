@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,11 +23,11 @@ import java.sql.Connection;
 import java.util.HashMap;
 import net.sf.jasperreports.engine.JRDataSource;
 import org.apache.http.HttpRequest;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.model.AGenerator;
-import ru.apertum.qsystem.reports.model.WebServer;
+import ru.apertum.qsystem.reports.model.QReportsList;
 import ru.apertum.qsystem.reports.net.NetUtil;
 
 /**
@@ -49,7 +49,7 @@ public class ReportsList extends AGenerator {
     protected Response preparationReport(HttpRequest request) {
         // в запросе должен быть пароль и пользователь, если нету, то отказ на вход
         String entityContent = NetUtil.getEntityContent(request);
-        Uses.log.logger.trace("Принятые параметры \"" + entityContent + "\".");
+        QLog.l().logger().trace("Принятые параметры \"" + entityContent + "\".");
         // ресурс для выдачи в браузер. это либо список отчетов при корректном логининге или отказ на вход
         String res = "/ru/apertum/qsystem/reports/web/error_login.html";
         String usr = "err";
@@ -57,7 +57,7 @@ public class ReportsList extends AGenerator {
         // разбирем параметры
         final HashMap<String, String> cookie = NetUtil.getCookie(entityContent, "&");
         if (cookie.containsKey("username") && cookie.containsKey("password")) {
-            if (cookie.get("password").equals(WebServer.passMap.get(cookie.get("username")))) {
+            if (QReportsList.getInstance().isTrueUser(cookie.get("username"), cookie.get("password"))) {
                 res = "/ru/apertum/qsystem/reports/web/reportList.html";
                 usr = cookie.get("username");
                 pwd = cookie.get("password");
@@ -69,7 +69,7 @@ public class ReportsList extends AGenerator {
             result = Uses.readInputStream(inStream);
             if ("/ru/apertum/qsystem/reports/web/reportList.html".equals(res)) {
                 // добавим список аналитических отчетов
-                result = new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_REPORT_LIST, WebServer.repList).getBytes("UTF-8");
+                result = new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_REPORT_LIST, QReportsList.getInstance().getHtmlRepList()).getBytes("UTF-8");
                 // Добавим кукисы сессии
                 //<META HTTP-EQUIV="Set-Cookie" CONTENT="NAME=value; EXPIRES=date; DOMAIN=domain_name; PATH=path; SECURE">
                 final String coocie = "<META HTTP-EQUIV=\"Set-Cookie\" CONTENT=\"username=" + URLEncoder.encode(usr, "utf-8") + "\">\n<META HTTP-EQUIV=\"Set-Cookie\" CONTENT=\"password=" + URLEncoder.encode(pwd, "utf-8") + "\">";

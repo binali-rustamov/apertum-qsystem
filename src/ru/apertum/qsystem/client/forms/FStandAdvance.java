@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import java.awt.image.MemoryImageSource;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
@@ -76,7 +76,7 @@ public class FStandAdvance extends javax.swing.JDialog {
      */
     public static RpcStandInService showAdvanceStandDialog(Frame parent, boolean modal, INetProperty netProperty, boolean fullscreen, int delay) {
         FStandAdvance.delay = delay;
-        Uses.log.logger.info("Ввод кода предварительной записи");
+        QLog.l().logger().info("Ввод кода предварительной записи");
         if (standAdvance == null) {
             standAdvance = new FStandAdvance(parent, modal);
             standAdvance.setTitle(getLocaleMessage("dialog.input_code"));
@@ -86,7 +86,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         FStandAdvance.netProperty = netProperty;
         FStandAdvance.serviceName = serviceName;
         FStandAdvance.siteMark = siteMark;
-        if (!(Uses.isDebug || Uses.isDemo && !fullscreen)) {
+        if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {
             //Uses.setFullSize(standAdvance);
             int[] pixels = new int[16 * 16];
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.ParseException;
 import org.apache.http.util.EntityUtils;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ReportException;
 
 /**
@@ -75,7 +75,7 @@ public class NetUtil {
             try {
                 res.put(URLDecoder.decode(ss0[0], "utf-8"), URLDecoder.decode(ss0.length == 1 ? "" : ss0[1], "utf-8"));
             } catch (UnsupportedEncodingException ex) {
-                Uses.logRep.logger.error(ss0[1], ex);
+                QLog.l().logRep().error(ss0[1], ex);
             }
         }
         return res;

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
 /**
@@ -80,7 +80,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
      */
     public static boolean showPreInfoDialog(Frame parent, String htmlText, String printText, boolean modal, boolean fullscreen, int delay) {
         FPreInfoDialog.delay = delay;
-        Uses.log.logger.info("Чтение обязательной информации перед постановкой в очередь");
+        QLog.l().logger().info("Чтение обязательной информации перед постановкой в очередь");
         if (preInfoDialog == null) {
             preInfoDialog = new FPreInfoDialog(parent, modal);
             preInfoDialog.setTitle(getLocaleMessage("dialog.title"));
@@ -90,7 +90,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         preInfoDialog.labelHtml.setText(htmlText);
         FPreInfoDialog.result = false;
         Uses.setLocation(preInfoDialog);
-        if (!(Uses.isDebug || Uses.isDemo && !fullscreen)) {
+        if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {
             Uses.setFullSize(preInfoDialog);
             int[] pixels = new int[16 * 16];
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
@@ -283,7 +283,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
 
     @Action
     public void refuse() {
-        Uses.log.logger.debug("Отказ встать в очередь после чтения обязательной информации");
+        QLog.l().logger().debug("Отказ встать в очередь после чтения обязательной информации");
         result = false;
         if (clockBack.isActive()) {
             clockBack.stop();
@@ -293,13 +293,13 @@ public class FPreInfoDialog extends javax.swing.JDialog {
 
     @Action
     public void printHint() {
-        Uses.log.logger.info("Печать подсказки об обязательной информации");
+        QLog.l().logger().info("Печать подсказки об обязательной информации");
         FWelcome.printPreInfoText(printText);
     }
 
     @Action
     public void proceed() {
-        Uses.log.logger.debug("Встаем в очередь после чтения обязательной информации");
+        QLog.l().logger().debug("Встаем в очередь после чтения обязательной информации");
         result = true;
         if (clockBack.isActive()) {
             clockBack.stop();

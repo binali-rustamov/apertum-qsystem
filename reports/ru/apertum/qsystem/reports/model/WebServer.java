@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.HashMap;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.net.RunnableSocket;
 
@@ -31,12 +30,23 @@ import ru.apertum.qsystem.reports.net.RunnableSocket;
  * Класс потоков, обрабатывающих запросы HTTP, для выдачи отчетов
  * @author Evgeniy Egorov
  */
-public class WebServer /*extends Thread*/ {
+public class WebServer {
 
+    public static WebServer getInstance() {
+        return WebServerHolder.INSTANCE;
+    }
+
+    private static class WebServerHolder {
+
+        private static final WebServer INSTANCE = new WebServer();
+    }
+
+    private WebServer() {
+    }
     /**
      * состояние вэбсервера
      */
-    volatile private static boolean isActive = false;
+    volatile private boolean isActive = false;
     /**
      *  Сокет, принявший сообщение или запрос
      */
@@ -44,30 +54,17 @@ public class WebServer /*extends Thread*/ {
     /**
      * Поток вебсервера.
      */
-    private static Thread webTread = null;
+    private Thread webTread = null;
     /**
      * Сокет вебсервера.
      */
-    private static ServerSocket reportSocket = null;
-    /**
-     * Часть html текста для reportList.html которая содержит список аналитических отчетов.
-     */
-    public static String repList = "";
-    /**
-     * Список паролей пользователей
-     * имя -> пароль
-     */
-    public static HashMap<String, String> passMap = new HashMap<String, String>();
-    /**
-     * Часть html текста для login.html которая содержит список аналитических отчетов.
-     */
-    public static String usrList = "";
+    private ServerSocket reportSocket = null;
 
     /**
      * запуск вэбсервера
      * @param port На каком порту
      */
-    synchronized public static void startWebServer(int port) {
+    synchronized public void startWebServer(int port) {
         if (!isActive) {
             isActive = true;
         } else {
@@ -75,7 +72,7 @@ public class WebServer /*extends Thread*/ {
         }
 
         // привинтить сокет на локалхост, порт port
-        Uses.log.logger.info("Отчетный сервер захватывает порт \"" + port + "\".");
+        QLog.l().logger().info("Отчетный сервер захватывает порт \"" + port + "\".");
         try {
             reportSocket = new ServerSocket(port, 0);
         } catch (Exception e) {
@@ -89,9 +86,9 @@ public class WebServer /*extends Thread*/ {
             @Override
             public void run() {
                 System.out.println("Report server for QSystem started.");
-                Uses.logRep.logger.info("Отчетный вэбсервер системы 'Очередь' запущен.");
+                QLog.l().logRep().info("Отчетный вэбсервер системы 'Очередь' запущен.");
                 try {
-                    reportSocket.setSoTimeout(1000);
+                    reportSocket.setSoTimeout(500);
                 } catch (SocketException ex) {
                 }
                 while (isActive && !webTread.isInterrupted()) {
@@ -115,7 +112,7 @@ public class WebServer /*extends Thread*/ {
                     }
                 } catch (IOException ex) {
                 }
-                Uses.logRep.logger.info("Отчетный вэбсервер системы 'Очередь' остановлен.");
+                QLog.l().logRep().info("Отчетный вэбсервер системы 'Очередь' остановлен.");
 
             }
         };
@@ -129,15 +126,17 @@ public class WebServer /*extends Thread*/ {
     /**
      * Останов вэбсервера
      */
-    synchronized public static void stopWebServer() {
+    synchronized public void stopWebServer() {
         if (isActive) {
             isActive = false;
+        } else {
+            return;
         }
         if (webTread != null) {
             webTread.interrupt();
         }
         try {
-            Thread.sleep(1500);
+            Thread.sleep(600);
         } catch (InterruptedException ex) {
         }
     }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 package ru.apertum.qsystem.server.controller;
 
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.evgenic.rxtx.serialPort.ISerialExceptionListener;
 import ru.evgenic.rxtx.serialPort.ISerialLoggerListener;
@@ -49,9 +49,9 @@ public abstract class AIndicatorBoardRS extends AIndicatorBoard {
             @Override
             public void actionPerformed(String message, boolean isError) {
                 if (isError) {
-                    Uses.log.logger.error(message);
+                    QLog.l().logger().error(message);
                 } else {
-                    Uses.log.logger.debug(message);
+                    QLog.l().logger().debug(message);
                 }
             }
         });
@@ -62,7 +62,7 @@ public abstract class AIndicatorBoardRS extends AIndicatorBoard {
                 throw new ServerException(message);
             }
         });
-        Uses.log.logger.trace("Определили СОМ-порт \"" + serialPort.getName() + "\"");
+        QLog.l().logger().trace("Определили СОМ-порт \"" + serialPort.getName() + "\"");
     }
 
 }

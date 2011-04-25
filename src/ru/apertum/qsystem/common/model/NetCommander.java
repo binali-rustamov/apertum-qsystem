@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.GsonPool;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.CmdParams;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
@@ -86,20 +86,20 @@ public class NetCommander {
         } finally {
             GsonPool.getInstance().returnGson(gson);
         }
-        Uses.log.logger.trace("Задание \"" + commandName + "\" на " + netProperty.getServerAddress().getHostAddress() + ":" + netProperty.getServerPort() + "#\n" + message);
+        QLog.l().logger().trace("Задание \"" + commandName + "\" на " + netProperty.getAddress().getHostAddress() + ":" + netProperty.getPort() + "#\n" + message);
         final String data;
         try {
             // открываем сокет и коннектимся к localhost:3128
             // получаем сокет сервера
-            final Socket socket = new Socket(netProperty.getServerAddress(), netProperty.getServerPort());
-            Uses.log.logger.trace("Создали Socket.");
+            final Socket socket = new Socket(netProperty.getAddress(), netProperty.getPort());
+            QLog.l().logger().trace("Создали Socket.");
             // Передача данных запроса
             final PrintWriter writer = new PrintWriter(socket.getOutputStream());
             writer.print(URLEncoder.encode(message, "utf-8"));
-            Uses.log.logger.trace("Высылаем задание.");
+            QLog.l().logger().trace("Высылаем задание.");
             writer.flush();
             // Чтение ответа.
-            Uses.log.logger.trace("Читаем ответ ...");
+            QLog.l().logger().trace("Читаем ответ ...");
             StringBuilder sb = new StringBuilder();
             final Scanner in = new Scanner(socket.getInputStream());
             while (in.hasNextLine()) {
@@ -109,7 +109,7 @@ public class NetCommander {
             socket.close();
             writer.close();
             in.close();
-            Uses.log.logger.trace("Ответ:\n" + data);
+            QLog.l().logger().trace("Ответ:\n" + data);
         } catch (IOException ex) {
             throw new QException("Невозможно получить ответ от сервера. ", ex);
         }
@@ -136,7 +136,7 @@ public class NetCommander {
      * @return XML-ответ
      */
     public static RpcGetAllServices.ServicesForWelcome getServiсes(INetProperty netProperty) {
-        Uses.log.logger.info("Получение возможных услуг.");
+        QLog.l().logger().info("Получение возможных услуг.");
         // загрузим ответ
         String res = null;
         try {
@@ -163,17 +163,17 @@ public class NetCommander {
     /**
      * Постановка в очередь.
      * @param netProperty netProperty параметры соединения с сервером.
-     * @param service услуга, в которую пытаемся встать.
+     * @param serviceId услуга, в которую пытаемся встать.
      * @param password пароль того кто пытается выполнить задание.
      * @param priority приоритет.
      * @param inputData
      * @return Созданный кастомер.
      */
-    public static QCustomer standInService(INetProperty netProperty, String service, String password, int priority, String inputData) {
-        Uses.log.logger.info("Встать в очередь.");
+    public static QCustomer standInService(INetProperty netProperty, long serviceId, String password, int priority, String inputData) {
+        QLog.l().logger().info("Встать в очередь.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.serviceName = service;
+        params.serviceId = serviceId;
         params.password = password;
         params.priority = priority;
         params.textData = inputData;
@@ -198,15 +198,15 @@ public class NetCommander {
     /**
      * Узнать сколько народу стоит к услуге и т.д.
      * @param netProperty параметры соединения с сервером.
-     * @param serviceName название услуги о которой получаем информацию
+     * @param serviceId id услуги о которой получаем информацию
      * @return количество предшествующих.
      * @throws QException
      */
-    public static int aboutService(INetProperty netProperty, String serviceName) throws QException {
-        Uses.log.logger.info("Встать в очередь.");
+    public static int aboutService(INetProperty netProperty, long serviceId) throws QException {
+        QLog.l().logger().info("Встать в очередь.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.serviceName = serviceName;
+        params.serviceId = serviceId;
         String res = null;
         try {
             res = send(netProperty, Uses.TASK_ABOUT_SERVICE, params);
@@ -231,7 +231,7 @@ public class NetCommander {
      * @return XML-ответ все юзеры системы
      */
     public static LinkedList<QUser> getUsers(INetProperty netProperty) {
-        Uses.log.logger.info("Получение описания всех юзеров для выбора себя.");
+        QLog.l().logger().info("Получение описания всех юзеров для выбора себя.");
         // загрузим ответ
         String res = null;
         try {
@@ -259,14 +259,14 @@ public class NetCommander {
     /**
      * Получение описания очередей для юзера.
      * @param netProperty параметры соединения с сервером
-     * @param userName имя пользователя для которого идет опрос
+     * @param userId id пользователя для которого идет опрос
      * @return список обрабатываемых услуг с количеством кастомеров в них стоящих и обрабатываемый кастомер если был
      */
-    public static RpcGetSelfSituation.SelfSituation getSelfServices(INetProperty netProperty, String userName) {
-        Uses.log.logger.info("Получение описания очередей для юзера.");
+    public static RpcGetSelfSituation.SelfSituation getSelfServices(INetProperty netProperty, long userId) {
+        QLog.l().logger().info("Получение описания очередей для юзера.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
+        params.userId = userId;
         String res;
         try {
             res = send(netProperty, Uses.TASK_GET_SELF_SERVICES, params);
@@ -289,14 +289,14 @@ public class NetCommander {
     /**
      * Проверка на то что такой юзер уже залогинен в систему
      * @param netProperty параметры соединения с сервером
-     * @param userName имя пользователя для которого идет опрос
+     * @param userId id пользователя для которого идет опрос
      * @return false - запрешено, true - новый
      */
-    public static boolean getSelfServicesCheck(INetProperty netProperty, String userName) {
-        Uses.log.logger.info("Получение описания очередей для юзера.");
+    public static boolean getSelfServicesCheck(INetProperty netProperty, long userId) {
+        QLog.l().logger().info("Получение описания очередей для юзера.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
+        params.userId = userId;
         final String res;
         try {
             res = send(netProperty, Uses.TASK_GET_SELF_SERVICES_CHECK, params);
@@ -319,14 +319,14 @@ public class NetCommander {
     /**
      * Получение слкдующего юзера из очередей, обрабатываемых юзером.
      * @param netProperty параметры соединения с сервером
-     * @param userName
+     * @param userId
      * @return ответ-кастомер следующий по очереди
      */
-    public static QCustomer inviteNextCustomer(INetProperty netProperty, String userName) {
-        Uses.log.logger.info("Получение следующего юзера из очередей, обрабатываемых юзером.");
+    public static QCustomer inviteNextCustomer(INetProperty netProperty, long userId) {
+        QLog.l().logger().info("Получение следующего юзера из очередей, обрабатываемых юзером.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
+        params.userId = userId;
         final String res;
         try {
             res = send(netProperty, Uses.TASK_INVITE_NEXT_CUSTOMER, params);
@@ -348,13 +348,13 @@ public class NetCommander {
     /**
      * Удаление вызванного юзером кастомера.
      * @param netProperty параметры соединения с сервером
-     * @param userName
+     * @param userId
      */
-    public static void killNextCustomer(INetProperty netProperty, String userName) {
-        Uses.log.logger.info("Удаление вызванного юзером кастомера.");
+    public static void killNextCustomer(INetProperty netProperty, long userId) {
+        QLog.l().logger().info("Удаление вызванного юзером кастомера.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
+        params.userId = userId;
         try {
             send(netProperty, Uses.TASK_KILL_NEXT_CUSTOMER, params);
         } catch (QException e) {// вывод исключений
@@ -365,14 +365,14 @@ public class NetCommander {
     /**
      * Перемещение вызванного юзером кастомера в пул отложенных.
      * @param netProperty параметры соединения с сервером
-     * @param userName
+     * @param userId
      * @param status просто строка. берется из возможных состояний завершения работы
      */
-    public static void сustomerToPostpone(INetProperty netProperty, String userName, String status) {
-        Uses.log.logger.info("Перемещение вызванного юзером кастомера в пул отложенных.");
+    public static void сustomerToPostpone(INetProperty netProperty, long userId, String status) {
+        QLog.l().logger().info("Перемещение вызванного юзером кастомера в пул отложенных.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
+        params.userId = userId;
         params.textData = status;
         try {
             send(netProperty, Uses.TASK_CUSTOMER_TO_POSTPON, params);
@@ -388,7 +388,7 @@ public class NetCommander {
      * @param status просто строка. берется из возможных состояний завершения работы
      */
     public static void postponeCustomerChangeStatus(INetProperty netProperty, long postponCustomerId, String status) {
-        Uses.log.logger.info("Перемещение вызванного юзером кастомера в пул отложенных.");
+        QLog.l().logger().info("Перемещение вызванного юзером кастомера в пул отложенных.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.customerId = postponCustomerId;
@@ -403,13 +403,13 @@ public class NetCommander {
     /**
      * Начать работу с вызванным кастомером.
      * @param netProperty параметры соединения с сервером
-     * @param userName
+     * @param userId
      */
-    public static void getStartCustomer(INetProperty netProperty, String userName) {
-        Uses.log.logger.info("Начать работу с вызванным кастомером.");
+    public static void getStartCustomer(INetProperty netProperty, long userId) {
+        QLog.l().logger().info("Начать работу с вызванным кастомером.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
+        params.userId = userId;
         try {
             send(netProperty, Uses.TASK_START_CUSTOMER, params);
         } catch (QException e) {// вывод исключений
@@ -420,15 +420,15 @@ public class NetCommander {
     /**
      * Закончить работу с вызванным кастомером.
      * @param netProperty параметры соединения с сервером
-     * @param userName
+     * @param userId
      * @param resultId
      * @param comments это если закончили работать с редиректенным и его нужно вернуть
      */
-    public static void getFinishCustomer(INetProperty netProperty, String userName, Long resultId, String comments) {
-        Uses.log.logger.info("Закончить работу с вызванным кастомером.");
+    public static void getFinishCustomer(INetProperty netProperty, long userId, Long resultId, String comments) {
+        QLog.l().logger().info("Закончить работу с вызванным кастомером.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
+        params.userId = userId;
         params.resultId = resultId;
         params.textData = comments;
         try {
@@ -441,17 +441,17 @@ public class NetCommander {
     /**
      * Переадресовать клиента в другую очередь.
      * @param netProperty параметры соединения с сервером
-     * @param userName
-     * @param service
+     * @param userId
+     * @param serviceId 
      * @param requestBack
      * @param comments комментарии при редиректе
      */
-    public static void redirectCustomer(INetProperty netProperty, String userName, String service, boolean requestBack, String comments) {
-        Uses.log.logger.info("Переадресовать клиента в другую очередь.");
+    public static void redirectCustomer(INetProperty netProperty, long userId, long serviceId, boolean requestBack, String comments) {
+        QLog.l().logger().info("Переадресовать клиента в другую очередь.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
-        params.serviceName = service;
+        params.userId = userId;
+        params.serviceId = serviceId;
         params.requestBack = requestBack;
         params.textData = comments;
         try {
@@ -464,13 +464,13 @@ public class NetCommander {
     /**
      * Подтверждение живости клиентом для сервера.
      * @param netProperty параметры соединения с сервером
-     * @param userName
+     * @param userId
      * @return XML-ответ
      */
-    public static Element setLive(INetProperty netProperty, String userName) {
-        Uses.log.logger.info("Ответим что живы и здоровы.");
+    public static Element setLive(INetProperty netProperty, long userId) {
+        QLog.l().logger().info("Ответим что живы и здоровы.");
         final CmdParams params = new CmdParams();
-        params.userName = userName;
+        params.userId = userId;
         /*
         try {
         // загрузим ответ
@@ -493,7 +493,7 @@ public class NetCommander {
      * @throws IOException
      */
     public static LinkedList<ServiceInfo> getServerState(INetProperty netProperty) throws IOException {
-        Uses.log.logger.info("Получение описания состояния сервера.");
+        QLog.l().logger().info("Получение описания состояния сервера.");
         // загрузим ответ
         String res = null;
         try {
@@ -520,7 +520,7 @@ public class NetCommander {
      * @return некий ответ от пункта регистрации, вроде прям как строка для вывода
      */
     public static String getWelcomeState(INetProperty netProperty, String message) {
-        Uses.log.logger.info("Получение описания состояния пункта регистрации.");
+        QLog.l().logger().info("Получение описания состояния пункта регистрации.");
         // загрузим ответ
         String res = null;
         try {
@@ -544,17 +544,17 @@ public class NetCommander {
      * Добавить сервис в список обслуживаемых юзером использую параметры.
      * Используется при добавлении на горячую.
      * @param netProperty параметры соединения с пунктом регистрации
-     * @param serviceName 
-     * @param userName 
+     * @param serviceId
+     * @param userId
      * @param coeff 
      * @return содержить строковое сообщение о результате.
      */
-    public static String setServiseFire(INetProperty netProperty, String serviceName, String userName, int coeff) {
-        Uses.log.logger.info("Привязка услуги пользователю на горячую.");
+    public static String setServiseFire(INetProperty netProperty, long serviceId, long userId, int coeff) {
+        QLog.l().logger().info("Привязка услуги пользователю на горячую.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
-        params.serviceName = serviceName;
+        params.userId = userId;
+        params.serviceId = serviceId;
         params.coeff = coeff;
         final String res;
         try {
@@ -578,16 +578,16 @@ public class NetCommander {
      * Удалить сервис из списока обслуживаемых юзером использую параметры.
      * Используется при добавлении на горячую.
      * @param netProperty параметры соединения с пунктом регистрации
-     * @param serviceName 
-     * @param userName 
+     * @param serviceId
+     * @param userId
      * @return содержить строковое сообщение о результате.
      */
-    public static String deleteServiseFire(INetProperty netProperty, String serviceName, String userName) {
-        Uses.log.logger.info("Удаление услуги пользователю на горячую.");
+    public static String deleteServiseFire(INetProperty netProperty, long serviceId, long userId) {
+        QLog.l().logger().info("Удаление услуги пользователю на горячую.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.userName = userName;
-        params.serviceName = serviceName;
+        params.userId = userId;
+        params.serviceId = serviceId;
         final String res;
         try {
             res = send(netProperty, Uses.TASK_DELETE_SERVICE_FIRE, params);
@@ -614,7 +614,7 @@ public class NetCommander {
      * @throws DocumentException принятый текст может не преобразоваться в XML
      */
     public static Element getBoardConfig(INetProperty netProperty) throws DocumentException {
-        Uses.log.logger.info("Получение конфигурации главного табло - ЖК или плазмы.");
+        QLog.l().logger().info("Получение конфигурации главного табло - ЖК или плазмы.");
         // загрузим ответ
         final String res;
         try {
@@ -641,7 +641,7 @@ public class NetCommander {
      * @param boardConfig
      */
     public static void saveBoardConfig(INetProperty netProperty, Element boardConfig) {
-        Uses.log.logger.info("Сохранение конфигурации главного табло - ЖК или плазмы.");
+        QLog.l().logger().info("Сохранение конфигурации главного табло - ЖК или плазмы.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.textData = boardConfig.asXML();
@@ -655,16 +655,16 @@ public class NetCommander {
     /**
      * Получение недельной таблици с данными для предварительной записи.
      * @param netProperty netProperty параметры соединения с сервером.
-     * @param service услуга, в которую пытаемся встать.
+     * @param serviceId услуга, в которую пытаемся встать.
      * @param date первый день недели за которую нужны данные.
      * @param advancedCustomer ID авторизованного кастомера
      * @return класс с параметрами и списком времен
      */
-    public static RpcGetGridOfWeek.GridAndParams getGridOfWeek(INetProperty netProperty, String service, Date date, long advancedCustomer) {
-        Uses.log.logger.info("Получить таблицу");
+    public static RpcGetGridOfWeek.GridAndParams getGridOfWeek(INetProperty netProperty, long serviceId, Date date, long advancedCustomer) {
+        QLog.l().logger().info("Получить таблицу");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.serviceName = service;
+        params.serviceId = serviceId;
         params.date = date.getTime();
         params.customerId = advancedCustomer;
         final String res;
@@ -688,16 +688,16 @@ public class NetCommander {
     /**
      * Предварительная запись в очередь.
      * @param netProperty netProperty параметры соединения с сервером.
-     * @param service услуга, в которую пытаемся встать.
+     * @param serviceId услуга, в которую пытаемся встать.
      * @param date
      * @param advancedCustomer ID авторизованного кастомера
      * @return предварительный кастомер
      */
-    public static QAdvanceCustomer standInServiceAdvance(INetProperty netProperty, String service, Date date, long advancedCustomer) {
-        Uses.log.logger.info("Записать предварительно в очередь.");
+    public static QAdvanceCustomer standInServiceAdvance(INetProperty netProperty, long serviceId, Date date, long advancedCustomer) {
+        QLog.l().logger().info("Записать предварительно в очередь.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
-        params.serviceName = service;
+        params.serviceId = serviceId;
         params.date = date.getTime();
         params.customerId = advancedCustomer;
         final String res;
@@ -725,7 +725,7 @@ public class NetCommander {
      * @return XML-ответ.
      */
     public static RpcStandInService standAndCheckAdvance(INetProperty netProperty, Long advanceID) {
-        Uses.log.logger.info("Постановка предварительно записанных в очередь.");
+        QLog.l().logger().info("Постановка предварительно записанных в очередь.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.customerId = advanceID;
@@ -752,7 +752,7 @@ public class NetCommander {
      * @param netProperty параметры соединения с сервером
      */
     public static void restartServer(INetProperty netProperty) {
-        Uses.log.logger.info("Команда на рестарт сервера.");
+        QLog.l().logger().info("Команда на рестарт сервера.");
         try {
             send(netProperty, Uses.TASK_RESTART, null);
         } catch (QException e) {// вывод исключений
@@ -766,7 +766,7 @@ public class NetCommander {
      * @return XML-ответ
      */
     public static LinkedList<QRespItem> getResporseList(INetProperty netProperty) {
-        Uses.log.logger.info("Команда на получение списка отзывов.");
+        QLog.l().logger().info("Команда на получение списка отзывов.");
         String res = null;
         try {
             // загрузим ответ
@@ -796,7 +796,7 @@ public class NetCommander {
      * @param respID идентификатор выбранного отзыва
      */
     public static void setResponseAnswer(INetProperty netProperty, Long respID) {
-        Uses.log.logger.info("Отправка выбранного отзыва.");
+        QLog.l().logger().info("Отправка выбранного отзыва.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.responseId = respID;
@@ -813,7 +813,7 @@ public class NetCommander {
      * @return XML-ответ
      */
     public static QInfoItem getInfoTree(INetProperty netProperty) {
-        Uses.log.logger.info("Команда на получение информационного дерева.");
+        QLog.l().logger().info("Команда на получение информационного дерева.");
         String res = null;
         try {
             // загрузим ответ
@@ -844,7 +844,7 @@ public class NetCommander {
      * @return XML-ответ
      */
     public static QAuthorizationCustomer getClientAuthorization(INetProperty netProperty, String id) {
-        Uses.log.logger.info("Получение описания авторизованного пользователя.");
+        QLog.l().logger().info("Получение описания авторизованного пользователя.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.clientAuthId = id;
@@ -872,7 +872,7 @@ public class NetCommander {
      * @return свисок возможных завершений работы
      */
     public static LinkedList<QResult> getResultsList(INetProperty netProperty) {
-        Uses.log.logger.info("Команда на получение списка возможных результатов работы с клиентом.");
+        QLog.l().logger().info("Команда на получение списка возможных результатов работы с клиентом.");
         final String res;
         try {
             // загрузим ответ RpcGetResultsList
@@ -900,7 +900,7 @@ public class NetCommander {
      * @return Текстовый ответ о результате
      */
     public static String setCustomerPriority(INetProperty netProperty, int prioritet, String customer) {
-        Uses.log.logger.info("Команда на повышение приоритета кастомеру.");
+        QLog.l().logger().info("Команда на повышение приоритета кастомеру.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.priority = prioritet;
@@ -929,7 +929,7 @@ public class NetCommander {
      * @return список отложенных кастомеров
      */
     public static LinkedList<QCustomer> getPostponedPoolInfo(INetProperty netProperty) {
-        Uses.log.logger.info("Команда на обновление пула отложенных.");
+        QLog.l().logger().info("Команда на обновление пула отложенных.");
         // загрузим ответ
         final String res;
         try {
@@ -952,17 +952,31 @@ public class NetCommander {
     /**
      * Вызов отложенного кастомера
      * @param netProperty
-     * @param userName название юзера который вызывает
+     * @param userId id юзера который вызывает
      * @param id это ID кастомера которого вызываем из пула отложенных, оно есть т.к. с качстомером давно работаем
      */
-    public static void invitePostponeCustomer(INetProperty netProperty, String userName, Long id) {
-        Uses.log.logger.info("Команда на вызов кастомера из пула отложенных.");
+    public static void invitePostponeCustomer(INetProperty netProperty, long userId, Long id) {
+        QLog.l().logger().info("Команда на вызов кастомера из пула отложенных.");
         final CmdParams params = new CmdParams();
-        params.userName = userName;
+        params.userId = userId;
         params.customerId = id;
         // загрузим ответ
         try {
             send(netProperty, Uses.TASK_INVITE_POSTPONED, params);
+        } catch (QException ex) {// вывод исключений
+            throw new ClientException("Проблема с командой. ", ex);
+        }
+    }
+
+    /**
+     * Рестарт главного табло
+     * @param serverNetProperty
+     */
+    public static void restartMainTablo(INetProperty serverNetProperty) {
+        QLog.l().logger().info("Команда на рестарт главного табло.");
+        // загрузим ответ
+        try {
+            send(serverNetProperty, Uses.TASK_RESTART_MAIN_TABLO, null);
         } catch (QException ex) {// вывод исключений
             throw new ClientException("Проблема с командой. ", ex);
         }

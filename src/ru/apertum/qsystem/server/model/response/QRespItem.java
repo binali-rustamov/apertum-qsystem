@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ import javax.persistence.Table;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.server.model.IidGetter;
 
 /**
  *
@@ -35,7 +36,7 @@ import ru.apertum.qsystem.common.Uses;
  */
 @Entity
 @Table(name = "responses")
-public class QRespItem implements Serializable {
+public class QRespItem implements IidGetter, Serializable {
 
     @Id
     @Column(name = "id")
@@ -44,6 +45,7 @@ public class QRespItem implements Serializable {
     @SerializedName("id")
     private Long id;
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -59,6 +61,7 @@ public class QRespItem implements Serializable {
     @Column(name = "name")
     private String name;
 
+    @Override
     public String getName() {
         return name;
     }
@@ -85,18 +88,5 @@ public class QRespItem implements Serializable {
 
     public void setHTMLText(String htmlText) {
         this.htmlText = htmlText;
-    }
-    
-
-    //*******************************************************************************************************************
-    //*******************************************************************************************************************
-    //********************** Реализация сервисных методов ***************************************************************
-    @Deprecated
-    public Element getXML() {
-        final Element item = DocumentHelper.createElement(Uses.TAG_INFO_ITEM);
-        item.addAttribute(Uses.TAG_ID, String.valueOf(getId()));
-        item.addAttribute(Uses.TAG_NAME, getName());
-        item.addCDATA(getHTMLText());
-        return item;
     }
 }

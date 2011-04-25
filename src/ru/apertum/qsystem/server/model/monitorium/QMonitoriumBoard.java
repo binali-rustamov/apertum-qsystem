@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -66,6 +66,11 @@ public class QMonitoriumBoard extends AIndicatorBoard {
 
     @Override
     public AFBoardRedactor getRedactor() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void refresh() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

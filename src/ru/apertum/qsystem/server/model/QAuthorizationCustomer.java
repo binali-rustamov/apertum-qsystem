@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,10 +27,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import ru.apertum.qsystem.common.Uses;
-
 /**
  * Класс предварительно записанного кастомера.
  * Должен уметь работать с БД, генерировать XML. И прочая логика.
@@ -104,33 +100,5 @@ public class QAuthorizationCustomer implements Serializable {
 
     public void setBirthday(Date birthday) {
         this.birthday = birthday;
-    }
-    /* для примера если делать один ко многим
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "service_id")
-    private QService service;
-
-    public QService getService() {
-    return service;
-    }
-
-    public void setService(QService service) {
-    this.service = service;
-    }
-     */
-
-    /**
-     *
-     * @return
-     * @deprecated 
-     */
-    public Element getXML() {
-        final Element user = DocumentHelper.createElement(Uses.TAG_CUSTOMER);
-        user.addAttribute(Uses.TAG_ID, getId().toString());
-        user.addAttribute(Uses.TAG_NAME, getName());
-        user.addAttribute(Uses.TAG_SURNAME, getSurname());
-        user.addAttribute(Uses.TAG_OTCHESTVO, getOtchestvo());
-        user.addAttribute(Uses.TAG_BIRTHDAY, Uses.format_dd_MM_yyyy.format(getBirthday() == null ? new Date() : getBirthday()));
-        return user;
     }
 }

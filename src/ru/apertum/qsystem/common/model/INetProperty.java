@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,8 +17,6 @@
 package ru.apertum.qsystem.common.model;
 
 import java.net.InetAddress;
-import java.util.Date;
-import org.dom4j.Element;
 
 /**
  * @author Evgeniy Egorov
@@ -27,58 +25,14 @@ import org.dom4j.Element;
 public interface INetProperty {
 
     /**
-     * Порт сервера системы для приемы сообщений от клиентских модулей по протоколу TCP
+     * Порт для приемы сообщений от клиентских модулей по протоколу TCP
      * @return номер порта
      */
-    public Integer getServerPort();
+    public Integer getPort();
 
     /**
-     * Порт клиентских модулей для приема широковещательных сообщений от сервера системы по протоколу UDP
-     * @return номер порта
-     */
-    public Integer getClientPort();
-
-    /**
-     * Адрес машины, где работает сервер системы
+     * Адрес машины, сетевой адрес
      * @return сетевой адрес
      */
-    public InetAddress getServerAddress();
-
-    /**
-     * Адрес машины, где выполняется клиентское приложение системы.
-     * Можно возвращать всегда "localhost"
-     * @return сетевой адрес
-     */
-    public InetAddress getClientAddress();
-
-    /**
-     * Порт вебсервера отчетов для приема запросов от клиентов по протоколу HTTP
-     * @return номер порта
-     */
-    public Integer getWebServerPort();
-
-    /**
-     * Время начала приема заявок на постановку в очередь
-     * @return время.
-     */
-    public Date getStartTime();
-
-    /**
-     * Время завершения приема заявок на постановку в очередь
-     * @return время.
-     */
-    public Date getFinishTime();
-    
-    /**
-     * Описание параметра в виде XML.
-     * @return XML-элемент корень параметра
-     * @deprecated 
-     */
-    public Element getXML();
-    
-    /**
-     * Версия БД или конфигурационного файла. Для определения совместимости и возможности вариантов ардейта.
-     * @return Версия БД или конфигурационного файла.
-     */
-    public String getVersion();
+    public InetAddress getAddress();
 }

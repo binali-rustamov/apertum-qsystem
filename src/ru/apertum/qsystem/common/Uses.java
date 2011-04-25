@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,7 @@
  */
 package ru.apertum.qsystem.common;
 
-import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.common.exceptions.ServerException;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,12 +28,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.DatagramPacket;
@@ -43,15 +38,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
-import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Properties;
 import javax.swing.ImageIcon;
 import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
@@ -60,23 +51,8 @@ import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.log4j.Logger;
 import org.dom4j.Element;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import ru.apertum.qsystem.client.Locales;
-import ru.apertum.qsystem.common.exceptions.ClientException;
-import ru.apertum.qsystem.common.model.INetProperty;
-import ru.apertum.qsystem.server.model.Numeration;
-import ru.apertum.qsystem.server.model.QService;
 
 /**
  * @author Evgeniy Egorov
@@ -84,11 +60,7 @@ import ru.apertum.qsystem.server.model.QService;
  *
  */
 public final class Uses {
-    // Ключи выполнения программы
 
-    public static final String KEY_DEBUG = "DEBUG";
-    public static final String KEY_INFO = "INFO";
-    public static final String KEY_DEMO = "DEMO";
     // значения приоритета "очередника"
     public static final int PRIORITY_LOW = 0;
     public static final int PRIORITY_NORMAL = 1;
@@ -103,69 +75,7 @@ public final class Uses {
     public static final int SERVICE_VIP = 2;
     public static final int[] SERVICE_PRIORITYS = {SERVICE_EXCLUDE, SERVICE_REMAINS, SERVICE_NORMAL, SERVICE_VIP};
     public static final LinkedHashMap<Integer, String> COEFF_WORD = new LinkedHashMap<Integer, String>();
-    // значения состояния "очередника"
-    /**
-     * удален по неявке
-     */
-    public static final int STATE_DEAD = 0;
-    /**
-     * стоит и ждет в очереди
-     */
-    public static final int STATE_WAIT = 1;
-    /**
-     * пригласили
-     */
-    public static final int STATE_INVITED = 2;
-    /**
-     * отправили в другую очередь, идет как бы по редиректу в верх.
-     * Стоит ждет к новой услуге.
-     */
-    public static final int STATE_REDIRECT = 3;
-    /**
-     * начали с ним работать
-     */
-    public static final int STATE_WORK = 4;
-    /**
-     * состояние когда кастомер возвращается к прежней услуге после редиректа,
-     * по редиректу в низ. Стоит ждет к старой услуге.
-     */
-    public static final int STATE_BACK = 5;
-    /**
-     * с кастомером закончили работать и он идет домой
-     */
-    public static final int STATE_FINISH = 6;
-    public static final int[] STATES = {STATE_DEAD, STATE_WAIT, STATE_INVITED, STATE_REDIRECT, STATE_WORK, STATE_BACK, STATE_FINISH};
-    // Наименования тегов и атрибутов в протоколах XML
-    public static final String TAG_CUSTOMER = "Клиент";
-    public static final String TAG_USER_IDENTIFIER = "Идентификатор";
-    public static final String TAG_USER_ADRESS_RS = "АдресRS";
-    public static final String TAG_USER_ADMIN_ACCESS = "Администрирование";
-    public static final String TAG_USER_REPORT_ACCESS = "ПолучениеОтчетов";
-    public static final String TAG_PRIORITY = "Приоритет";
-    public static final String TAG_NUMBER = "Номер";
-    public static final String TAG_STATE = "Состояние";
-    public static final String TAG_STAND_TIME = "ВремяПостановки";
-    public static final String TAG_CALL_TIME = "ВремяВызова";
-    public static final String TAG_START_TIME = "ВремяНачалаРаботы";
-    public static final String TAG_FINISH_TIME = "ВремяЗавершения";
-    public static final String TAG_ID = "ID";
-    public static final String TAG_AUTH_CUSTOMER_ID = "IDАвторизованногоКлиента";
-    public static final String TAG_PREFIX = "Префикс";
-    public static final String TAG_INPUT_DATA = "ВведенныеКлиентскиеДанные";
-    public static final String TAG_DESCRIPTION = "Описание";
-    public static final String TAG_TASK = "Действие";
-    public static final String TAG_NAME = "Наименование";
-    public static final String TAG_SURNAME = "Фамилия";
-    public static final String TAG_OTCHESTVO = "Отчество";
-    public static final String TAG_BIRTHDAY = "ДатаРождения";
-    public static final String TAG_SERVICE = "Услуга";
-    public static final String TAG_GROUP = "Группа";
-    public static final String TAG_PASSWORD = "Пароль";
-    public static final String TAG_USER = "Пользователь";
-    public static final String TAG_REQUEST_BACK = "Вернуть";
-    public static final String TAG_EMPTY = "Пусто";
-    public static final String TAG_INFO_ITEM = "ИнфоУзел";
-    public static final String TAG_RESULT_ITEM = "РезультатУзел";
+    
     // Наименования тегов и атрибутов в протоколах XML по статистике
     public static final String TAG_REP_STATISTIC = "Статистика";
     public static final String TAG_REP_PARAM_COUNT = "Знаменатель";
@@ -234,6 +144,7 @@ public final class Uses {
     public static final String TAG_BOARD_FONT_COLOR_LEFT = "Цвет шрифта левого столбца";
     public static final String TAG_BOARD_FONT_COLOR_RIGHT = "Цвет шрифта правого столбца";
     public static final String TAG_BOARD_LINE_BORDER = "Окантовка строк";
+    public static final String TAG_BOARD_LINE_DELIMITER = "Разделитель столбцов";
     //имена тегов-разделов для табло
     public static final String TAG_BOARD = "Board";
     public static final String TAG_BOARD_MAIN = "Main";
@@ -249,15 +160,6 @@ public final class Uses {
     public static final int BOARD_TYPE_STR = 3;
     public static final int BOARD_TYPE_BOOL = 4;
     // Наименования заданий
-    /*
-    public static final String TASK_SITE = "Задание";
-    public static final String TASK_SUPER_SITE = "Суперзадание";
-    public static final String TASK_SUPER_ANSWER = "Суперответ";
-    public static final String TASK_SUPER_REPORT = "Суперочет";
-    public static final String TASK_SUPER_REQUEST = "Super: yes";
-    public static final String TASK_FOR_SITE = "Сайт";
-     * 
-     */
     public static final String TASK_FOR_ALL_SITE = "Для всех сайтов домена";
     public static final String TASK_STAND_IN = "Поставить в очередь";
     public static final String TASK_ADVANCE_STAND_IN = "Поставить в очередь предварительно";
@@ -281,6 +183,7 @@ public final class Uses {
     public static final String TASK_FINISH_CUSTOMER = "Закончить работу с клиентом";
     public static final String TASK_I_AM_LIVE = "Я горец!";
     public static final String TASK_RESTART = "RESTART";
+    public static final String TASK_RESTART_MAIN_TABLO = "Рестарт главного твбло";
     public static final String TASK_REFRESH_POSTPONED_POOL = "NEW_POSTPONED_NOW";
     public static final String TASK_SERVER_STATE = "Получить состояние сервера";
     public static final String TASK_SET_SERVICE_FIRE = "Добавить услугу на горячую";
@@ -393,28 +296,6 @@ public final class Uses {
     public static final String HOW_DO_YOU_DO = "do you live?";
 
     /**
-     * Преобразует XML в строковое представление
-     * @param element
-     * @return XML в строковом представлении
-     * @deprecated метод ля стандартной библиотеки
-     */
-    static public String getXMLstring(Element element) {
-        String res = "";
-        try {
-            // преобразование без действий
-            final Transformer tt = TransformerFactory.newInstance().newTransformer();
-            // Свойства для получений узда DOCTYPE
-            tt.setOutputProperty(OutputKeys.INDENT, "/n");
-            // ПРименение пустого преобразования и запись в строку
-            // Deprecated timer.transform(new DOMSource(root), new StreamResult(res));
-        } catch (TransformerException e) {
-            throw new IllegalArgumentException("Невозможно преобразовать XML в строку");
-        }
-        return res;
-
-    }
-
-    /**
      * Рекурентный формирователь для public static ArrayList elements(Element root, String tagName).
      * @param list массив элементов
      * @param el корневой элемент ветви
@@ -498,299 +379,6 @@ public final class Uses {
         return list;
     }
     /**
-     * Режим отладки
-     */
-    public static boolean isDebug = false;
-    /**
-     * Режим демонстрации. При нем не надо прятать мышку и убирать шапку формы.
-     */
-    public static boolean isDemo = false;
-
-    /**
-     *  Собственно, логер лог4Ж  
-     */
-    public final static class Log extends Object {
-
-        public Logger logger = Logger.getLogger("server.file");//**.file.info.trace
-    };
-    /**
-     * Пользуемся этой константой для работы с логом
-     */
-    public static final Log log = new Log();
-
-    /**
-     * Определение политики логирования.
-     * @param args параметры командной строки
-     * @param isServer показывает тип логируемого
-     * @return вести отладку или нет.
-     */
-    public static boolean setLogining(String[] args, boolean isServer) {
-        boolean isDebugin = false;
-        Uses.log.logger = isServer ? Logger.getLogger("server.file") : Logger.getLogger("client.file");
-
-        //бежим по параметрам, смотрим, выполняем что надо
-        for (int i = 0; i < args.length; i++) {
-            // ключ, отвечающий за логирование
-            if (Uses.KEY_DEBUG.equalsIgnoreCase(args[i])) {
-                Uses.log.logger = isServer ? Logger.getLogger("server.file.info.trace") : Logger.getLogger("client.file.info.trace");
-                isDebugin = true;
-            }
-            // ключ, отвечающий за логирование
-            if (Uses.KEY_INFO.equalsIgnoreCase(args[i])) {
-                isDebugin = true;
-                Uses.log.logger = isServer ? Logger.getLogger("server.file.info") : Logger.getLogger("client.file.info");
-            }
-            // ключ, отвечающий за режим демонстрации. При нем не надо прятать мышку и убирать шапку формы
-            if (Uses.KEY_DEMO.equalsIgnoreCase(args[i])) {
-                isDemo = true;
-            }
-        }
-        if (!isDebugin) {
-            final Properties settings = new Properties();
-            final InputStream inStream = settings.getClass().getResourceAsStream("/ru/apertum/qsystem/common/version.properties");
-            try {
-                settings.load(inStream);
-            } catch (IOException ex) {
-                throw new ClientException("Проблемы с чтением версии. " + ex);
-            }
-        }
-        Uses.log.logger.info("СТАРТ ЛОГИРОВАНИЯ. Логгер: " + Uses.log.logger.getName());
-        return isDebugin;
-    }
-    /**
-     * Пользуемся этой константой для работы с логом для отчетов
-     */
-    public static final Log logRep = new Log();
-
-    /**
-     * Определение политики логирования для отчетов.
-     */
-    public static void setRepLogining() {
-        Uses.logRep.logger = Logger.getLogger("reports.file");
-
-        if ("server.file.info.trace".equalsIgnoreCase(Uses.log.logger.getName())) {
-            Uses.logRep.logger = Logger.getLogger("reports.file.info.trace");
-        }
-        // ключ, отвечающий за логирование
-        if ("server.file.info".equalsIgnoreCase(Uses.log.logger.getName())) {
-            Uses.logRep.logger = Logger.getLogger("reports.file.info");
-        }
-
-        Uses.logRep.logger.info("СТАРТ ЛОГИРОВАНИЯ для отчетов. Логгер: " + Uses.logRep.logger.getName());
-    }
-
-    /**
-     *  Собственно, обертка Spring  
-     */
-    public final static class Spring extends Object {
-
-        public BeanFactory factory = null;
-        public String driverClassName;
-        public String url;
-        public String username;
-        public String password;
-    };
-    /**
-     * Конфигурация системы. Пользоваться этой константой для определения конфигурации.
-     */
-    public static final Spring spring = new Spring();
-
-    /**
-     * Определение Spring контекста конфигурирования системы.
-     * Определять только после создания логирования!
-     */
-    synchronized public static void setServerContext() {
-        if (log == null) {
-            throw new ServerException("Логирование не определено.");
-        }
-        if (spring.factory == null) {
-            try {
-                spring.factory = new ClassPathXmlApplicationContext("/ru/apertum/qsystem/spring/qsContext.xml");
-            } catch (BeanCreationException ex) {
-                throw new ServerException("Ошибка создания класса-бина контекста приложения: \"" + ex.getCause().getMessage() + "\"\n"
-                        + "Бин с ошибкой \"" + ex.getBeanName() + "\""
-                        + "Сообщение об ошибке: \"" + ex.getCause().getMessage() + "\"\n" + ex);
-            } catch (BeansException ex) {
-                throw new ServerException("Ошибка класса-бина контекста приложения: \"" + ex.getCause().getMessage() + "\"\n"
-                        + "Сообщение об ошибке: \"" + ex.getCause().getMessage() + "\"\n" + ex);
-            } catch (Exception ex) {
-                throw new ServerException("Ошибка создания контекста приложения: " + ex);
-            }
-
-            if (Uses.spring.factory.containsBean("myDataSource")) {
-                final BasicDataSource bds = (BasicDataSource) Uses.spring.factory.getBean("myDataSource");
-                spring.driverClassName = bds.getDriverClassName();
-                spring.url = bds.getUrl();
-                spring.username = bds.getUsername();
-                spring.password = bds.getPassword();
-            } else {
-                if (Uses.spring.factory.containsBean("c3p0DataSource")) {
-                    final ComboPooledDataSource bds = (ComboPooledDataSource) Uses.spring.factory.getBean("c3p0DataSource");
-                    spring.driverClassName = bds.getDriverClass();
-                    spring.url = bds.getJdbcUrl();
-                    spring.username = bds.getUser();
-                    spring.password = bds.getPassword();
-                }
-            }
-        }
-    }
-    /**
-     * Параметры нумерации клиентов
-     */
-    private static Numeration numeration = null;
-
-    public static Numeration getNumeration() {
-        if (numeration == null) {
-            numeration = (Numeration) Uses.spring.factory.getBean("numeration");
-            //Счетчик номеров кастомеров для сквозного нумерирования статичный и
-            //определяется ранее factory, вот подпорка, понадобилась для ограничения самого минимально возможного
-            //номера клиента
-            QService.clearNextStNumber();
-        }
-        return numeration;
-    }
-    /**
-     * Работа с Hibernate.
-     */
-    /**
-     * Эта переменная управляет сессией хибера.
-     */
-    private static HibernateTemplate hibernateTemplate = null;
-
-    /**
-     * Так через Spring мы установим фабрику сессий.
-     * @param hibernateTemplate 
-     */
-    public static void setSessionFactory(HibernateTemplate hibernateTemplate) {
-        Uses.hibernateTemplate = hibernateTemplate;
-    }
-
-    public static boolean isDBconnected() {
-        if (hibernateTemplate == null) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * Через этот метод получаем способ доступа до хиберовских сессий.
-     * Используем для сохранения объектов в базу.
-     * @return Эта переменная управляет сессией хибера.
-     */
-    public static HibernateTemplate getSessionFactory() {
-        if (hibernateTemplate == null) {
-            throw new ServerException("Обращение к Hibernate до его инициализации.");
-        }
-        return hibernateTemplate;
-    }
-
-    /**
-     * Для обработки командной строки клиентских модулей
-     * @param args параметры командной строки
-     * @return интерфейс для получения параметров соединения
-     */
-    public static INetProperty getClientNetProperty(String[] args) {
-        return new ClientNetProperty(args);
-    }
-
-    /**
-     * Класс интерфейса INetPropertyImpl, для обработки командной строки клиентских модулей
-     */
-    private static class ClientNetProperty implements INetProperty {
-
-        private Integer portServer = -1; // Порт сервера
-        private Integer portClient = -1; // Порт клиента
-        private String adress; // Адрес сервера
-        private boolean isSuperSite = false; // признак суперсайта
-
-        public ClientNetProperty(String[] args) {
-            for (Integer i = 0; i < args.length; i++) {
-                if ("-sport".equalsIgnoreCase(args[i])) {
-                    portServer = Integer.parseInt(args[i + 1]);
-                }
-                if ("-cport".equalsIgnoreCase(args[i])) {
-                    portClient = Integer.parseInt(args[i + 1]);
-                }
-                if ("-s".equalsIgnoreCase(args[i])) {
-                    adress = args[i + 1];
-                }
-                if ("super".equalsIgnoreCase(args[i])) {
-                    isSuperSite = true;
-                }
-            }
-        }
-
-        @Override
-        public Integer getServerPort() {
-            return portServer;
-        }
-
-        @Override
-        public Integer getClientPort() {
-            return portClient;
-        }
-
-        @Override
-        public InetAddress getServerAddress() {
-            InetAddress adr = null;
-            try {
-                adr = InetAddress.getByName(adress);
-            } catch (UnknownHostException ex) {
-                log.logger.error("Error!", ex);
-            }
-            return adr;
-
-        }
-
-        /**
-         * @deprecated Всегда возвращает null
-         */
-        @Override
-        public InetAddress getClientAddress() {
-            return null;
-        }
-
-        /**
-         * @deprecated Всегда возвращает -1
-         */
-        @Override
-        public Integer getWebServerPort() {
-            return -1;
-        }
-
-        /**
-         * @deprecated Всегда возвращает -1
-         */
-        @Override
-        public Date getStartTime() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        /**
-         * @deprecated Всегда возвращает -1
-         */
-        @Override
-        public Date getFinishTime() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        /**
-         * @deprecated Всегда возвращает -1
-         */
-        @Override
-        public Element getXML() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Deprecated
-        @Override
-        public String getVersion() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-
-    /**
      * Получение адреса из строчки.
      * @param adress строчка типа "125.256.214.854" или "rambler.ru"
      * @return InetAddress
@@ -812,7 +400,7 @@ public final class Uses {
      * @param port порт получателя
      */
     public static void sendUDPMessage(String message, InetAddress address, int port) {
-        Uses.log.logger.trace("Отправка UDP сообшение \"" + message + "\" по адресу \"" + address.getHostAddress() + "\" на порт \"" + port + "\"");
+        QLog.l().logger().trace("Отправка UDP сообшение \"" + message + "\" по адресу \"" + address.getHostAddress() + "\" на порт \"" + port + "\"");
         final DatagramSocket socket;
         final byte mess_b[] = message.getBytes();
         final DatagramPacket packet = new DatagramPacket(mess_b, mess_b.length, address, port);
@@ -870,13 +458,7 @@ public final class Uses {
             final DataInputStream inStream;
             File f = new File(resourceName);
             if (f.exists()) {
-
-                try {
-                    inStream = new DataInputStream(new FileInputStream(f));
-                } catch (FileNotFoundException ex) {
-                    throw new ServerException("Нет файла картинки \"" + resourceName + "\" " + ex);
-                }
-
+                    return new ImageIcon(resourceName).getImage();
             } else {
                 inStream = new DataInputStream(o.getClass().getResourceAsStream(resourceName));
             }
@@ -884,8 +466,9 @@ public final class Uses {
             try {
                 b = new byte[inStream.available()];
                 inStream.readFully(b);
+                inStream.close();
             } catch (IOException ex) {
-                log.logger.error(ex);
+                QLog.l().logger().error(ex);
             }
             return new ImageIcon(b).getImage();
         }
@@ -939,81 +522,6 @@ public final class Uses {
             }
         }
         return null;
-    }
-
-    /**
-     * Получение имени ссылки из HTTP-запроса
-     * @param request HTTP-запрос
-     * @return
-     * @deprecated не использовать работу на прямую с http-заголовками. Сейчас все через apache-http-core
-     */
-    public static String getRequestTarget(String request) {
-        if (request.indexOf("POST") == 0) {
-            return request.substring(request.indexOf("POST") + 6, request.indexOf("HTTP") - 1);
-        } else if (request.indexOf("GET") == 0) {
-            return request.substring(request.indexOf("GET") + 5, request.indexOf("HTTP") - 1);
-        } else if (request.indexOf("OPTIONS") == 0) {
-            return "";
-        } else {
-            throw new ReportException("Неправильный запрос \"" + request + "\".");
-        }
-    }
-
-    /**
-     * Получение строки параметров из HTTP-запроса
-     * @param request HTTP-запрос
-     * @return
-     * @deprecated не использовать работу на прямую с http-заголовками. Сейчас все через apache-http-core
-     */
-    public static String getRequestData(String request) {
-        if (request.indexOf("POST") == 0) {
-            final String[] pears = request.split("\r\n");
-            try {
-                return URLDecoder.decode(pears[pears.length - 1], "utf-8");
-            } catch (UnsupportedEncodingException ex) {
-                throw new ReportException("Неправильная кодировка запроса. " + ex);
-            }
-        } else if (request.indexOf("GET") == 0) {
-            final String in = request.substring(request.indexOf("GET") + 5, request.indexOf("HTTP") - 1);
-            if (in.indexOf("?") == -1) {
-                return "";
-            }
-            try {
-                return URLDecoder.decode(in.substring(in.indexOf("?") + 1), "utf-8");
-            } catch (UnsupportedEncodingException ex) {
-                throw new ReportException("Неправильная кодировка запроса. " + ex);
-            }
-        } else {
-            throw new ReportException("Неправильный запрос \"" + request + "\".");
-        }
-    }
-
-    /**
-     * Получение кукисов из HTTP-запроса
-     * Cookie: username=%D0%90%D0%B4%D0%BC%D0%B8%D0%BD%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%82%D0%BE%D1%80; password=
-     * @param request HTTP-запрос
-     * @return Мар (имя кукиса -> значение кукиса)
-     * @deprecated не использовать работу на прямую с http-заголовками. Сейчас все через apache-http-core
-     */
-    public static HashMap<String, String> getCoocies(String request) {
-        final String[] pears = request.split("\r\n");
-        for (String pear : pears) {
-            final String[] line = pear.split(": ");
-            if ("Cookie".equals(line[0])) {
-                final HashMap<String, String> result = new HashMap<String, String>();
-                final String[] items = line[1].split("; ");
-                for (String item : items) {
-                    final String[] coocie = item.split("=");
-                    try {
-                        result.put(URLDecoder.decode(coocie[0], "utf-8"), coocie.length == 1 ? "" : URLDecoder.decode(coocie[1], "utf-8"));
-                    } catch (UnsupportedEncodingException ex) {
-                        throw new ReportException("Неправильная кодировка параметров. " + ex);
-                    }
-                }
-                return result;
-            }
-        }
-        return new HashMap<String, String>();
     }
 
     /**
@@ -1147,17 +655,5 @@ public final class Uses {
         g.setColor(Color.BLACK);
         g.drawString("Loading " + comps[(frame / 5) % 3] + "...", 120, 150);
     }
-
-    public static void deleteTempFile() {
-        Uses.log.logger.debug("Удаление временных файлов.");
-        // удаление временных файлов
-        File file = new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE);
-        if (file.exists()) {
-            file.delete();
-        }
-        file = new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATATISTIC_FILE);
-        if (file.exists()) {
-            file.delete();
-        }
-    }
+    
 }

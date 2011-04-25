@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import ru.apertum.qsystem.client.forms.FBoardConfig;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
@@ -54,7 +54,7 @@ public class TabloRedactor {
             throw new ServerException("File context not exist.");
         }
         filePath = args[0];
-        Uses.log.logger.info("Загрузим файл " + file.getAbsolutePath());
+        QLog.l().logger().info("Загрузим файл " + file.getAbsolutePath());
         final SAXReader reader = new SAXReader(false);
         try {
             root = reader.read(file).getRootElement();
@@ -101,7 +101,7 @@ public class TabloRedactor {
      */
     public static void saveToFile() {
         final long start = System.currentTimeMillis();
-        Uses.log.logger.info("Сохранение состояния.");
+        QLog.l().logger().info("Сохранение состояния.");
         // в файл
         final FileOutputStream fos;
         try {
@@ -116,6 +116,6 @@ public class TabloRedactor {
         } catch (IOException ex) {
             throw new ServerException("Не возможно сохранить изменения в поток." + ex.getMessage());
         }
-        Uses.log.logger.info("Состояние сохранено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
+        QLog.l().logger().info("Состояние сохранено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
     }
 }

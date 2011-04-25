@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,93 +17,33 @@
 package ru.apertum.qsystem.server.model.calendar;
 
 import java.util.LinkedList;
-import java.util.List;
 import javax.swing.ComboBoxModel;
-import javax.swing.DefaultListModel;
-import org.hibernate.Session;
-import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import ru.apertum.qsystem.common.Uses;
-import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.server.Spring;
+import ru.apertum.qsystem.server.model.ATListModel;
 
 /**
  *
  * @author Evgeniy Egorov
  */
-public class QCalendarList extends DefaultListModel implements ComboBoxModel {
+public class QCalendarList extends ATListModel<QCalendar> implements ComboBoxModel {
 
-    /**
-     * Singleton.
-     */
-    private static QCalendarList instance = null;
-
-    /**
-     * Доступ до Singleton
-     * @return класс - список для обратной связи.
-     */
-    public static QCalendarList getCalendarList() {
-        if (instance == null) {
-            resetCalendarList();
-        }
-        return instance;
+    private QCalendarList() {
+        super();
     }
 
-    /**
-     * Принудительное пересоздание списка для обратной связи. Доступ до Singleton
-     * @return класс - список для обратной связи.
-     */
-    public static QCalendarList resetCalendarList() {
-        instance = new QCalendarList();
-        for (QCalendar item : instance.items) {
-            instance.addElement(item);
-        }
-        Uses.log.logger.debug("Создали список календарей.");
-        return instance;
-    }
-    /**
-     * Все информационные узлы
-     */
-    protected final List<QCalendar> items = loadCalendarItems();
-
-    /**
-     * Загрузка из базы всех календарей
-     * @return список всех календарей выкаченных из базы
-     * @throws DataAccessException
-     */
-    public static LinkedList<QCalendar> loadCalendarItems() throws DataAccessException {
-
-        return (LinkedList<QCalendar>) Uses.getSessionFactory().execute(new HibernateCallback() {
-
-            @Override
-            public Object doInHibernate(Session session) {
-                return new LinkedList<QCalendar>(session.createCriteria(QCalendar.class).list());
-            }
-        });
+    public static QCalendarList getInstance() {
+        return QCalendarListHolder.INSTANCE;
     }
 
-    public QCalendar getByName(String name) {
-        QCalendar res = null;
-        for (Object o : toArray()) {
-            if (name.equals(((QCalendar) o).getName())) {
-                res = (QCalendar) o;
-            }
-        }
-        if (res == null) {
-            throw new ServerException("Не найден календарь по имени: \"" + name + "\"");
-        }
-        return res;
+    private static class QCalendarListHolder {
+
+        private static final QCalendarList INSTANCE = new QCalendarList();
     }
 
-    public boolean hasByName(String name) {
-        QCalendar res = null;
-        for (Object o : toArray()) {
-            if (name.equals(((QCalendar) o).getName())) {
-                res = (QCalendar) o;
-            }
-        }
-        return res != null;
+    @Override
+    protected LinkedList<QCalendar> load() {
+        return new LinkedList<QCalendar>(Spring.getInstance().getHt().loadAll(QCalendar.class));
     }
-
     private QCalendar selected;
 
     @Override

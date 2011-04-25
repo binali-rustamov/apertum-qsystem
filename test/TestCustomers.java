@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@ import java.util.Date;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import ru.apertum.qsystem.common.model.ICustomer;
 import ru.apertum.qsystem.common.model.QCustomer;
 import static org.junit.Assert.*;
 
@@ -29,8 +28,8 @@ import static org.junit.Assert.*;
  */
 public class TestCustomers {
 
-    public static ICustomer c1 = new QCustomer(1);
-    public static ICustomer c2 = new QCustomer(2);
+    public static QCustomer c1 = new QCustomer(1);
+    public static QCustomer c2 = new QCustomer(2);
 
     /**
      * новая анотация @BeforeClass, раньше метод инициализации носил имя protected void setUp() throws Exception {},

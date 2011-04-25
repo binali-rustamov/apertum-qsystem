@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ import java.text.ParseException;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
@@ -61,7 +61,7 @@ public class FScheduleChangeDialod extends javax.swing.JDialog {
      * @param schedule
      */
     public static void changeSchedule(Frame parent, boolean modal, QSchedule schedule) {
-        Uses.log.logger.info("Редактирование услуги \"" + schedule.getName() + "\"");
+        QLog.l().logger().info("Редактирование услуги \"" + schedule.getName() + "\"");
         if (scheduleChangeDialod == null) {
             scheduleChangeDialod = new FScheduleChangeDialod(parent, modal);
             scheduleChangeDialod.setTitle(getLocaleMessage("dialog.title"));

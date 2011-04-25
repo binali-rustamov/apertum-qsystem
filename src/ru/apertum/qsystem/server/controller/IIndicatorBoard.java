@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ package ru.apertum.qsystem.server.controller;
 
 import org.dom4j.Element;
 import ru.apertum.qsystem.client.forms.AFBoardRedactor;
-import ru.apertum.qsystem.common.model.ICustomer;
-import ru.apertum.qsystem.server.model.IUserProperty;
+import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.server.model.QUser;
 
 /**
  * Интерфейс событий вывода информации: зазываем, обрабатываем, освобождаем
@@ -34,24 +34,29 @@ public interface IIndicatorBoard {
      * @param user пользователь, который начал работать с клиентом.
      * @param customer Клиент, который был вызван
      */
-    public void inviteCustomer(IUserProperty user, ICustomer customer);
+    public void inviteCustomer(QUser user, QCustomer customer);
 
     /**
      * На табло оператора долженн перестать мигать номер вызываемого клиента
      * @param user пользователь, который начал работать с клиентом.
      */
-    public void workCustomer(IUserProperty user);
+    public void workCustomer(QUser user);
 
     /**
      * На табло по определенному адресу должно отчистиццо табло
      * @param user пользователь, который удалил клиента.
      */
-    public void killCustomer(IUserProperty user);
+    public void killCustomer(QUser user);
 
     /**
      * Выключить информационное табло.
      */
     public void close();
+
+    /**
+     * Перегрузить информационное табло.
+     */
+    public void refresh();
 
     /**
      * Включить информационное табло.

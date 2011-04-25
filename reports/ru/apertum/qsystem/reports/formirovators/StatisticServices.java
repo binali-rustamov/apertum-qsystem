@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.http.HttpRequest;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
 
@@ -75,7 +75,7 @@ public class StatisticServices extends AFormirovator {
         // если в запросе не содержаться введенные параметры, то выдыем форму ввода
         // иначе выдаем null.
         final String data = NetUtil.getEntityContent(request);
-        Uses.log.logger.trace("Принятые параметры \"" + data + "\".");
+        QLog.l().logger().trace("Принятые параметры \"" + data + "\".");
         // флаг введенности параметров
         boolean flag = false;
         String mess = "";
@@ -151,7 +151,7 @@ public class StatisticServices extends AFormirovator {
     public String validate(String driverClassName, String url, String username, String password, HttpRequest request, HashMap<String, String> params) {
         //sd=20.01.2009&ed=28.01.2009
         // проверка на корректность введенных параметров
-        Uses.log.logger.trace("Принятые параметры \"" + params.toString() + "\".");
+        QLog.l().logger().trace("Принятые параметры \"" + params.toString() + "\".");
         if (params.size() == 2) {
             Date sd = null;
             Date fd = null;

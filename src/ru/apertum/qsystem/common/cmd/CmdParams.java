@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@ public class CmdParams {
     public CmdParams() {
     }
     @Expose
-    @SerializedName("service")
-    public String serviceName;
+    @SerializedName("service_id")
+    public Long serviceId;
     @Expose
-    @SerializedName("user")
-    public String userName;
+    @SerializedName("user_id")
+    public Long userId;
     @Expose
     @SerializedName("pass")
     public String password;

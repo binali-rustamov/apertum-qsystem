@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import javax.swing.ComboBoxModel;
 import org.apache.http.HttpRequest;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
@@ -28,44 +31,122 @@ import ru.apertum.qsystem.reports.generators.RepCurrentUsers;
 import ru.apertum.qsystem.reports.generators.ReportCurrentServices;
 import ru.apertum.qsystem.reports.generators.ReportsList;
 import ru.apertum.qsystem.reports.net.NetUtil;
+import ru.apertum.qsystem.server.Spring;
+import ru.apertum.qsystem.server.model.ATListModel;
+import ru.apertum.qsystem.server.model.QUser;
+import ru.apertum.qsystem.server.model.QUserList;
 
 /**
- * Генератор отчетов.
- * Класс, имеющий механизм генерации отчетов.
- * По названию отчета получает массив байт, хранящий отчет.
- * Так же в классе есть парара отчетов по текущему состоянию.
+ *
  * @author Evgeniy Egorov
  */
-public class ReportGenerator {
+public class QReportsList extends ATListModel<QReport> implements ComboBoxModel {
 
-    // задания, доступны по их именам
-    private final static HashMap<String, IGenerator> generators = new HashMap<String, IGenerator>();
-
-    public static void addGenerator(IGenerator generator) {
-        generators.put(generator.getHref().toLowerCase(), generator);
+    private QReportsList() {
+        super();
     }
 
+    public static QReportsList getInstance() {
+        return QResultListHolder.INSTANCE;
+    }
+
+    private static class QResultListHolder {
+
+        private static final QReportsList INSTANCE = new QReportsList();
+    }
+
+    @Override
+    protected LinkedList<QReport> load() {
+        final LinkedList<QReport> reports = new LinkedList<QReport>(Spring.getInstance().getHt().loadAll(QReport.class));
+        QLog.l().logRep().debug("Загружено из базы " + reports.size() + " отчетов.");
+
+        passMap = new HashMap<String, String>();
+        htmlRepList = "";
+        htmlUsersList = "";
+        // добавим аналитические отчеты
+        for (QReport report : reports) {
+            addGenerator(report);
+            htmlRepList = htmlRepList.concat(
+                    "<tr>\n"
+                    + "<td style=\"text-align: left; padding-left: 60px;\">\n"
+                    + "<a href=\"" + report.getHref() + ".html\" target=\"_blank\">" + report.getName() + "</a>\n"
+                    + "<a href=\"" + report.getHref() + ".rtf\" target=\"_blank\">[RTF]</a>\n"
+                    + "<a href=\"" + report.getHref() + ".pdf\" target=\"_blank\">[PDF]</a>\n"
+                    + "</td>\n"
+                    + "</tr>\n");
+        }
+        /*
+         * Это не отчет. это генератор списка отчетов, который проверяет пароль и пользователя и формирует
+         * coocies для браузера, чтоб далее браузер подставлял жти куки в запрос и тем самым сервак "узнавал пользователя".
+         * Сдесь нужен только метод preparation(), т.к. никакой генерации нет.
+         */
+        addGenerator(new ReportsList("reportList", ""));
+        /*
+         * Отчет по текущему состоянию в разрее услуг
+         */
+        addGenerator(new ReportCurrentServices(Uses.REPORT_CURRENT_SERVICES.toLowerCase(), "/ru/apertum/qsystem/reports/templates/currentStateServices.jasper"));
+        /*
+         * Отчет по текущему состоянию в разрезе пользователей
+         */
+        addGenerator(new RepCurrentUsers(Uses.REPORT_CURRENT_USERS.toLowerCase(), "/ru/apertum/qsystem/reports/templates/currentStateUsers.jasper"));
+
+        String sel = " selected";
+        for (QUser user : QUserList.getInstance().getItems()) {
+            // список пользователей, допущенных до отчетов
+            if (user.getReportAccess()) {
+                htmlUsersList = htmlUsersList.concat("<option" + sel + ">").concat(user.getName()).concat("</option>\n");
+                sel = "";
+                if (user.getReportAccess()) {
+                    passMap.put(user.getName(), user.getPassword());
+                }
+            }
+        }
+
+        return reports;
+    }
+    private QReport selected;
+
+    @Override
+    public void setSelectedItem(Object anItem) {
+        selected = (QReport) anItem;
+    }
+
+    @Override
+    public Object getSelectedItem() {
+        return selected;
+    }
+    // задания, доступны по их ссылкам
+    private final static HashMap<String, IGenerator> generators = new HashMap<String, IGenerator>();
+
+    private static void addGenerator(IGenerator generator) {
+        generators.put(generator.getHref().toLowerCase(), generator);
+    }
+    private String htmlRepList;
+
+    public String getHtmlRepList() {
+        return htmlRepList;
+    }
+    private String htmlUsersList;
+
+    public String getHtmlUsersList() {
+        return htmlUsersList;
+    }
     /**
-     * Это не отчет. это генератор списка отчетов, который проверяет пароль и пользователя и формирует
-     * coocies для браузера, чтоб далее браузер подставлял жти куки в запрос и тем самым сервак "узнавал пользователя".
-     * Сдесь нужен только метод preparation(), т.к. никакой генерации нет.
+     * Список паролей пользователей
+     * имя -> пароль
      */
-    private final static IGenerator getReportsList = new ReportsList("reportList", "");
-    /**
-     * Отчет по текущему состоянию в разрее услуг
-     */
-    private final static IGenerator getReportCurrentServices = new ReportCurrentServices(Uses.REPORT_CURRENT_SERVICES.toLowerCase(), "/ru/apertum/qsystem/reports/templates/currentStateServices.jasper");
-    /**
-     * Отчет по текущему состоянию в разрезе пользователей
-     */
-    private final static IGenerator getRepCurrentUsers = new RepCurrentUsers(Uses.REPORT_CURRENT_USERS.toLowerCase(), "/ru/apertum/qsystem/reports/templates/currentStateUsers.jasper");
+    private HashMap<String, String> passMap;
+
+    public boolean isTrueUser(String userName, String pwd) {
+        return pwd.equals(passMap.get(userName));
+    }
 
     /**
      * Генерация отчета по его имени.
      * @param request запрос пришедший от клиента
      * @return Отчет в виде массива байт.
      */
-    public static synchronized Response generate(HttpRequest request) {
+    public synchronized Response generate(HttpRequest request) {
         final long start = System.currentTimeMillis();
         String url = NetUtil.getUrl(request);
         final String nameReport = url.lastIndexOf(".") == -1 ? url.substring(1) : url.substring(1, url.lastIndexOf("."));
@@ -97,19 +178,19 @@ public class ReportGenerator {
                 // если не нашлось в куках
                 return getLoginPage();
             }
-            if (!pass.equals(WebServer.passMap.get(usr))) {
+            if (!isTrueUser(usr, pass)) {
                 // если не совпали пароли
                 return getLoginPage();
             }
         }
         System.out.println("Report build: '" + nameReport + "'\n");
-        Uses.logRep.logger.info("Генерация отчета: '" + nameReport + "'");
+        QLog.l().logRep().info("Генерация отчета: '" + nameReport + "'");
         /*
-         * Вот сама генерация отчета. 
+         * Вот сама генерация отчета.
          */
         final Response result = generator.process(request);
 
-        Uses.logRep.logger.info("Генерация завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
+        QLog.l().logRep().info("Генерация завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
         return result;
     }
 
@@ -117,10 +198,10 @@ public class ReportGenerator {
      * Загрузим страничку ввода пароля и пользователя
      * @return страница в виде массива байт.
      */
-    private static Response getLoginPage() {
+    private Response getLoginPage() {
         byte[] result = null;
         // Выдаем ресурс  "/ru/apertum/qsystem/reports/web/"
-        final InputStream inStream = new ReportGenerator().getClass().getResourceAsStream("/ru/apertum/qsystem/reports/web/login.html");
+        final InputStream inStream = getClass().getResourceAsStream("/ru/apertum/qsystem/reports/web/login.html");
         if (inStream != null) {
             try {
                 result = Uses.readInputStream(inStream);
@@ -133,22 +214,22 @@ public class ReportGenerator {
         }
         Response res = null;
         try {
-            res = new Response(new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, WebServer.usrList).getBytes("UTF-8")); //"Cp1251"
+            res = new Response(new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, getHtmlUsersList()).getBytes("UTF-8")); //"Cp1251"
         } catch (UnsupportedEncodingException ex) {
         }
         return res;
     }
 
-    private static boolean checkLogin(HttpRequest request) {
+    private boolean checkLogin(HttpRequest request) {
         boolean res = false;
         // в запросе должен быть пароль и пользователь, если нету, то отказ на вход
         String entityContent = NetUtil.getEntityContent(request);
-        Uses.log.logger.trace("Принятые параметры \"" + entityContent + "\".");
+        QLog.l().logger().trace("Принятые параметры \"" + entityContent + "\".");
         // ресурс для выдачи в браузер. это либо список отчетов при корректном логининге или отказ на вход
         // разбирем параметры
         final HashMap<String, String> cookie = NetUtil.getCookie(entityContent, "&");
         if (cookie.containsKey("username") && cookie.containsKey("password")) {
-            if (cookie.get("password").equals(WebServer.passMap.get(cookie.get("username")))) {
+            if (isTrueUser(cookie.get("username"), cookie.get("password"))) {
                 res = true;
             }
         }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,14 +22,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.hibernate.Session;
-import org.springframework.orm.hibernate3.HibernateCallback;
 import ru.apertum.qsystem.common.Uses;
-import ru.apertum.qsystem.common.model.IProperty;
 
 /**
  * Это класс для загрузки набора сервисов обслуживаемых юзером.
@@ -41,85 +37,27 @@ import ru.apertum.qsystem.common.model.IProperty;
  */
 @Entity
 @Table(name = "services_users")
-public class QPlanService implements IProperty, Serializable {
+public class QPlanService implements Serializable {
 
     public QPlanService() {
+    }
+
+    public QPlanService(QService service, QUser user, Integer coefficient) {
+        this.coefficient = coefficient;
+        this.service = service;
+        this.user = user;
     }
     //@Id
     private Long id;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Override
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-    /**
-     * Соответствие услуги.
-     */
-    protected Long serviceId;
-
-    @Column(name = "service_id")
-    public Long getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(Long serviceId) {
-        this.serviceId = serviceId;
-    }
-    /**
-     * Соответствие пользователя.
-     */
-    protected Long userId;
-
-    @Column(name = "user_id")
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-    /*
-    private QUser user;
-    
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch=FetchType.EAGER)// cascade = CascadeType.ALL - убрал из-зи ошибки при сохранении org.hibernate.NonUniqueObjectException: a different object with the same identifier value was already associated with the session: [ru.apertum.qsystem.server.model.QService#2]
-    @JoinTable(name = "services_users",
-    joinColumns = @JoinColumn(name = "id"),
-    inverseJoinColumns = @JoinColumn(name = "user_id"))
-    public QUser getUser() {
-    return user;
-    }
-    
-    public void setUser(QUser user) {
-    setUserId(user.getId());
-    this.user = user;
-    }
-     */
-    private QUser user;
-
-    @Transient
-    public QUser getUser() {
-        if (user == null) {
-            return (QUser) Uses.getSessionFactory().execute(new HibernateCallback() {
-
-                @Override
-                public Object doInHibernate(Session session) {
-                    return session.get(QUser.class, getUserId());
-                }
-            });
-        } else {
-            return user;
-        }
-    }
-
-    public void setUser(QUser user) {
-        this.userId = user.getId();
-        this.user = user;
     }
     /**
      * Коэфф. степени участия. По умолчанию основной.
@@ -140,71 +78,114 @@ public class QPlanService implements IProperty, Serializable {
             this.coefficient = 1;
         }
     }
-    private QService service;
-    /*
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch=FetchType.EAGER)// cascade = CascadeType.ALL - убрал из-зи ошибки при сохранении org.hibernate.NonUniqueObjectException: a different object with the same identifier value was already associated with the session: [ru.apertum.qsystem.server.model.QService#2]
-    @JoinTable(name = "services_users",
-    joinColumns = @JoinColumn(name = "id"),
-    inverseJoinColumns = @JoinColumn(name = "service_id"))
+    /**
+     * Соответствие услуги.
      */
+    private QService service;
 
-    @Transient
+    @OneToOne(targetEntity = QService.class)
     public QService getService() {
-        if (service == null) {
-            final QService srv = (QService) Uses.getSessionFactory().execute(new HibernateCallback() {
-
-                @Override
-                public Object doInHibernate(Session session) {
-                    return session.get(QService.class, getServiceId());
-                }
-            });
-            service = srv;
-            return srv;
-        } else {
-            return service;
-        }
+        return service;
     }
 
     public void setService(QService service) {
-        setServiceId(service.getId());
         this.service = service;
     }
-    //************************************************************************************
-    //************************************************************************************
-    //*********************** Реализация интерфейса **************************************
-    @Transient
-    @Override
-    public String getName() {
-        return getService().getName();
-    }
-
-    @Transient
-    @Override
-    public Object getValue() {
-        return getCoefficient();
-    }
-
-    @Transient
-    @Override
     /**
-     * @deprecated 
+     * Соответствие пользователя.
      */
-    public Element getXML() {
-        //<Услуга Наименование="Секретарь" КоэффициентУчастия="100"/>
-        final Element onePlan = DocumentHelper.createElement(Uses.TAG_SERVICE);
-        onePlan.addAttribute(Uses.TAG_NAME, getService().getName());
-        onePlan.addAttribute(Uses.TAG_PROP_KOEF, String.valueOf(getCoefficient()));
-        return onePlan;
+    private QUser user;
+
+    @OneToOne(targetEntity = QUser.class)
+    public QUser getUser() {
+        return user;
     }
 
-    @Transient
-    @Override
-    public Object getInstance() {
-        return this;
+    public void setUser(QUser user) {
+        this.user = user;
     }
 
     @Override
     public String toString() {
-        return getName() + " [" + Uses.COEFF_WORD.get(getCoefficient()) + "]";
+        return service.getName() + " [" + Uses.COEFF_WORD.get(getCoefficient()) + "]";
+    }
+    //******************************************************************************************************************
+    //*******            Статистика             *******************************************
+    //******************************************************************************************************************
+    private int worked = 0;
+    private long avg_work = 0;// в минутах
+    private int killed = 0;
+    private long avg_wait = 0;// в минутах
+
+    /**
+     * В минутах
+     * @return среднее время ожидания кастомером
+     */
+    @Transient
+    public long getAvg_wait() {
+        return avg_wait;
+    }
+    private int waiters = 0;
+
+    public void setAvg_wait(long avg_wait) {
+        if (avg_wait == 0) {
+            waiters = 0;
+        }
+        this.avg_wait = avg_wait;
+    }
+
+    /**
+     * В минутах
+     * @return среднее время работы с кастомерами
+     */
+    @Transient
+    public long getAvg_work() {
+        return avg_work;
+    }
+
+    public void setAvg_work(long avg_work) {
+        this.avg_work = avg_work;
+    }
+
+    @Transient
+    public int getKilled() {
+        return killed;
+    }
+
+    public void setKilled(int killed) {
+        this.killed = killed;
+    }
+
+    @Transient
+    public int getWorked() {
+        return worked;
+    }
+
+    public void setWorked(int worked) {
+        this.worked = worked;
+    }
+
+    public synchronized void inkKilled() {
+        this.killed++;
+    }
+
+    /**
+     *
+     * @param work_time время работы с кастомером, с которым работали. в милисекундах
+     */
+    public synchronized void inkWorked(long work_time) {
+        this.worked++;
+        avg_work = (avg_work * (worked - 1) + work_time / 60000) / worked;
+        avg_work = avg_work == 0 ? 1 : avg_work;
+    }
+
+    /**
+     *
+     * @param wait_time время ожидания кастомером, с которым начали работать. в милисекундах
+     */
+    public synchronized void upWait(long wait_time) {
+        waiters++;
+        avg_wait = (avg_wait * (waiters -1) + wait_time / 60000 ) / waiters;
+        avg_wait = avg_wait == 0 ? 1 : avg_wait;
     }
 }

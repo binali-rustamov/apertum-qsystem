@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.server.controller;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -28,7 +30,9 @@ import org.dom4j.io.SAXReader;
 import ru.apertum.qsystem.client.forms.AFBoardRedactor;
 import ru.apertum.qsystem.client.forms.FBoardConfig;
 import ru.apertum.qsystem.client.forms.FIndicatorBoard;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.CustomerState;
+import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.SoundPlayer;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
@@ -71,7 +75,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
         if (indicatorBoard == null) {
             indicatorBoard = FIndicatorBoard.getIndicatorBoard(getConfig());
             if (indicatorBoard == null) {
-                Uses.log.logger.warn("Табло не демонстрируется. Отключено в настройках.");
+                QLog.l().logger().warn("Табло не демонстрируется. Отключено в настройках.");
                 return;
             }
             setLinesCount(indicatorBoard.getLinesCount());
@@ -91,17 +95,17 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
     }
 
     public QIndicatorBoardMonitor() {
-        Uses.log.logger.info("Создание табло для телевизоров или мониторов.");
+        QLog.l().logger().info("Создание табло для телевизоров или мониторов.");
     }
 
     @Override
     protected void showOnBoard(LinkedHashSet<Record> records) {
         int i = 0;
         for (Record rec : records) {
-            FIndicatorBoard.printRecord(i++, rec.customerNumber + Uses.getNumeration().getDelimiter() + rec.point, rec.getState() == Uses.STATE_INVITED ? 0 : -1);
+            FIndicatorBoard.printRecord(i++, rec.customerNumber, rec.point, rec.getState() == CustomerState.STATE_INVITED ? 0 : -1);
         }
         for (int t = i; t < getLinesCount(); t++) {
-            FIndicatorBoard.printRecord(t, "-", -1);
+            FIndicatorBoard.printRecord(t, "", "", -1);
         }
         markShowed(records);
     }
@@ -123,16 +127,15 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             try {
                 return new SAXReader(false).read(boardFile).getRootElement();
             } catch (DocumentException ex) {
-                Uses.log.logger.error("Невозможно прочитать файл конфигурации главного табло. " + ex.getMessage());
+                QLog.l().logger().error("Невозможно прочитать файл конфигурации главного табло. " + ex.getMessage());
                 return DocumentHelper.createElement("Ответ");
             }
         } else {
-            Uses.log.logger.warn("Файл конфигурации главного табло \"" + configFile + "\" не найден. ");
+            QLog.l().logger().warn("Файл конфигурации главного табло \"" + configFile + "\" не найден. ");
             return DocumentHelper.createElement("Ответ");
         }
     }
 
-    
     @Override
     public void saveConfig(Element element) {
         // в темповый файл
@@ -165,6 +168,21 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
 
     @Override
     public void showBoard() {
+        // Для прерывания звука в роликах при звуковом оповещении.
+        SoundPlayer.setStartListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setMute(true);
+            }
+        });
+        SoundPlayer.setFinishListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setMute(false);
+            }
+        });
         initIndicatorBoard();
     }
 
@@ -177,8 +195,14 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
         if (indicatorBoard != null) {
             indicatorBoard.closeVideo();
             indicatorBoard.setVisible(false);
-            //indicatorBoard.dispose();
             indicatorBoard = null;
         }
+    }
+
+    @Override
+    public void refresh() {
+        close();
+        indicatorBoard = null;
+        initIndicatorBoard();
     }
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,9 +31,7 @@ import javax.persistence.Transient;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.server.model.ITreeIdGetter;
 
 /**
  *
@@ -41,7 +39,7 @@ import ru.apertum.qsystem.common.Uses;
  */
 @Entity
 @Table(name = "information")
-public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode, Serializable {
+public class QInfoItem extends DefaultMutableTreeNode implements ITreeIdGetter, Serializable {
 
     @Id
     @Column(name = "id")
@@ -50,6 +48,7 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
     //@GeneratedValue(strategy = GenerationType.AUTO) авто нельзя, т.к. id нужны для формирования дерева
     private Long id = new Date().getTime();
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -63,6 +62,7 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
     @Column(name = "parent_id")
     private Long parentId;
 
+    @Override
     public Long getParentId() {
         return parentId;
     }
@@ -78,6 +78,7 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
     @Column(name = "name")
     private String name;
 
+    @Override
     public String getName() {
         return name;
     }
@@ -120,18 +121,6 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
 
     public void setTextPrint(String textPrint) {
         this.textPrint = textPrint;
-    }
-    //*******************************************************************************************************************
-    //*******************************************************************************************************************
-    //********************** Реализация сервисных методов ***************************************************************
-
-    @Deprecated
-    public Element getXML() {
-        final Element item = DocumentHelper.createElement(Uses.TAG_INFO_ITEM);
-        item.addAttribute(Uses.TAG_ID, String.valueOf(getId()));
-        item.addAttribute(Uses.TAG_NAME, getName());
-        item.addCDATA(getHTMLText());
-        return item;
     }
     //*******************************************************************************************************************
     //*******************************************************************************************************************
@@ -219,5 +208,10 @@ public class QInfoItem extends DefaultMutableTreeNode implements MutableTreeNode
     @Override
     public int getIndex(TreeNode node) {
         return childrenOfService.indexOf(node);
+    }
+
+    @Override
+    public void addChild(ITreeIdGetter child) {
+        childrenOfService.add((QInfoItem) child);
     }
 }

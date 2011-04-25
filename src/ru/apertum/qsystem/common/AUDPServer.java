@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ abstract public class AUDPServer implements Runnable {
 
         byte[] buffer = new byte[1024];
 
-        Uses.log.logger.trace("Старт UDP сервера на порту \"" + port + "\"");
+        QLog.l().logger().trace("Старт UDP сервера на порту \"" + port + "\"");
         try {
             socket = new DatagramSocket(port);
         } catch (SocketException ex) {
@@ -74,7 +74,7 @@ abstract public class AUDPServer implements Runnable {
             if (client != null) {// это когда закрывает прогу .. грязный хак
                 int client_port = packet.getPort();
                 final String message = new String(buffer, packet.getOffset(), packet.getLength());
-                Uses.log.logger.trace("Приём UDP сообшение \"" + message + "\" ОТ адреса \"" + client.getHostName() + "\" с порта \"" + port + "\"");
+                QLog.l().logger().trace("Приём UDP сообшение \"" + message + "\" ОТ адреса \"" + client.getHostName() + "\" с порта \"" + port + "\"");
                 getData(message, client, client_port);
             }
         }
@@ -96,6 +96,6 @@ abstract public class AUDPServer implements Runnable {
     public void stop() {
         thread.interrupt();
         socket.close();
-        Uses.log.logger.trace("Остановка UDP сервера на порту \"" + port + "\"");
+        QLog.l().logger().trace("Остановка UDP сервера на порту \"" + port + "\"");
     }
 }

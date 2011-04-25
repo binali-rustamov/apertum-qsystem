@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,10 +20,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.model.ATalkingClock;
-import ru.apertum.qsystem.common.model.ICustomer;
-import ru.apertum.qsystem.server.model.IUserProperty;
+import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QUser;
 
 /**
@@ -149,13 +148,13 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
         /**
          * значения состояния "очередника"
          */
-        private int state = Uses.STATE_INVITED;
+        private CustomerState state = CustomerState.STATE_INVITED;
 
-        public int getState() {
+        public CustomerState getState() {
             return state;
         }
 
-        private void setState(int state) {
+        private void setState(CustomerState state) {
             this.state = state;
         }
 
@@ -185,7 +184,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
             };
         }
 
-        public Record(int state, String point, String customerNumber, Integer adressRS) {
+        public Record(CustomerState state, String point, String customerNumber, Integer adressRS) {
             this.customerNumber = customerNumber;
             this.point = point;
             this.state = state;
@@ -217,7 +216,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
     //************************** Методы взаимодействия *************************
 
     @Override
-    public synchronized void inviteCustomer(IUserProperty user, ICustomer customer) {
+    public synchronized void inviteCustomer(QUser user, QCustomer customer) {
         Record rec = records.get(user.getName());
         if (rec == null) {
             rec = new Record(user.getName(), user.getPoint(), customer.getPrefix() + customer.getNumber(), user.getAdressRS(), getPause());
@@ -233,14 +232,14 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
      */
     @Override
     @SuppressWarnings("empty-statement")
-    public synchronized void workCustomer(IUserProperty user) {
+    public synchronized void workCustomer(QUser user) {
         Record rec = records.get(user.getName());
         //запись может быть не найдена после рестарта сервера, список номеров на табло не бакапится
         if (rec == null) {
             rec = new Record(user.getName(), user.getPoint(), ((QUser) user).getCustomer().getPrefix() + ((QUser) user).getCustomer().getNumber(), user.getAdressRS(), getPause());
             ;
         }
-        rec.setState(Uses.STATE_WORK);
+        rec.setState(CustomerState.STATE_WORK);
         show(rec);
     }
 
@@ -249,11 +248,11 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
      * @param user пользователь, который удалил клиента.
      */
     @Override
-    public synchronized void killCustomer(IUserProperty user) {
+    public synchronized void killCustomer(QUser user) {
         final Record rec = records.get(user.getName());
         //запись может быть не найдена после рестарта сервера, список номеров на табло не бакапится
         if (rec != null) {
-            rec.setState(Uses.STATE_DEAD);
+            rec.setState(CustomerState.STATE_DEAD);
             removeItem(rec);
             show(rec);
         }

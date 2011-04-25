@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ import javax.swing.border.CompoundBorder;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.server.model.response.QRespItem;
 
@@ -74,7 +74,7 @@ public class FResponseDialog extends javax.swing.JDialog {
      */
     public static Long showResponseDialog(Frame parent, LinkedList<QRespItem> respList, boolean modal, boolean fullscreen, int delay) {
         FResponseDialog.delay = delay;
-        Uses.log.logger.info("Выбор отзыва");
+        QLog.l().logger().info("Выбор отзыва");
         if (respDialog == null) {
             respDialog = new FResponseDialog(parent, modal);
             respDialog.panelMain.setLayout(new GridLayout(respList.size(), 1));
@@ -86,7 +86,7 @@ public class FResponseDialog extends javax.swing.JDialog {
         }
         result = null;
         Uses.setLocation(respDialog);
-        if (!(Uses.isDebug || Uses.isDemo && !fullscreen)) {
+        if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {
             //Uses.setFullSize(standAdvance);
             int[] pixels = new int[16 * 16];
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import org.hibernate.MappingException;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
@@ -69,7 +69,7 @@ public class AnnotationSessionFactoryBean extends LocalSessionFactoryBean {
         }
 
         if (annotatedClasses_ == null) {
-            Uses.log.logger.info("Нет аннотированных классов для регистрации Hibernate.");
+            QLog.l().logger().info("Нет аннотированных классов для регистрации Hibernate.");
             return;
         }
 
@@ -77,7 +77,7 @@ public class AnnotationSessionFactoryBean extends LocalSessionFactoryBean {
             try {
                 Class clazz = config.getClass().getClassLoader().loadClass(className);
                 ((AnnotationConfiguration) config).addAnnotatedClass(clazz);
-                Uses.log.logger.debug("Класс \"" + className + "\" добавлен в конфигурацию Hibernate.");
+                QLog.l().logger().debug("Класс \"" + className + "\" добавлен в конфигурацию Hibernate.");
             } catch (MappingException e) {
                 throw new ServerException("Класс \"" + className + "\" не замаплен. " + e.toString());
             } catch (ClassNotFoundException e) {

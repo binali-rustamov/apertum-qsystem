@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  */
 package ru.apertum.qsystem.common.exceptions;
 
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 
 /**
  * Этот класс исключения использовать для програмной генерации исклюсений.
@@ -29,16 +29,16 @@ public class ServerException extends RuntimeException {
 
     public ServerException(String textException) {
         super(textException);
-        Uses.log.logger.error("Error! " + textException, this);
+        QLog.l().logger().error("Error! " + textException, this);
     }
 
     public ServerException(Exception ex) {
         super(ex);
-        Uses.log.logger.error("Error! " + ex.toString(), this);
+        QLog.l().logger().error("Error! " + ex.toString(), this);
     }
 
     public ServerException(String textException, Exception ex) {
         super(textException, ex);
-        Uses.log.logger.error("Error! " + textException + "\n" + ex.toString(), this);
+        QLog.l().logger().error("Error! " + textException + "\n" + ex.toString(), this);
     }
 }

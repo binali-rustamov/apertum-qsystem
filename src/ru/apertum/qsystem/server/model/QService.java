@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,11 +35,10 @@ import javax.persistence.Transient;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.server.ServerProps;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
@@ -58,15 +57,7 @@ import ru.apertum.qsystem.server.model.schedule.QSchedule;
  */
 @Entity
 @Table(name = "services")
-/*
-@javax.persistence.TableGenerator(
-name="EMP_GEN",
-table="services",
-pkColumnName = "id",
-allocationSize=50
-)
- */
-public class QService extends DefaultMutableTreeNode implements IServiceProperty, MutableTreeNode, Serializable {
+public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, Serializable {
 
     /**
      * множество кастомеров, вставших в очередь к этой услуге
@@ -89,7 +80,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     public LinkedList<QCustomer> getClients() {
         return clients;
     }
-
     @Id
     @Column(name = "id")
     //@GeneratedValue(strategy = GenerationType.AUTO) авто нельзя, т.к. id нужны для формирования дерева
@@ -110,7 +100,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     @SerializedName("status")
     private Integer status;
 
-    @Override
     public Integer getStatus() {
         return status;
     }
@@ -123,7 +112,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     @SerializedName("advance_limit")
     private Integer advanceLimit = 1;
 
-    @Override
     public Integer getAdvanceLimit() {
         return advanceLimit;
     }
@@ -131,7 +119,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     public void setAdvanceLinit(Integer advanceLimit) {
         this.advanceLimit = advanceLimit;
     }
-
     /**
      * Это ограничение в днях, в пределах которого можно записаться вперед при предварительной записи
      * может быть null или 0 если нет ограничения
@@ -148,8 +135,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     public void setAdvanceLimitPeriod(Integer advanceLimitPeriod) {
         this.advanceLimitPeriod = advanceLimitPeriod;
     }
-
-
     /**
      * Удаленный или нет.
      * Нельзя их из базы гасить чтоб констрейнты не поехали.
@@ -255,7 +240,7 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
      * да и нужно это только в качестве данных.
      */
     @Transient
-    private int lastNumber = Uses.spring.factory == null ? 0 : Uses.getNumeration().getFirstNumber() - 1;
+    private int lastNumber = Integer.MIN_VALUE;
     /**
      * последний номер, выданный последнему кастомеру при номерировании клиентов общем рядом для всех услуг.
      * Ограничение самого минимально возможного номера клиента при сквозном нумерировании
@@ -265,6 +250,7 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     private static int lastStNumber = 0;
 
     public QService() {
+        super();
     }
 
     @Override
@@ -273,44 +259,33 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     }
 
     /**
-     * Конструктор услуги, к которой строится очередь.
-     * @param service параметры по которым создатся услуга.
-     */
-    public QService(IServiceProperty service) {
-        this.setName(service.getName());
-        this.setDescription(service.getDescription());
-        this.setPrefix(service.getPrefix());
-        this.setButtonText(service.getButtonText());
-        this.setId(service.getId());
-        this.setStatus(service.getStatus());
-        Uses.log.logger.trace("Очередь: \"" + service.getPrefix() + "\" \" " + service.getName() + "\" \" " + service.getDescription() + "\"");
-    }
-
-    /**
      * Получить номер для сделующего кастомера. Произойдет инкремент счетчика номеров.
      * @return
      */
     synchronized public int getNextNumber() {
-        if (lastNumber >= Uses.getNumeration().getLastNumber()) {
+        if (lastNumber == Integer.MIN_VALUE) {
+            lastNumber = ServerProps.getInstance().getProps().getFirstNumber() - 1;
+        }
+        if (lastNumber >= ServerProps.getInstance().getProps().getLastNumber()) {
             clearNextNumber();
         }
-        if (lastStNumber >= Uses.getNumeration().getLastNumber()) {
+        if (lastStNumber >= ServerProps.getInstance().getProps().getLastNumber()) {
             clearNextStNumber();
         }
         // 0 - общая нумерация, 1 - для каждой услуги своя нумерация 
-        if (Uses.getNumeration().getNumering() == 0) {
-            return ++lastStNumber;
-        } else {
+        if (ServerProps.getInstance().getProps().getNumering()) {
             return ++lastNumber;
+        } else {
+            return ++lastStNumber;
         }
     }
 
     public void clearNextNumber() {
-        lastNumber = Uses.getNumeration().getFirstNumber() - 1;
+        lastNumber = ServerProps.getInstance().getProps().getFirstNumber() - 1;
     }
 
     public static void clearNextStNumber() {
-        lastStNumber = Uses.getNumeration().getFirstNumber() - 1;
+        lastStNumber = ServerProps.getInstance().getProps().getFirstNumber() - 1;
     }
 
     /**
@@ -328,7 +303,7 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
             customer.setPrefix(getPrefix());
         } else {
             // тут бы не нужно проверять последний выданный если это происходит с редиректенныйм
-            if (Uses.STATE_REDIRECT != customer.getState()) {
+            if (CustomerState.STATE_REDIRECT != customer.getState()) {
                 if (number > lastNumber) {
                     lastNumber = number;
                 }
@@ -337,8 +312,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
                 }
             }
         }
-        customer.setServiceName(getName());
-        customer.setServiceDescription(getDescription());
     }
 
     // ***************************************************************************************
@@ -434,18 +407,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     public int getCountCustomers() {
         return getCustomers().size();
     }
-
-    /**
-     * Сохранение всех кастомеров из очереди.
-     * Все кастомеры в xml-виде помещаются в узел root.
-     * @param root узел к которому помещаются xml-описания кастомеров в виде дочерних элементов
-     * @deprecated 
-     */
-    public void saveService(Element root) {
-        for (QCustomer customer : getCustomers()) {
-            root.add((Element) customer.toXML().clone());
-        }
-    }
     /**
      * Описание услуги.
      */
@@ -458,7 +419,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
         this.description = description;
     }
 
-    @Override
     public String getDescription() {
         return description;
     }
@@ -474,7 +434,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
         this.prefix = prefix == null ? "" : prefix;
     }
 
-    @Override
     public String getPrefix() {
         return prefix == null ? "" : prefix;
     }
@@ -502,7 +461,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     @Column(name = "button_text")
     private String buttonText;
 
-    @Override
     public String getButtonText() {
         return buttonText;
     }
@@ -546,46 +504,6 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
     public void setCalendar(QCalendar calendar) {
         this.calendar = calendar;
     }
-
-    /**
-     * Всегда возвращает 100. при привязке к юзеру этот коэфициент пока не учитывается.
-     * @return
-     */
-    @Override
-    public Object getValue() {
-        return new Integer(100);
-    }
-
-    @Deprecated
-    @Override
-    public Element getXML() {
-
-        String tagName;
-        if (isRoot()) {
-            tagName = Uses.TAG_PROP_SERVICES;
-        } else {
-            if (isLeaf()) {
-                tagName = Uses.TAG_PROP_SERVICE;
-            } else {
-                tagName = Uses.TAG_GROUP;
-            }
-        }
-        final Element service = DocumentHelper.createElement(tagName);
-        service.addAttribute(Uses.TAG_NAME, getName());
-        service.addAttribute(Uses.TAG_DESCRIPTION, getDescription());
-        service.addAttribute(Uses.TAG_PREFIX, getPrefix());
-        service.addAttribute(Uses.TAG_PROP_STATUS, String.valueOf(getStatus()));
-        service.addAttribute(Uses.TAG_PROP_INPUT_REQUIRED, getInput_required() ? "1" : "0");
-        service.addAttribute(Uses.TAG_PROP_RESULT_REQUIRED, getResult_required() ? "1" : "0");
-        service.addAttribute(Uses.TAG_PROP_INPUT_CAPTION, getInput_caption());
-        service.addCDATA(getButtonText());
-        return service;
-    }
-
-    @Override
-    public Object getInstance() {
-        return this;
-    }
     //*******************************************************************************************************************
     //*******************************************************************************************************************
     //********************** Реализация методов узла в дереве *********************************************************** 
@@ -602,6 +520,11 @@ public class QService extends DefaultMutableTreeNode implements IServiceProperty
 
     public LinkedList<QService> getChildren() {
         return childrenOfService;
+    }
+
+    @Override
+    public void addChild(ITreeIdGetter child) {
+        childrenOfService.add((QService) child);
     }
 
     @Override

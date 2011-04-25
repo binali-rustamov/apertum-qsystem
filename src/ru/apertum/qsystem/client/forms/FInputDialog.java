@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import java.awt.image.MemoryImageSource;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
 
@@ -75,7 +75,7 @@ public class FInputDialog extends javax.swing.JDialog {
      */
     public static String showInputDialog(Frame parent, boolean modal, INetProperty netProperty, boolean fullscreen, int delay, String caption) {
         FInputDialog.delay = delay;
-        Uses.log.logger.info("Ввод клиентской информации");
+        QLog.l().logger().info("Ввод клиентской информации");
         if (inputDialog == null) {
             inputDialog = new FInputDialog(parent, modal);
             inputDialog.setTitle("Ввод клиентской информации");
@@ -86,7 +86,7 @@ public class FInputDialog extends javax.swing.JDialog {
         FInputDialog.serviceName = serviceName;
         FInputDialog.siteMark = siteMark;
         inputDialog.jLabel2.setText(caption);
-        if (!(Uses.isDebug || Uses.isDemo && !fullscreen)) {
+        if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {
             //Uses.setFullSize(standAdvance);
             int[] pixels = new int[16 * 16];
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));

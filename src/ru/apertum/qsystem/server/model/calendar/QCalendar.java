@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.server.model.IidGetter;
 
 /**
  * Класс календаря для расписания.
@@ -30,7 +31,7 @@ import ru.apertum.qsystem.common.exceptions.ServerException;
  */
 @Entity
 @Table(name = "calendar")
-public class QCalendar implements Serializable {
+public class QCalendar implements IidGetter, Serializable {
 
     public QCalendar() {
     }
@@ -39,6 +40,7 @@ public class QCalendar implements Serializable {
     //@GeneratedValue(strategy = GenerationType.AUTO)
     private Long id = new Date().getTime();
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -52,6 +54,7 @@ public class QCalendar implements Serializable {
     @Column(name = "name")
     private String name;
 
+    @Override
     public String getName() {
         return name;
     }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,18 +16,11 @@
  */
 package ru.apertum.qsystem.server.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import org.springframework.transaction.TransactionStatus;
 import ru.apertum.qsystem.common.SoundPlayer;
-import java.io.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import org.dom4j.DocumentException;
@@ -35,14 +28,13 @@ import ru.apertum.qsystem.common.model.QCustomer;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.dom4j.DocumentHelper;
-import org.hibernate.Session;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import ru.apertum.qsystem.common.GsonPool;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.cmd.CmdParams;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.cmd.JsonRPC20Error;
@@ -64,14 +56,10 @@ import ru.apertum.qsystem.common.cmd.RpcGetUsersList;
 import ru.apertum.qsystem.common.cmd.RpcInviteCustomer;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.exceptions.ServerException;
-import ru.apertum.qsystem.common.model.ATalkingClock;
-import ru.apertum.qsystem.reports.model.CurrentStatistic;
-import ru.apertum.qsystem.reports.model.WebServer;
-import ru.apertum.qsystem.server.model.AServerPropertyBuilder;
-import ru.apertum.qsystem.server.model.IPoolSaver;
-import ru.apertum.qsystem.server.model.ISailListener;
-import ru.apertum.qsystem.server.model.IServerGetter;
-import ru.apertum.qsystem.server.model.NetProperty;
+import ru.apertum.qsystem.server.MainBoard;
+import ru.apertum.qsystem.server.QServer;
+import ru.apertum.qsystem.server.ServerProps;
+import ru.apertum.qsystem.server.Spring;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.apertum.qsystem.server.model.QPlanService;
@@ -81,7 +69,6 @@ import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.QUserList;
 import ru.apertum.qsystem.server.model.calendar.CalendarTableModel;
 import ru.apertum.qsystem.server.model.calendar.FreeDay;
-import ru.apertum.qsystem.server.model.calendar.QCalendarList;
 import ru.apertum.qsystem.server.model.infosystem.QInfoTree;
 import ru.apertum.qsystem.server.model.postponed.QPostponedList;
 import ru.apertum.qsystem.server.model.response.QRespEvent;
@@ -89,7 +76,6 @@ import ru.apertum.qsystem.server.model.response.QResponseList;
 import ru.apertum.qsystem.server.model.results.QResult;
 import ru.apertum.qsystem.server.model.results.QResultList;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
-import ru.apertum.qsystem.server.model.schedule.QScheduleList;
 
 /**
  * Пул очередей.
@@ -101,99 +87,24 @@ import ru.apertum.qsystem.server.model.schedule.QScheduleList;
  * Работает как singleton.
  * @author Evgeniy Egorov
  */
-public final class QServicesPool {
+public final class Executer {
 
-    /**
-     * Дерево услуг.
-     */
-    private QServiceTree serviceTree;
-
-    public QServiceTree getServices() {
-        return serviceTree;
-    }
-    /**
-     * Дерево информационной системы
-     */
-    private QInfoTree infoTree;
-
-    public QInfoTree getInfoTree() {
-        return infoTree;
-    }
-    /**
-     * Список юзеров.
-     */
-    private QUserList userList;
-    /**
-     * Список удаленных объектов
-     */
-    private final ArrayList<Object> killed = new ArrayList<Object>();
-
-    public void addKilled(Object dead) {
-        killed.add(dead);
+    public static Executer getInstance() {
+        return ExecuterHolder.INSTANCE;
     }
 
-    public ArrayList getKilled() {
-        return killed;
+    private static class ExecuterHolder {
+
+        private static final Executer INSTANCE = new Executer();
     }
 
-    public QUserList getUserList() {
-        return userList;
-    }
     /**
-     * Список ответов для обратной связи
+     * Конструктор пула очередей
+     * Также нужно оперделить способ вывода информации для клиентов на табло.
+     * @param property свойства и настройки по которым строим пул
+     * @param ignoreWork создавать или нет статистику и табло.
      */
-    private QResponseList responseList;
-
-    public QResponseList getResponseList() {
-        return responseList;
-    }
-    /**
-     * Список результатов для выбора пользователем после работы с клиентом
-     */
-    private QResultList resultsList;
-
-    public QResultList getResultsList() {
-        return resultsList;
-    }
-    /**
-     * Список ответов для списка планов
-     */
-    private QScheduleList scheduleList;
-
-    public QScheduleList getScheduleList() {
-        return scheduleList;
-    }
-    /**
-     * Список календарец работы услуг
-     */
-    private QCalendarList calendarList;
-
-    public QCalendarList getCalendarList() {
-        return calendarList;
-    }
-    /**
-     * сетевае настройки сервера
-     */
-    private NetProperty netProp;
-
-    public NetProperty getNetPropetry() {
-        return netProp;
-    }
-
-    private void setNetPropetry(NetProperty netProperty) {
-        netProp = netProperty;
-    }
-    /**
-     * Текущая статистика
-     */
-    private final CurrentStatistic statistic;
-    /**
-     * Клиентское табло.
-     */
-    private static IIndicatorBoard indicatorBoard;
-
-    public IIndicatorBoard getIndicatorBoard() {
-        return indicatorBoard;
+    private Executer() {
     }
     //
     //*******************************************************************************************************
@@ -221,7 +132,7 @@ public final class QServicesPool {
         }
 
         public Object process(CmdParams cmdParams, String ipAdress, byte[] IP) {
-            Uses.log.logger.debug("Выполняем : \"" + name + "\"");
+            QLog.l().logger().debug("Выполняем : \"" + name + "\"");
             this.cmdParams = cmdParams;
             return "";
         }
@@ -244,7 +155,7 @@ public final class QServicesPool {
         @Override
         public RpcStandInService process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            final QService service = serviceTree.getByName(cmdParams.serviceName);
+            final QService service = QServiceTree.getInstance().getById(cmdParams.serviceId);
             final QCustomer customer;
             // синхронизируем работу с клиентом
             clientTaskLock.lock();
@@ -258,26 +169,24 @@ public final class QServicesPool {
                 customer.setPriority(cmdParams.priority);
                 // Введенные кастомером данные
                 customer.setInput_data(cmdParams.textData);
-                // Состояние у него "Стою, жду".
-                customer.setState(Uses.STATE_WAIT);
                 //добавим нового пользователя
                 service.addCustomer(customer);
+                // Состояние у него "Стою, жду".
+                customer.setState(CustomerState.STATE_WAIT);
             } catch (Exception ex) {
                 throw new ServerException("Ошибка при постановке клиента в очередь", ex);
             } finally {
                 clientTaskLock.unlock();
             }
-            Uses.log.logger.trace("С приоритетом " + customer.getPriority().get() + " К услуге \"" + cmdParams.serviceName + "\" -> " + service.getPrefix() + '\'' + service.getName() + '\'');
-            // если кастомер добавился, то его обязательно отправить в ответ
+            QLog.l().logger().trace("С приоритетом " + customer.getPriority().get() + " К услуге \"" + cmdParams.serviceId + "\" -> " + service.getPrefix() + '\'' + service.getName() + '\'');
+            // если кастомер добавился, то его обязательно отправить в ответ т.к.
             // он уже есть в системе
             try {
                 // сохраняем состояния очередей.
-                savePool();
-                //Запишим в статистику этот момент
-                statistic.processingSetWaitCustomers(cmdParams.serviceName, service.getCountCustomers());
+                QServer.savePool();
                 //разослать оповещение о том, что появился посетитель
                 //рассылаем широковещетельно по UDP на определенный порт
-                Uses.sendUDPBroadcast(cmdParams.serviceName, netProp.getClientPort());
+                Uses.sendUDPBroadcast(service.getId().toString(), ServerProps.getInstance().getProps().getClientPort());
             } finally {
                 return new RpcStandInService(customer);
             }
@@ -299,20 +208,19 @@ public final class QServicesPool {
             // Определить из какой очереди надо выбрать кастомера.
             // Пока без учета коэфициента.
             // Для этого смотрим первых кастомеров во всех очередях и ищем первого среди первых.
-            final QUser user = userList.getByName(cmdParams.userName); // юзер
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId); // юзер
             final boolean isRecall = user.getCustomer() != null;
 
             // есть ли у юзера вызванный кастомер? Тогда поторный вызов
             if (isRecall) {
-                Uses.log.logger.debug("Повторный вызов кастомера №" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + " пользователем " + cmdParams.userName);
+                QLog.l().logger().debug("Повторный вызов кастомера №" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + " пользователем " + cmdParams.userId);
 
                 // просигналим звуком
-                //SoundPlayer.play("/ru/apertum/qsystem/server/sound/sound.wav");
                 SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint());
 
                 //разослать оповещение о том, что посетитель вызван повторно
                 //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
-                indicatorBoard.inviteCustomer(user, user.getCustomer());
+                MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
 
                 return new RpcInviteCustomer(user.getCustomer());
             }
@@ -323,8 +231,8 @@ public final class QServicesPool {
             // синхронизация работы с клиентом
             clientTaskLock.lock();
             try {
-                for (QPlanService plan : user.getServiceList().getPlanServices()) {
-                    final QService serv = serviceTree.getByName(plan.getName()); // очередная очередь
+                for (QPlanService plan : user.getPlanServices()) {
+                    final QService serv = QServiceTree.getInstance().getById(plan.getService().getId()); // очередная очередь
 
                     final QCustomer cust = serv.peekCustomer(); // первый в этой очереди
                     // если очередь пуста
@@ -332,7 +240,7 @@ public final class QServicesPool {
                         continue;
                     }
                     // учтем приоритетность кастомеров и приоритетность очередей для юзера в которые они стоят
-                    final Integer prior = (Integer) plan.getValue();
+                    final Integer prior = plan.getCoefficient();
                     if (prior > servPriority || (prior == servPriority && customer.compareTo(cust) == 1)) {
                         servPriority = prior;
                         customer = cust;
@@ -344,7 +252,7 @@ public final class QServicesPool {
                 if (customer == null) {
                     return new RpcInviteCustomer(null);
                 }
-                customer = serviceTree.getByName(customer.getServiceName()).polCustomer();
+                customer = QServiceTree.getInstance().getById(customer.getService().getId()).polCustomer();
             } catch (Exception ex) {
                 throw new ServerException("Ошибка при постановке клиента в очередь" + ex);
             } finally {
@@ -360,22 +268,21 @@ public final class QServicesPool {
             // ставим время вызова
             customer.setCallTime(new Date());
             // кастомер переходит в состояние "приглашенности"
-            customer.setState(Uses.STATE_INVITED);
+            customer.setState(customer.getState() == CustomerState.STATE_WAIT ? CustomerState.STATE_INVITED : CustomerState.STATE_INVITED_SECONDARY);
 
             // если кастомер вызвался, то его обязательно отправить в ответ
             // он уже есть у юзера
             try {
                 // просигналим звуком
-                //SoundPlayer.play("/ru/apertum/qsystem/server/sound/sound.wav");
                 SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint());
                 // сохраняем состояния очередей.
-                savePool();
+                QServer.savePool();
                 //разослать оповещение о том, что появился вызванный посетитель
                 // Должно высветитьсяна основном табло
-                indicatorBoard.inviteCustomer(user, user.getCustomer());
+                MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
                 //разослать оповещение о том, что посетителя вызвали, состояние очереди изменилось
                 //рассылаем широковещетельно по UDP на определенный порт
-                Uses.sendUDPBroadcast(customer.getServiceName(), netProp.getClientPort());
+                Uses.sendUDPBroadcast(customer.getService().getId().toString(), ServerProps.getInstance().getProps().getClientPort());
             } finally {
                 return new RpcInviteCustomer(customer);
             }
@@ -397,7 +304,7 @@ public final class QServicesPool {
             // Определить из какой очереди надо выбрать кастомера.
             // Пока без учета коэфициента.
             // Для этого смотрим первых кастомеров во всех очередях и ищем первого среди первых.
-            final QUser user = userList.getByName(cmdParams.userName); // юзер
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId); // юзер
 
             // выберем отложенного кастомера по ид
             final QCustomer customer = QPostponedList.getInstance().getById(cmdParams.customerId);
@@ -412,11 +319,10 @@ public final class QServicesPool {
             customer.setUser(user);
             // ставим время вызова
             customer.setCallTime(new Date());
-            // кастомер переходит в состояние "приглашенности"
-            customer.setState(Uses.STATE_INVITED);
             // ну и услугу определим
-            customer.setService(serviceTree.getByName(((QPlanService)user.getServiceList().firstElement()).getName()));
-
+            customer.setService(QServiceTree.getInstance().getById(user.getPlanServices().get(0).getService().getId()));
+            // кастомер переходит в состояние "приглашенности"
+            customer.setState(CustomerState.STATE_INVITED_SECONDARY);
             // если кастомер вызвался, то его обязательно отправить в ответ
             // он уже есть у юзера
             try {
@@ -424,13 +330,13 @@ public final class QServicesPool {
                 //SoundPlayer.play("/ru/apertum/qsystem/server/sound/sound.wav");
                 SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint());
                 // сохраняем состояния очередей.
-                savePool();
+                QServer.savePool();
                 //разослать оповещение о том, что появился вызванный посетитель
                 // Должно высветитьсяна основном табло
-                indicatorBoard.inviteCustomer(user, user.getCustomer());
+                MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
                 //разослать оповещение о том, что отложенного вызвали, состояние очереди изменилось не изменилось, но пул отложенных изменился
                 //рассылаем широковещетельно по UDP на определенный порт
-                Uses.sendUDPBroadcast(Uses.TASK_REFRESH_POSTPONED_POOL, netProp.getClientPort());
+                Uses.sendUDPBroadcast(Uses.TASK_REFRESH_POSTPONED_POOL, ServerProps.getInstance().getProps().getClientPort());
             } finally {
                 return new RpcInviteCustomer(customer);
             }
@@ -444,7 +350,7 @@ public final class QServicesPool {
         @Override
         public RpcGetAllServices process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            return new RpcGetAllServices(new RpcGetAllServices.ServicesForWelcome(serviceTree.getRoot(), netProp.getStartTime(), netProp.getFinishTime()));
+            return new RpcGetAllServices(new RpcGetAllServices.ServicesForWelcome(QServiceTree.getInstance().getRoot(), ServerProps.getInstance().getProps().getStartTime(), ServerProps.getInstance().getProps().getFinishTime()));
         }
     };
     /**
@@ -458,7 +364,7 @@ public final class QServicesPool {
             // Проверим оказывается ли сейчас эта услуга
             int min = Uses.LOCK_INT;
             final Date day = new Date();
-            final QService srv = serviceTree.getByName(cmdParams.serviceName);
+            final QService srv = QServiceTree.getInstance().getById(cmdParams.serviceId);
             // Если нет расписания, календаря или выходной то отказ по расписанию
             if (srv.getSchedule() == null || checkFreeDay(day, new Long(1)) || (srv.getCalendar() != null && checkFreeDay(day, srv.getCalendar().getId()))) {
                 min = Uses.LOCK_FREE_INT;
@@ -530,19 +436,18 @@ public final class QServicesPool {
             }
             // Если не работаем, то отправим ответ и прекратим выполнение
             if (min == Uses.LOCK_FREE_INT) {
-                Uses.log.logger.warn("Услуга \"" + cmdParams.serviceName + "\" не обрабатывается исходя из рабочего расписания.");
+                QLog.l().logger().warn("Услуга \"" + cmdParams.serviceId + "\" не обрабатывается исходя из рабочего расписания.");
                 return new RpcGetInt(min);
             }
             // бежим по юзерам и смотрим обрабатывают ли они услугу
             // если да, то возьмем все услуги юзера и  сложим всех кастомеров в очередях
             // самую маленькую сумму отправим в ответ по запросу.
-            for (Object o : userList.toArray()) {
-                final QUser user = (QUser) o;
-                if (user.hasService(cmdParams.serviceName)) {
+            for (QUser user : QUserList.getInstance().getItems()) {
+                if (user.hasService(cmdParams.serviceId)) {
                     // теперь по услугам юзера
                     int sum = 0;
-                    for (QPlanService planServ : user.getServiceList().getPlanServices()) {
-                        final QService service = serviceTree.getByName(planServ.getName());
+                    for (QPlanService planServ : user.getPlanServices()) {
+                        final QService service = QServiceTree.getInstance().getById(planServ.getService().getId());
                         sum = sum + service.getCountCustomers();
                     }
                     if (min > sum) {
@@ -551,7 +456,7 @@ public final class QServicesPool {
                 }
             }
             if (min == Uses.LOCK_INT) {
-                Uses.log.logger.warn("Услуга \"" + cmdParams.serviceName + "\" не обрабатывается ни одним пользователем.");
+                QLog.l().logger().warn("Услуга \"" + cmdParams.serviceId + "\" не обрабатывается ни одним пользователем.");
             }
             return new RpcGetInt(min);
         }
@@ -565,7 +470,7 @@ public final class QServicesPool {
         public RpcGetUsersList process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             checkUserLive.refreshUsersFon();
-            return new RpcGetUsersList(userList.getUsers());
+            return new RpcGetUsersList(QUserList.getInstance().getItems());
         }
     };
     /**
@@ -578,16 +483,12 @@ public final class QServicesPool {
             super.process(cmdParams, ipAdress, IP);
             final LinkedList<RpcGetServerState.ServiceInfo> srvs = new LinkedList<RpcGetServerState.ServiceInfo>();
 
-            QServiceTree.sailToStorm(serviceTree.getRoot(), new ISailListener() {
-
-                @Override
-                public void actionPerformed(QService service) {
-                    if (service.isLeaf()) {
-                        final QCustomer customer = service.peekCustomer();
-                        srvs.add(new RpcGetServerState.ServiceInfo(service, service.getCountCustomers(), customer != null ? customer.getPrefix() + customer.getNumber() : "Ожидающих нет"));
-                    }
+            for (QService service : QServiceTree.getInstance().getNodes()) {
+                if (service.isLeaf()) {
+                    final QCustomer customer = service.peekCustomer();
+                    srvs.add(new RpcGetServerState.ServiceInfo(service, service.getCountCustomers(), customer != null ? customer.getPrefix() + customer.getNumber() : "Ожидающих нет"));
                 }
-            });
+            }
             return new RpcGetServerState(srvs);
         }
     };
@@ -603,21 +504,21 @@ public final class QServicesPool {
             super(name);
         }
         /**
-         * Имя пользователя -> его адрес
+         * ID пользователя -> его адрес
          */
-        private final HashMap<String, String> addrByName = new HashMap<String, String>();
+        private final HashMap<Long, String> addrByID = new HashMap<Long, String>();
         /**
-         * Адрес пользователя -> его имя
+         * Адрес пользователя -> его ID
          */
-        private final HashMap<String, String> nameByAddr = new HashMap<String, String>();
+        private final HashMap<String, Long> idByAddr = new HashMap<String, Long>();
         /**
          * Адрес пользователя -> его байтовое прeдставление
          */
         private final HashMap<String, byte[]> ipByAddr = new HashMap<String, byte[]>();
 
-        public boolean hasName(String userName) {
+        public boolean hasId(Long id) {
             synchronized (forRefr) {
-                return addrByName.get(userName) != null;
+                return addrByID.get(id) != null;
             }
         }
 
@@ -643,10 +544,10 @@ public final class QServicesPool {
                 // подотрем все списки
                 final int i = ipByAddr.size();
                 ipByAddr.clear();
-                nameByAddr.clear();
-                addrByName.clear();
+                idByAddr.clear();
+                addrByID.clear();
                 // полная рассылка
-                Uses.sendUDPBroadcast(Uses.HOW_DO_YOU_DO, netProp.getClientPort());
+                Uses.sendUDPBroadcast(Uses.HOW_DO_YOU_DO, ServerProps.getInstance().getProps().getClientPort());
                 try {
                     int k = 0;
                     while (ipByAddr.size() < i && k < 8) {
@@ -661,27 +562,27 @@ public final class QServicesPool {
 
         /**
          * Проверка залогиневшегося чела по имени
-         * @param userName имя чела для проверки
+         * @param userId id чела для проверки
          * @return есть юзер с таким именем или нет
          */
-        public boolean checkUserName(String userName) {
+        public boolean checkUserName(Long userId) {
             synchronized (forRefr) {
-                if (addrByName.get(userName) != null) {
-                    final byte[] ip = ipByAddr.get(addrByName.get(userName));
-                    Uses.log.logger.debug("Отправить запрос на подтверждение активности на \"" + addrByName.get(userName) + "\" пользователя \"" + userName + "\".");
+                if (addrByID.get(userId) != null) {
+                    final byte[] ip = ipByAddr.get(addrByID.get(userId));
+                    QLog.l().logger().debug("Отправить запрос на подтверждение активности на \"" + addrByID.get(userId) + "\" пользователя \"" + userId + "\".");
                     // подотрем перед проверкой
-                    nameByAddr.remove(addrByName.get(userName));
-                    ipByAddr.remove(addrByName.get(userName));
-                    addrByName.remove(userName);
+                    idByAddr.remove(addrByID.get(userId));
+                    ipByAddr.remove(addrByID.get(userId));
+                    addrByID.remove(userId);
                     // проверим
                     try {
-                        Uses.sendUDPMessage(Uses.HOW_DO_YOU_DO, InetAddress.getByAddress(ip), netProp.getClientPort());
+                        Uses.sendUDPMessage(Uses.HOW_DO_YOU_DO, InetAddress.getByAddress(ip), ServerProps.getInstance().getProps().getClientPort());
                     } catch (UnknownHostException ex) {
                         throw new ServerException("Че адрес не существует??? " + new String(ip) + " " + ex);
                     }
                     // подождем ответа
                     int i = 0;
-                    while (addrByName.get(userName) == null && i < 70) {
+                    while (addrByID.get(userId) == null && i < 70) {
                         i++;
                         try {
                             Thread.sleep(100);
@@ -689,7 +590,7 @@ public final class QServicesPool {
                             throw new ServerException("Таймер. " + ex.toString());
                         }
                     }
-                    return addrByName.get(userName) != null;
+                    return addrByID.get(userId) != null;
                 } else {
                     return false;
                 }
@@ -703,22 +604,22 @@ public final class QServicesPool {
          */
         public boolean checkUserAddress(String ipAdress) throws UnknownHostException {
             synchronized (forRefr) {
-                if (nameByAddr.get(ipAdress) != null) {
+                if (idByAddr.get(ipAdress) != null) {
                     final byte[] ip = ipByAddr.get(ipAdress);
-                    Uses.log.logger.debug("Отправить запрос на подтверждение активности на \"" + ipAdress + "\" пользователя \"" + nameByAddr.get(ipAdress) + "\".");
+                    QLog.l().logger().debug("Отправить запрос на подтверждение активности на \"" + ipAdress + "\" пользователя \"" + idByAddr.get(ipAdress) + "\".");
                     // подотрем перед проверкой
-                    addrByName.remove(nameByAddr.get(ipAdress));
-                    nameByAddr.remove(ipAdress);
+                    addrByID.remove(idByAddr.get(ipAdress));
+                    idByAddr.remove(ipAdress);
                     ipByAddr.remove(ipAdress);
                     // проверим
                     try {
-                        Uses.sendUDPMessage(Uses.HOW_DO_YOU_DO, InetAddress.getByAddress(ip), netProp.getClientPort());
+                        Uses.sendUDPMessage(Uses.HOW_DO_YOU_DO, InetAddress.getByAddress(ip), ServerProps.getInstance().getProps().getClientPort());
                     } catch (UnknownHostException ex) {
                         throw new ServerException("Че адрес не существует??? " + ipAdress + " " + ex);
                     }
                     // подождем ответа
                     int i = 0;
-                    while (nameByAddr.get(ipAdress) == null && i < 70) {
+                    while (idByAddr.get(ipAdress) == null && i < 70) {
                         i++;
                         try {
                             Thread.sleep(100);
@@ -726,7 +627,7 @@ public final class QServicesPool {
                             throw new ServerException("Таймер. " + ex.toString());
                         }
                     }
-                    return nameByAddr.get(ipAdress) != null;
+                    return idByAddr.get(ipAdress) != null;
                 } else {
                     return false;
                 }
@@ -737,8 +638,8 @@ public final class QServicesPool {
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             synchronized (forRefr) {
                 super.process(cmdParams, ipAdress, IP);
-                addrByName.put(cmdParams.userName, ipAdress);
-                nameByAddr.put(ipAdress, cmdParams.userName);
+                addrByID.put(cmdParams.userId, ipAdress);
+                idByAddr.put(ipAdress, cmdParams.userId);
                 ipByAddr.put(ipAdress, IP);
             }
             return new JsonRPC20();
@@ -752,10 +653,10 @@ public final class QServicesPool {
         @Override
         public RpcGetSelfSituation process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            final QUser user = userList.getByName(cmdParams.userName);
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             final LinkedList<RpcGetSelfSituation.SelfService> servs = new LinkedList<RpcGetSelfSituation.SelfService>();
-            for (QPlanService planService : user.getServiceList().getPlanServices()) {
-                final QService service = serviceTree.getByName(planService.getName());
+            for (QPlanService planService : user.getPlanServices()) {
+                final QService service = QServiceTree.getInstance().getById(planService.getService().getId());
                 servs.add(new RpcGetSelfSituation.SelfService(service, service.getCountCustomers()));
             }
             // нужно сделать вставочку приглашенного юзера, если он есть
@@ -773,9 +674,9 @@ public final class QServicesPool {
             super.process(cmdParams, ipAdress, IP);
             // Отсечем дубляжи запуска от одних и тех же юзеров. но с разных компов
             // пришло с запросом от юзера имеющегося в региных
-            //System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" + userName);
-            if (checkUserLive.hasName(cmdParams.userName)) {
-                Uses.log.logger.debug(cmdParams.userName + " ACCESS_DENY");
+            //System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" + userId);
+            if (checkUserLive.hasId(cmdParams.userId)) {
+                QLog.l().logger().debug(cmdParams.userId + " ACCESS_DENY");
                 return new RpcGetBool(false);
             }
             // чтоб вперед не влез если одновременно два новых
@@ -802,25 +703,16 @@ public final class QServicesPool {
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            final QUser user = userList.getByName(cmdParams.userName);
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             // кастомер переходит в состояние "умерщвленности"
-            user.getCustomer().setState(Uses.STATE_DEAD);
-
-            // Кое-что для статистики
-            final String serviceName = user.getCustomer().getServiceName();
-            final int size = serviceTree.getByName(serviceName).getCountCustomers();
-
+            user.getCustomer().setState(CustomerState.STATE_DEAD);
             try {
                 user.setCustomer(null);//бобик сдох и медальки не осталось
-
                 // сохраняем состояния очередей.
-                savePool();
-                //Запишим в статистику этот момент
-                statistic.processingKillCustomer(serviceName, cmdParams.userName);
-                statistic.processingSetWaitCustomers(serviceName, size);
+                QServer.savePool();
                 //разослать оповещение о том, что посетитель откланен
-                //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
-                indicatorBoard.killCustomer(user);
+                // Должно подтереться основном табло
+                MainBoard.getInstance().killCustomer(user);
             } finally {
                 return new JsonRPC20();
             }
@@ -834,23 +726,14 @@ public final class QServicesPool {
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            final QUser user = userList.getByName(cmdParams.userName);
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             // Время старта работы с юзера с кастомером.
             user.getCustomer().setStartTime(new Date());
-            // редиректенный ли или возвращенный
-            final boolean isRedirected = user.getCustomer().getState() == Uses.STATE_REDIRECT || user.getCustomer().getState() == Uses.STATE_BACK;
-            // кастомер переходит в состояние "Начала обработки"
-            user.getCustomer().setState(Uses.STATE_WORK);
-            //Запишим в статистику этот момент
-            statistic.processingSetWaitCustomers(user.getCustomer().getServiceName(), serviceTree.getByName(user.getCustomer().getServiceName()).getCountCustomers());
-            if (!isRedirected) {
-                statistic.processingAvgTimeWait(user.getCustomer().getServiceName(),
-                        new Double(new Double(user.getCustomer().getStartTime().getTime()
-                        - user.getCustomer().getStandTime().getTime()) / 1000 / 60));
-            }
-            indicatorBoard.workCustomer(user);
+            // кастомер переходит в состояние "Начала обработки" или "Продолжение работы"
+            user.getCustomer().setState(user.getCustomer().getState() == CustomerState.STATE_INVITED ? CustomerState.STATE_WORK : CustomerState.STATE_WORK_SECONDARY);
+            MainBoard.getInstance().workCustomer(user);
             // сохраняем состояния очередей.
-            savePool();
+            QServer.savePool();
             return new JsonRPC20();
         }
     };
@@ -863,7 +746,7 @@ public final class QServicesPool {
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             // вот он все это творит
-            final QUser user = userList.getByName(cmdParams.userName);
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             // вот над этим пациентом
             final QCustomer customer = user.getCustomer();
             // статус
@@ -873,34 +756,20 @@ public final class QServicesPool {
             // но сначала обозначим результат работы юзера с кастомером, если такой результат найдется в списке результатов
             customer.setFinishTime(new Date());
             // кастомер переходит в состояние "Завершенности", но не "мертвости"
-            customer.setState(Uses.STATE_FINISH);
-            // Кое-что для статистики
-            final String serviceName = user.getCustomer().getServiceName();
-            final long startTime = user.getCustomer().getStartTime().getTime();
-
+            customer.setState(CustomerState.STATE_FINISH);
             try {
                 user.setCustomer(null);//бобик сдох но медалька осталось, отправляем в пулл
-                //customer.setService(null); - нельзя так делать. кастомер пришел к услуге и пусть в какой-то остается
-                customer.setServiceName("");
-                customer.setServiceDescription("");
                 customer.setUser(null);
                 QPostponedList.getInstance().addElement(customer);
-
-                //какие-то манипуляции по сохранению статистики
-                //Запишим в статистику этот момент
-                statistic.processingFinishCustomerOrRedirect(serviceName,
-                        cmdParams.userName,
-                        new Double(new Double(System.currentTimeMillis()
-                        - startTime)
-                        / 1000 / 60));
+                customer.setState(CustomerState.STATE_POSTPONED);
                 // сохраняем состояния очередей.
-                savePool();
+                QServer.savePool();
                 //разослать оповещение о том, что посетитель отложен
-                Uses.sendUDPBroadcast(Uses.TASK_REFRESH_POSTPONED_POOL, netProp.getClientPort());
+                Uses.sendUDPBroadcast(Uses.TASK_REFRESH_POSTPONED_POOL, ServerProps.getInstance().getProps().getClientPort());
                 //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
-                indicatorBoard.killCustomer(user);
+                MainBoard.getInstance().killCustomer(user);
             } catch (Throwable t) {
-                Uses.log.logger.error("Загнулось под конец.", t);
+                QLog.l().logger().error("Загнулось под конец.", t);
             } finally {
                 return new JsonRPC20();
             }
@@ -919,7 +788,7 @@ public final class QServicesPool {
                 cust.setPostponedStatus(cmdParams.textData);
                 //разослать оповещение о том, что посетителя вызвали, состояние очереди изменилось
                 //рассылаем широковещетельно по UDP на определенный порт
-                Uses.sendUDPBroadcast(Uses.TASK_REFRESH_POSTPONED_POOL, netProp.getClientPort());
+                Uses.sendUDPBroadcast(Uses.TASK_REFRESH_POSTPONED_POOL, ServerProps.getInstance().getProps().getClientPort());
                 return new JsonRPC20();
             } else {
                 return new JsonRPC20(new JsonRPC20Error(JsonRPC20Error.POSTPONED_NOT_FOUND, cmdParams.customerId));
@@ -936,7 +805,7 @@ public final class QServicesPool {
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             // вот он все это творит
-            final QUser user = userList.getByName(cmdParams.userName);
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             // вот над этим пациентом
             final QCustomer customer = user.getCustomer();
             // комменты
@@ -944,11 +813,11 @@ public final class QServicesPool {
             // надо посмотреть не требует ли этот кастомер возврата в какую либо очередь.
             final QService backSrv = user.getCustomer().getServiceForBack();
             if (backSrv != null) {
-                Uses.log.logger.debug("Требуется возврат после редиректа.");
+                QLog.l().logger().debug("Требуется возврат после редиректа.");
                 // действия по завершению работы юзера над кастомером
                 customer.setFinishTime(new Date());
                 // тут еще и в базу скинется, если надо.
-                customer.setState(Uses.STATE_FINISH);
+                customer.setState(CustomerState.STATE_FINISH);
                 // переставить кастомера в очередь к пункту возврата
                 backSrv.addCustomer(customer);
                 // надо кастомера инициализить др. услугой
@@ -960,41 +829,36 @@ public final class QServicesPool {
                 customer.setService(backSrv);
 
                 // кастомер переходит в состояние "возврата"
-                user.getCustomer().setState(Uses.STATE_BACK);
+                user.getCustomer().setState(CustomerState.STATE_BACK);
                 //разослать оповещение о том, что появился посетитель после редиректа
                 //рассылаем широковещетельно по UDP на определенный порт
-                Uses.sendUDPBroadcast(backSrv.getName(), netProp.getClientPort());
-                Uses.log.logger.info("Клиент \"" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + "\" возвращен к услуге \"" + backSrv.getName() + "\"");
+                Uses.sendUDPBroadcast(backSrv.getId().toString(), ServerProps.getInstance().getProps().getClientPort());
+                QLog.l().logger().info("Клиент \"" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + "\" возвращен к услуге \"" + backSrv.getName() + "\"");
             } else {
-                Uses.log.logger.debug("В морг пациента.");
+                QLog.l().logger().debug("В морг пациента.");
 
                 // в этом случае завершаем с пациентом
                 //"все что хирург забыл в вас - ваше"
                 // но сначала обозначим результат работы юзера с кастомером, если такой результат найдется в списке результатов
-                final QResult result = getResultsList().getByID(cmdParams.resultId);
+                // может приехать -1 если результат не требовался
+                final QResult result;
+                if (cmdParams.resultId != -1) {
+                    result = QResultList.getInstance().getById(cmdParams.resultId);
+                } else {
+                    result = null;
+                }
                 ((QCustomer) customer).setResult(result);
                 customer.setFinishTime(new Date());
                 // кастомер переходит в состояние "Завершенности", но не "мертвости"
-                customer.setState(Uses.STATE_FINISH);
+                customer.setState(CustomerState.STATE_FINISH);
             }
-            // Кое-что для статистики
-            final String serviceName = user.getCustomer().getServiceName();
-            final long startTime = user.getCustomer().getStartTime().getTime();
-
             try {
                 user.setCustomer(null);//бобик сдох и медальки не осталось
-                //какие-то манипуляции по сохранению статистики
-                //Запишим в статистику этот момент
-                statistic.processingFinishCustomerOrRedirect(serviceName,
-                        cmdParams.userName,
-                        new Double(new Double(System.currentTimeMillis()
-                        - startTime)
-                        / 1000 / 60));
                 // сохраняем состояния очередей.
-                savePool();
+                QServer.savePool();
                 //разослать оповещение о том, что посетитель откланен
                 //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
-                indicatorBoard.killCustomer(user);
+                MainBoard.getInstance().killCustomer(user);
             } finally {
                 return new JsonRPC20();
             }
@@ -1008,32 +872,30 @@ public final class QServicesPool {
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            final QUser user = userList.getByName(cmdParams.userName);
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             final QCustomer customer = user.getCustomer();
             // комменты по редиректу
             customer.setTempComments(cmdParams.textData);
             // Переставка в другую очередь
-            // Название новой очереди
-            final String newServiceName = cmdParams.serviceName;
             // Название старой очереди
             final QService oldService = customer.getService();
             // вот она новая очередь.
-            final QService newService = serviceTree.getByName(newServiceName);
+            final QService newService = QServiceTree.getInstance().getById(cmdParams.serviceId);
             // действия по завершению работы юзера над кастомером
             customer.setFinishTime(new Date());
             // тут еще и в базу скинется, если надо.
-            customer.setState(Uses.STATE_FINISH);
+            customer.setState(CustomerState.STATE_FINISH);
+            // кастомер переходит в состояние "перенаправленности"
+            customer.setState(CustomerState.STATE_REDIRECT);
             // надо кастомера инициализить др. услугой
             // юзер в другой очереди наверное другой
             customer.setUser(null);
             // теперь стоит к новой услуги.
             customer.setService(newService);
-            // кастомер переходит в состояние "перенаправленности"
-            customer.setState(Uses.STATE_REDIRECT);
             // если редиректят в прежнюю услугу, то это по факту не ридирект(иначе карусель)
             // по этому в таком случае кастомера отправляют в конец очереди к этой же услуге.
             // для этого просто не учитываем смену приоритета и галку возврата. 
-            if (!oldService.getName().equals(newServiceName)) {
+            if (!oldService.getId().equals(cmdParams.serviceId)) {
                 // т.к. переставленный, то надо поменять ему приоритет.
                 customer.setPriority(Uses.PRIORITY_HI);
                 // при редиректе надо убрать у кастомера признак старого юзера, время начала обработки.
@@ -1047,10 +909,6 @@ public final class QServicesPool {
                 // только что встал типо
                 customer.setStandTime(new Date());
             }
-
-            //какие-то манипуляции по сохранению статистики
-            final long startTime = customer.getStartTime().getTime();
-
             //С НАЧАЛА ПОДОТРЕМ ПОТОМ ПЕРЕСТАВИМ!!!
             //с новым приоритетом ставим в новую очередь, приоритет должет
             //позволить вызваться ему сразу за обрабатываемыми кастомерами
@@ -1058,20 +916,15 @@ public final class QServicesPool {
             user.setCustomer(null);//бобик сдох и медальки не осталось, воскрес вместе со старой медалькой в соседней очереди
 
             try {
-                //Запишим в статистику этот момент
-                statistic.processingFinishCustomerOrRedirect(oldService.getName(), cmdParams.userName,
-                        new Double(new Double(System.currentTimeMillis()
-                        - startTime)
-                        / 1000 / 60));
-                statistic.processingSetWaitCustomers(oldService.getName(), oldService.getCountCustomers());
                 // сохраняем состояния очередей.
-                savePool();
+                QServer.savePool();
                 //разослать оповещение о том, что появился посетитель
                 //рассылаем широковещетельно по UDP на определенный порт
-                Uses.sendUDPBroadcast(newServiceName, netProp.getClientPort());
+                Uses.sendUDPBroadcast(newService.getId().toString(), ServerProps.getInstance().getProps().getClientPort());
+                Uses.sendUDPBroadcast(oldService.getId().toString(), ServerProps.getInstance().getProps().getClientPort());
                 //разослать оповещение о том, что посетитель откланен
                 //рассылаем широковещетельно по UDP на определенный порт. Должно подтереться на основном табло
-                indicatorBoard.killCustomer(user);
+                MainBoard.getInstance().killCustomer(user);
             } finally {
                 return new JsonRPC20();
             }
@@ -1085,26 +938,26 @@ public final class QServicesPool {
         @Override
         synchronized public RpcGetSrt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            if (cmdParams.userName == null || cmdParams.serviceName == null) {
+            if (cmdParams.userId == null || cmdParams.serviceId == null) {
                 return new RpcGetSrt("Неверные попараметры запроса.");
             }
-            if (!serviceTree.hasByName(cmdParams.serviceName)) {
+            if (!QServiceTree.getInstance().hasById(cmdParams.serviceId)) {
                 return new RpcGetSrt("Требуемая услуга не присутствует в текущей загруженной конфигурации сервера.");
             }
-            final QService service = serviceTree.getByName(cmdParams.serviceName);
-            if (!userList.hasByName(cmdParams.userName)) {
+            final QService service = QServiceTree.getInstance().getById(cmdParams.serviceId);
+            if (!QUserList.getInstance().hasById(cmdParams.userId)) {
                 return new RpcGetSrt("Требуемый пользователь не присутствует в текущей загруженной конфигурации сервера.");
             }
-            final QUser user = userList.getByName(cmdParams.userName);
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId);
 
-            if (user.getServiceList().hasByName(cmdParams.serviceName)) {
+            if (user.hasService(cmdParams.serviceId)) {
                 return new RpcGetSrt("Требуемая услуга уже назначена этому пользователю.");
             }
             user.addPlanService(service, cmdParams.coeff);
             //разослать оповещение о том, что у пользователя поменялась конфигурация услуг
             //рассылаем широковещетельно по UDP на определенный порт
-            Uses.sendUDPBroadcast(cmdParams.userName, netProp.getClientPort());
-            return new RpcGetSrt("Услуга \"" + cmdParams.serviceName + "\" назначена пользователю \"" + cmdParams.userName + "\" успешно.");
+            Uses.sendUDPBroadcast(String.valueOf(cmdParams.userId), ServerProps.getInstance().getProps().getClientPort());
+            return new RpcGetSrt("Услуга \"" + cmdParams.serviceId + "\" назначена пользователю \"" + cmdParams.userId + "\" успешно.");
         }
     };
     /**
@@ -1115,25 +968,25 @@ public final class QServicesPool {
         @Override
         synchronized public RpcGetSrt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            if (cmdParams.userName == null || cmdParams.serviceName == null) {
+            if (cmdParams.userId == null || cmdParams.serviceId == null) {
                 return new RpcGetSrt("Неверные попараметры запроса.");
             }
-            if (!serviceTree.hasByName(cmdParams.serviceName)) {
+            if (!QServiceTree.getInstance().hasById(cmdParams.serviceId)) {
                 return new RpcGetSrt("Требуемая услуга не присутствует в текущей загруженной конфигурации сервера.");
             }
-            if (!userList.hasByName(cmdParams.userName)) {
+            if (!QUserList.getInstance().hasById(cmdParams.userId)) {
                 return new RpcGetSrt("Требуемый пользователь не присутствует в текущей загруженной конфигурации сервера.");
             }
-            final QUser user = userList.getByName(cmdParams.userName);
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId);
 
-            if (!user.getServiceList().hasByName(cmdParams.serviceName)) {
+            if (!user.hasService(cmdParams.serviceId)) {
                 return new RpcGetSrt("Требуемая услуга не назначена этому пользователю.");
             }
-            user.deletePlanService(cmdParams.serviceName);
+            user.deletePlanService(cmdParams.serviceId);
             //разослать оповещение о том, что у пользователя поменялась конфигурация услуг
             //рассылаем широковещетельно по UDP на определенный порт
-            Uses.sendUDPBroadcast(cmdParams.userName, netProp.getClientPort());
-            return new RpcGetSrt("Услуга \"" + cmdParams.serviceName + "\" удалена у пользователя \"" + cmdParams.userName + "\" успешно.");
+            Uses.sendUDPBroadcast(String.valueOf(cmdParams.userId), ServerProps.getInstance().getProps().getClientPort());
+            return new RpcGetSrt("Услуга \"" + cmdParams.serviceId + "\" удалена у пользователя \"" + cmdParams.userId + "\" успешно.");
         }
     };
     /**
@@ -1145,7 +998,7 @@ public final class QServicesPool {
         @Override
         public RpcGetSrt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            return new RpcGetSrt(getIndicatorBoard().getConfig().asXML());
+            return new RpcGetSrt(MainBoard.getInstance().getConfig().asXML());
         }
     };
     /**
@@ -1158,9 +1011,9 @@ public final class QServicesPool {
         synchronized public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             try {
-                getIndicatorBoard().saveConfig(DocumentHelper.parseText(cmdParams.textData).getRootElement());
+                MainBoard.getInstance().saveConfig(DocumentHelper.parseText(cmdParams.textData).getRootElement());
             } catch (DocumentException ex) {
-                Uses.log.logger.error("Не сохранилась конфигурация табло.", ex);
+                QLog.l().logger().error("Не сохранилась конфигурация табло.", ex);
             }
             return new JsonRPC20();
         }
@@ -1174,7 +1027,7 @@ public final class QServicesPool {
         public RpcGetGridOfWeek process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             //Определим услугу
-            final QService service = serviceTree.getByName(cmdParams.serviceName);
+            final QService service = QServiceTree.getInstance().getById(cmdParams.serviceId);
             final QSchedule sch = service.getSchedule();
             if (sch == null) {
                 return new RpcGetGridOfWeek(new RpcGetGridOfWeek.GridAndParams("Требуемая услуга не имеет расписания."));
@@ -1186,33 +1039,13 @@ public final class QServicesPool {
             gc.set(GregorianCalendar.DAY_OF_YEAR, gc.get(GregorianCalendar.DAY_OF_YEAR) + 7);
             final Date endWeek = gc.getTime();
 
-            Uses.log.logger.trace("Загрузим уже занятых позиций ранее записанными кастомерами от " + Uses.format_for_rep.format(startWeek) + " до " + Uses.format_for_rep.format(endWeek));
+            QLog.l().logger().trace("Загрузим уже занятых позиций ранее записанными кастомерами от " + Uses.format_for_rep.format(startWeek) + " до " + Uses.format_for_rep.format(endWeek));
             // Загрузим уже занятых позиций ранее записанными кастомерами
-            List<QAdvanceCustomer> advCustomers = (List<QAdvanceCustomer>) Uses.getSessionFactory().execute(new HibernateCallback() {
-
-                @Override
-                public Object doInHibernate(Session session) {
-                    //Criteria crit = session.createCriteria(QAdvanceCustomer.class);
-
-                    //crit.add(Restrictions.between("advance_time", startWeek, endWeek));
-                    //crit.add(Restrictions.ge("advance_time", startWeek));
-                    //crit.add(Restrictions.ge("advance_time", endWeek));
-                    //crit = crit.createCriteria("child1").add(Restrictions.ge("advance_time", endWeek));
-                    //crit.add(Restrictions.ge("id", new Long(3)));
-                    //Criterion user_id = Restrictions.isNull("advance_time");
-                    //Criterion name = Restrictions.like("name","P%");
-                    //LogicalExpression orExp = Restrictions.or(price,name);
-                    //crit.add(orExp);
-                    //crit.add(user_id);
-                    //crit.add(Restrictions.ilike("description","for%"));
-                    return session.createQuery("FROM QAdvanceCustomer a WHERE advance_time >'" + Uses.format_for_rep.format(startWeek) + "' and advance_time <= '" + Uses.format_for_rep.format(endWeek) + "' and service_id = " + service.getId()).list();
-                    //return crit.list();
-                }
-            });
+            List<QAdvanceCustomer> advCustomers = Spring.getInstance().getHt().find("FROM QAdvanceCustomer a WHERE advance_time >'" + Uses.format_for_rep.format(startWeek) + "' and advance_time <= '" + Uses.format_for_rep.format(endWeek) + "' and service_id = " + service.getId());
 
             final GridAndParams advCusts = new GridAndParams();
-            advCusts.setStartTime(netProp.getStartTime());
-            advCusts.setFinishTime(netProp.getFinishTime());
+            advCusts.setStartTime(ServerProps.getInstance().getProps().getStartTime());
+            advCusts.setFinishTime(ServerProps.getInstance().getProps().getFinishTime());
             advCusts.setAdvanceLimit(service.getAdvanceLimit());
             advCusts.setAdvanceLimitPeriod(service.getAdvanceLimitPeriod() == null ? 0 : service.getAdvanceLimitPeriod());
             // сформируем список доступных времен
@@ -1350,16 +1183,24 @@ public final class QServicesPool {
         synchronized public RpcGetAdvanceCustomer process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
 
-            final QService service = serviceTree.getByName(cmdParams.serviceName);
-            Uses.log.logger.trace("Предварительно записываем к услуге \"" + cmdParams.serviceName + "\" -> " + service.getPrefix() + ' ' + service.getName() + '\'');
+            final QService service = QServiceTree.getInstance().getById(cmdParams.serviceId);
+            QLog.l().logger().trace("Предварительно записываем к услуге \"" + cmdParams.serviceId + "\" -> " + service.getPrefix() + ' ' + service.getName() + '\'');
             // Создадим вновь испеченного кастомера
             final QAdvanceCustomer customer = new QAdvanceCustomer();
 
             // Определим ID авторизованного пользователя, если небыло авторизации, то оно = -1
             final Long authCustonerID = cmdParams.customerId;
             // выкачаем из базы зарегинова
-            final Session session = Uses.getSessionFactory().getSessionFactory().openSession();
-            customer.setAuthorizationCustomer((QAuthorizationCustomer) session.get(QAuthorizationCustomer.class, authCustonerID));
+            QAuthorizationCustomer acust = new QAuthorizationCustomer();
+            if (cmdParams.customerId != -1) {
+                Spring.getInstance().getHt().load(acust, authCustonerID);
+                if (acust.getId() == null || acust.getName() == null) {
+                    throw new ServerException("Авторизация не успешна.");
+                }
+            } else {
+                acust = null;
+            }
+            customer.setAuthorizationCustomer(acust);
             // Определим дату и время для кастомера
             final Date startTime = new Date(cmdParams.date);
             //хорошо бы отсекать повторную запись к этому же специалиста на этот же день
@@ -1370,19 +1211,21 @@ public final class QServicesPool {
             customer.setPriority(2);
 
             //сохраним нового предварительного пользователя
-            Uses.log.logger.debug("Старт сохранения предварительной записи в СУБД.");
+            QLog.l().logger().debug("Старт сохранения предварительной записи в СУБД.");
             //Uses.getSessionFactory().merge(this);
-            session.beginTransaction();
-            try {
-                session.save(customer);
-                session.getTransaction().commit();
-                Uses.log.logger.debug("Сохранили.");
-            } catch (Exception ex) {
-                Uses.log.logger.error("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
-                session.getTransaction().rollback();
-            } finally {
-                session.close();
-            }
+            Spring.getInstance().getTt().execute(new TransactionCallbackWithoutResult() {
+
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    try {
+                        Spring.getInstance().getHt().saveOrUpdate(customer);
+                        QLog.l().logger().debug("Сохранили.");
+                    } catch (Exception ex) {
+                        QLog.l().logger().error("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
+                        status.setRollbackOnly();
+                    }
+                }
+            });
             return new RpcGetAdvanceCustomer(customer);
         }
     };
@@ -1396,8 +1239,11 @@ public final class QServicesPool {
             super.process(cmdParams, ipAdress, IP);
 
             // Вытащим из базы предварительного кастомера
-            final Session session = Uses.getSessionFactory().getSessionFactory().openSession();
-            final QAdvanceCustomer advCust = (QAdvanceCustomer) session.get(QAdvanceCustomer.class, cmdParams.customerId);
+            final QAdvanceCustomer advCust = new QAdvanceCustomer();
+            Spring.getInstance().getHt().load(advCust, cmdParams.customerId);
+            if (advCust.getId() == null || advCust.getAdvanceTime() == null) {
+                throw new ServerException("не найден клиент по его ID");
+            }
             final GregorianCalendar gc = new GregorianCalendar();
             if (advCust != null) {
                 gc.setTime(advCust.getAdvanceTime());
@@ -1411,22 +1257,24 @@ public final class QServicesPool {
             if (advCust != null && new Date().before(gc1.getTime()) && new Date().after(gc.getTime())) {
                 // Ставим кастомера
                 //трем запись в таблице предварительных записей
-                session.beginTransaction();
-                try {
-                    session.delete(advCust);
-                    session.getTransaction().commit();
-                    Uses.log.logger.debug("Удалили предварителньную запись о кастомере.");
 
-                } catch (Exception ex) {
-                    session.getTransaction().rollback();
-                    throw new ServerException("Ошибка при удалении \n" + ex.toString() + "\n" + ex.getStackTrace());
-                } finally {
-                    session.close();
-                }
+                Spring.getInstance().getTt().execute(new TransactionCallbackWithoutResult() {
+
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        try {
+                            Spring.getInstance().getHt().delete(advCust);
+                            QLog.l().logger().debug("Удалили предварителньную запись о кастомере.");
+                        } catch (Exception ex) {
+                            status.setRollbackOnly();
+                            throw new ServerException("Ошибка при удалении \n" + ex.toString() + "\n" + ex.getStackTrace());
+                        }
+                    }
+                });
                 // создаем кастомера вызвав задание по созданию кастомера
                 // загрузим задание
                 final CmdParams params = new CmdParams();
-                params.serviceName = advCust.getService().getName();
+                params.serviceId = advCust.getService().getId();
                 params.password = "";
                 params.priority = advCust.getPriority();
                 final RpcStandInService txtCustomer = addCustomerTask.process(params, ipAdress, IP);
@@ -1435,10 +1283,10 @@ public final class QServicesPool {
             } else {
                 String answer;
                 if (advCust == null) {
-                    Uses.log.logger.trace("Не найдена предварительная запись по введеному коду ID = " + cmdParams.customerId);
+                    QLog.l().logger().trace("Не найдена предварительная запись по введеному коду ID = " + cmdParams.customerId);
                     answer = "Не найдена предварительная запись по введеному коду";
                 } else {
-                    Uses.log.logger.trace("Предваритело записанный клиент пришел не в свое время");
+                    QLog.l().logger().trace("Предваритело записанный клиент пришел не в свое время");
                     answer = "Предваритело записанный клиент пришел не в свое время";
                 }
                 // Шлем отказ
@@ -1454,7 +1302,7 @@ public final class QServicesPool {
         @Override
         public RpcGetRespList process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            return new RpcGetRespList(getResponseList().getQRespItems());
+            return new RpcGetRespList(QResponseList.getInstance().getItems());
         }
     };
     /**
@@ -1469,19 +1317,20 @@ public final class QServicesPool {
             final QRespEvent event = new QRespEvent();
             event.setDate(new Date());
             event.setRespID(cmdParams.responseId);
-            Session session = Uses.getSessionFactory().getSessionFactory().openSession();
-            session.beginTransaction();
-            try {
-                session.save(event);
-                session.getTransaction().commit();
-                Uses.log.logger.debug("Сохранили отзыв в базе.");
-            } catch (Exception ex) {
-                rpc.setError(new JsonRPC20Error(JsonRPC20Error.RESPONCE_NOT_SAVE, ex));
-                Uses.log.logger.error("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
-                session.getTransaction().rollback();
-            } finally {
-                session.close();
-            }
+            Spring.getInstance().getTt().execute(new TransactionCallbackWithoutResult() {
+
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    try {
+                        Spring.getInstance().getHt().saveOrUpdate(event);
+                        QLog.l().logger().debug("Сохранили отзыв в базе.");
+                    } catch (Exception ex) {
+                        rpc.setError(new JsonRPC20Error(JsonRPC20Error.RESPONCE_NOT_SAVE, ex));
+                        QLog.l().logger().error("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
+                        status.setRollbackOnly();
+                    }
+                }
+            });
             return rpc;
         }
     };
@@ -1493,7 +1342,7 @@ public final class QServicesPool {
         @Override
         public RpcGetInfoTree process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            return new RpcGetInfoTree(getInfoTree().getRoot());
+            return new RpcGetInfoTree(QInfoTree.getInstance().getRoot());
         }
     };
     /**
@@ -1506,16 +1355,10 @@ public final class QServicesPool {
             super.process(cmdParams, ipAdress, IP);
             final Long authCustID = Long.parseLong(cmdParams.clientAuthId);
             // Вытащим из базы предварительного кастомера
-            final Session session = Uses.getSessionFactory().getSessionFactory().openSession();
-            QAuthorizationCustomer authCust;
-            try {
-                authCust = (QAuthorizationCustomer) session.get(QAuthorizationCustomer.class, authCustID);
-                if (authCust == null) {
-                    authCust = (QAuthorizationCustomer) session.get(QAuthorizationCustomer.class, 7700000000000000L + authCustID);
-                }
-            } finally {
-                session.clear();
-                session.close();
+            final QAuthorizationCustomer authCust = new QAuthorizationCustomer();
+            Spring.getInstance().getHt().load(authCust, authCustID);
+            if (authCust.getId() == null || authCust.getName() == null) {
+                throw new ServerException("не найден клиент по его ID");
             }
             return new RpcGetAuthorizCustomer(authCust);
         }
@@ -1528,7 +1371,7 @@ public final class QServicesPool {
         @Override
         public RpcGetResultsList process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            return new RpcGetResultsList(getResultsList().getItems());
+            return new RpcGetResultsList(QResultList.getInstance().getItems());
         }
     };
     /**
@@ -1543,330 +1386,53 @@ public final class QServicesPool {
             final String num = cmdParams.clientAuthId.trim();
             final StringBuilder sb = new StringBuilder("");
 
-            QServiceTree.sailToStorm(getServices().getRoot(), new ISailListener() {
-
-                @Override
-                public void actionPerformed(QService service) {
-                    for (QCustomer customer : service.getCustomers()) {
-                        if (num.equals(customer.getPrefix() + customer.getNumber())) {
-                            customer.setPriority(cmdParams.priority);
-                            service.removeCustomer(customer); // убрать из очереди
-                            service.addCustomer(customer);// перепоставили чтобы очередность переинлексиловалась
-                            sb.append("Клиенту с номером \"").append(num).append("\" в услуге \"").append(customer.getServiceName()).append("\" изменен приоритет.");
-                        }
+            for (QService service : QServiceTree.getInstance().getNodes()) {
+                for (QCustomer customer : service.getCustomers()) {
+                    if (num.equals(customer.getPrefix() + customer.getNumber())) {
+                        customer.setPriority(cmdParams.priority);
+                        service.removeCustomer(customer); // убрать из очереди
+                        service.addCustomer(customer);// перепоставили чтобы очередность переинлексиловалась
+                        sb.append("Клиенту с номером \"").append(num).append("\" в услуге \"").append(customer.getService().getName()).append("\" изменен приоритет.");
                     }
                 }
-            });
+            }
+
             final String s = sb.toString();
             return new RpcGetSrt("".equals(s) ? "Клиент по введенному номеру \"" + num + "\" не найден." : s);
+        }
+    };
+    /**
+     * Рестарт сервера из админки
+     */
+    final Task restartServer = new Task(Uses.TASK_RESTART) {
+
+        @Override
+        public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            QServer.savePool();
+            ServerEvents.getInstance().restartEvent();
+            QPostponedList.getInstance().clear();
+            QServer.loadPool();
+            MainBoard.getInstance().refresh();
+            return new JsonRPC20();
+        }
+    };
+    /**
+     * Рестарт сервера из админки
+     */
+    final Task restarMainTablo = new Task(Uses.TASK_RESTART_MAIN_TABLO) {
+
+        @Override
+        public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            MainBoard.getInstance().refresh();
+            return new JsonRPC20();
         }
     };
 
 //****************************************************************************
 //********************* КОНЕЦ добавления в мап обработчиков заданий  *********
 //****************************************************************************
-    /**
-     * Конструктор пула очередей
-     * Также нужно оперделить способ вывода информации для клиентов на табло.
-     * @param property свойства и настройки по которым строим пул
-     * @param ignoreWork создавать или нет статистику и табло.
-     */
-    private QServicesPool(IServerGetter property, boolean ignoreWork) {
-        final long start = System.currentTimeMillis();
-        Uses.log.logger.debug("Формирование пула очередей.");
-        setNetPropetry(property.getNetProperty() instanceof NetProperty ? (NetProperty) property.getNetProperty() : new NetProperty(property.getNetProperty()));
-        serviceTree = QServiceTree.resetServiceTree(property.getPoolGetter());
-        infoTree = QInfoTree.resetInfoTree();
-        userList = QUserList.resetUserList(property.getUsersGetter());
-        responseList = QResponseList.resetResponseList();
-        resultsList = QResultList.resetResultList();
-        scheduleList = QScheduleList.resetScheduleList();
-        calendarList = QCalendarList.resetCalendarList();
-
-        if (ignoreWork) {
-            statistic = null;
-        } else {
-            //пробуем восстановить состояние системы
-            loadPool();
-            // создаем ведение текущей статистики
-            statistic = CurrentStatistic.startCurrentStatistic(property.getUsersGetter(), netProp.getWebServerPort(), property.getReports());
-            // запускаем движок индикации сообщения для кастомеров
-            indicatorBoard.showBoard();
-        }
-        if (!(Uses.format_HH_mm.format(netProp.getStartTime()).equals(Uses.format_HH_mm.format(netProp.getFinishTime())))) {
-            clearServices.start();
-        }
-        Uses.log.logger.debug("Пул очередей сформирован. Очередей " + serviceTree.size() + "; пользователей " + userList.getSize() + ". Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
-    }
-    /**
-     * Для Singleton/
-     */
-    private static QServicesPool instance = null;
-
-    /**
-     * Получение объекта. Для Singleton.
-     * @param ignoreWork
-     * @return QServicesPool
-     */
-    public static QServicesPool getServicesPool(boolean ignoreWork) {
-        if (instance == null) {
-            recreateServicesPool(ignoreWork);
-        }
-        return instance;
-    }
-
-    /**
-     * Получение объекта принудительно пересоздав его. Для Singleton.
-     * @param ignoreWork
-     * @return QServicesPool
-     */
-    public static QServicesPool recreateServicesPool(boolean ignoreWork) {
-
-        if (Uses.spring.factory == null) {
-            throw new ServerException("Не определен контекст Spring.");
-        }
-        //final DirectorServerProperty director = new DirectorServerProperty();
-        final AServerPropertyBuilder propertyBuilder = (AServerPropertyBuilder) Uses.spring.factory.getBean("serverProperty");
-        // создаем движок индикации сообщения для кастомеров
-        indicatorBoard = (IIndicatorBoard) Uses.spring.factory.getBean("indicatorBoard");
-        // Для прерывания звука в роликах при звуковом оповещении.
-        if (indicatorBoard instanceof QIndicatorBoardMonitor) {
-            SoundPlayer.setStartListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ((QIndicatorBoardMonitor) indicatorBoard).setMute(true);
-                }
-            });
-            SoundPlayer.setFinishListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ((QIndicatorBoardMonitor) indicatorBoard).setMute(false);
-                }
-            });
-        }
-        //director.setServerPropertyBuilder(propertyBuilder);
-        //director.constructServerProperty();
-        //final IServerGetter property = director.getServerProperty();
-        constructServerProperty(propertyBuilder);
-        final IServerGetter property = propertyBuilder.getServerGetter();
-        // остановим отчетный вебсервер и потом перестартанем во время создания статистики
-        WebServer.stopWebServer();
-        instance = new QServicesPool(property, ignoreWork);
-        instance.poolSaver = property.getPoolSaver();
-
-        return instance;
-    }
-
-    /**
-     * Само констрирование свойств билдером.
-     */
-    private static void constructServerProperty(AServerPropertyBuilder serverPropertyBuilder) {
-        final long start = System.currentTimeMillis();
-        serverPropertyBuilder.createNewServerGetter();
-        serverPropertyBuilder.buildNetProperty();
-        serverPropertyBuilder.buildPoolGetter();
-        serverPropertyBuilder.buildUsersGetter();
-        serverPropertyBuilder.buildPoolSaver();
-        serverPropertyBuilder.buildReports();
-        Uses.log.logger.debug("Объекты настроек готовы. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
-    }
-    /**
-     * Интерфейс созранения конфигурации.
-     */
-    private IPoolSaver poolSaver = null;
-
-    /**
-     * Этим методом сохраняем всю конфигурацию в файл или БД, без разници.
-     * Надо сохранить че наисправлял в пуле - вызывай.
-     */
-    public void savePoolConfig() {
-        poolSaver.save(this);
-    }
-
-    protected void addUserToPool(String name, QUser user) {
-        userList.addElement(user);
-        Uses.log.logger.trace("Пользователя в мап: '" + name + "' -> '" + user.getName() + '\'');
-    }
-
-    /**
-     * Сохранение состояния пула услуг в xml-файл на диск
-     */
-    public void savePool() {
-        final long start = System.currentTimeMillis();
-        final Lock saveLock = new ReentrantLock();
-        saveLock.lock();
-        try {
-            Uses.log.logger.info("Сохранение состояния.");
-            final LinkedList<QCustomer> backup = new LinkedList<QCustomer>();// создаем список сохраняемых кастомеров
-
-            QServiceTree.sailToStorm(serviceTree.getRoot(), new ISailListener() {
-
-                @Override
-                public void actionPerformed(QService service) {
-                    backup.addAll(service.getClients());
-                }
-            });
-
-            for (QUser user : userList.getUsers()) {
-                if (user.getCustomer() != null) {
-                    backup.add(user.getCustomer());
-                }
-            }
-            // в темповый файл
-            final FileOutputStream fos;
-            try {
-                (new File(Uses.TEMP_FOLDER)).mkdir();
-                fos = new FileOutputStream(new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE));
-            } catch (FileNotFoundException ex) {
-                throw new ServerException("Не возможно создать временный файл состояния. " + ex.getMessage());
-            }
-            Gson gson = null;
-            try {
-                gson = GsonPool.getInstance().borrowGson();
-                fos.write(gson.toJson(new TempList(backup, QPostponedList.getInstance().getPostponedCustomers())).getBytes("UTF-8"));
-                fos.flush();
-                fos.close();
-            } catch (IOException ex) {
-                throw new ServerException("Не возможно сохранить изменения в поток." + ex.getMessage());
-            } finally {
-                GsonPool.getInstance().returnGson(gson);
-            }
-        } finally {
-            saveLock.unlock();
-        }
-        Uses.log.logger.info("Состояние сохранено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
-    }
-
-    static class TempList {
-
-        public TempList() {
-        }
-
-        public TempList(LinkedList<QCustomer> backup, LinkedList<QCustomer> postponed) {
-            this.backup = backup;
-            this.postponed = postponed;
-        }
-        @Expose
-        @SerializedName("backup")
-        LinkedList<QCustomer> backup;
-        @Expose
-        @SerializedName("postponed")
-        LinkedList<QCustomer> postponed;
-    }
-
-    /**
-     * Загрузка состояния пула услуг из временного xml-файла
-     */
-    final protected void loadPool() {
-        final long start = System.currentTimeMillis();
-        // если есть временный файлик сохранения состояния, то надо его загрузить.
-        // все ошибки чтения и парсинга игнорить.
-        Uses.log.logger.info("Пробуем восстановить состояние системы.");
-        File recovFile = new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE);
-        if (recovFile.exists()) {
-            Uses.log.logger.warn("Восстановление состояние системы после вчерашнего... нештатного завершения работы сервера.");
-            //восстанавливаем состояние
-
-
-            final FileInputStream fis;
-            try {
-                fis = new FileInputStream(recovFile);
-            } catch (FileNotFoundException ex) {
-                throw new ServerException(ex);
-            }
-            final Scanner scan = new Scanner(fis, "utf8");
-            boolean flag = true;
-            String rec_data = "";
-            while (scan.hasNextLine()) {
-                rec_data += scan.nextLine();
-            }
-            try {
-                fis.close();
-            } catch (IOException ex) {
-                throw new ServerException(ex);
-            }
-
-
-
-            final TempList recList;
-            final Gson gson = GsonPool.getInstance().borrowGson();
-            final RpcGetAdvanceCustomer rpc;
-            try {
-                recList = gson.fromJson(rec_data, TempList.class);
-            } catch (JsonParseException ex) {
-                throw new ServerException("Не возможно интерпритировать сохраненные данные.\n" + ex.toString());
-            } finally {
-                GsonPool.getInstance().returnGson(gson);
-            }
-
-
-
-            try {
-                QPostponedList.getInstance().loadPostponedList(recList.postponed);
-                for (QCustomer recCustomer : recList.backup) {
-                    // в эту очередь он был
-                    final QService service = serviceTree.getByName(recCustomer.getServiceName());
-                    // так зовут юзера его обрабатываюшего
-                    final QUser user = recCustomer.getUser();
-                    // кастомер ща стоит к этой услуге к какой стоит
-                    recCustomer.setService(service);
-                    // смотрим к чему привязан кастомер. либо в очереди стоит, либо у юзера обрабатыватся
-                    if (user == null) {
-                        // сохраненный кастомер стоял в очереди и ждал, но его еще никто не звал
-                        serviceTree.getByName(recCustomer.getServiceName()).addCustomer(recCustomer);
-                        Uses.log.logger.debug("Добавили клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к услуге \"" + recCustomer.getServiceName() + "\"");
-                    } else {
-                        // сохраненный кастомер обрабатывался юзером с именем userName
-                        userList.getByName(user.getName()).setCustomer(recCustomer);
-                        recCustomer.setUser(userList.getByName(user.getName()));
-                        Uses.log.logger.debug("Добавили клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к юзеру \"" + user.getName() + "\"");
-                    }
-                }
-            } catch (ServerException ex) {
-                System.err.println("Востановление состояния сервера после изменения конфигурации. " + ex);
-                clearAllQueue();
-                Uses.log.logger.error("Востановление состояния сервера после изменения конфигурации. Для выключения сервера используйте команду exit. ", ex);
-            }
-        }
-        Uses.log.logger.info("Восстановление состояния системы завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
-    }
-    /**
-     * Таймер, по которому будем Очистка всех услуг.
-     */
-    public ATalkingClock clearServices = new ATalkingClock(Uses.DELAY_CHECK_TO_LOCK, 0) {
-
-        @Override
-        public void run() {
-            if (Uses.format_HH_mm.format(new Date()).equals(Uses.format_HH_mm.format(netProp.getStartTime()))) {
-                Uses.log.logger.info("Очистка всех услуг.");
-                // почистим все услуги от трупов кастомеров с прошлого дня
-                clearAllQueue();
-            }
-        }
-    };
-
-    private void clearAllQueue() {
-        // почистим все услуги от трупов кастомеров
-        QServiceTree.sailToStorm(serviceTree.getRoot(), new ISailListener() {
-
-            @Override
-            public void actionPerformed(QService service) {
-                service.clearNextNumber();
-                QService.clearNextStNumber();
-                service.freeCustomers();
-            }
-        });
-        // Сотрем временные файлы
-        Uses.deleteTempFile();
-        Uses.log.logger.info("Очистка всех пользователей от привязанных кастомеров.");
-        for (Object o : userList.toArray()) {
-            QUser user = (QUser) o;
-            user.setCustomer(null);
-        }
-    }
-
 //**********************************************************************************************
 //**********************************   ОБРАБОТКА ЗАДАНИЙ  **************************************
 //**********************************************************************************************    
@@ -1879,10 +1445,10 @@ public final class QServicesPool {
      */
     public Object doTask(JsonRPC20 rpc, String ipAdress, byte[] IP) {
         final long start = System.currentTimeMillis();
-        if (!Uses.isDebug) {
+        if (!QLog.l().isDebug()) {
             System.out.println("Task processing: '" + rpc.getMethod());
         }
-        Uses.log.logger.info("Обработка задания: '" + rpc.getMethod() + "'");
+        QLog.l().logger().info("Обработка задания: '" + rpc.getMethod() + "'");
         if (tasks.get(rpc.getMethod()) == null) {
             throw new ServerException("В задании не верно указано название действия: '" + rpc.getMethod() + "'");
         }
@@ -1894,7 +1460,7 @@ public final class QServicesPool {
         // А то что необходимо синхронизировать, то синхронизится в самих обработчиках.
         result = tasks.get(rpc.getMethod()).process(rpc.getParams(), ipAdress, IP);
 
-        Uses.log.logger.info("Задание завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
+        QLog.l().logger().info("Задание завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
         return result;
     }
 }

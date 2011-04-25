@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,9 +25,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.server.model.IidGetter;
 
 /**
  *
@@ -35,7 +33,7 @@ import ru.apertum.qsystem.common.Uses;
  */
 @Entity
 @Table(name = "results")
-public class QResult implements Serializable {
+public class QResult implements IidGetter, Serializable {
 
     @Id
     @Column(name = "id")
@@ -44,6 +42,7 @@ public class QResult implements Serializable {
     @SerializedName("id")
     private Long id;
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -59,20 +58,13 @@ public class QResult implements Serializable {
     @SerializedName("name")
     private String name;
 
+    @Override
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Deprecated
-    public Element getXML() {
-        final Element el = DocumentHelper.createElement(Uses.TAG_RESULT_ITEM);
-        el.addAttribute(Uses.TAG_ID, getId().toString());
-        el.addAttribute(Uses.TAG_PROP_NAME, getName());
-        return el;
     }
 
     @Override

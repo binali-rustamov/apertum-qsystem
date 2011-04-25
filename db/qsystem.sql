@@ -228,6 +228,11 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`net` (
   `finish_time` TIME NOT NULL COMMENT 'Время прекращения приема заявок на постановку в очередь' ,
   `start_time` TIME NOT NULL COMMENT 'Время начала приема заявок на постановку в очередь' ,
   `version` VARCHAR(25) NOT NULL DEFAULT 'Не присвоена' COMMENT 'Версия БД' ,
+  `first_number` INT NOT NULL DEFAULT 1 ,
+  `last_number` INT NOT NULL DEFAULT 999 ,
+  `numering` TINYINT(1) NOT NULL DEFAULT true COMMENT '0 общая нумерация, 1 для каждой услуги своя нумерация' ,
+  `point` INT NOT NULL DEFAULT 0 COMMENT '0 кабинет, 1 окно, 2 стойка' ,
+  `sound` INT NOT NULL DEFAULT 2 COMMENT '0 нет оповещения, 1 только сигнал, 2 сигнал+голос' ,
   PRIMARY KEY (`id`) )
 COMMENT = 'Сетевые настройки сервера.';
 
@@ -423,6 +428,33 @@ COMMENT = 'Дни неработы услуг';
 
 CREATE INDEX `fk_calendar_out_days_calendar` ON `qsystem`.`calendar_out_days` (`calendar_id` ASC) ;
 
+
+-- -----------------------------------------------------
+-- Table `qsystem`.`users_services_users`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `qsystem`.`users_services_users` ;
+
+CREATE  TABLE IF NOT EXISTS `qsystem`.`users_services_users` (
+  `planServices_id` BIGINT NOT NULL ,
+  `users_id` BIGINT NOT NULL ,
+  PRIMARY KEY (`planServices_id`) ,
+  CONSTRAINT `fk_planserv`
+    FOREIGN KEY (`planServices_id` )
+    REFERENCES `qsystem`.`services_users` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_user`
+    FOREIGN KEY (`users_id` )
+    REFERENCES `qsystem`.`users` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+COMMENT = 'Услуги юзеров с приоритетами.';
+
+CREATE INDEX `fk_planserv` ON `qsystem`.`users_services_users` (`planServices_id` ASC) ;
+
+CREATE INDEX `fk_user` ON `qsystem`.`users_services_users` (`users_id` ASC) ;
+
 USE `qsystem`;
 
 DELIMITER //
@@ -536,7 +568,7 @@ COMMIT;
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 USE `qsystem`;
-INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', '1.1');
+INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', '1.1', 1, 999, false, 0, 2);
 
 COMMIT;
 

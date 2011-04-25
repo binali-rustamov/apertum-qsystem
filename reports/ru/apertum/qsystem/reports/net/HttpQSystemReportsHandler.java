@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@ import org.apache.http.entity.EntityTemplate;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.reports.common.Response;
-import ru.apertum.qsystem.reports.model.ReportGenerator;
-import ru.apertum.qsystem.reports.model.WebServer;
+import ru.apertum.qsystem.reports.model.QReportsList;
 
 /**
  *
@@ -51,7 +51,7 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
             throw new MethodNotSupportedException(method + " method not supported");
         }
         // пытаемся сгенерировать отчет
-        Response result = ReportGenerator.generate(request);
+        Response result = QReportsList.getInstance().generate(request);
         // действуем по результатам генерации
         if (result == null) {
 
@@ -77,19 +77,19 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
             // Выдаем ресурс  "/ru/apertum/qsystem/reports/web/"
             final InputStream inStream = getClass().getResourceAsStream("/ru/apertum/qsystem/reports/web" + subject);
             if (inStream == null) {
-                Uses.logRep.logger.warn("Ресурс не найден: \"/ru/apertum/qsystem/reports/web" + subject + "\"");
+                QLog.l().logRep().warn("Ресурс не найден: \"/ru/apertum/qsystem/reports/web" + subject + "\"");
                 // не в ресурсах, ищем в файлах
                 // в нормальных файлах
                 subject = subject.substring(1);
                 File anyFile = new File(subject);
                 if (anyFile.exists()) {
-                    Uses.logRep.logger.info("Выдаем файл: \"" + subject + "\"");
+                    QLog.l().logRep().info("Выдаем файл: \"" + subject + "\"");
                     FileInputStream fInStream = null;
                     try {
                         fInStream = new FileInputStream(anyFile);
                     } catch (FileNotFoundException ex) {
                         final String err = "Ошибка при чтении файла \"" + subject + "\" ";
-                        Uses.logRep.logger.error("err " + ex);
+                        QLog.l().logRep().error("err " + ex);
                         result = new Response((err + ex).getBytes(), contentType);
                         response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
                     }
@@ -98,7 +98,7 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
                         response.setStatusCode(HttpStatus.SC_OK);
                     } catch (IOException ex) {
                         final String err = "Ошибка при чтении файла из потока \"" + subject + "\" ";
-                        Uses.logRep.logger.error("err " + ex);
+                        QLog.l().logRep().error("err " + ex);
                         result = new Response((err + ex).getBytes(), contentType);
                         response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
                     }
@@ -106,13 +106,13 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
                     // во временных файлах
                     anyFile = new File(Uses.TEMP_FOLDER + File.separator + "temphtml.html_files" + File.separator + subject);
                     if (anyFile.exists()) {
-                        Uses.logRep.logger.info("Выдаем временный файл: \"" + Uses.TEMP_FOLDER + File.separator + "temphtml.html_files" + File.separator + subject + "\"");
+                        QLog.l().logRep().info("Выдаем временный файл: \"" + Uses.TEMP_FOLDER + File.separator + "temphtml.html_files" + File.separator + subject + "\"");
                         FileInputStream fInStream = null;
                         try {
                             fInStream = new FileInputStream(anyFile);
                         } catch (FileNotFoundException ex) {
                             final String err = "Ошибка при чтении файла \"" + Uses.TEMP_FOLDER + File.separator + "temphtml.html_files" + File.separator + subject + "\" ";
-                            Uses.logRep.logger.error("err " + ex);
+                            QLog.l().logRep().error("err " + ex);
                             result = new Response((err + ex).getBytes(), contentType);
                             response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
                         }
@@ -121,28 +121,28 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
                             response.setStatusCode(HttpStatus.SC_OK);
                         } catch (IOException ex) {
                             final String err = "Ошибка при чтении файла из потока \"" + Uses.TEMP_FOLDER + File.separator + "temphtml.html_files" + File.separator + subject + "\" ";
-                            Uses.logRep.logger.error("err " + ex);
+                            QLog.l().logRep().error("err " + ex);
                             result = new Response((err + ex).getBytes(), contentType);
                             response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
                         }
                         anyFile.delete();
                     } else {
                         // ваще ничего нет. наверное битый адрес или ресурс пропал(не сформировался)
-                        Uses.logRep.logger.error("Ресурс не найден во временных файлах: \"" + Uses.TEMP_FOLDER + File.separator + "temphtml.html_files" + File.separator + subject + "\"");
+                        QLog.l().logRep().error("Ресурс не найден во временных файлах: \"" + Uses.TEMP_FOLDER + File.separator + "temphtml.html_files" + File.separator + subject + "\"");
                         final String s = "<html><head><meta http-equiv = \"Content-Type\" content = \"text/html; charset=utf-8\" ></head><p align=center>Ресурс не найден.</p></html>";
                         result = new Response(s.getBytes());
                     }
                 }
 
             } else {
-                Uses.logRep.logger.info("Выдаем ресурс: \"" + subject + "\"");
+                QLog.l().logRep().info("Выдаем ресурс: \"" + subject + "\"");
                 try {
                     result = new Response(Uses.readInputStream(inStream));
                     if ("/login.html".equals(subject)) {
-                        result.setData(new String(result.getData(), "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, WebServer.usrList).getBytes("UTF-8")); //"Cp1251"
+                        result.setData(new String(result.getData(), "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, QReportsList.getInstance().getHtmlUsersList()).getBytes("UTF-8")); //"Cp1251"
                     }
                 } catch (IOException ex) {
-                    Uses.logRep.logger.error("Ошибка чтения ресурса. " + ex);
+                    QLog.l().logRep().error("Ошибка чтения ресурса. " + ex);
                     result = new Response(("Ошибка чтения ресурса. " + ex).getBytes());
                     response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
                 }
@@ -151,7 +151,7 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
         }
 
         // выводим данные:
-        Uses.logRep.logger.trace("Выдаем результат " + result.getData().length + " байт на запрос \"" + request.getRequestLine().getUri() + "\".");
+        QLog.l().logRep().trace("Выдаем результат " + result.getData().length + " байт на запрос \"" + request.getRequestLine().getUri() + "\".");
 
         final byte[] result2 = result.getData();
         final EntityTemplate body = new EntityTemplate(new ContentProducer() {

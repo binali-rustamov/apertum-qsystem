@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import javax.swing.tree.TreeNode;
+
 /**
  * Инрерфейс для событий обхода дерева услуг.
  * Должен возникать для каждой услуги и группы при рекурентном обходею
@@ -27,5 +29,5 @@ public interface ISailListener {
      * Вызывается для каждой услуги при рекурсии.
      * @param service текущий шаг рекурсии.
      */
-    public void actionPerformed(QService service);
+    public void actionPerformed(TreeNode service);
 }

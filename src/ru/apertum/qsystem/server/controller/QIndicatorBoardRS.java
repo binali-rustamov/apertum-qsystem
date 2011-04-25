@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,10 +26,10 @@ import java.util.List;
 import javax.swing.Timer;
 import org.dom4j.Element;
 import ru.apertum.qsystem.client.forms.AFBoardRedactor;
-import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
-import ru.apertum.qsystem.common.model.ICustomer;
-import ru.apertum.qsystem.server.model.IUserProperty;
+import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.server.model.QUser;
 import ru.evgenic.rxtx.serialPort.ISerialExceptionListener;
 import ru.evgenic.rxtx.serialPort.ISerialLoggerListener;
 import ru.evgenic.rxtx.serialPort.ISerialPort;
@@ -79,6 +79,11 @@ public class QIndicatorBoardRS extends AIndicatorBoard {
      */
     private final Timer timer = new Timer(DELAY_BLINK, new TimerPrinter());
 
+    @Override
+    public void refresh() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     /**
      * Собыите вывода времени на таймер.
      */
@@ -98,7 +103,7 @@ public class QIndicatorBoardRS extends AIndicatorBoard {
     };
     //***************************************** таймер вывода времени  *************************************************
     @Override
-    public void inviteCustomer(IUserProperty user, ICustomer customer) {
+    public void inviteCustomer(QUser user, QCustomer customer) {
         // У юзера высветим номер кастомера и заставим мирать.
         final String point = user.getPoint();
         final String customerNumber = customer.getPrefix() + customer.getNumber();
@@ -133,7 +138,7 @@ public class QIndicatorBoardRS extends AIndicatorBoard {
     }
 
     @Override
-    public void workCustomer(IUserProperty user) {
+    public void workCustomer(QUser user) {
         // Прекратить мигание номера юзера.
         // Да не мигает ОН!!!
         //final Record rec = records.get(user.getPoint());
@@ -142,7 +147,7 @@ public class QIndicatorBoardRS extends AIndicatorBoard {
     }
 
     @Override
-    public void killCustomer(IUserProperty user) {
+    public void killCustomer(QUser user) {
         // У юзера подотреем номер кастомера.
         final String point = user.getPoint();
         final Integer adressRS = user.getAdressRS();
@@ -241,9 +246,9 @@ public class QIndicatorBoardRS extends AIndicatorBoard {
             @Override
             public void actionPerformed(String message, boolean isError) {
                 if (isError) {
-                    Uses.log.logger.error(message);
+                    QLog.l().logger().error(message);
                 } else {
-                    Uses.log.logger.debug(message);
+                    QLog.l().logger().debug(message);
                 }
             }
         });

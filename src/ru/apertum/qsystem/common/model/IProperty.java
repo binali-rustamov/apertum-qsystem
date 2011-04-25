@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010 Apertum project. web: www.apertum.ru email: info@apertum.ru
+ *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,7 +43,9 @@ public interface IProperty {
     /**
      * Описание параметра в виде XML.
      * @return XML-элемент корень параметра
+     * @deprecated
      */
+    @Deprecated
     public Element getXML();
 
     /**
@@ -53,7 +55,9 @@ public interface IProperty {
      * Этот метод появился в связи с тем что hibernate ваозвращает не просто поля,
      * а уже готовые классы, и у них можно взять свойства.
      * @return Объект - обладатель свойств.
+     * @deprecated
      */
+    @Deprecated
     public Object getInstance();
     
     /**
