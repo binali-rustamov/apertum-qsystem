@@ -233,6 +233,8 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`net` (
   `numering` TINYINT(1) NOT NULL DEFAULT true COMMENT '0 общая нумерация, 1 для каждой услуги своя нумерация' ,
   `point` INT NOT NULL DEFAULT 0 COMMENT '0 кабинет, 1 окно, 2 стойка' ,
   `sound` INT NOT NULL DEFAULT 2 COMMENT '0 нет оповещения, 1 только сигнал, 2 сигнал+голос' ,
+  `branch_id` BIGINT NOT NULL DEFAULT -1 ,
+  `sky_server_url` VARCHAR(145) NOT NULL DEFAULT '' ,
   PRIMARY KEY (`id`) )
 COMMENT = 'Сетевые настройки сервера.';
 
@@ -568,7 +570,7 @@ COMMIT;
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 USE `qsystem`;
-INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', '1.1', 1, 999, false, 0, 2);
+INSERT INTO `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`) VALUES (1, 3128, 8088, 3129, '18:00:00', '8:45:00', '1.1', 1, 999, false, 0, 2, -1, '');
 
 COMMIT;
 

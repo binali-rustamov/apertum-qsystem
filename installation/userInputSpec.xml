@@ -34,13 +34,6 @@
             <spec txt="RMI port:" id="clnPort" layout="N:6:6" set="0:3129"/>
             <validator class="com.izforge.izpack.util.NotEmptyValidator" txt="Invalid Port"/>
         </field>
-        
-        
-        <field type="staticText" align="centre" txt="Network settings" id="forCP"/>
-        
-        <!--field type="divider" /-->
-        <field type="check" variable="super">
-            <spec txt="Super Server" id="super" true="super" false="" set="false"/>
-        </field>
+
     </panel>
 </userInput>

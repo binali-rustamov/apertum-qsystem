@@ -756,12 +756,11 @@ public final class Executer {
             // но сначала обозначим результат работы юзера с кастомером, если такой результат найдется в списке результатов
             customer.setFinishTime(new Date());
             // кастомер переходит в состояние "Завершенности", но не "мертвости"
-            customer.setState(CustomerState.STATE_FINISH);
+            customer.setState(CustomerState.STATE_POSTPONED);
             try {
                 user.setCustomer(null);//бобик сдох но медалька осталось, отправляем в пулл
                 customer.setUser(null);
                 QPostponedList.getInstance().addElement(customer);
-                customer.setState(CustomerState.STATE_POSTPONED);
                 // сохраняем состояния очередей.
                 QServer.savePool();
                 //разослать оповещение о том, что посетитель отложен
@@ -816,8 +815,8 @@ public final class Executer {
                 QLog.l().logger().debug("Требуется возврат после редиректа.");
                 // действия по завершению работы юзера над кастомером
                 customer.setFinishTime(new Date());
-                // тут еще и в базу скинется, если надо.
-                customer.setState(CustomerState.STATE_FINISH);
+                // кастомер переходит в состояние "возврата", тут еще и в базу скинется, если надо.
+                customer.setState(CustomerState.STATE_BACK, backSrv.getId());
                 // переставить кастомера в очередь к пункту возврата
                 backSrv.addCustomer(customer);
                 // надо кастомера инициализить др. услугой
@@ -828,8 +827,6 @@ public final class Executer {
                 // теперь стоит к новой услуги.
                 customer.setService(backSrv);
 
-                // кастомер переходит в состояние "возврата"
-                user.getCustomer().setState(CustomerState.STATE_BACK);
                 //разослать оповещение о том, что появился посетитель после редиректа
                 //рассылаем широковещетельно по UDP на определенный порт
                 Uses.sendUDPBroadcast(backSrv.getId().toString(), ServerProps.getInstance().getProps().getClientPort());
@@ -883,10 +880,8 @@ public final class Executer {
             final QService newService = QServiceTree.getInstance().getById(cmdParams.serviceId);
             // действия по завершению работы юзера над кастомером
             customer.setFinishTime(new Date());
-            // тут еще и в базу скинется, если надо.
-            customer.setState(CustomerState.STATE_FINISH);
-            // кастомер переходит в состояние "перенаправленности"
-            customer.setState(CustomerState.STATE_REDIRECT);
+            // кастомер переходит в состояние "перенаправленности", тут еще и в базу скинется, если надо.
+            customer.setState(CustomerState.STATE_REDIRECT, cmdParams.serviceId);
             // надо кастомера инициализить др. услугой
             // юзер в другой очереди наверное другой
             customer.setUser(null);
@@ -1384,20 +1379,13 @@ public final class Executer {
             super.process(cmdParams, ipAdress, IP);
             // Вытащим из базы предварительного кастомера
             final String num = cmdParams.clientAuthId.trim();
-            final StringBuilder sb = new StringBuilder("");
-
+            String s = "";
             for (QService service : QServiceTree.getInstance().getNodes()) {
-                for (QCustomer customer : service.getCustomers()) {
-                    if (num.equals(customer.getPrefix() + customer.getNumber())) {
-                        customer.setPriority(cmdParams.priority);
-                        service.removeCustomer(customer); // убрать из очереди
-                        service.addCustomer(customer);// перепоставили чтобы очередность переинлексиловалась
-                        sb.append("Клиенту с номером \"").append(num).append("\" в услуге \"").append(customer.getService().getName()).append("\" изменен приоритет.");
-                    }
+                if (service.changeCustomerPriorityByNumber(num, cmdParams.priority)){
+                    s = "Клиенту с номером \""+ num + "\" в услуге \"" + service.getName() + "\" изменен приоритет.";
+                    break;
                 }
             }
-
-            final String s = sb.toString();
             return new RpcGetSrt("".equals(s) ? "Клиент по введенному номеру \"" + num + "\" не найден." : s);
         }
     };

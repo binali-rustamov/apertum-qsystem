@@ -21,31 +21,8 @@
             <line>146</line>
             <line>343</line>
             <line>700</line>
-            <line>931</line>
-            <line>1220</line>
-        </file>
-        <file>
-            <url>src/ru/apertum/qsystem/client/forms/FClient.java</url>
-            <line>527</line>
-            <line>1272</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FClientView.java</url>
-            <line>0</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FAdvanceCalendar.java</url>
-            <line>498</line>
-        </file>
-        <file>
-            <url>src/ru/apertum/qsystem/common/RunningLabel.java</url>
-            <line>300</line>
-            <line>352</line>
-            <line>501</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
-            <line>306</line>
+            <line>926</line>
+            <line>1215</line>
         </file>
         <file>
             <url>src/ru/ccrs/client/forms/FIndicatorBoard.java</url>
@@ -83,16 +60,28 @@
             <line>534</line>
         </file>
         <file>
+            <url>src/ru/apertum/qsystem/client/forms/FClient.java</url>
+            <line>527</line>
+            <line>1272</line>
+        </file>
+        <file>
             <url>src/ru/ccrs/client/forms/FBoardConfig.java</url>
             <line>74</line>
             <line>419</line>
         </file>
         <file>
-            <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
-            <line>784</line>
-            <line>3512</line>
-            <line>3522</line>
-            <line>3911</line>
+            <url>src/ru/ccrs/client/forms/FClientView.java</url>
+            <line>0</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FAdvanceCalendar.java</url>
+            <line>498</line>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/common/RunningLabel.java</url>
+            <line>300</line>
+            <line>352</line>
+            <line>501</line>
         </file>
         <file>
             <url>src/ru/ccrs/server/model/QServicesPool.java</url>
@@ -106,6 +95,17 @@
             <line>1354</line>
             <line>1392</line>
             <line>1561</line>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
+            <line>790</line>
+            <line>3538</line>
+            <line>3548</line>
+            <line>4012</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
+            <line>306</line>
         </file>
     </editor-bookmarks>
 </project-private>

@@ -31,6 +31,7 @@ import ru.apertum.qsystem.server.model.results.QResult;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import java.util.Date;
+import java.util.ServiceLoader;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Transient;
@@ -41,6 +42,7 @@ import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.extra.IChangeCustomerStateEvent;
 import ru.apertum.qsystem.server.Spring;
 
 /**
@@ -118,6 +120,21 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
     private CustomerState state;
 
     public void setState(CustomerState state) {
+        setState(state, new Long(-1));
+    }
+
+    /**
+     * Специально для редиректа и возврата после редиректа
+     * @param state
+     * @param newServiceId 
+     */
+    public void setState(CustomerState state, Long newServiceId) {
+
+        // поддержка расширяемости плагинами
+        for (final IChangeCustomerStateEvent event : ServiceLoader.load(IChangeCustomerStateEvent.class)) {
+            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+            event.change(this, state, newServiceId);
+        }
         this.state = state;
 
         switch (state) {
@@ -133,10 +150,12 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
                 break;
             case STATE_INVITED_SECONDARY:
                 QLog.l().logger().debug("Статус: Пригласили кастомера с номером \"" + getPrefix() + getNumber() + "\"");
-                break;    
+                break;
             case STATE_REDIRECT:
                 QLog.l().logger().debug("Статус: Кастомера редиректили с номером \"" + getPrefix() + getNumber() + "\"");
                 getUser().getPlanService(getService()).inkWorked(new Date().getTime() - getStartTime().getTime());
+                // сохраним кастомера в базе
+                saveToSelfDB();
                 break;
             case STATE_WORK:
                 QLog.l().logger().debug("Начали работать с кастомером с номером \"" + getPrefix() + getNumber() + "\"");
@@ -152,27 +171,34 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
                 QLog.l().logger().debug("Статус: С кастомером с номером \"" + getPrefix() + getNumber() + "\" закончили работать");
                 getUser().getPlanService(getService()).inkWorked(new Date().getTime() - getStartTime().getTime());
                 // сохраним кастомера в базе
-                final DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-                def.setName("SomeTxName");
-                def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-                TransactionStatus status = Spring.getInstance().getTxManager().getTransaction(def);
-                try {
-                    if (input_data == null){ // вот жеж черд дернул выставить констрейнт на то что введенные данные не нул, а они этот ввод редко нужкн
-                        input_data = "";
-                    }
-                    Spring.getInstance().getHt().saveOrUpdate(this);
-                } catch (Exception ex) {
-                    Spring.getInstance().getTxManager().rollback(status);
-                    throw new ServerException("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
-                }
-                Spring.getInstance().getTxManager().commit(status);
-                QLog.l().logger().debug("Сохранили.");
+                saveToSelfDB();
                 break;
             case STATE_POSTPONED:
                 QLog.l().logger().debug("Кастомер с номером \"" + getPrefix() + getNumber() + "\" идет ждать в список отложенных");
                 getUser().getPlanService(getService()).inkWorked(new Date().getTime() - getStartTime().getTime());
+                // сохраним кастомера в базе
+                saveToSelfDB();
                 break;
         }
+    }
+
+    private void saveToSelfDB() {
+        // сохраним кастомера в базе
+        final DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setName("SomeTxName");
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        TransactionStatus status = Spring.getInstance().getTxManager().getTransaction(def);
+        try {
+            if (input_data == null) { // вот жеж черд дернул выставить констрейнт на то что введенные данные не нул, а они этот ввод редко нужкн
+                input_data = "";
+            }
+            Spring.getInstance().getHt().saveOrUpdate(this);
+        } catch (Exception ex) {
+            Spring.getInstance().getTxManager().rollback(status);
+            throw new ServerException("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
+        }
+        Spring.getInstance().getTxManager().commit(status);
+        QLog.l().logger().debug("Сохранили.");
     }
 
     @Transient

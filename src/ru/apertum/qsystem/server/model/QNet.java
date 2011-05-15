@@ -202,4 +202,33 @@ public class QNet implements Serializable {
     public void setSound(Integer sound) {
         this.sound = sound;
     }
+
+    /**
+     * Это ID филиала в котором установлена система.
+     * Нужно для идентификации в облачном сервисе
+     */
+    @Column(name = "branch_id")
+    private Long branchOfficeId;
+
+    public Long getBranchOfficeId() {
+        return branchOfficeId;
+    }
+
+    public void setBranchOfficeId(Long branchOfficeId) {
+        this.branchOfficeId = branchOfficeId;
+    }
+    /**
+     * URL облачного сервиса, к которому будет коннектится плагин
+     * Зачем это в БД? Да чо-бы проще было настраивать, а то придется как-то плагин отдельно админить. не все догадаются.
+     */
+    @Column(name="sky_server_url")
+    private String skyServerUrl;
+
+    public String getSkyServerUrl() {
+        return skyServerUrl;
+    }
+
+    public void setSkyServerUrl(String skyServerUrl) {
+        this.skyServerUrl = skyServerUrl;
+    }
 }

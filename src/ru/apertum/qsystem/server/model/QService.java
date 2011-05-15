@@ -22,9 +22,11 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedList;
 import javax.persistence.Id;
 import java.util.PriorityQueue;
+import java.util.ServiceLoader;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,8 +38,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import ru.apertum.qsystem.common.CustomerState;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.extra.ICustomerChangePosition;
 import ru.apertum.qsystem.server.ServerProps;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
@@ -65,7 +69,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
     @Transient
     private final PriorityQueue<QCustomer> customers = new PriorityQueue<QCustomer>();
 
-    public PriorityQueue<QCustomer> getCustomers() {
+    private PriorityQueue<QCustomer> getCustomers() {
         return customers;
     }
     @Transient
@@ -75,6 +79,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
 
     /**
      * Это все кастомеры стоящие к этой услуге в виде списка
+     * Только для бакапа на диск
      * @return
      */
     public LinkedList<QCustomer> getClients() {
@@ -328,17 +333,60 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
         if (!getCustomers().add(customer)) {
             throw new ServerException("Невозможно добавить нового кастомера в хранилище кастомеров.");
         }
+
+        // поддержка расширяемости плагинами/ определим куда влез клиент
+        QCustomer before = null;
+        QCustomer after = null;
+        for (Iterator<QCustomer> itr = getCustomers().iterator(); itr.hasNext();) {
+            final QCustomer c = itr.next();
+            if (!customer.getId().equals(c.getId())) {
+                if (customer.compareTo(c) == 1) {
+                    // c - первее, определяем before
+                    if (before == null) {
+                        before = c;
+                    } else {
+                        if (before.compareTo(c) == -1) {
+                            before = c;
+                        }
+                    }
+                } else {
+                    if (customer.compareTo(c) != 0) {
+                        // c - после, определяем after
+                        if (after == null) {
+                            after = c;
+                        } else {
+                            if (after.compareTo(c) == 1) {
+                                after = c;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // поддержка расширяемости плагинами
+        for (final ICustomerChangePosition event : ServiceLoader.load(ICustomerChangePosition.class)) {
+            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+            event.insert(customer, before, after);
+        }
+
         clients.clear();
-        clients.addAll(customers);
+        clients.addAll(getCustomers());
     }
 
     /**
      * Всего хорошего, все свободны!
      */
     public void freeCustomers() {
+        // поддержка расширяемости плагинами
+        for (final ICustomerChangePosition event : ServiceLoader.load(ICustomerChangePosition.class)) {
+            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+            for (Iterator<QCustomer> itr = getCustomers().iterator(); itr.hasNext();) {
+                event.remove(itr.next());
+            }
+        }
         getCustomers().clear();
         clients.clear();
-        clients.addAll(customers);
+        clients.addAll(getCustomers());
     }
 
     /**
@@ -355,8 +403,15 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
      */
     public QCustomer removeCustomer() {
         final QCustomer customer = getCustomers().remove();
+
+        // поддержка расширяемости плагинами
+        for (final ICustomerChangePosition event : ServiceLoader.load(ICustomerChangePosition.class)) {
+            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+            event.remove(customer);
+        }
+
         clients.clear();
-        clients.addAll(customers);
+        clients.addAll(getCustomers());
         return customer;
     }
 
@@ -374,8 +429,16 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
      */
     public QCustomer polCustomer() {
         final QCustomer customer = getCustomers().poll();
+        if (customer != null) {
+            // поддержка расширяемости плагинами
+            for (final ICustomerChangePosition event : ServiceLoader.load(ICustomerChangePosition.class)) {
+                QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+                event.remove(customer);
+            }
+        }
+
         clients.clear();
-        clients.addAll(customers);
+        clients.addAll(getCustomers());
         return customer;
     }
 
@@ -386,18 +449,16 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
      */
     public boolean removeCustomer(QCustomer customer) {
         final Boolean res = getCustomers().remove(customer);
+        if (customer != null && res) {
+            // поддержка расширяемости плагинами
+            for (final ICustomerChangePosition event : ServiceLoader.load(ICustomerChangePosition.class)) {
+                QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+                event.remove(customer);
+            }
+        }
         clients.clear();
-        clients.addAll(customers);
+        clients.addAll(getCustomers());
         return res;
-    }
-
-    /** 
-     *  Простая очистка очереди
-     */
-    public void clear() {
-        getCustomers().clear();
-        clients.clear();
-        clients.addAll(customers);
     }
 
     /** 
@@ -406,6 +467,18 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
      */
     public int getCountCustomers() {
         return getCustomers().size();
+    }
+
+    public boolean changeCustomerPriorityByNumber(String number, int newPriority) {
+        for (QCustomer customer : getCustomers()) {
+            if (number.equals(customer.getPrefix() + customer.getNumber())) {
+                customer.setPriority(newPriority);
+                removeCustomer(customer); // убрать из очереди
+                addCustomer(customer);// перепоставили чтобы очередность переинлексиловалась
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * Описание услуги.

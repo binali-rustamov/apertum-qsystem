@@ -58,14 +58,26 @@ public class Spring {
         return username;
     }
 
+    /**
+     * Для выборки данных из БД
+     * @return
+     */
     public HibernateTemplate getHt() {
         return (HibernateTemplate) factory.getBean("hibernateTemplate");
     }
 
+    /**
+     * Для транзакций через передачу на выполнениее класса с методом где реализована работа с БД
+     * @return
+     */
     public TransactionTemplate getTt() {
         return new TransactionTemplate(getTxManager());
     }
 
+    /**
+     * Для транзакций обычным образом с открытием именованной транзакции
+     * @return
+     */
     public HibernateTransactionManager getTxManager() {
         return (HibernateTransactionManager) factory.getBean("transactionManager");
     }
