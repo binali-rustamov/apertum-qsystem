@@ -32,7 +32,7 @@ public class QLog {
         // Ключи выполнения программы
 
     private static final String KEY_DEBUG = "DEBUG";
-    private static final String KEY_INFO = "INFO";
+    private static final String KEY_LOG_INFO = "LOGINFO";
     private static final String KEY_DEMO = "DEMO";
 
     private Logger logger = Logger.getLogger("server.file");//**.file.info.trace
@@ -79,7 +79,7 @@ public class QLog {
                 isDebugin = true;
             }
             // ключ, отвечающий за логирование
-            if (KEY_INFO.equalsIgnoreCase(args1[i])) {
+            if (KEY_LOG_INFO.equalsIgnoreCase(args1[i])) {
                 isDebugin = true;
                 logger = isServer1 ? Logger.getLogger("server.file.info") : Logger.getLogger("client.file.info");
             }

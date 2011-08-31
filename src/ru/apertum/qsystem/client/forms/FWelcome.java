@@ -147,6 +147,10 @@ public class FWelcome extends javax.swing.JFrame {
      * Режим предварительной записи в поликлинике
      */
     public static boolean isMed = false;
+    /**
+     * Режим инфокиоска, когда получить всю инфу с пункта регистрации можно, а встать в очередь нельзя
+     */
+    public static boolean isInfo = false;
     //******************************************************************************************************************
     //******************************************************************************************************************
     //*****************************************Сервер удаленного управления ********************************************
@@ -319,6 +323,9 @@ public class FWelcome extends javax.swing.JFrame {
                     serialPort.setSpeed(WelcomeParams.getInstance().buttons_speed);
                     serialPort.setStopBits(WelcomeParams.getInstance().buttons_stopbits);
                 }
+            }
+            if ("info".equals(s)) {
+                isInfo = true;
             }
         }
         final RpcGetAllServices.ServicesForWelcome servs = NetCommander.getServiсes(netProperty);
@@ -1075,7 +1082,7 @@ public class FWelcome extends javax.swing.JFrame {
         panelButtons.setBorder(new javax.swing.border.MatteBorder(null));
         panelButtons.setName("panelButtons"); // NOI18N
         panelButtons.setOpaque(false);
-        panelButtons.setLayout(new java.awt.GridLayout(1, 0));
+        panelButtons.setLayout(new java.awt.GridLayout(1, 0, 10, 0));
 
         buttonAdvance.setFont(resourceMap.getFont("buttonAdvance.font")); // NOI18N
         buttonAdvance.setText(resourceMap.getString("buttonAdvance.text")); // NOI18N
@@ -1142,7 +1149,7 @@ public class FWelcome extends javax.swing.JFrame {
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 366, Short.MAX_VALUE)
+            .addGap(0, 372, Short.MAX_VALUE)
         );
 
         panelLock.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1166,7 +1173,7 @@ public class FWelcome extends javax.swing.JFrame {
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1214,9 +1221,9 @@ public class FWelcome extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(panelCentreLayout.createSequentialGroup()
-                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
+                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
+                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout panelBackgroundLayout = new javax.swing.GroupLayout(panelBackground);

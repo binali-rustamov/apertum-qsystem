@@ -57,6 +57,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         super(parent, modal);
         preInfoDialog = this;
         initComponents();
+        buttonBack.setVisible(!FWelcome.isInfo);
     }
 
     private static ResourceMap localeMap = null;
@@ -130,10 +131,12 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         buttonInRoot = new javax.swing.JButton();
         buttonBack = new javax.swing.JButton();
         panelMain = new ru.apertum.qsystem.client.model.QPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
         labelHtml = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
+        setUndecorated(true);
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FPreInfoDialog.class);
         panelAll.setBackground(resourceMap.getColor("panelAll.background")); // NOI18N
@@ -228,10 +231,17 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         panelMain.setBorder(new javax.swing.border.MatteBorder(null));
         panelMain.setName("panelMain"); // NOI18N
 
+        jScrollPane1.setBackground(resourceMap.getColor("jScrollPane1.background")); // NOI18N
+        jScrollPane1.setBorder(new javax.swing.border.MatteBorder(null));
+        jScrollPane1.setName("jScrollPane1"); // NOI18N
+
+        labelHtml.setBackground(resourceMap.getColor("labelHtml.background")); // NOI18N
         labelHtml.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelHtml.setText(resourceMap.getString("labelHtml.text")); // NOI18N
         labelHtml.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         labelHtml.setName("labelHtml"); // NOI18N
+        labelHtml.setOpaque(true);
+        jScrollPane1.setViewportView(labelHtml);
 
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
@@ -239,12 +249,15 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelHtml, javax.swing.GroupLayout.DEFAULT_SIZE, 858, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 858, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelHtml, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+            .addGroup(panelMainLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout panelAllLayout = new javax.swing.GroupLayout(panelAll);
@@ -269,12 +282,10 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 886, Short.MAX_VALUE)
             .addComponent(panelAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 574, Short.MAX_VALUE)
             .addComponent(panelAll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
@@ -311,6 +322,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
     private javax.swing.JButton buttonBack;
     private javax.swing.JButton buttonInRoot;
     private javax.swing.JButton jButton2;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel labelHtml;
     private ru.apertum.qsystem.client.model.QPanel panelAll;
     private ru.apertum.qsystem.client.model.QPanel panelBottom;

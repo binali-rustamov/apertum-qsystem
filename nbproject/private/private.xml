@@ -1,54 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
-    <data xmlns="http://www.netbeans.org/ns/profiler/1" version="0.9.1"/>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
         <file>
-            <url>src/ru/ccrs/server/model/QPlanService.java</url>
-            <line>91</line>
-            <line>130</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FTest.java</url>
-            <line>594</line>
-        </file>
-        <file>
-            <url>src/ru/apertum/qsystem/server/controller/QServicesPool.java</url>
-            <line>1561</line>
-            <line>1605</line>
-        </file>
-        <file>
-            <url>src/ru/apertum/qsystem/server/controller/Executer.java</url>
-            <line>146</line>
-            <line>343</line>
-            <line>700</line>
-            <line>926</line>
-            <line>1215</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FIndicatorBoard.java</url>
-            <line>237</line>
-            <line>451</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/common/model/NetCommander.java</url>
-            <line>46</line>
-            <line>502</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/common/RunningLabel.java</url>
-            <line>52</line>
-            <line>180</line>
-            <line>203</line>
-            <line>343</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/server/model/AIndicatorBoard.java</url>
-            <line>101</line>
-            <line>197</line>
-        </file>
-        <file>
-            <url>src/ru/apertum/qsystem/common/model/NetCommander.java</url>
-            <line>723</line>
+            <url>src/ru/apertum/qsystem/client/forms/FClient.java</url>
+            <line>532</line>
+            <line>1277</line>
         </file>
         <file>
             <url>src/ru/ccrs/client/forms/FClient.java</url>
@@ -60,28 +16,75 @@
             <line>534</line>
         </file>
         <file>
-            <url>src/ru/apertum/qsystem/client/forms/FClient.java</url>
-            <line>527</line>
-            <line>1272</line>
+            <url>src/ru/apertum/qsystem/common/model/NetCommander.java</url>
+            <line>723</line>
         </file>
         <file>
-            <url>src/ru/ccrs/client/forms/FBoardConfig.java</url>
-            <line>74</line>
-            <line>419</line>
+            <url>src/ru/ccrs/server/model/QPlanService.java</url>
+            <line>91</line>
+            <line>130</line>
         </file>
         <file>
-            <url>src/ru/ccrs/client/forms/FClientView.java</url>
-            <line>0</line>
+            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
+            <line>306</line>
         </file>
         <file>
-            <url>src/ru/ccrs/client/forms/FAdvanceCalendar.java</url>
-            <line>498</line>
+            <url>src/ru/apertum/qsystem/server/controller/QServicesPool.java</url>
+            <line>1561</line>
+            <line>1605</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/server/model/AIndicatorBoard.java</url>
+            <line>101</line>
+            <line>197</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/common/model/NetCommander.java</url>
+            <line>46</line>
+            <line>502</line>
         </file>
         <file>
             <url>src/ru/apertum/qsystem/common/RunningLabel.java</url>
             <line>300</line>
             <line>352</line>
             <line>501</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FAdvanceCalendar.java</url>
+            <line>498</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FTest.java</url>
+            <line>594</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/common/RunningLabel.java</url>
+            <line>52</line>
+            <line>180</line>
+            <line>203</line>
+            <line>343</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FClientView.java</url>
+            <line>0</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FIndicatorBoard.java</url>
+            <line>237</line>
+            <line>451</line>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/server/controller/Executer.java</url>
+            <line>146</line>
+            <line>343</line>
+            <line>700</line>
+            <line>926</line>
+            <line>1215</line>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
+            <line>790</line>
+            <line>4019</line>
         </file>
         <file>
             <url>src/ru/ccrs/server/model/QServicesPool.java</url>
@@ -97,18 +100,9 @@
             <line>1561</line>
         </file>
         <file>
-            <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
-            <line>790</line>
-            <line>3538</line>
-            <line>3548</line>
-            <line>4012</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
-            <line>306</line>
+            <url>src/ru/ccrs/client/forms/FBoardConfig.java</url>
+            <line>74</line>
+            <line>419</line>
         </file>
     </editor-bookmarks>
-    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
-        <file>file:/D:/Apertum/apertum-qsystem/src/ru/apertum/qsystem/server/model/QService.java</file>
-    </open-files>
 </project-private>

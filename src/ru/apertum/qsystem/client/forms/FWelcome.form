@@ -117,6 +117,7 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
             <Property name="columns" type="int" value="0"/>
+            <Property name="horizontalGap" type="int" value="10"/>
             <Property name="rows" type="int" value="1"/>
           </Layout>
           <SubComponents>
@@ -250,9 +251,9 @@
                       <Component id="panelLock" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="buttonInfo" max="32767" attributes="0"/>
+                      <Component id="buttonInfo" pref="293" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="buttonResponse" max="32767" attributes="0"/>
+                      <Component id="buttonResponse" pref="206" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -281,7 +282,7 @@
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="360" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="372" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
               </Layout>
@@ -311,7 +312,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="labelLock" pref="86" max="32767" attributes="0"/>
+                          <Component id="labelLock" pref="99" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>

@@ -371,15 +371,20 @@ public final class FClient extends javax.swing.JFrame {
      * Создадим форму, спозиционируем, сконфигурируем и покажем
      * @param configFilePath файл конфигурации табло, приезжает из Spring
      */
-    private static void initIndicatorBoard(String cfgFile) throws DocumentException {
+    private static void initIndicatorBoard(final String cfgFile) throws DocumentException {
         File f = new File(cfgFile);
         if (indicatorBoard == null && f.exists()) {
 
-            indicatorBoard = FIndicatorBoard.getIndicatorBoard(new SAXReader(false).read(cfgFile).getRootElement(), false);
+            // todo indicatorBoard = FIndicatorBoard.getIndicatorBoard(new SAXReader(false).read(cfgFile).getRootElement(), false);
             java.awt.EventQueue.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
+                    try {
+                        indicatorBoard = FIndicatorBoard.getIndicatorBoard(new SAXReader(false).read(cfgFile).getRootElement(), false);
+                    } catch (DocumentException ex) {
+                        QLog.l().logger().error("Не создали клиентское табло.", ex);
+                    }
                     if (indicatorBoard != null) {
                         indicatorBoard.setVisible(true);
                     }

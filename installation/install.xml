@@ -148,14 +148,14 @@
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/board/video.mpg" targetdir="$INSTALL_PATH/config/board/"/>
-            <file os="windows" src="../StartServer.bat" targetdir="$INSTALL_PATH"/>
+            <file os="windows" src="resource/txt/StartServer.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/server.sh" targetdir="$INSTALL_PATH"/>
         </pack>
         <pack id="admin" name="Administrator" required="no" preselected="no">
             <description>Администрирование</description>
             <file src="../config/welcome.properties" targetdir="$INSTALL_PATH/config/"/>
             <file src="../config/admin.properties" targetdir="$INSTALL_PATH/config/"/>
-            <file os="windows" src="../StartAdmin.bat" targetdir="$INSTALL_PATH"/>
+            <file os="windows" src="resource/txt/StartAdmin.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/admin.sh" targetdir="$INSTALL_PATH"/>
             <parsable targetfile="$INSTALL_PATH/config/admin.properties"/>
             <file os="windows" src="resource/bin/jar.exe" targetdir="$INSTALL_PATH/dist"/>

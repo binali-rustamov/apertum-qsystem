@@ -118,10 +118,10 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         if (textAreaButtonCaption.getText().length() > 2500) {
             throw new ClientException(getLocaleMessage("dialog.message2"));
         }
-        if (textAreaInfoHtml.getText().length() > 2500) {
+        if (textAreaInfoHtml.getText().length() > 50000) {
             throw new ClientException(getLocaleMessage("dialog.message3"));
         }
-        if (textAreaTextPrint.getText().length() > 2500) {
+        if (textAreaTextPrint.getText().length() > 50000) {
             throw new ClientException(getLocaleMessage("dialog.message4"));
         }
         if (textAreaButtonCaption.getText().length() < 2500 && !"".equals(textAreaButtonCaption.getText())) {

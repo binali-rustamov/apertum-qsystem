@@ -226,7 +226,7 @@ public class FMessager extends javax.swing.JDialog {
         if (checkBoxAll.isSelected()) {
             s = s + "ALL";
         } else {
-            for (Object o : listUsers.getSelectedValues()) {
+            for (Object o : listUsers.getSelectedValuesList()) {
                 s = s + "@" + ((QUser)o).getId().toString() + "@";
             }
             if (treeServices.getSelectionPaths() != null) {
