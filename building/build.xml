@@ -14,7 +14,7 @@
     </target>
     
     <property file="src/ru/apertum/qsystem/common/version.properties"/>
-    <import file="../build-ext.xml"/>
+    <import file="../build.xml"/>
 
     
     <target name="-post-test-run">

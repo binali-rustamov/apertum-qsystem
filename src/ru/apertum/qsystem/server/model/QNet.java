@@ -231,4 +231,36 @@ public class QNet implements Serializable {
     public void setSkyServerUrl(String skyServerUrl) {
         this.skyServerUrl = skyServerUrl;
     }
+    
+    /**
+     * адрес зонного сервера отображения хода очереди, к которому будет коннектится плагин
+     * Зачем это в БД? Да чо-бы проще было настраивать, а то придется как-то плагин отдельно админить. не все догадаются.
+     */
+    @Column(name="zone_board_serv_addr")
+    private String zoneBoardServAddr;
+
+    public String getZoneBoardServAddr() {
+        return zoneBoardServAddr;
+    }
+
+    public void setZoneBoardServAddr(String zoneBoardServAddr) {
+        this.zoneBoardServAddr = zoneBoardServAddr;
+    }
+    
+    /**
+     * Это порт зонального сервера отображения очереди на котором он будет принимать данные
+     * Нужно для идентификации в облачном сервисе
+     */
+    @Column(name = "zone_board_serv_port")
+    private Integer zoneBoardServPort;
+
+    public Integer getZoneBoardServPort() {
+        return zoneBoardServPort;
+    }
+
+    public void setZoneBoardServPort(Integer zoneBoardServPort) {
+        this.zoneBoardServPort = zoneBoardServPort;
+    }
+
+    
 }

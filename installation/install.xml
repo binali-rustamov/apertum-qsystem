@@ -111,8 +111,8 @@
 			<file src="i18n/license-gpl3-ukr.txt" targetdir="$INSTALL_PATH/license/"/>
 			<file type="properties" src="../config/langs.properties" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/board/wall.jpg" targetdir="$INSTALL_PATH/config/board/"/>
-            <file os="windows" src="D:/Distrib/JMF/jmf-2_1_1e-windows-i586.exe" targetdir="$INSTALL_PATH/JMF"/>
-            <file os="unix" src="D:/Distrib/JMF/jmf-2_1_1e-linux-i586.bin" targetdir="$INSTALL_PATH/JMF"/>
+            <file os="windows" src="D:/Files/Downloads/jmf-2_1_1e-windows-i586.exe" targetdir="$INSTALL_PATH/JMF"/>
+            <!-- file os="unix" src="D:/Distrib/JMF/jmf-2_1_1e-linux-i586.bin" targetdir="$INSTALL_PATH/JMF"/ -->
             <!--executable os="windows" targetfile="$INSTALL_PATH/JMF/jmf-2_1_1e-windows-i586.exe" stage="postinstall"/-->
             <fileset os="windows" dir="resource/img" includes="*.ico" targetdir="$INSTALL_PATH/icons/"/>
             <fileset os="unix" dir="resource/img" includes="*.png" targetdir="$INSTALL_PATH/icons/"/>
@@ -133,8 +133,8 @@
         </pack>
         <pack id="server" name="Server" required="no" preselected="no">
             <description>Сервер</description>
-            <fileset os="windows" dir="D:/Distrib/rxtx-2.1-7-bins-r2/Windows/i368-mingw32" includes="*.dll" targetdir="${ENV[WINDIR]}/system32"/>
-            <fileset os="unix" dir="D:/Distrib/rxtx-2.1-7-bins-r2/Linux/i686-unknown-linux-gnu" includes="*.so" targetdir="$INSTALL_PATH"/>
+            <!-- fileset os="windows" dir="D:/Files/Downloads/rxtx-2.1-7-bins-r2/rxtx-2.1-7-bins-r2/Windows/i368-mingw32" includes="*.dll" targetdir="${ENV[WINDIR]}/system32"/>
+            <fileset os="unix" dir="D:/Files/Downloads/rxtx-2.1-7-bins-r2/rxtx-2.1-7-bins-r2/Linux/i686-unknown-linux-gnu" includes="*.so" targetdir="$INSTALL_PATH"/ -->
             <file os="windows" src="resource/bin/jar.exe" targetdir="$INSTALL_PATH/dist"/>
             <file os="windows" src="resource/bin/jli.dll" targetdir="$INSTALL_PATH/dist"/>
             <file os="windows" src="resource/bin/msvcr71.dll" targetdir="$INSTALL_PATH/dist"/>

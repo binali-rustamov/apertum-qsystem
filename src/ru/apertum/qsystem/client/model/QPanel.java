@@ -29,7 +29,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.Serializable;
 import javax.swing.JPanel;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.VideoPlayer;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 

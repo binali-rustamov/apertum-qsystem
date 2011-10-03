@@ -63,7 +63,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
      * Список отображаемых строк
      * Название юзера, создавшего эту строку на табло(Это идентификатор строк, т.к. имя позьзователя уникально в системе) -> строка
      */
-    protected static final LinkedHashMap<String, Record> records = new LinkedHashMap<String, Record>();
+    protected final LinkedHashMap<String, Record> records = new LinkedHashMap<>();
 
     /**
      * Добавляет запись в хвост списка отображения
@@ -87,7 +87,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
     }
 
     protected LinkedHashSet<Record> getShowRecords() {
-        ArrayList<Record> arr = new ArrayList<Record>(records.values());
+        ArrayList<Record> arr = new ArrayList<>(records.values());
         // перевернуть массив, так как добавленные валятся в конец, а выводить их первыми
         for (int i = 0; i < arr.size() / 2; i++) {
             final Record a_i = arr.get(i);
@@ -102,7 +102,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
             }
         }
         final int startPos = (getLinesCount() - 1 > pos) ? 0 : pos - getLinesCount() + 1; // позиция первой строки на табло.
-        final LinkedHashSet<Record> res = new LinkedHashSet<Record>();
+        final LinkedHashSet<Record> res = new LinkedHashSet<>();
         for (int j = 0; j < arr.size(); j++) {
             if (j >= startPos && j < startPos + getLinesCount()) {
                 res.add(arr.get(j));
@@ -154,7 +154,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
             return state;
         }
 
-        private void setState(CustomerState state) {
+        public void setState(CustomerState state) {
             this.state = state;
         }
 
@@ -269,7 +269,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
     //************************** Другие методы *********************************
     // чтоб отсеч дублирование
     private Record oldRec = null;
-    private LinkedHashSet<Record> oldList = new LinkedHashSet<Record>();
+    private LinkedHashSet<Record> oldList = new LinkedHashSet<>();
 
     private boolean compareList(LinkedHashSet<Record> newList) {
         if (oldList.size() != newList.size()) {
@@ -289,12 +289,12 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
     /**
      * Тут вся иллюминация
      */
-    private void show(Record record) {
+    protected void show(Record record) {
 
         LinkedHashSet<Record> newList = getShowRecords();
 
         if (!compareList(newList)) {
-            oldList = new LinkedHashSet<Record>();
+            oldList = new LinkedHashSet<>();
             for (Record rec : newList) {
                 oldList.add(new Record(rec.state, rec.point, rec.customerNumber, rec.adressRS));
             }

@@ -43,7 +43,8 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.RunningLabel;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
 /**
@@ -66,7 +67,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     private final Element rightElement;
     private final Element mainElement;
     private static FIndicatorBoard indicatorBoard = null;
-    private static Element root = null;
+    private Element root = null;
     /**
      * Режим. Главное табло или клиентское.
      */
@@ -82,13 +83,32 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         if (!"1".equals(rootParams.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
             return null;
         }
-        if (indicatorBoard == null || rootParams != root) {
-            indicatorBoard = new FIndicatorBoard(rootParams);
+        if (indicatorBoard == null || rootParams != indicatorBoard.root) {
+            indicatorBoard = new FIndicatorBoard(rootParams, true);
             indicatorBoard.loadConfig();
-            root = rootParams;
+            indicatorBoard.root = rootParams;
         }
         return indicatorBoard;
     }
+
+    /**
+     * Получить форму табло. Получаем главное табло.
+     * Вызов этого метода создает новый объект. не использовать при одиночном табло. сделано для зонального.
+     * @param rootParams параметры табло.
+     * @return
+     */
+    public static FIndicatorBoard getIndicatorBoardForZone(Element rootParams, boolean isDebug) {
+        if (!"1".equals(rootParams.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
+            return null;
+        }
+        final FIndicatorBoard iBoard = new FIndicatorBoard(rootParams, isDebug);
+        iBoard.loadConfig();
+        iBoard.root = rootParams;
+        iBoard.zoneDebug = isDebug;
+        return iBoard;
+    }
+    
+    private boolean zoneDebug = false;
 
     /**
      * Получить форму табло.
@@ -109,7 +129,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Конструктор формы с указанием количества строк на табло.
      * @param configFilePath файл конфигурации табло.
      */
-    private FIndicatorBoard(Element rootParams) {
+    private FIndicatorBoard(Element rootParams, boolean isDebug) {
 
         QLog.l().logger().info("Создаем окно для информации.");
 
@@ -129,12 +149,20 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         this.borderLine = "1".equals(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_BORDER).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.delimiter = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_DELIMITER).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
 
+        if (!isDebug) {
+            setUndecorated(true);
+        }
+        initComponents();
+        panelCommon.setBackground(bgColor);
+    }
+
+    public void toPosition(boolean isDebug, int x, int y) {
         // Определим форму нв монитор
-        setLocation(Integer.parseInt(rootParams.attributeValue("x")), Integer.parseInt(rootParams.attributeValue("y")));
+        setLocation(x, y);
 
         // Отрехтуем форму в зависимости от режима.
-        if (!QLog.l().isDebug()) {
-            setUndecorated(true);
+        if (!isDebug) {
+            
             setAlwaysOnTop(true);
             setResizable(false);
             // спрячем курсор мыши
@@ -152,8 +180,6 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         } else {
             setSize(1024, 768);
         }
-        initComponents();
-        panelCommon.setBackground(bgColor);
     }
 
     /**
@@ -204,7 +230,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         File f = new File(filePath);
         if (f.exists()) {
             panelCommon.setBackgroundImgage(filePath);
-        } 
+        }
 
         loadPanel(topElement, rlTop, panelUp);
         loadPanel(bottomElement, rlDown, panelDown);
@@ -249,7 +275,6 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             panel.startVideo();
         }
     }
-
     private static ResourceMap localeMap = null;
 
     private static String getLocaleMessage(String key) {
@@ -258,7 +283,6 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         }
         return localeMap.getString(key);
     }
-
     private final static Border border = new TitledBorder(getLocaleMessage("board.cell"));//  MatteBorder(1, 3, 1, 2, Color.LIGHT_GRAY);
 
     public class Line extends JPanel {
@@ -276,10 +300,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
             setBounds(0, 0, 100, 100);
             left = new JLabel();
-            final Font font = new Font(left.getFont().getName(), left.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(indicatorBoard.mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_LINE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+            final Font font = new Font(left.getFont().getName(), left.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_LINE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
             left.setFont(font);
-            left.setBackground(indicatorBoard.bgColor);
-            left.setForeground(indicatorBoard.fgColorLeft);
+            left.setBackground(bgColor);
+            left.setForeground(fgColorLeft);
             left.setHorizontalAlignment(JLabel.CENTER);
             left.setVerticalAlignment(JLabel.CENTER);
             //left.setOpaque(true);
@@ -291,8 +315,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             if (isMain) {
                 right = new JLabel();
                 right.setFont(font);
-                right.setBackground(indicatorBoard.bgColor);
-                right.setForeground(indicatorBoard.fgColorRight);
+                right.setBackground(bgColor);
+                right.setForeground(fgColorRight);
                 right.setHorizontalAlignment(JLabel.CENTER);
                 right.setVerticalAlignment(JLabel.CENTER);
                 //lab.setOpaque(true);
@@ -307,7 +331,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         public void setLineData(String text) {
             if (isMain) {
-                final String[] ss = text.split(indicatorBoard.delimiter);
+                final String[] ss = text.split(delimiter);
                 if (ss.length == 2) {
                     left.setText(ss[0]);
                     right.setText(ss[1]);
@@ -374,7 +398,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     /**
      * Массив контролов для вывода инфы.
      */
-    public final ArrayList<Line> labels = new ArrayList<Line>();
+    public final ArrayList<Line> labels = new ArrayList<>();
     /**
      * Количество выводимых строк
      */
@@ -421,8 +445,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      */
     public void showLines() {
         QLog.l().logger().info("Показываем набор строк.");
-        GridLayout la = new GridLayout(indicatorBoard.linesCount + (isMain ? 1 : 0), 1, 0, 0);
-        indicatorBoard.panelMain.setLayout(la);
+        GridLayout la = new GridLayout(linesCount + (isMain ? 1 : 0), 1, 0, 0);
+        panelMain.setLayout(la);
         if (isMain) {
             final JPanel panel_cap = new JPanel();
             if (borderLine) {
@@ -433,13 +457,13 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             }
             panel_cap.setOpaque(false);
             panel_cap.setLayout(new GridLayout(1, 2, 0, 0));
-            indicatorBoard.panelMain.add(panel_cap);
+            panelMain.add(panel_cap);
             panel_cap.setBounds(0, 0, 100, 100);
             JLabel lab_cap_l = new JLabel();
-            final Font font_cap = new Font(lab_cap_l.getFont().getName(), lab_cap_l.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(indicatorBoard.mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+            final Font font_cap = new Font(lab_cap_l.getFont().getName(), lab_cap_l.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
             lab_cap_l.setFont(font_cap);
-            lab_cap_l.setBackground(indicatorBoard.bgColor);
-            lab_cap_l.setForeground(indicatorBoard.fgColorCaprion);
+            lab_cap_l.setBackground(bgColor);
+            lab_cap_l.setForeground(fgColorCaprion);
             lab_cap_l.setHorizontalAlignment(JLabel.CENTER);
             lab_cap_l.setVerticalAlignment(JLabel.CENTER);
             //lab.setOpaque(true);
@@ -449,8 +473,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
             lab_cap_l = new JLabel();
             lab_cap_l.setFont(font_cap);
-            lab_cap_l.setBackground(indicatorBoard.bgColor);
-            lab_cap_l.setForeground(indicatorBoard.fgColorCaprion);
+            lab_cap_l.setBackground(bgColor);
+            lab_cap_l.setForeground(fgColorCaprion);
             lab_cap_l.setHorizontalAlignment(JLabel.CENTER);
             lab_cap_l.setVerticalAlignment(JLabel.CENTER);
             //lab.setOpaque(true);
@@ -458,12 +482,12 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             lab_cap_l.setBounds(0, 0, 100, 100);
             lab_cap_l.setText(getLocaleMessage("board.point"));
         }
-        for (int i = 1; i <= indicatorBoard.linesCount; i++) {
+        for (int i = 1; i <= linesCount; i++) {
             final Line panel = new Line();
-            indicatorBoard.labels.add(panel);
-            indicatorBoard.panelMain.add(panel);
+            labels.add(panel);
+            panelMain.add(panel);
         }
-        indicatorBoard.repaint();
+        repaint();
     }
 
     /**
@@ -473,16 +497,12 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * @param point пункт куда позвали клиента - часть выводимого текста
      * @param blinkCount 0 - постоянное мигание, -1 не мигает. число - количество миганий
      */
-    public static void printRecord(int index, String number, String point, int blinkCount) {
-        if (indicatorBoard == null) {
-            QLog.l().logger().warn("Попытка вывода на табло. Табло не демонстрируется. Отключено в настройках.");
-            return;
-        }
-        if (index < indicatorBoard.linesCount) {
-            indicatorBoard.labels.get(index).setLineData(number + (isMain ? indicatorBoard.delimiter  + point : ""));
-            indicatorBoard.labels.get(index).setBlinkCount(blinkCount == -1 ? -1 : blinkCount * 2);
+    public void printRecord(int index, String number, String point, int blinkCount) {
+        if (index < linesCount) {
+            labels.get(index).setLineData(number + (isMain ? delimiter + point : ""));
+            labels.get(index).setBlinkCount(blinkCount == -1 ? -1 : blinkCount * 2);
             if (blinkCount != -1) {
-                indicatorBoard.labels.get(index).startBlink();
+                labels.get(index).startBlink();
             }
         }
     }
@@ -846,7 +866,7 @@ private void panelRightComponentResized(java.awt.event.ComponentEvent evt) {//GE
     private Point p = null;
 
 private void mouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mouseMoved
-    if (p != null && !QLog.l().isDebug()) {
+    if (p != null && !QLog.l().isDebug() && !zoneDebug) {
         try {
             Robot rob = new Robot();
             rob.mouseMove(p.x, p.y);

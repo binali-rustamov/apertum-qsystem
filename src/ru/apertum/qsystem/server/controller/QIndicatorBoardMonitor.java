@@ -42,8 +42,8 @@ import ru.apertum.qsystem.common.exceptions.ServerException;
  */
 public class QIndicatorBoardMonitor extends AIndicatorBoard {
 
-    private static FIndicatorBoard indicatorBoard = null;
-    private String configFile;
+    protected FIndicatorBoard indicatorBoard = null;
+    protected String configFile;
 
     public String getConfigFile() {
         return configFile;
@@ -71,9 +71,14 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
      * Создадим форму, спозиционируем, сконфигурируем и покажем
      * @param configFilePath файл конфигурации табло, приезжает из Spring
      */
-    private void initIndicatorBoard() {
+    protected void initIndicatorBoard() {
         if (indicatorBoard == null) {
-            indicatorBoard = FIndicatorBoard.getIndicatorBoard(getConfig());
+            final Element rootParams = getConfig();
+            indicatorBoard = FIndicatorBoard.getIndicatorBoard(rootParams);
+            // Определим форму нв монитор
+            indicatorBoard.toPosition(QLog.l().isDebug(), Integer.parseInt(rootParams.attributeValue("x")), Integer.parseInt(rootParams.attributeValue("y")));
+            
+            
             if (indicatorBoard == null) {
                 QLog.l().logger().warn("Табло не демонстрируется. Отключено в настройках.");
                 return;
@@ -81,7 +86,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             setLinesCount(indicatorBoard.getLinesCount());
             setPause(indicatorBoard.getPause());
             if (records.size() != 0) {
-                showOnBoard(new LinkedHashSet<Record>(records.values()));
+                showOnBoard(new LinkedHashSet<>(records.values()));
             }
 
             java.awt.EventQueue.invokeLater(new Runnable() {
@@ -102,10 +107,10 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
     protected void showOnBoard(LinkedHashSet<Record> records) {
         int i = 0;
         for (Record rec : records) {
-            FIndicatorBoard.printRecord(i++, rec.customerNumber, rec.point, rec.getState() == CustomerState.STATE_INVITED ? 0 : -1);
+            indicatorBoard.printRecord(i++, rec.customerNumber, rec.point, rec.getState() == CustomerState.STATE_INVITED ? 0 : -1);
         }
         for (int t = i; t < getLinesCount(); t++) {
-            FIndicatorBoard.printRecord(t, "", "", -1);
+            indicatorBoard.printRecord(t, "", "", -1);
         }
         markShowed(records);
     }

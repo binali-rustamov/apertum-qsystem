@@ -75,10 +75,14 @@ public class NetCommander {
      * @param message отсылаемое сообщение.
      * @return XML-ответ
      */
-    synchronized private static String send(INetProperty netProperty, String commandName, CmdParams params) throws QException {
+    synchronized public static String send(INetProperty netProperty, String commandName, CmdParams params) throws QException {
         jsonRpc.setMethod(commandName);
         jsonRpc.setParams(params);
-
+        return sendRpc(netProperty, jsonRpc);
+    }   
+        
+        
+    synchronized public static String sendRpc(INetProperty netProperty, JsonRPC20 jsonRpc) throws QException {
         final String message;
         Gson gson = GsonPool.getInstance().borrowGson();
         try {
@@ -86,27 +90,25 @@ public class NetCommander {
         } finally {
             GsonPool.getInstance().returnGson(gson);
         }
-        QLog.l().logger().trace("Задание \"" + commandName + "\" на " + netProperty.getAddress().getHostAddress() + ":" + netProperty.getPort() + "#\n" + message);
+        QLog.l().logger().trace("Задание \"" + jsonRpc.getMethod() + "\" на " + netProperty.getAddress().getHostAddress() + ":" + netProperty.getPort() + "#\n" + message);
         final String data;
         try {
-            // открываем сокет и коннектимся к localhost:3128
-            // получаем сокет сервера
-            final Socket socket = new Socket(netProperty.getAddress(), netProperty.getPort());
-            QLog.l().logger().trace("Создали Socket.");
-            // Передача данных запроса
-            final PrintWriter writer = new PrintWriter(socket.getOutputStream());
-            writer.print(URLEncoder.encode(message, "utf-8"));
-            QLog.l().logger().trace("Высылаем задание.");
-            writer.flush();
-            // Чтение ответа.
-            QLog.l().logger().trace("Читаем ответ ...");
-            StringBuilder sb = new StringBuilder();
-            final Scanner in = new Scanner(socket.getInputStream());
-            while (in.hasNextLine()) {
-                sb = sb.append(in.nextLine()).append("\n");
+            final PrintWriter writer;
+            final Scanner in;
+            try (Socket socket = new Socket(netProperty.getAddress(), netProperty.getPort())) {
+                QLog.l().logger().trace("Создали Socket.");
+                writer = new PrintWriter(socket.getOutputStream());
+                writer.print(URLEncoder.encode(message, "utf-8"));
+                QLog.l().logger().trace("Высылаем задание.");
+                writer.flush();
+                QLog.l().logger().trace("Читаем ответ ...");
+                StringBuilder sb = new StringBuilder();
+                in = new Scanner(socket.getInputStream());
+                while (in.hasNextLine()) {
+                    sb = sb.append(in.nextLine()).append("\n");
+                }
+                data = URLDecoder.decode(sb.toString(), "utf-8");
             }
-            data = URLDecoder.decode(sb.toString(), "utf-8");
-            socket.close();
             writer.close();
             in.close();
             QLog.l().logger().trace("Ответ:\n" + data);

@@ -146,10 +146,10 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
                 QLog.l().logger().debug("Статус: Кастомер пришел и ждет с номером \"" + getPrefix() + getNumber() + "\"");
                 break;
             case STATE_INVITED:
-                QLog.l().logger().debug("Статус: Пригласили повторно в цепочке обработки кастомера с номером \"" + getPrefix() + getNumber() + "\"");
+                QLog.l().logger().debug("Статус: Пригласили кастомера с номером \"" + getPrefix() + getNumber() + "\"");
                 break;
             case STATE_INVITED_SECONDARY:
-                QLog.l().logger().debug("Статус: Пригласили кастомера с номером \"" + getPrefix() + getNumber() + "\"");
+                QLog.l().logger().debug("Статус: Пригласили повторно в цепочке обработки кастомера с номером \"" + getPrefix() + getNumber() + "\"");
                 break;
             case STATE_REDIRECT:
                 QLog.l().logger().debug("Статус: Кастомера редиректили с номером \"" + getPrefix() + getNumber() + "\"");
@@ -397,7 +397,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
      * Новые услуги для возврата добвляются в начало списка.
      * При возврате берем первую из списка и удаляем ее.
      */
-    private final LinkedList<QService> serviceBack = new LinkedList<QService>();
+    private final LinkedList<QService> serviceBack = new LinkedList<>();
 
     /**
      * При редиректе если есть возврат. то добавим услугу для возврата
