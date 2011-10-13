@@ -44,7 +44,7 @@ public class CalendarTableModel extends AbstractTableModel {
         QLog.l().logger().debug("Создаем модель для календаря");
         this.calcId = calcId;
         days = getFreeDays(calcId);
-        days_del = new ArrayList<FreeDay>(days);
+        days_del = new ArrayList<>(days);
     }
     /**
      * В каком календаре сейчас работаем
@@ -59,7 +59,7 @@ public class CalendarTableModel extends AbstractTableModel {
     public synchronized static LinkedList<FreeDay> getFreeDays(final Long calcId) {
         final DetachedCriteria criteria = DetachedCriteria.forClass(FreeDay.class);
         criteria.add(Property.forName("calendarId").eq(calcId));
-        return new LinkedList<FreeDay>(Spring.getInstance().getHt().findByCriteria(criteria));
+        return new LinkedList<>(Spring.getInstance().getHt().findByCriteria(criteria));
     }
 
     /**
@@ -185,7 +185,7 @@ public class CalendarTableModel extends AbstractTableModel {
         Spring.getInstance().getTxManager().commit(status);
         QLog.l().logger().debug("Сохранили новый календарь");
         //типо чтоб были актуальные внутренние данные
-        days_del = new ArrayList<FreeDay>(days);
+        days_del = new ArrayList<>(days);
     }
 
     /**

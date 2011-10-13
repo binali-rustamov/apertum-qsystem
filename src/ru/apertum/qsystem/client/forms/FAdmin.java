@@ -47,7 +47,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.TreePath;
 import org.dom4j.DocumentException;
 import org.jdesktop.application.Action;
-import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.client.model.QTray;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -1328,6 +1328,7 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem13 = new javax.swing.JMenuItem();
         popupServiceUser = new javax.swing.JPopupMenu();
         jMenuItem14 = new javax.swing.JMenuItem();
+        jMenuItem38 = new javax.swing.JMenuItem();
         jMenuItem17 = new javax.swing.JMenuItem();
         jMenuItem18 = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JSeparator();
@@ -1604,6 +1605,10 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem14.setAction(actionMap.get("changeServicePriority")); // NOI18N
         jMenuItem14.setName("jMenuItem14"); // NOI18N
         popupServiceUser.add(jMenuItem14);
+
+        jMenuItem38.setAction(actionMap.get("changeFlexiblePriorityAbility")); // NOI18N
+        jMenuItem38.setName("jMenuItem38"); // NOI18N
+        popupServiceUser.add(jMenuItem38);
 
         jMenuItem17.setAction(actionMap.get("setUpdateServiceFire")); // NOI18N
         jMenuItem17.setName("jMenuItem17"); // NOI18N
@@ -2498,8 +2503,7 @@ public class FAdmin extends javax.swing.JFrame {
                     .addGroup(jPanel19Layout.createSequentialGroup()
                         .addComponent(buttonAddCalendar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(buttonDeleteCalendar, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(790, Short.MAX_VALUE))
+                        .addComponent(buttonDeleteCalendar, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel19Layout.createSequentialGroup()
                         .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2516,8 +2520,8 @@ public class FAdmin extends javax.swing.JFrame {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel19Layout.createSequentialGroup()
                                 .addComponent(jLabel23)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)))
-                        .addContainerGap())))
+                                .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)))))
+                .addContainerGap())
         );
         jPanel19Layout.setVerticalGroup(
             jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3731,6 +3735,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                 }
             }
         } catch (Throwable ex) {
+            QLog.l().logger().error("Ошибка при пинговании зонального сервера. ", ex);
             sb.append(getLocaleMessage("admin.zoneboard_test_dialog.error"));
         }
         final String res = sb.toString();
@@ -3763,6 +3768,18 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                 }
             }
         }
+    }
+
+    @Action
+    public void changeFlexiblePriorityAbility() {
+        final QPlanService plan = (QPlanService) listUserService.getSelectedValue();
+        if (plan == null) {
+            return;
+        }
+        // тут надо фокус перекинуть, чтоб названия услуги изменилось с учетом приоритета.
+        listUserService.requestFocus();
+        listUserService.requestFocusInWindow();
+        plan.setFlexible_coef(!plan.getFlexible_coef());
     }
 
     @Action
@@ -4279,6 +4296,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JMenuItem jMenuItem35;
     private javax.swing.JMenuItem jMenuItem36;
     private javax.swing.JMenuItem jMenuItem37;
+    private javax.swing.JMenuItem jMenuItem38;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;

@@ -27,7 +27,7 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.INetProperty;
-import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.common.NetCommander;
 
 /**
  * Created on 16 Апрель 2009 г., 20:25

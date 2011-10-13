@@ -60,7 +60,7 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.common.ClientNetProperty;
-import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.GsonPool;

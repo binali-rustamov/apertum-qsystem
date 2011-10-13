@@ -25,7 +25,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.help.Helper;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
 
 /**
  * Created on 10 Апрель 2009 г., 10:27

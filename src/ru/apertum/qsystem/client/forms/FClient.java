@@ -47,7 +47,7 @@ import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.common.ClientNetProperty;
 import ru.apertum.qsystem.client.help.Helper;
-import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.client.model.QTray;
 import ru.apertum.qsystem.client.model.QTray.MessageType;
@@ -711,6 +711,8 @@ public final class FClient extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         menuItemRefresh = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
+        optionsMenu = new javax.swing.JMenu();
+        menuItemFlexPriority = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         menuItemInvite = new javax.swing.JMenuItem();
         menuItemKill = new javax.swing.JMenuItem();
@@ -819,7 +821,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         panelBottomLayout.setVerticalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
         );
 
         jSplitPane1.setBottomComponent(panelBottom);
@@ -907,7 +909,7 @@ public final class FClient extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(labelNextNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLayeredPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE))
+                .addComponent(jLayeredPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -950,7 +952,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel5.TabConstraints.tabTitle"), jPanel5); // NOI18N
@@ -974,7 +976,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel6.TabConstraints.tabTitle"), jPanel6); // NOI18N
@@ -996,7 +998,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel7.TabConstraints.tabTitle"), jPanel7); // NOI18N
@@ -1055,7 +1057,7 @@ public final class FClient extends javax.swing.JFrame {
                     .addComponent(jLabel4)
                     .addComponent(labelResume))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
@@ -1123,6 +1125,16 @@ public final class FClient extends javax.swing.JFrame {
         fileMenu.add(exitMenuItem);
 
         menuBar.add(fileMenu);
+
+        optionsMenu.setText(resourceMap.getString("optionsMenu.text")); // NOI18N
+        optionsMenu.setName("optionsMenu"); // NOI18N
+
+        menuItemFlexPriority.setAction(actionMap.get("manageFlexPriority")); // NOI18N
+        menuItemFlexPriority.setText(resourceMap.getString("menuItemFlexPriority.text")); // NOI18N
+        menuItemFlexPriority.setName("menuItemFlexPriority"); // NOI18N
+        optionsMenu.add(menuItemFlexPriority);
+
+        menuBar.add(optionsMenu);
 
         editMenu.setText(resourceMap.getString("editMenu.text")); // NOI18N
         editMenu.setName("editMenu"); // NOI18N
@@ -1214,7 +1226,7 @@ public final class FClient extends javax.swing.JFrame {
      */
     public static void main(String args[]) throws DocumentException {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
-        Uses.startSplash();
+        Uses.startSplashClient();
         QLog.initial(args, false);
         final IClientNetProperty netProperty = new ClientNetProperty(args);
         // это заплата на баг с коннектом.
@@ -1248,8 +1260,11 @@ public final class FClient extends javax.swing.JFrame {
             for (Integer i = 0; i < args.length - 1; i++) {
                 if ("-cfg".equals(args[i])) {
                     cfgFile = args[i + 1];
+                    initIndicatorBoard(args[i + 1]);
+                    break;
                 }
                 if ("-cfgfx".equals(args[i])) {
+                    cfgFile = args[i + 1];
                     initIndicatorBoardFX(args[i + 1]);
                     break;
                 }
@@ -1340,6 +1355,11 @@ public final class FClient extends javax.swing.JFrame {
             end(start);
         }
     }
+
+    @Action
+    public void manageFlexPriority() {
+        FServicePriority.show(netProperty, this, plan, user.getId());
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JButton buttonFinish;
@@ -1391,6 +1411,7 @@ public final class FClient extends javax.swing.JFrame {
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem menuItemChangeStatusPostponed;
     private javax.swing.JMenuItem menuItemFinish;
+    private javax.swing.JMenuItem menuItemFlexPriority;
     private javax.swing.JMenuItem menuItemHelp;
     private javax.swing.JMenuItem menuItemInvite;
     private javax.swing.JMenuItem menuItemInvitePostponed;
@@ -1400,6 +1421,7 @@ public final class FClient extends javax.swing.JFrame {
     private javax.swing.JMenuItem menuItemRefresh;
     private javax.swing.JMenuItem menuItemStart;
     private javax.swing.JMenu menuLangs;
+    private javax.swing.JMenu optionsMenu;
     private javax.swing.JPanel panelBottom;
     private javax.swing.JPanel panelDown;
     private javax.swing.JPopupMenu popupMenuPostpone;

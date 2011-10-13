@@ -89,7 +89,7 @@ public class QServer extends Thread {
         System.out.println("Database version: " + settings.getProperty("version_db") + " for MySQL 5.1-community Server (GPL)");
         System.out.println("Released : " + settings.getProperty("date"));
 
-        System.out.println("Copyright (c) 2010, {Apertum}Projects and/or its affiliates. All rights reserved.");
+        System.out.println("Copyright (c) 2010-2012, Apertum Projects and/or its affiliates. All rights reserved.");
         System.out.println("This software comes with ABSOLUTELY NO WARRANTY. This is free software,");
         System.out.println("and you are welcome to modify and redistribute it under the GPL v3 license");
         System.out.println("Text of this license on your language located in the folder with the program.");
@@ -102,7 +102,7 @@ public class QServer extends Thread {
         System.out.println("Версия сервера: " + settings.getProperty("version") + "-community QSystem Server (GPL)");
         System.out.println("Версия базы данных: " + settings.getProperty("version_db") + " for MySQL 5.1-community Server (GPL)");
         System.out.println("Дата выпуска : " + settings.getProperty("date"));
-        System.out.println("Copyright (c) 2010, Проект Apertum. Все права защищены.");
+        System.out.println("Copyright (c) 2010, Apertum Projects. Все права защищены.");
         System.out.println("QSystem является свободным программным обеспечением, вы можете");
         System.out.println("распространять и/или изменять его согласно условиям Стандартной Общественной");
         System.out.println("Лицензии GNU (GNU GPL), опубликованной Фондом свободного программного");

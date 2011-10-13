@@ -25,7 +25,7 @@ import javax.swing.tree.TreeNode;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.common.QLog;
-import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.exceptions.ClientException;
@@ -105,7 +105,7 @@ public class FRedirect extends JDialog {
                 Math.round(owner.getLocation().y + owner.getHeight() / 2 - getHeight() / 2));
     }
 
-    private final HashMap<String, Long> ids = new HashMap<String, Long>();
+    private final HashMap<String, Long> ids = new HashMap<>();
 
     /**
      * Выбор услуги для перенаправления.

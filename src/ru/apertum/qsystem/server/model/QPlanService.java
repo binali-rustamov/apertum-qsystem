@@ -61,6 +61,7 @@ public class QPlanService implements Serializable {
     }
     /**
      * Коэфф. степени участия. По умолчанию основной.
+     * низкий/основной/VIP
      */
     protected Integer coefficient = 1;
 
@@ -78,6 +79,17 @@ public class QPlanService implements Serializable {
             this.coefficient = 1;
         }
     }
+    private Boolean flexible_coef = false;
+
+    @Column(name = "flexible_coef", insertable = true, updatable = true)
+    public Boolean getFlexible_coef() {
+        return flexible_coef;
+    }
+
+    public void setFlexible_coef(Boolean flexible_coef) {
+        this.flexible_coef = flexible_coef;
+    }
+    
     /**
      * Соответствие услуги.
      */
@@ -107,7 +119,7 @@ public class QPlanService implements Serializable {
 
     @Override
     public String toString() {
-        return service.getName() + " [" + Uses.COEFF_WORD.get(getCoefficient()) + "]";
+        return (getFlexible_coef() ? "* " : "") + service.getName() + " [" + Uses.COEFF_WORD.get(getCoefficient()) + "]";
     }
     //******************************************************************************************************************
     //*******            Статистика             *******************************************

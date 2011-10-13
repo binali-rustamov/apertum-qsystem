@@ -112,7 +112,7 @@ public final class Executer {
     //*******************************************************************************************************
     //
     // задния, доступны по их именам
-    private final HashMap<String, Task> tasks = new HashMap<String, Task>();
+    private final HashMap<String, Task> tasks = new HashMap<>();
 
     /**
      * 
@@ -481,7 +481,7 @@ public final class Executer {
         @Override
         public RpcGetServerState process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            final LinkedList<RpcGetServerState.ServiceInfo> srvs = new LinkedList<RpcGetServerState.ServiceInfo>();
+            final LinkedList<RpcGetServerState.ServiceInfo> srvs = new LinkedList<>();
 
             for (QService service : QServiceTree.getInstance().getNodes()) {
                 if (service.isLeaf()) {
@@ -506,15 +506,15 @@ public final class Executer {
         /**
          * ID пользователя -> его адрес
          */
-        private final HashMap<Long, String> addrByID = new HashMap<Long, String>();
+        private final HashMap<Long, String> addrByID = new HashMap<>();
         /**
          * Адрес пользователя -> его ID
          */
-        private final HashMap<String, Long> idByAddr = new HashMap<String, Long>();
+        private final HashMap<String, Long> idByAddr = new HashMap<>();
         /**
          * Адрес пользователя -> его байтовое прeдставление
          */
-        private final HashMap<String, byte[]> ipByAddr = new HashMap<String, byte[]>();
+        private final HashMap<String, byte[]> ipByAddr = new HashMap<>();
 
         public boolean hasId(Long id) {
             synchronized (forRefr) {
@@ -654,10 +654,10 @@ public final class Executer {
         public RpcGetSelfSituation process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
-            final LinkedList<RpcGetSelfSituation.SelfService> servs = new LinkedList<RpcGetSelfSituation.SelfService>();
+            final LinkedList<RpcGetSelfSituation.SelfService> servs = new LinkedList<>();
             for (QPlanService planService : user.getPlanServices()) {
                 final QService service = QServiceTree.getInstance().getById(planService.getService().getId());
-                servs.add(new RpcGetSelfSituation.SelfService(service, service.getCountCustomers()));
+                servs.add(new RpcGetSelfSituation.SelfService(service, service.getCountCustomers(), planService.getCoefficient(), planService.getFlexible_coef()));
             }
             // нужно сделать вставочку приглашенного юзера, если он есть
             return new RpcGetSelfSituation(new RpcGetSelfSituation.SelfSituation(servs, user.getCustomer(), QPostponedList.getInstance().getPostponedCustomers()));
@@ -1406,7 +1406,7 @@ public final class Executer {
         }
     };
     /**
-     * Рестарт сервера из админки
+     * Рестарт главного табло из админки
      */
     final Task restarMainTablo = new Task(Uses.TASK_RESTART_MAIN_TABLO) {
 
@@ -1414,6 +1414,23 @@ public final class Executer {
         public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             MainBoard.getInstance().refresh();
+            return new JsonRPC20();
+        }
+    };
+    
+    /**
+     * Запрос на изменение приоритетор оказываемых услуг от юзеров
+     */
+    final Task changeFlexPriority = new Task(Uses.TASK_CHANGE_FLEX_PRIORITY) {
+
+        @Override
+        public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final QUser user = QUserList.getInstance().getById(cmdParams.userId);
+            for (String str : cmdParams.textData.split("&")){
+                final String[] ss = str.split("=");
+                user.getPlanService(Long.parseLong(ss[0])).setCoefficient(Integer.parseInt(ss[1]));
+            }
             return new JsonRPC20();
         }
     };

@@ -37,7 +37,7 @@ public class ServerEvents implements IServerListener {
     }
 
 
-    private final ArrayList<IServerListener> listeners = new ArrayList<IServerListener>();
+    private final ArrayList<IServerListener> listeners = new ArrayList<>();
 
     public void registerListener(IServerListener listener) {
         listeners.add(listener);

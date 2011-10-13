@@ -16,7 +16,6 @@
  */
 package ru.apertum.qsystem.common;
 
-import ru.apertum.qsystem.common.exceptions.ServerException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -48,7 +47,7 @@ public class SoundPlayer implements Runnable {
      * @param resourceName имя проигрываемого ресурса
      */
     public static void play(String resourceName) {
-        final LinkedList<String> resourceList = new LinkedList<String>();
+        final LinkedList<String> resourceList = new LinkedList<>();
         resourceList.add(resourceName);
         play(resourceList);
     }
@@ -98,32 +97,6 @@ public class SoundPlayer implements Runnable {
     }
 
     /**
-     * Загрузит ресурс
-     * @param o для згрузки из jar
-     * @param resourceName имя ресурса, это полное имя файла на диске или ресурса в jar
-     * @return входной поток для чтения ресурса, если ничего не найделоЮ то вернет null
-     */
-    private static InputStream getInputStream(Object o, String resourceName) {
-        if ("".equals(resourceName)) {
-            return null;
-        } else {
-            final DataInputStream inStream;
-            File f = new File(resourceName);
-            if (f.exists()) {
-
-                try {
-                    inStream = new DataInputStream(new FileInputStream(f));
-                } catch (FileNotFoundException ex) {
-                    throw new ServerException("Нет звукового файла \"" + resourceName + "\" " + ex);
-                }
-
-            } else {
-                inStream = new DataInputStream(o.getClass().getResourceAsStream(resourceName));
-            }
-            return inStream;
-        }
-    }
-    /**
      * Листенер, срабатываюшщий при начале проигрывания семплов
      */
     private static ActionListener startListener = null;
@@ -162,15 +135,9 @@ public class SoundPlayer implements Runnable {
 
     synchronized private static void doSound(Object o, String resourceName) {
         QLog.l().logger().debug("Пытаемся воспроизвести звуковой ресурс \"" + resourceName + "\"");
-        InputStream inStream = getInputStream(o, resourceName);
         AudioInputStream ais = null;
-        if (inStream == null) {
-            QLog.l().logger().error("Ресурс не загружен: \"" + resourceName + "\"");
-            return;
-        }
         try {
-            //get an AudioInputStream
-            ais = AudioSystem.getAudioInputStream(inStream);
+            ais = AudioSystem.getAudioInputStream(Object.class.getResource(resourceName));
             //get the AudioFormat for the AudioInputStream 
             AudioFormat audioformat = ais.getFormat();
             //printAudioFormatInfo(audioformat);
@@ -194,27 +161,24 @@ public class SoundPlayer implements Runnable {
             if (!AudioSystem.isLineSupported(datalineinfo)) {
                 System.out.println("Line matching " + datalineinfo + " is not supported.");
             } else {
-                //System.out.println("Line matching " + datalineinfo + " is supported.");
-                //opening the sound output line 
-                SourceDataLine sourcedataline = (SourceDataLine) AudioSystem.getLine(datalineinfo);
-                sourcedataline.open(audioformat);
-                sourcedataline.start();
-                //Copy data from the input stream to the output data line 
-                int framesizeinbytes = audioformat.getFrameSize();
-                int bufferlengthinframes = sourcedataline.getBufferSize() / 8;
-                int bufferlengthinbytes = bufferlengthinframes * framesizeinbytes;
-                byte[] sounddata = new byte[bufferlengthinbytes];
-                int numberofbytesread = 0;
-                while ((numberofbytesread = ais.read(sounddata)) != -1) {
-                    sourcedataline.write(sounddata, 0, numberofbytesread);
+                byte[] sounddata;
+                try (SourceDataLine sourcedataline = (SourceDataLine) AudioSystem.getLine(datalineinfo)) {
+                    sourcedataline.open(audioformat);
+                    sourcedataline.start();
+                    int framesizeinbytes = audioformat.getFrameSize();
+                    int bufferlengthinframes = sourcedataline.getBufferSize() / 8;
+                    int bufferlengthinbytes = bufferlengthinframes * framesizeinbytes;
+                    sounddata = new byte[bufferlengthinbytes];
+                    int numberofbytesread = 0;
+                    while ((numberofbytesread = ais.read(sounddata)) != -1) {
+                        sourcedataline.write(sounddata, 0, numberofbytesread);
+                    }
+                    int frPos = -1;
+                    while (frPos != sourcedataline.getFramePosition()) {
+                        frPos = sourcedataline.getFramePosition();
+                        Thread.sleep(100);
+                    }
                 }
-                // пдождем пока проиграет семпл.
-                int frPos = -1;
-                while (frPos != sourcedataline.getFramePosition()) {
-                    frPos = sourcedataline.getFramePosition();
-                    Thread.sleep(100);
-                }
-                sourcedataline.close();
                 sounddata = null;
             }
 
@@ -232,9 +196,6 @@ public class SoundPlayer implements Runnable {
                 if (ais != null) {
                     ais.close();
                 }
-                if (inStream != null) {
-                    inStream.close();
-                }
             } catch (IOException ex) {
                 QLog.l().logger().error("IOException при освобождении входного потока медиаресурса: " + ex);
             }
@@ -248,7 +209,7 @@ public class SoundPlayer implements Runnable {
      * @return список файлов для воспроизведения фразы
      */
     private static LinkedList<String> toSound(String path, String phrase) {
-        final LinkedList<String> res = new LinkedList<String>();
+        final LinkedList<String> res = new LinkedList<>();
         for (int i = 0; i < phrase.length(); i++) {
 
             String elem = phrase.substring(i, i + 1);
@@ -301,7 +262,7 @@ public class SoundPlayer implements Runnable {
      * @return список файлов для воспроизведения фразы
      */
     public static LinkedList<String> toSoundSimple(String path, String phrase) {
-        final LinkedList<String> res = new LinkedList<String>();
+        final LinkedList<String> res = new LinkedList<>();
         for (int i = 0; i < phrase.length(); i++) {
 
             String elem = phrase.substring(i, i + 1);
@@ -368,7 +329,7 @@ public class SoundPlayer implements Runnable {
         if (ServerProps.getInstance().getProps().getSound() == 0) {
             return;
         }
-        final LinkedList<String> res = new LinkedList<String>();
+        final LinkedList<String> res = new LinkedList<>();
         // путь к звуковым файлам
         final String path = "/ru/apertum/qsystem/server/sound/";
         res.add(path + "ding.wav");

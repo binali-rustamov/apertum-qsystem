@@ -31,7 +31,7 @@ import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
-import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.evgenic.rxtx.serialPort.IReceiveListener;
 import ru.evgenic.rxtx.serialPort.ISerialPort;

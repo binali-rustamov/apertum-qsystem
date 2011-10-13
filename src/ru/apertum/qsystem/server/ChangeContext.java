@@ -34,8 +34,8 @@ import org.dom4j.io.SAXReader;
  */
 public class ChangeContext {
 
-    static private HashMap<String, Element> elBeans = new HashMap<String, Element>();
-    static private HashMap<String, Element> elProps = new HashMap<String, Element>();
+    static private HashMap<String, Element> elBeans = new HashMap<>();
+    static private HashMap<String, Element> elProps = new HashMap<>();
 
     public static void main(String args[]) throws DocumentException, IOException {
         final SAXReader reader = new SAXReader(false);
@@ -65,11 +65,11 @@ public class ChangeContext {
         System.out.println();
         System.out.print("Save context(1 - yes, any key - no): ");
         if ("1".equals(read())) {
-            // в файл
-            final FileOutputStream fos = new FileOutputStream(args[0]);
-            fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\"\n   \"spring-beans-2.0.dtd\">\n" + root.asXML()).getBytes("UTF-8"));
-            fos.flush();
-            fos.close();
+            try (FileOutputStream fos = new FileOutputStream(args[0])) {
+                //fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\"\n   \"spring-beans-2.0.dtd\">\n" + root.asXML()).getBytes("UTF-8"));
+                fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + root.asXML()).getBytes("UTF-8"));
+                fos.flush();
+            }
             System.out.println("Save and Exit");
         } else {
             System.out.println("Exit without save");

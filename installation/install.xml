@@ -12,11 +12,11 @@
         <appname>QSystem</appname>
         <appversion>[]</appversion>
         <authors>
-            <author name="Product of ''Apertum Project''" email="info@apertum.ru"/>
+            <author name="Product of ''Apertum Projects''" email="info@apertum.ru"/>
             <author name="Develop by Evgeniy V. Egorov" email="egorov@apertum.ru"/>
         </authors>
         <url>http://www.qsystem.info</url>
-        <javaversion>1.6.0.20</javaversion>
+        <javaversion>1.7.0</javaversion>
         <requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall.vista|izpack.macinstall"/>
     </info>
@@ -36,6 +36,7 @@
     <!--
         Для возможности создавать ярлыки под windows
     -->
+    <!-- native type="izpack" name="ShellLink_x64.dll"/ -->
     <native type="izpack" name="ShellLink.dll"/>
 
     <!-- 
@@ -75,6 +76,8 @@
 		<res id="packsLang.xml_eng" src="i18n/packsLang_eng.xml"/>
         <res id="packsLang.xml_rus" src="i18n/packsLang_rus.xml"/>
 		<res id="packsLang.xml_ukr" src="i18n/packsLang_ukr.xml"/>
+		
+		<res id="installer.langsel.img" src="resource/img/qlang.jpg" />
     </resources>
 
     <!-- 
@@ -135,9 +138,7 @@
             <description>Сервер</description>
             <!-- fileset os="windows" dir="D:/Files/Downloads/rxtx-2.1-7-bins-r2/rxtx-2.1-7-bins-r2/Windows/i368-mingw32" includes="*.dll" targetdir="${ENV[WINDIR]}/system32"/>
             <fileset os="unix" dir="D:/Files/Downloads/rxtx-2.1-7-bins-r2/rxtx-2.1-7-bins-r2/Linux/i686-unknown-linux-gnu" includes="*.so" targetdir="$INSTALL_PATH"/ -->
-            <file os="windows" src="resource/bin/jar.exe" targetdir="$INSTALL_PATH/dist"/>
-            <file os="windows" src="resource/bin/jli.dll" targetdir="$INSTALL_PATH/dist"/>
-            <file os="windows" src="resource/bin/msvcr71.dll" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/bin/7za.exe" targetdir="$INSTALL_PATH/dist"/>
             <file os="windows" src="resource/txt/admspr.bat" targetdir="$INSTALL_PATH/dist"/>
             <file os="windows" src="resource/txt/admdbcom.bat" targetdir="$INSTALL_PATH/dist"/>
             <file os="unix" src="resource/bin/jar" targetdir="$INSTALL_PATH/dist"/>
@@ -158,9 +159,7 @@
             <file os="windows" src="resource/txt/StartAdmin.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/admin.sh" targetdir="$INSTALL_PATH"/>
             <parsable targetfile="$INSTALL_PATH/config/admin.properties"/>
-            <file os="windows" src="resource/bin/jar.exe" targetdir="$INSTALL_PATH/dist"/>
-            <file os="windows" src="resource/bin/jli.dll" targetdir="$INSTALL_PATH/dist"/>
-            <file os="windows" src="resource/bin/msvcr71.dll" targetdir="$INSTALL_PATH/dist"/>
+            <file os="windows" src="resource/bin/7za.exe" targetdir="$INSTALL_PATH/dist"/>
             <file os="windows" src="resource/txt/admspr.bat" targetdir="$INSTALL_PATH/dist"/>
             <file os="windows" src="resource/txt/admdbcom.bat" targetdir="$INSTALL_PATH/dist"/>
             <file os="unix" src="resource/bin/jar" targetdir="$INSTALL_PATH/dist"/>

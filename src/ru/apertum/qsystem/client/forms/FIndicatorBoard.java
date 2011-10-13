@@ -84,7 +84,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             return null;
         }
         if (indicatorBoard == null || rootParams != indicatorBoard.root) {
-            indicatorBoard = new FIndicatorBoard(rootParams, true);
+            indicatorBoard = new FIndicatorBoard(rootParams, QLog.l().isDebug());
             indicatorBoard.loadConfig();
             indicatorBoard.root = rootParams;
         }

@@ -17,7 +17,7 @@
 package ru.apertum.qsystem.client.model;
 
 import ru.apertum.qsystem.client.common.WelcomeParams;
-import ru.apertum.qsystem.common.model.NetCommander;
+import ru.apertum.qsystem.common.NetCommander;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;

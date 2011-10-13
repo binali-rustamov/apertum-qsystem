@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ru.apertum.qsystem.common.model;
+package ru.apertum.qsystem.common;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
@@ -29,8 +29,6 @@ import java.util.Scanner;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import ru.apertum.qsystem.common.GsonPool;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.CmdParams;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
@@ -53,6 +51,8 @@ import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.exceptions.QException;
 import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.common.model.INetProperty;
+import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.apertum.qsystem.server.model.QUser;
@@ -979,6 +979,24 @@ public class NetCommander {
         // загрузим ответ
         try {
             send(serverNetProperty, Uses.TASK_RESTART_MAIN_TABLO, null);
+        } catch (QException ex) {// вывод исключений
+            throw new ClientException("Проблема с командой. ", ex);
+        }
+    }
+    
+    /**
+     * Изменение приоритетов услуг оператором
+     * @param netProperty
+     * @param userId id юзера который вызывает
+     */
+    public static void changeFlexPriority(INetProperty netProperty, long userId, String smartData) {
+        QLog.l().logger().info("Изменение приоритетов услуг оператором.");
+        final CmdParams params = new CmdParams();
+        params.userId = userId;
+        params.textData = smartData;
+        // загрузим ответ
+        try {
+            send(netProperty, Uses.TASK_CHANGE_FLEX_PRIORITY, params);
         } catch (QException ex) {// вывод исключений
             throw new ClientException("Проблема с командой. ", ex);
         }

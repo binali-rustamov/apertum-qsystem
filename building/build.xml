@@ -33,7 +33,7 @@
 
           <echo message="Make system ZIP ..."/>
           <zip destfile="building/qsystem-${version}.zip">
-               <fileset dir="installation" includes="readme.txt"/>
+               <fileset dir="" includes="readme.txt"/>
                <fileset dir="installation" includes="install.jar"/>
           </zip>
 

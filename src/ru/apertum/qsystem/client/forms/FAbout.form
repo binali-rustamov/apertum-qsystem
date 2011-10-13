@@ -79,7 +79,7 @@
                           </Group>
                       </Group>
                   </Group>
-                  <EmptySpace pref="88" max="32767" attributes="0"/>
+                  <EmptySpace pref="72" max="32767" attributes="0"/>
               </Group>
               <Component id="jLabel2" alignment="0" pref="498" max="32767" attributes="0"/>
           </Group>

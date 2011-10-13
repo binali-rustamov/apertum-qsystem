@@ -67,7 +67,6 @@ public class RpcGetSelfSituation extends JsonRPC20 {
         public void setSelfservices(LinkedList<SelfService> selfservices) {
             this.selfservices = selfservices;
         }
-
         @Expose
         @SerializedName("postponed")
         private LinkedList<QCustomer> postponedList;
@@ -90,16 +89,16 @@ public class RpcGetSelfSituation extends JsonRPC20 {
          *
          * @param service услуга по которой данная статистика
          * @param countWait количество ожидающих в этой услуге
+         * @param priority приоритет услуги
+         * @param flexy возможность менять приоритет услуги юзеру
          */
-        public SelfService(QService service, int countWait) {
+        public SelfService(QService service, int countWait, int priority, boolean flexy) {
             this.serviceName = service.getName();
             this.countWait = countWait;
+            this.priority = priority;
+            this.flexy = flexy;
             this.id = service.getId();
         }
-        @Expose
-        @SerializedName("service_name")
-        private String serviceName;
-
         @Expose
         @SerializedName("id")
         private long id;
@@ -111,6 +110,9 @@ public class RpcGetSelfSituation extends JsonRPC20 {
         public void setId(long id) {
             this.id = id;
         }
+        @Expose
+        @SerializedName("waiting")
+        private int countWait;
 
         public int getCountWait() {
             return countWait;
@@ -119,6 +121,9 @@ public class RpcGetSelfSituation extends JsonRPC20 {
         public void setCountWait(int countWait) {
             this.countWait = countWait;
         }
+        @Expose
+        @SerializedName("service_name")
+        private String serviceName;
 
         public String getServiceName() {
             return serviceName;
@@ -127,9 +132,29 @@ public class RpcGetSelfSituation extends JsonRPC20 {
         public void setServiceName(String serviceName) {
             this.serviceName = serviceName;
         }
+        
         @Expose
-        @SerializedName("waiting")
-        private int countWait;
+        @SerializedName("priority")
+        private int priority;
+
+        public int getPriority() {
+            return priority;
+        }
+
+        public void setPriority(int priority) {
+            this.priority = priority;
+        }
+        @Expose
+        @SerializedName("flexy")
+        private boolean flexy;
+
+        public boolean isFlexy() {
+            return flexy;
+        }
+
+        public void setFlexy(boolean flexy) {
+            this.flexy = flexy;
+        }
     }
     @Expose
     @SerializedName("result")

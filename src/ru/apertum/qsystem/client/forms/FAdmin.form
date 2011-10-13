@@ -141,6 +141,14 @@
             <Property name="name" type="java.lang.String" value="jMenuItem14" noResource="true"/>
           </Properties>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="jMenuItem38">
+          <Properties>
+            <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
+              <action class="ru.apertum.qsystem.client.forms.FAdmin" id="changeFlexiblePriorityAbility" methodName="changeFlexiblePriorityAbility"/>
+            </Property>
+            <Property name="name" type="java.lang.String" value="jMenuItem38" noResource="true"/>
+          </Properties>
+        </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="jMenuItem17">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
@@ -1775,7 +1783,6 @@
                                   <Component id="buttonAddCalendar" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="buttonDeleteCalendar" min="-2" pref="87" max="-2" attributes="0"/>
-                                  <EmptySpace pref="790" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" attributes="0">
                                   <Component id="jScrollPane14" min="-2" pref="215" max="-2" attributes="1"/>
@@ -1797,9 +1804,9 @@
                                           <Component id="textFieldCalendarName" pref="594" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

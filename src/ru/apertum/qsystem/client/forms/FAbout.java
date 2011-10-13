@@ -213,7 +213,7 @@ public class FAbout extends javax.swing.JDialog {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jToggleButtonLic)
                             .addComponent(labelRight))))
-                .addContainerGap(88, Short.MAX_VALUE))
+                .addContainerGap(72, Short.MAX_VALUE))
             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(

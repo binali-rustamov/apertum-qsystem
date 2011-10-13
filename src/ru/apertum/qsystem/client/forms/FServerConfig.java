@@ -27,7 +27,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Locale;
-import javax.swing.ActionMap;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import org.dom4j.DocumentException;
@@ -35,7 +34,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.CodepagePrintStream;
@@ -194,7 +193,7 @@ public class FServerConfig extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        ResourceMap resourceMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FServerConfig.class);
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FServerConfig.class);
         setTitle(resourceMap.getString("Form.title")); // NOI18N
         setName("Form"); // NOI18N
 
@@ -252,7 +251,7 @@ public class FServerConfig extends javax.swing.JFrame {
                     .addComponent(textFieldServerAdress, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(45, 45, 45))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(134, Short.MAX_VALUE)
+                .addContainerGap(136, Short.MAX_VALUE)
                 .addComponent(jButton3)
                 .addContainerGap())
         );
@@ -370,7 +369,7 @@ public class FServerConfig extends javax.swing.JFrame {
             }
         });
 
-        ActionMap actionMap = Application.getInstance(QSystem.class).getContext().getActionMap(FServerConfig.class, this);
+        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FServerConfig.class, this);
         jButton2.setAction(actionMap.get("quit")); // NOI18N
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
         jButton2.setName("jButton2"); // NOI18N
@@ -380,7 +379,7 @@ public class FServerConfig extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap(122, Short.MAX_VALUE)
+                .addContainerGap(126, Short.MAX_VALUE)
                 .addComponent(jButton1)
                 .addGap(17, 17, 17)
                 .addComponent(jButton2)
@@ -416,7 +415,7 @@ public class FServerConfig extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -518,7 +517,8 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
         throw new ClientException(getLocaleMessage("servercfg.file.error") + ex.getMessage());
     }
     try {
-        fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\" \"spring-beans-2.0.dtd\">\n" + root.asXML()).getBytes("UTF-8"));
+        //fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\" \"spring-beans-3.0.xsd\">\n" + root.asXML()).getBytes("UTF-8"));
+        fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + root.asXML()).getBytes("UTF-8"));
         fos.flush();
         fos.close();
     } catch (IOException ex) {

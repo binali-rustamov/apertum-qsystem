@@ -10,7 +10,7 @@ pause 'Admin tools for change context. Press any key ...'
 
 
 jar xf lib/qcontext.jar ru/apertum/qsystem/spring/qsContext.xml
-jar xf lib/qcontext.jar ru/apertum/qsystem/spring/spring-beans-2.0.dtd
+jar xf lib/qcontext.jar ru/apertum/qsystem/spring/spring-beans-3.0.xsd
 
 pause 'Context is open. Press any key ...'
 

@@ -53,6 +53,7 @@ import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.dom4j.Element;
 import ru.apertum.qsystem.client.Locales;
+import ru.apertum.qsystem.client.forms.FServicePriority;
 
 /**
  * @author Evgeniy Egorov
@@ -67,14 +68,14 @@ public final class Uses {
     public static final int PRIORITY_HI = 2;
     public static final int PRIORITY_VIP = 3;
     public static final int[] PRIORITYS = {PRIORITY_LOW, PRIORITY_NORMAL, PRIORITY_HI, PRIORITY_VIP};
-    public static final LinkedHashMap<Integer, String> PRIORITYS_WORD = new LinkedHashMap<Integer, String>();
+    public static final LinkedHashMap<Integer, String> PRIORITYS_WORD = new LinkedHashMap<>();
     // значения приоритета обрабатываемых услуг для юзера
     public static final int SERVICE_EXCLUDE = -1;
     public static final int SERVICE_REMAINS = 0;
     public static final int SERVICE_NORMAL = 1;
     public static final int SERVICE_VIP = 2;
     public static final int[] SERVICE_PRIORITYS = {SERVICE_EXCLUDE, SERVICE_REMAINS, SERVICE_NORMAL, SERVICE_VIP};
-    public static final LinkedHashMap<Integer, String> COEFF_WORD = new LinkedHashMap<Integer, String>();
+    public static final LinkedHashMap<Integer, String> COEFF_WORD = new LinkedHashMap<>();
     
     // Наименования тегов и атрибутов в протоколах XML по статистике
     public static final String TAG_REP_STATISTIC = "Статистика";
@@ -199,6 +200,7 @@ public final class Uses {
     public static final String REPORT_CURRENT_SERVICES = "current_services";
     public static final String TASK_GET_CLIENT_AUTHORIZATION = "Идентифицировать клиента";
     public static final String TASK_SET_CUSTOMER_PRIORITY = "Изменить приоритет";
+    public static final String TASK_CHANGE_FLEX_PRIORITY = "Изменить гибкий приоритет";
     // Формат отчетов
     public static final String REPORT_FORMAT_HTML = "html";
     public static final String REPORT_FORMAT_RTF = "rtf";
@@ -315,7 +317,7 @@ public final class Uses {
      * @return массив элементов
      */
     public static ArrayList<Element> elements(Element root, String tagName) {
-        ArrayList<Element> list = new ArrayList<Element>();
+        ArrayList<Element> list = new ArrayList<>();
         //list.addAll(root.elements(tagName));
         getList(list, root, tagName);
         return list;
@@ -345,7 +347,7 @@ public final class Uses {
      * @return массив элементов
      */
     public static ArrayList<Element> elementsByAttr(Element root, String attrName, String attrValue) {
-        ArrayList<Element> list = new ArrayList<Element>();
+        ArrayList<Element> list = new ArrayList<>();
         //list.addAll(root.elements(tagName));
         getList(list, root, attrName, attrValue);
         return list;
@@ -373,7 +375,7 @@ public final class Uses {
      * @return массив элементов
      */
     public static ArrayList<Element> elementsByCData(Element root, String text) {
-        ArrayList<Element> list = new ArrayList<Element>();
+        ArrayList<Element> list = new ArrayList<>();
         //list.addAll(root.elements(tagName));
         getListCData(list, root, text);
         return list;
@@ -546,9 +548,9 @@ public final class Uses {
         /**
          * Инициализация
          */
-        COEFF_WORD.put(SERVICE_REMAINS, "Второстепенная");
-        COEFF_WORD.put(SERVICE_NORMAL, "Основная");
-        COEFF_WORD.put(SERVICE_VIP, "V.I.P.");
+        COEFF_WORD.put(SERVICE_REMAINS, FServicePriority.getLocaleMessage("service.priority.low"));
+        COEFF_WORD.put(SERVICE_NORMAL, FServicePriority.getLocaleMessage("service.priority.basic"));
+        COEFF_WORD.put(SERVICE_VIP, FServicePriority.getLocaleMessage("service.priority.vip"));
 
         PRIORITYS_WORD.put(PRIORITY_LOW, "Низкий");
         PRIORITYS_WORD.put(PRIORITY_NORMAL, "Нормальный");
@@ -615,18 +617,24 @@ public final class Uses {
     /**
      * Создание и показ сплэш-заставки  с блокировкой запуска второй копии
      */
-    public static void startSplash() {
+    public static void startSplashClient() {
         try {
             stopStartSecond = new ServerSocket(43210);
         } catch (Exception ex) {
             System.err.println("QSystem: Application alredy started!!!");
             System.exit(15685);
         }
+        startSplash();
+    }
+    static ServerSocket stopStartSecond;
+    /**
+     * Создание и показ сплэш-заставки  с блокировкой запуска второй копии
+     */
+    public static void startSplash() {
         sh = true;
         thread = new Thread(new SplashRun());
         thread.start();
     }
-    static ServerSocket stopStartSecond;
 
     /**
      * Создание и показ сплэш-заставки  без блокировки запуска второй копии

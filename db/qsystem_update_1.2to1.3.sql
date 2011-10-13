@@ -6,6 +6,7 @@ USE `qsystem`;
 
 ALTER TABLE `net` ADD `zone_board_serv_port` BIGINT NOT NULL DEFAULT 0;
 ALTER TABLE `net` ADD `zone_board_serv_addr` VARCHAR(145) NOT NULL DEFAULT '';
+ALTER TABLE `services_users` ADD `flexible_coef` BOOL NOT NULL DEFAULT false;
 
 COMMIT;
 

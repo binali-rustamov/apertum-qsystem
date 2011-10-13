@@ -255,7 +255,8 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`services_users` (
   `id` BIGINT NOT NULL AUTO_INCREMENT ,
   `service_id` BIGINT NOT NULL ,
   `user_id` BIGINT NOT NULL ,
-  `coefficient` INT NOT NULL DEFAULT 1 COMMENT 'Коэффициент участия.' ,
+  `coefficient` INT NOT NULL DEFAULT 1 COMMENT 'Коэффициент участия. 0/1/2' ,
+  `flexible_coef` TINYINT(1)  NOT NULL DEFAULT false COMMENT 'возможность изменить коэф участия юзерами' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_services_id_su_service_id`
     FOREIGN KEY (`service_id` )
@@ -595,7 +596,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`services_users` (`id`, `service_id`, `user_id`, `coefficient`) VALUES (1, 2, 2, 1);
+INSERT INTO `qsystem`.`services_users` (`id`, `service_id`, `user_id`, `coefficient`, `flexible_coef`) VALUES (1, 2, 2, 1, 0);
 
 COMMIT;
 
