@@ -30,6 +30,7 @@ import java.net.SocketException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import org.dom4j.DocumentException;
 import org.jdesktop.application.Action;
@@ -160,7 +161,7 @@ public final class FClient extends javax.swing.JFrame {
             indicatorBoard.printRecord(0, customer.getPrefix() + customer.getNumber(), "", blinked ? 0 : -1);
         }
         if (clientboardFX) {
-         //todo   board.showData(customer.getPrefix() + customer.getNumber(), blinked);
+            //todo   board.showData(customer.getPrefix() + customer.getNumber(), blinked);
         }
     }
 
@@ -311,6 +312,13 @@ public final class FClient extends javax.swing.JFrame {
         this.user = user;
         this.netProperty = netProperty;
         initComponents();
+
+        try {
+            setIconImage(ImageIO.read(FAdmin.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
+
         // отрехтуем дизайн формы.
         //panelBottom.setVisible(false);
         jPanel4.setVisible(false);
@@ -393,6 +401,11 @@ public final class FClient extends javax.swing.JFrame {
                     }
                     indicatorBoard = FIndicatorBoard.getIndicatorBoard(root, false);
                     if (indicatorBoard != null) {
+                        try {
+                            indicatorBoard.setIconImage(ImageIO.read(FIndicatorBoard.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
+                        } catch (IOException ex) {
+                            System.err.println(ex);
+                        }
                         indicatorBoard.toPosition(QLog.l().isDebug(), Integer.parseInt(root.attributeValue("x")), Integer.parseInt(root.attributeValue("y")));
                         indicatorBoard.setVisible(true);
                     }
@@ -406,7 +419,7 @@ public final class FClient extends javax.swing.JFrame {
         File f = new File(cfgFile);
         if (!clientboardFX && f.exists()) {
             // todo
-        //todo    board.showBoard(f);
+            //todo    board.showBoard(f);
             clientboardFX = true;
         }
     }
@@ -1216,7 +1229,7 @@ public final class FClient extends javax.swing.JFrame {
             indicatorBoard.printRecord(0, text, "", blinkCount);
         }
         if (clientboardFX) {
-         //todo   board.showData("", false);
+            //todo   board.showData("", false);
         }
     }
 

@@ -35,7 +35,8 @@ import ru.apertum.qsystem.client.forms.FConfirmationStart;
 import ru.apertum.qsystem.client.forms.FInputDialog;
 import ru.apertum.qsystem.client.forms.FPreInfoDialog;
 import ru.apertum.qsystem.client.forms.FWelcome;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
@@ -170,7 +171,7 @@ public class QButton extends JButton {
                                     return;
                                 }
                             }
-                            
+
                             // Если режим инфокиоска, то сразу уходим, т.к. вставать в очередь нет нужды
                             // Показали информацию и все
                             if (FWelcome.isInfo) {
@@ -184,7 +185,7 @@ public class QButton extends JButton {
                                 count = NetCommander.aboutService(FWelcome.netProperty, service.getId());
                             } catch (Exception ex) {
                                 // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
-                                QLog.l().logger().error("Невозможно отправить команду на сервер. ", ex);
+                                QLog.l().logger().error("Гасим жестоко. Невозможно отправить команду на сервер. ", ex);
                                 form.lock(FWelcome.LOCK_MESSAGE);
                                 return;
                             }
@@ -197,6 +198,11 @@ public class QButton extends JButton {
                             }
                             if (count == Uses.LOCK_FREE_INT) {
                                 form.lock("<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Выбранная услуга сейчас не оказывается по расписанию. Обратитесь к администратору.</span></b></p>");
+                                form.clockUnlockBack.start();
+                                return;
+                            }
+                            if (count == Uses.LOCK_PER_DAY_INT) {
+                                form.lock("<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Количество поситителей данной услуги ограничено и истекло.</span></b></p>");
                                 form.clockUnlockBack.start();
                                 return;
                             }
@@ -222,6 +228,21 @@ public class QButton extends JButton {
                             if (service.getInput_required()) {
                                 inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getInput_caption());
                                 if (inputData == null) {
+                                    return;
+                                }
+                                // если ввели, то нужно спросить у сервера есть ли возможность встать в очередь с такими введенными данными
+
+                                boolean limitPersonOver = true;
+                                try {
+                                    limitPersonOver = NetCommander.aboutServicePersonLimitOver(FWelcome.netProperty, service.getId(), inputData);
+                                } catch (Exception ex) {
+                                    // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
+                                    QLog.l().logger().error("Гасим жестоко опрос превышения лимита по введенным данным, но не лочим киоск. Невозможно отправить команду на сервер. ", ex);
+                                    return;
+                                }
+                                if (limitPersonOver) {
+                                    form.lock("<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Количество поситителей данной услуги c такими введенными данными ограничено и истекло.</span></b></p>");
+                                    form.clockUnlockBack.start();
                                     return;
                                 }
                             }
@@ -268,7 +289,7 @@ public class QButton extends JButton {
 
         /*
         ATalkingClock clockPush = new ATalkingClock(5000, 0) {
-
+        
         @Override
         public void run() {
         for (ActionListener l : getActionListeners()){

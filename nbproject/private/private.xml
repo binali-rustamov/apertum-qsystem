@@ -3,12 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
         <file>
             <url>src/ru/apertum/qsystem/common/NetCommander.java</url>
-            <line>206</line>
+            <line>205</line>
         </file>
         <file>
             <url>src/ru/apertum/qsystem/client/forms/FClient.java</url>
-            <line>549</line>
-            <line>1305</line>
+            <line>562</line>
+            <line>1318</line>
         </file>
         <file>
             <url>src/ru/ccrs/client/forms/FClient.java</url>
@@ -29,13 +29,13 @@
             <line>130</line>
         </file>
         <file>
-            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
-            <line>306</line>
-        </file>
-        <file>
             <url>src/ru/apertum/qsystem/server/controller/QServicesPool.java</url>
             <line>1561</line>
             <line>1605</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
+            <line>306</line>
         </file>
         <file>
             <url>src/ru/ccrs/server/model/AIndicatorBoard.java</url>
@@ -81,20 +81,15 @@
             <url>src/ru/apertum/qsystem/server/controller/Executer.java</url>
             <line>146</line>
             <line>343</line>
-            <line>700</line>
-            <line>926</line>
-            <line>1215</line>
+            <line>719</line>
+            <line>945</line>
+            <line>1234</line>
         </file>
         <file>
             <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
-            <line>3636</line>
-            <line>3717</line>
-            <line>3748</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FBoardConfig.java</url>
-            <line>74</line>
-            <line>419</line>
+            <line>3651</line>
+            <line>3732</line>
+            <line>3763</line>
         </file>
         <file>
             <url>src/ru/ccrs/server/model/QServicesPool.java</url>
@@ -108,6 +103,11 @@
             <line>1354</line>
             <line>1392</line>
             <line>1561</line>
+        </file>
+        <file>
+            <url>src/ru/ccrs/client/forms/FBoardConfig.java</url>
+            <line>74</line>
+            <line>419</line>
         </file>
     </editor-bookmarks>
 </project-private>

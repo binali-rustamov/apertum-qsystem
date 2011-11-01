@@ -168,6 +168,7 @@ public final class Uses {
     public static final String TASK_REDIRECT_CUSTOMER = "Переадресовать клиента к другой услуге";
     public static final String TASK_GET_SERVICES = "Получить перечень услуг";
     public static final String TASK_ABOUT_SERVICE = "Получить описание услуги";
+    public static final String TASK_ABOUT_SERVICE_PERSON_LIMIT = "Получить возможность встать с этими данными";
     public static final String TASK_GET_SERVICE_PREINFO = "Получить информацию по услуге";
     public static final String TASK_GET_INFO_PRINT = "Получить информацию для печати";
     public static final String TASK_GET_USERS = "Получить перечень пользователей";
@@ -292,6 +293,10 @@ public final class Uses {
      * Константа возврата в пункт регистрации кол-во клиентов в очереди, в случае если услуга не оказывается учитывая расписание
      */
     public static final int LOCK_FREE_INT = 1000000011;
+    /**
+     * Константа возврата в пункт регистрации кол-во клиентов в очереди, в случае если услуга не оказывается учитывая ограничение посещений в день и лимит достигнут
+     */
+    public static final int LOCK_PER_DAY_INT = 1000000022;
     /**
      * Вопрос о живости
      */

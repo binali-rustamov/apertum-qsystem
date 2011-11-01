@@ -22,8 +22,10 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import javax.persistence.Id;
 import java.util.PriorityQueue;
 import java.util.ServiceLoader;
@@ -39,10 +41,12 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.extra.ICustomerChangePosition;
 import ru.apertum.qsystem.server.ServerProps;
+import ru.apertum.qsystem.server.Spring;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
@@ -67,7 +71,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
      * множество кастомеров, вставших в очередь к этой услуге
      */
     @Transient
-    private final PriorityQueue<QCustomer> customers = new PriorityQueue<QCustomer>();
+    private final PriorityQueue<QCustomer> customers = new PriorityQueue<>();
 
     private PriorityQueue<QCustomer> getCustomers() {
         return customers;
@@ -75,7 +79,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
     @Transient
     //@Expose
     //@SerializedName("clients")
-    private final LinkedList<QCustomer> clients = new LinkedList<QCustomer>(customers);
+    private final LinkedList<QCustomer> clients = new LinkedList<>(customers);
 
     /**
      * Это все кастомеры стоящие к этой услуге в виде списка
@@ -123,6 +127,30 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
 
     public void setAdvanceLinit(Integer advanceLimit) {
         this.advanceLimit = advanceLimit;
+    }
+    @Column(name = "day_limit")
+    @Expose
+    @SerializedName("day_limit")
+    private Integer dayLimit = 0;
+
+    public Integer getDayLimit() {
+        return dayLimit;
+    }
+
+    public void setDayLimit(Integer dayLimit) {
+        this.dayLimit = dayLimit;
+    }
+    @Column(name = "person_day_limit")
+    @Expose
+    @SerializedName("person_day_limit")
+    private Integer personDayLimit = 0;
+
+    public Integer getPersonDayLimit() {
+        return personDayLimit;
+    }
+
+    public void setPersonDayLimit(Integer personDayLimit) {
+        this.personDayLimit = personDayLimit;
     }
     /**
      * Это ограничение в днях, в пределах которого можно записаться вперед при предварительной записи
@@ -277,12 +305,93 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
         if (lastStNumber >= ServerProps.getInstance().getProps().getLastNumber()) {
             clearNextStNumber();
         }
+        // учтем вновь поставленного. прибавим одного к количеству сегодня пришедших к данной услуге
+        final int today = new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR);
+        if (today != day) {
+            day = today;
+            countPerDay = 0;
+        }
+        countPerDay++;
+
         // 0 - общая нумерация, 1 - для каждой услуги своя нумерация 
         if (ServerProps.getInstance().getProps().getNumering()) {
             return ++lastNumber;
         } else {
             return ++lastStNumber;
         }
+    }
+
+    /**
+     * Иссяк лимит на одинаковые введенные данные в день по услуге или нет
+     * @return true - превышен, в очередь становиться нельзя; false - можно в очередь встать
+     */
+    public boolean isLimitPersonPerDayOver(String data) {
+        return getPersonDayLimit() != 0 && getDay() == new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR) && getPersonDayLimit() <= getCountPersonsPerDay(data);
+    }
+
+    private int getCountPersonsPerDay(String data) {
+        int cnt = 0;
+        for (QCustomer customer : customers) {
+            if (data.equalsIgnoreCase(customer.getInput_data())) {
+                cnt++;
+            }
+        }
+        if (getPersonDayLimit() <= cnt) {
+            return cnt;
+        }
+        QLog.l().logger().trace("Загрузим уже обработанных кастомеров с такими же данными \"" + data + "\"");
+        // Загрузим уже обработанных кастомеров
+        final GregorianCalendar gc = new GregorianCalendar();
+        gc.set(GregorianCalendar.HOUR, 0);
+        gc.set(GregorianCalendar.MINUTE, 0);
+        gc.set(GregorianCalendar.SECOND, 0);
+        final Date start = gc.getTime();
+        gc.add(GregorianCalendar.DAY_OF_YEAR, 1);
+        final Date finish = gc.getTime();
+        final List<QCustomer> custs = Spring.getInstance().getHt().find("FROM QCustomer a WHERE "
+                + " start_time >'" + Uses.format_for_rep.format(start) + "' "
+                + " and start_time <= '" + Uses.format_for_rep.format(finish) + "' "
+                + " and  input_data = '" + data + "' "
+                + " and service_id = " + getId());
+        return cnt + custs.size();
+    }
+
+    /**
+     * Иссяк лимит на возможных обработанных в день по услуге или нет
+     * @return true - превышен, в очередь становиться нельзя; false - можно в очередь встать
+     */
+    public boolean isLimitPerDayOver() {
+        return getDayLimit() != 0 && getDay() == new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR) && getDayLimit() <= getCountPerDay();
+    }
+    /**
+     * Сколько кастомеров уже прошло услугу сегодня
+     */
+    @Transient
+    @Expose
+    @SerializedName("countPerDay")
+    private int countPerDay = 0;
+
+    public void setCountPerDay(int countPerDay) {
+        this.countPerDay = countPerDay;
+    }
+
+    public int getCountPerDay() {
+        return countPerDay;
+    }
+    /**
+     * Текущий день, нужен для учета количества кастомеров обработанных в этой услуге в текущий день
+     */
+    @Transient
+    @Expose
+    @SerializedName("day")
+    private int day = 0;
+
+    public int getDay() {
+        return day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
     }
 
     public void clearNextNumber() {
@@ -589,7 +698,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
     @Transient
     @Expose
     @SerializedName("inner_services")
-    private LinkedList<QService> childrenOfService = new LinkedList<QService>();
+    private LinkedList<QService> childrenOfService = new LinkedList<>();
 
     public LinkedList<QService> getChildren() {
         return childrenOfService;

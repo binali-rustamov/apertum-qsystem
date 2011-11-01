@@ -35,6 +35,7 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.InputVerifier;
@@ -221,6 +222,13 @@ public class FAdmin extends javax.swing.JFrame {
             }
         });
         initComponents();
+
+
+        try {
+            setIconImage(ImageIO.read(FAdmin.class.getResource("/ru/apertum/qsystem/client/forms/resources/admin.png")));
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
 
         // Отцентирируем
         final Toolkit kit = Toolkit.getDefaultToolkit();
@@ -559,12 +567,19 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     private void showServiceInfo(QService service) {
-        labelServiceInfo.setText("<html>" + getLocaleMessage("service.service") + ": \"" + service.getName() + "\"    " + (service.getStatus() == 1 ? getLocaleMessage("service.kind.active") : (service.getStatus() == 0 ? getLocaleMessage("service.kind.not_active") : getLocaleMessage("service.kind.unavailable")))
-                + ";    " + getLocaleMessage("service.prefix") + ": " + service.getPrefix() + ";<br>" + getLocaleMessage("service.restrict_adv_reg") + ": " + service.getAdvanceLimit()
-                + ";  " + getLocaleMessage("service.restrict_adv_period") + ": " + service.getAdvanceLimitPeriod()
-                + ";<br>" + getLocaleMessage("service.description") + ": " + service.getDescription() + "<br>" + getLocaleMessage("service.work_calendar") + ": " + (service.getCalendar() == null ? getLocaleMessage("service.work_calendar.no") : service.getCalendar().toString()) + ";  " + getLocaleMessage("service.work_calendar.plan") + ": " + (service.getSchedule() == null ? getLocaleMessage("service.work_calendar.no") : service.getSchedule().toString()) + "<br>"
-                + (service.getInput_required() ? getLocaleMessage("service.required_client_data") + ": \"" + service.getInput_caption() + "\"" : getLocaleMessage("service.required_client_data.not")) + ";   "
-                + (service.getResult_required() ? getLocaleMessage("service.required_result") : getLocaleMessage("service.required_result.not")));
+        labelServiceInfo.setText("<html><body text=\"#336699\"> " + getLocaleMessage("service.service") + ": \""+ "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>" 
+                + "<font color=\"#"
+                + (service.getStatus() == 1
+                ? "00AA00\">"+getLocaleMessage("service.kind.active") 
+                : (service.getStatus() == 0 ?  "CCAA00\">" + getLocaleMessage("service.kind.not_active") : "DD0000\">" + getLocaleMessage("service.kind.unavailable")))
+                + "</font>"
+                + ";    " + getLocaleMessage("service.prefix") + ": " + "<font color=\"#DD0000\">" + service.getPrefix() + "</font>" + ";  " + getLocaleMessage("service.description") + ": " + service.getDescription()
+                + ";<br>" + getLocaleMessage("service.restrict_day_reg") + ": " + (service.getDayLimit() == 0 ? getLocaleMessage("service.work_calendar.no") : service.getDayLimit())
+                + ";<br>" + getLocaleMessage("service.restrict_adv_reg") + ": " + service.getAdvanceLimit()
+                + ";<br>  " + getLocaleMessage("service.restrict_adv_period") + ": " + service.getAdvanceLimitPeriod()
+                + ";<br>" + getLocaleMessage("service.work_calendar") + ": " + "<font color=\"#" + (service.getCalendar() == null ? "DD0000\">" +getLocaleMessage("service.work_calendar.no") : "000000\">" +service.getCalendar().toString()) + "</font>" + ";  " + getLocaleMessage("service.work_calendar.plan") + ": " + "<font color=\"#" + (service.getSchedule() == null ? "DD0000\">" + getLocaleMessage("service.work_calendar.no") : "000000\">" + service.getSchedule().toString()) + "</font>" + ";<br>"
+                + (service.getInput_required() ? getLocaleMessage("service.required_client_data") + ": \"" + service.getInput_caption() + "\"(" + service.getPersonDayLimit() + ")" : getLocaleMessage("service.required_client_data.not")) + ";<br>   "
+                + (service.getResult_required() ? getLocaleMessage("service.required_result") : getLocaleMessage("service.required_result.not")) + ";");
         labelButtonCaption.setText(service.getButtonText());
     }
 

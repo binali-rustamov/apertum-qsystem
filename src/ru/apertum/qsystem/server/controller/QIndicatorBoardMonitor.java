@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedHashSet;
+import javax.imageio.ImageIO;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -75,10 +76,15 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
         if (indicatorBoard == null) {
             final Element rootParams = getConfig();
             indicatorBoard = FIndicatorBoard.getIndicatorBoard(rootParams);
+            try {
+                indicatorBoard.setIconImage(ImageIO.read(QIndicatorBoardMonitor.class.getResource("/ru/apertum/qsystem/client/forms/resources/recent.png")));
+            } catch (IOException ex) {
+                System.err.println(ex);
+            }
             // Определим форму нв монитор
             indicatorBoard.toPosition(QLog.l().isDebug(), Integer.parseInt(rootParams.attributeValue("x")), Integer.parseInt(rootParams.attributeValue("y")));
-            
-            
+
+
             if (indicatorBoard == null) {
                 QLog.l().logger().warn("Табло не демонстрируется. Отключено в настройках.");
                 return;

@@ -431,6 +431,8 @@ public class QServer extends Thread {
                 for (QCustomer recCustomer : recList.backup) {
                     // в эту очередь он был
                     final QService service = QServiceTree.getInstance().getById(recCustomer.getService().getId());
+                    service.setCountPerDay(recCustomer.getService().getCountPerDay());
+                    service.setDay(recCustomer.getService().getDay());
                     // так зовут юзера его обрабатываюшего
                     final QUser user = recCustomer.getUser();
                     // кастомер ща стоит к этой услуге к какой стоит

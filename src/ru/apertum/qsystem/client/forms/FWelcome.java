@@ -44,6 +44,7 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Scanner;
+import javax.imageio.ImageIO;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.*;
@@ -342,18 +343,6 @@ public class FWelcome extends javax.swing.JFrame {
         });
     }
 
-    /** 
-     * Creates new form FWelcome
-     * @deprecated не создадутся кнопки выбора.
-     * @see public FWelcome(Element root)
-     */
-    public FWelcome() {
-        initComponents();
-        FWelcome.root = null;
-        FWelcome.current = null;
-        FWelcome.caption = "";
-    }
-
     public FWelcome(QService root) {
         QLog.l().logger().info("Создаем окно приглашения.");
         if (!QLog.l().isDebug()) {
@@ -388,6 +377,11 @@ public class FWelcome extends javax.swing.JFrame {
             });
         }
         initComponents();
+        try {
+            setIconImage(ImageIO.read(FAdmin.class.getResource("/ru/apertum/qsystem/client/forms/resources/checkIn.png")));
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
         if (QLog.l().isDebug()) {
             setSize(1280, 1024);
         }
@@ -549,7 +543,7 @@ public class FWelcome extends javax.swing.JFrame {
 
             @Override
             public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                if (pageIndex >= 1) {
+                if (pageIndex >= 2) {
                     return Printable.NO_SUCH_PAGE;
                 }
                 g2 = (Graphics2D) graphics;

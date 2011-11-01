@@ -79,9 +79,8 @@ public class NetCommander {
         jsonRpc.setMethod(commandName);
         jsonRpc.setParams(params);
         return sendRpc(netProperty, jsonRpc);
-    }   
-        
-        
+    }
+
     synchronized public static String sendRpc(INetProperty netProperty, JsonRPC20 jsonRpc) throws QException {
         final String message;
         Gson gson = GsonPool.getInstance().borrowGson();
@@ -219,6 +218,37 @@ public class NetCommander {
         final RpcGetInt rpc;
         try {
             rpc = gson.fromJson(res, RpcGetInt.class);
+        } catch (JsonParseException ex) {
+            throw new QException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return rpc.getResult();
+    }
+    
+    /**
+     * Узнать можно ли вставать в услугу с такими введенными данными
+     * @param netProperty параметры соединения с сервером.
+     * @param serviceId id услуги о которой получаем информацию
+     * @return true - превышен, false - можно встать.
+     * @throws QException
+     */
+    public static boolean aboutServicePersonLimitOver(INetProperty netProperty, long serviceId, String inputData) throws QException {
+        QLog.l().logger().info("Узнать можно ли вставать в услугу с такими введенными данными.");
+        // загрузим ответ
+        final CmdParams params = new CmdParams();
+        params.serviceId = serviceId;
+        params.textData = inputData;
+        String res = null;
+        try {
+            res = send(netProperty, Uses.TASK_ABOUT_SERVICE_PERSON_LIMIT, params);
+        } catch (QException ex) {// вывод исключений
+            throw new QException("Проблема с командой. ", ex);
+        }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final RpcGetBool rpc;
+        try {
+            rpc = gson.fromJson(res, RpcGetBool.class);
         } catch (JsonParseException ex) {
             throw new QException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
@@ -983,7 +1013,7 @@ public class NetCommander {
             throw new ClientException("Проблема с командой. ", ex);
         }
     }
-    
+
     /**
      * Изменение приоритетов услуг оператором
      * @param netProperty

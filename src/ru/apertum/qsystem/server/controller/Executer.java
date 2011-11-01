@@ -354,6 +354,20 @@ public final class Executer {
         }
     };
     /**
+     * Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
+     * если ввели, то тут спрашиваем у сервера есть ли возможность встать в очередь с такими введенными данными
+     */
+    final Task aboutServicePersonLimit = new Task(Uses.TASK_ABOUT_SERVICE_PERSON_LIMIT) {
+
+        @Override
+        public RpcGetBool process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            // Если лимит количества подобных введенных данных кастомерами в день достигнут
+            final QService srv = QServiceTree.getInstance().getById(cmdParams.serviceId);
+            return new RpcGetBool(srv.isLimitPersonPerDayOver(cmdParams.textData));
+        }
+    };
+    /**
      * Получить описание состояния услуги
      */
     final Task aboutTask = new Task(Uses.TASK_ABOUT_SERVICE) {
@@ -365,6 +379,11 @@ public final class Executer {
             int min = Uses.LOCK_INT;
             final Date day = new Date();
             final QService srv = QServiceTree.getInstance().getById(cmdParams.serviceId);
+            // Если не лимит количества возможных обработанных в день достигнут
+            if (srv.isLimitPerDayOver()) {
+                QLog.l().logger().warn("Услуга \"" + cmdParams.serviceId + "\" не обрабатывается исходя из достижения лимита возможной обработки кастомеров в день.");
+                return new RpcGetInt(Uses.LOCK_PER_DAY_INT);
+            }
             // Если нет расписания, календаря или выходной то отказ по расписанию
             if (srv.getSchedule() == null || checkFreeDay(day, new Long(1)) || (srv.getCalendar() != null && checkFreeDay(day, srv.getCalendar().getId()))) {
                 min = Uses.LOCK_FREE_INT;
@@ -416,7 +435,7 @@ public final class Executer {
                         default:
                             ;
                     }
-                }// Определили надало и конец рабочего дня на сегодня
+                }// Определили начало и конец рабочего дня на сегодня
                 // Если работаем в этот день то определим попадает ли "сейчас" в рабочий промежуток
                 if (!(start == null || end == null)) {
                     final int h = gc_day.get(GregorianCalendar.HOUR_OF_DAY);
@@ -1381,8 +1400,8 @@ public final class Executer {
             final String num = cmdParams.clientAuthId.trim();
             String s = "";
             for (QService service : QServiceTree.getInstance().getNodes()) {
-                if (service.changeCustomerPriorityByNumber(num, cmdParams.priority)){
-                    s = "Клиенту с номером \""+ num + "\" в услуге \"" + service.getName() + "\" изменен приоритет.";
+                if (service.changeCustomerPriorityByNumber(num, cmdParams.priority)) {
+                    s = "Клиенту с номером \"" + num + "\" в услуге \"" + service.getName() + "\" изменен приоритет.";
                     break;
                 }
             }
@@ -1417,7 +1436,6 @@ public final class Executer {
             return new JsonRPC20();
         }
     };
-    
     /**
      * Запрос на изменение приоритетор оказываемых услуг от юзеров
      */
@@ -1427,7 +1445,7 @@ public final class Executer {
         public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
-            for (String str : cmdParams.textData.split("&")){
+            for (String str : cmdParams.textData.split("&")) {
                 final String[] ss = str.split("=");
                 user.getPlanService(Long.parseLong(ss[0])).setCoefficient(Integer.parseInt(ss[1]));
             }
