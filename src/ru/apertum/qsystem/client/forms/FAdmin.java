@@ -31,6 +31,7 @@ import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Properties;
@@ -936,6 +937,7 @@ public class FAdmin extends javax.swing.JFrame {
         }
         QLog.l().logger().debug("Добавляем пользователя \"" + userName + "\"");
         final QUser user = new QUser();
+        user.setPlanServices(new LinkedList<QPlanService>());
         user.setName(userName);
         user.setPassword("");
         user.setPoint("");
@@ -1251,6 +1253,8 @@ public class FAdmin extends javax.swing.JFrame {
 
     @Action
     public void addServiceToUser() {
+        // вот эта строчка не понятно зачем добавлена. дело в том что после сохранения вновь добавленные услуги юзеру не отображаются в списке. т.е. listUsers.getSelectedIndex() == -1
+        listUserService.setModel(((QUser)listUsers.getSelectedValue()).getPlanServiceList());
         final QUser user = (QUser) listUsers.getSelectedValue();
         final QService service = (QService) treeServices.getLastSelectedPathComponent();
         if (service != null && service.isLeaf() && listUsers.getSelectedIndex() != -1 && !(user.hasService(service))) {
@@ -1258,7 +1262,7 @@ public class FAdmin extends javax.swing.JFrame {
             if (listUserService.getLastVisibleIndex() != -1) {
                 listUserService.setSelectedIndex(listUserService.getLastVisibleIndex());
                 QLog.l().logger().debug("Пользователю \"" + user.getName() + "\" назначили услугу \"" + service.getName() + "\".");
-            }
+            } 
         }
         if (service != null && !service.isLeaf() && listUsers.getSelectedIndex() != -1 && !(user.hasService(service))) {
             QServiceTree.sailToStorm(service, new ISailListener() {

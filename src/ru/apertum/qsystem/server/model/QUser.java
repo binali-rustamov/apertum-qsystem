@@ -298,14 +298,14 @@ public class QUser implements IidGetter, Serializable {
         }
         throw new ServerException("Не найдена услуга по ID \"" + serviceId + "\" у услуги c ID = " + id);
     }
-    private final LinkedList<QPlanService> forDel = new LinkedList<QPlanService>();
+    private final LinkedList<QPlanService> forDel = new LinkedList<>();
 
     public QPlanService deletePlanService(QService service) {
         return deletePlanService(service.getId());
     }
 
     public void savePlan() {
-        final LinkedList<QPlanService> del = new LinkedList<QPlanService>();
+        final LinkedList<QPlanService> del = new LinkedList<>();
         for (QPlanService qPlanService : forDel) {
             if (!QServiceTree.getInstance().hasById(qPlanService.getService().getId())) {
                 del.add(qPlanService);

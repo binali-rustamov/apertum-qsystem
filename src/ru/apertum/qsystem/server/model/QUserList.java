@@ -32,7 +32,7 @@ public class QUserList extends ATListModel<QUser> {
 
     @Override
     protected LinkedList<QUser> load() {
-        return new LinkedList<QUser>(Spring.getInstance().getHt().loadAll(QUser.class));
+        return new LinkedList<>(Spring.getInstance().getHt().loadAll(QUser.class));
     }
 
     private static class QUserListHolder {
@@ -49,10 +49,9 @@ public class QUserList extends ATListModel<QUser> {
 
     @Override
     public void save() {
+        super.save();
         for (QUser qUser : getItems()) {
             qUser.savePlan();
         }
-        super.save();
     }
-
 }

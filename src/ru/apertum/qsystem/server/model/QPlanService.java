@@ -51,6 +51,7 @@ public class QPlanService implements Serializable {
     private Long id;
 
     @Id
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     public Long getId() {
         return id;
