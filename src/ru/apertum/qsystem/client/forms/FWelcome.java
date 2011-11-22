@@ -28,6 +28,7 @@ import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.MemoryImageSource;
+import java.awt.print.Book;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
@@ -65,7 +66,8 @@ import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.GsonPool;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
 import ru.apertum.qsystem.common.cmd.RpcGetSrt;
@@ -105,7 +107,6 @@ public class FWelcome extends javax.swing.JFrame {
     public static final String UNLOCK = "Готов к работе";
     public static final String OFF = "Выключен";
     public static String LOCK_MESSAGE = "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>" + getLocaleMessage("messages.lock_messages") + "</span></b></p>";
-    
     public static QService root;
     /**
      * XML-список отзывов. перврначально null, грузится при первом обращении. Использовать через геттер.
@@ -408,6 +409,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonStandAdvance.setVisible(WelcomeParams.getInstance().advance);
         showMed();
     }
+
     /**
      * Загрузка и инициализация неких параметров из корня дерева описания для старта или реинициализации.
      */
@@ -543,7 +545,7 @@ public class FWelcome extends javax.swing.JFrame {
 
             @Override
             public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                if (pageIndex >= 2) {
+                if (pageIndex >= 1) {
                     return Printable.NO_SUCH_PAGE;
                 }
                 g2 = (Graphics2D) graphics;
@@ -844,7 +846,22 @@ public class FWelcome extends javax.swing.JFrame {
 
         Printable canvas = new Printable() {
 
-            private int writeText(String text, int line, int x, double kx, double ky) {
+            private int write(String text, int line, int x, double kx, double ky, int pageIndex) {
+
+                if (line <= pageIndex * WelcomeParams.getInstance().pageLinesCount || line > (pageIndex + 1) * WelcomeParams.getInstance().pageLinesCount) {
+                    return 0;
+                }
+                System.out.println(text);
+                g2.scale(kx, ky);
+                final int y = (int) Math.round((WelcomeParams.getInstance().topMargin + (line - 1) % (WelcomeParams.getInstance().pageLinesCount) * WelcomeParams.getInstance().lineHeigth) / ky);
+                g2.drawString(text, x, y);
+                g2.scale(1 / kx, 1 / ky);
+                return y;
+            }
+            Graphics2D g2;
+
+            private LinkedList<String> splitText(String text) {
+                final LinkedList<String> strings = new LinkedList<>();
                 while (text.length() != 0) {
                     String prn;
                     if (text.length() > WelcomeParams.getInstance().lineLenght) {
@@ -863,27 +880,16 @@ public class FWelcome extends javax.swing.JFrame {
                         prn = text;
                         text = "";
                     }
-                    write(prn, ++line, x, kx, ky);
+                    strings.add(prn);
                 }
-                return line;
+                return strings;
             }
-
-            private int write(String text, int line, int x, double kx, double ky) {
-                g2.scale(kx, ky);
-                final int y = (int) Math.round((WelcomeParams.getInstance().topMargin + line * WelcomeParams.getInstance().lineHeigth) / ky);
-                g2.drawString(text, x, y);
-                g2.scale(1 / kx, 1 / ky);
-                return y;
-            }
-            Graphics2D g2;
 
             @Override
             public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                if (pageIndex >= 1) {
-                    return Printable.NO_SUCH_PAGE;
-                }
+
                 g2 = (Graphics2D) graphics;
-                if (WelcomeParams.getInstance().logo) {
+                if (pageIndex == 0 && WelcomeParams.getInstance().logo) {
                     g2.drawImage(Uses.loadImage(this, WelcomeParams.getInstance().logoImg), WelcomeParams.getInstance().logoLeft, WelcomeParams.getInstance().logoTop, null);
                 }
                 g2.scale(WelcomeParams.getInstance().scaleHorizontal, WelcomeParams.getInstance().scaleVertical);
@@ -891,20 +897,40 @@ public class FWelcome extends javax.swing.JFrame {
                 g2.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
                 int line = 1;
-                write(caption, line, WelcomeParams.getInstance().leftMargin, 1.5, 1.5);
+
+
+                write(caption, ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1.5, pageIndex);
+                ++line;
                 // напечатаем текст подсказки
+                final LinkedList<String> strings = new LinkedList<>();
                 final Scanner sc = new Scanner(preInfo.replace("<brk>", "\n"));
                 while (sc.hasNextLine()) {
                     final String w = sc.nextLine();
-                    line = writeText(w, line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                    strings.addAll(splitText(w));
+                    //line = writeText(w, line, WelcomeParams.getInstance().leftMargin, 1, 1, pageIndex);
                 }
-                write(WelcomeParams.getInstance().promoText, ++line, WelcomeParams.getInstance().leftMargin, 0.7, 0.4);
+                for (String string : strings) {
+                    write(string, ++line, WelcomeParams.getInstance().leftMargin, 1, 1, pageIndex);
+                }
+
+                write(WelcomeParams.getInstance().promoText, ++line, WelcomeParams.getInstance().leftMargin, 0.7, 0.4, pageIndex);
                 //Напечатаем текст внизу билета
 
-                line = writeText(WelcomeParams.getInstance().bottomText, line, WelcomeParams.getInstance().leftMargin, 1, 1);
-                write(".", line + 2, 0, 1, 1);
+                //line = writeText(WelcomeParams.getInstance().bottomText, line, WelcomeParams.getInstance().leftMargin, 1, 1, pageIndex);
+                strings.clear();
+                strings.addAll(splitText(WelcomeParams.getInstance().bottomText));
+                for (String string : strings) {
+                    write(string, ++line, WelcomeParams.getInstance().leftMargin, 1, 1, pageIndex);
+                }
 
-                return Printable.PAGE_EXISTS;
+
+                write(".", line + 2, 0, 1, 1, pageIndex);
+
+                if ((pageIndex + 0) * WelcomeParams.getInstance().pageLinesCount > line) {
+                    return Printable.NO_SUCH_PAGE;
+                } else {
+                    return Printable.PAGE_EXISTS;
+                }
             }
         };
         PrinterJob job = PrinterJob.getPrinterJob();

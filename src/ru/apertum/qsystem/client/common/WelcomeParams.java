@@ -14,7 +14,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ru.apertum.qsystem.client.common;
 
 import java.io.File;
@@ -41,7 +40,6 @@ public class WelcomeParams {
 
         private static final WelcomeParams INSTANCE = new WelcomeParams();
     }
-
     /**
      * Константы хранения параметров в файле.
      */
@@ -61,6 +59,7 @@ public class WelcomeParams {
     private static final String PROMO_TXT = "promo_text";
     private static final String BOTTOM_TXT = "bottom_text";
     private static final String ASK_LIMIT = "ask_limit";
+    private static final String PAGE_LINES_COUNT = "page_lines_count";
     private static final String INFO_BUTTON = "info_button";// кнопка информационной системы на пункте регистрации
     private static final String RESPONSE_BUTTON = "response_button";// - кнопка обратной связи на пункте регистрации
     private static final String ADVANCE_BUTTON = "advance_button";// - кнопка предварительной записи на пункте регистрации
@@ -85,6 +84,7 @@ public class WelcomeParams {
     public String promoText = "Aperum projects, e-mail: info@aperum.ru"; // промотекст, печатающийся мелким шрифтом перед штрихкодом.
     public String bottomText = "\u041f\u0440\u0438\u044f\u0442\u043d\u043e\u0433\u043e \u043e\u0436\u0438\u0434\u0430\u043d\u0438\u044f. \u0421\u043f\u0430\u0441\u0438\u0431\u043e."; // произвольный текст, печатающийся в конце квитанции после штрихкода
     public int askLimit = 3; // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь
+    public int pageLinesCount = 30; // Количество строк на странице.
     /**
      * Задержка заставки при печати в мсек.
      */
@@ -134,6 +134,7 @@ public class WelcomeParams {
         promoText = settings.getProperty(PROMO_TXT);
         bottomText = settings.getProperty(BOTTOM_TXT);
         askLimit = Integer.parseInt(settings.getProperty(ASK_LIMIT)); // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь
+        pageLinesCount = settings.getProperty(PAGE_LINES_COUNT) == null ? 70 : Integer.parseInt(settings.getProperty(PAGE_LINES_COUNT)); // Количество строк на странице
         buttons_COM = settings.getProperty("buttons_COM");
         buttons_databits = Integer.parseInt(settings.getProperty("buttons_databits"));
         buttons_speed = Integer.parseInt(settings.getProperty("buttons_speed"));

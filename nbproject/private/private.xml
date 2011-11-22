@@ -2,6 +2,10 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
         <file>
+            <url>src/ru/apertum/qsystem/client/forms/FWelcome.java</url>
+            <line>844</line>
+        </file>
+        <file>
             <url>src/ru/apertum/qsystem/common/NetCommander.java</url>
             <line>205</line>
         </file>
@@ -87,9 +91,9 @@
         </file>
         <file>
             <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
-            <line>3656</line>
-            <line>3737</line>
-            <line>3768</line>
+            <line>3655</line>
+            <line>3736</line>
+            <line>3767</line>
         </file>
         <file>
             <url>src/ru/ccrs/client/forms/FBoardConfig.java</url>
