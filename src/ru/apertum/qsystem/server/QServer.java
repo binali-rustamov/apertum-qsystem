@@ -42,6 +42,7 @@ import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.controller.Executer;
+import ru.apertum.qsystem.server.http.JettyRunner;
 import ru.apertum.qsystem.server.model.QPlanService;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
@@ -57,6 +58,7 @@ import ru.apertum.qsystem.server.model.postponed.QPostponedList;
 public class QServer extends Thread {
 
     private final Socket socket;
+    private static final String KEY_HTML = "-HTTP";
 
     /**
      * @param args - первым параметром передается полное имя настроечного XML-файла
@@ -143,6 +145,22 @@ public class QServer extends Thread {
             };
             clearServices.start();
         }
+        // посмотрим не нужно ли стартануть jetty
+        // для этого нужно запускать с ключом http
+        // если етсь ключ http, то запускаем сервер и принимаем на нем команды серверу суо
+        for (int i = 0; i < args.length; i++) {
+            if (KEY_HTML.equalsIgnoreCase(args[i]) && i != args.length - 1) {
+                QLog.l().logger().info("Запустим Jetty.");
+                try {
+                    int port = Integer.parseInt(args[i + 1]);
+                    JettyRunner.start(port);
+                } catch (NumberFormatException ex) {
+                    QLog.l().logger().error("Номер порта для Jetty в параметрах запуска не является числом. Формат параметра для порта 8081 '-http 8081'.", ex);
+                }
+                break;
+            }
+        }
+
         // привинтить сокет на локалхост, порт 3128
         final ServerSocket server;
         try {
@@ -217,6 +235,8 @@ public class QServer extends Thread {
 
         QLog.l().logger().debug("Закрываем серверный сокет.");
         server.close();
+        QLog.l().logger().debug("Останов Jetty.");
+        JettyRunner.stop();
         QLog.l().logger().debug("Останов отчетного вэбсервера.");
         WebServer.getInstance().stopWebServer();
         QLog.l().logger().debug("Выключение центрального табло.");

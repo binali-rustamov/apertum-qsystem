@@ -16,7 +16,7 @@
  */
 package ru.apertum.qsystem.common.exceptions;
 
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.QLog;
 
 /**
  *

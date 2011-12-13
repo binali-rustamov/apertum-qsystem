@@ -130,7 +130,7 @@ public class FLogin extends javax.swing.JDialog {
 
         final LinkedList<QUser> users = NetCommander.getUsers(netProperty);
 
-        ArrayList<QUser>users_ = new ArrayList<QUser>();
+        ArrayList<QUser>users_ = new ArrayList<>();
         for (QUser user : users) {
             boolean flag = false;
             switch (getLevel()) {
@@ -187,7 +187,7 @@ public class FLogin extends javax.swing.JDialog {
         this.userGetter = new GetUserFromList();
         setLevel(level);
 
-        ArrayList<QUser>users_ = new ArrayList<QUser>();
+        ArrayList<QUser>users_ = new ArrayList<>();
         for (QUser usr : userList.getItems()) {
             boolean flag = false;
             switch (getLevel()) {

@@ -95,7 +95,7 @@ public class FAbout extends javax.swing.JDialog {
     }
     private static ResourceMap localeMap = null;
 
-    private static String getLocaleMessage(String key) {
+    public static String getLocaleMessage(String key) {
         if (localeMap == null) {
             localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FAbout.class);
         }
@@ -118,8 +118,8 @@ public class FAbout extends javax.swing.JDialog {
         labelDate.setText(getLocaleMessage("about.data") + " : " + settings.getProperty(DATE));
         labelVersion.setText(getLocaleMessage("about.version") + " : " + settings.getProperty(VERSION));
     }
-    private final static String DATE = "date";
-    private final static String VERSION = "version";
+    public final static String DATE = "date";
+    public final static String VERSION = "version";
 
     /** This method is called from within the constructor to
      * initialize the form.

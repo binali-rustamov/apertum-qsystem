@@ -33,13 +33,13 @@
             <line>130</line>
         </file>
         <file>
+            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
+            <line>306</line>
+        </file>
+        <file>
             <url>src/ru/apertum/qsystem/server/controller/QServicesPool.java</url>
             <line>1561</line>
             <line>1605</line>
-        </file>
-        <file>
-            <url>src/ru/ccrs/client/forms/FWelcome.java</url>
-            <line>306</line>
         </file>
         <file>
             <url>src/ru/ccrs/server/model/AIndicatorBoard.java</url>
@@ -53,7 +53,6 @@
         </file>
         <file>
             <url>src/ru/apertum/qsystem/common/RunningLabel.java</url>
-            <line>300</line>
             <line>352</line>
             <line>501</line>
         </file>

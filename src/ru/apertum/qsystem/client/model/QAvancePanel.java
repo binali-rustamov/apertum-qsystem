@@ -24,8 +24,7 @@ import java.util.GregorianCalendar;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
-
+import ru.apertum.qsystem.common.Uses;
 /**
  * Класс панели для нажатия при выборе время предварительной записи.
  * @author Evgeniy Egorov

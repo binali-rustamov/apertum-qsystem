@@ -76,6 +76,10 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
         if (indicatorBoard == null) {
             final Element rootParams = getConfig();
             indicatorBoard = FIndicatorBoard.getIndicatorBoard(rootParams);
+            if (indicatorBoard == null) {
+                QLog.l().logger().warn("Табло не демонстрируется. Отключено в настройках.");
+                return;
+            }
             try {
                 indicatorBoard.setIconImage(ImageIO.read(QIndicatorBoardMonitor.class.getResource("/ru/apertum/qsystem/client/forms/resources/recent.png")));
             } catch (IOException ex) {
@@ -83,12 +87,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             }
             // Определим форму нв монитор
             indicatorBoard.toPosition(QLog.l().isDebug(), Integer.parseInt(rootParams.attributeValue("x")), Integer.parseInt(rootParams.attributeValue("y")));
-
-
-            if (indicatorBoard == null) {
-                QLog.l().logger().warn("Табло не демонстрируется. Отключено в настройках.");
-                return;
-            }
+            
             setLinesCount(indicatorBoard.getLinesCount());
             setPause(indicatorBoard.getPause());
             if (records.size() != 0) {
