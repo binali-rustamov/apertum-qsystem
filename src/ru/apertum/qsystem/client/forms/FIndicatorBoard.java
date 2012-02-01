@@ -107,7 +107,6 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         iBoard.zoneDebug = isDebug;
         return iBoard;
     }
-    
     private boolean zoneDebug = false;
 
     /**
@@ -142,12 +141,18 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         this.linesCount = Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINES_COUNT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.pause = Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_DELAY_VISIBLE).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         // Определим цвет табло
-        this.bgColor = Color.decode("#" + Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FON_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
-        this.fgColorCaprion = Color.decode("#" + Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
-        this.fgColorLeft = Color.decode("#" + Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_LEFT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
-        this.fgColorRight = Color.decode("#" + Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_RIGHT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+        this.bgColor = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FON_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
+        this.fgColorCaprion = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
+        this.fgColorLeft = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_LEFT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
+        this.fgColorRight = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_RIGHT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.borderLine = "1".equals(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_BORDER).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.delimiter = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_DELIMITER).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+
+        this.colorRow = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
+        this.rowCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        this.leftColCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LEFT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        this.rightColCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RIGHT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        this.border = new TitledBorder(new LineBorder(colorRow), "".equals(rowCaption) ? getLocaleMessage("board.cell") : rowCaption);//  MatteBorder(1, 3, 1, 2, Color.LIGHT_GRAY);
 
         if (!isDebug) {
             setUndecorated(true);
@@ -162,7 +167,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         // Отрехтуем форму в зависимости от режима.
         if (!isDebug) {
-            
+
             setAlwaysOnTop(true);
             setResizable(false);
             // спрячем курсор мыши
@@ -283,7 +288,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         }
         return localeMap.getString(key);
     }
-    private final static Border border = new TitledBorder(getLocaleMessage("board.cell"));//  MatteBorder(1, 3, 1, 2, Color.LIGHT_GRAY);
+    private final Border border;
 
     public class Line extends JPanel {
 
@@ -427,6 +432,22 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Чем разделяются столбци клиента и пункта вызова на главном табло
      */
     private final String delimiter;
+    /**
+     * Цвет рамки строки табло
+     */
+    private final Color colorRow;
+    /**
+     * Заголовок строки табло
+     */
+    private final String rowCaption;
+    /**
+     * Заголовок левого столбца
+     */
+    private final String leftColCaption;
+    /**
+     * Заголовок правого столбца
+     */
+    private final String rightColCaption;
 
     public int getLinesCount() {
         return linesCount;
@@ -450,10 +471,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         if (isMain) {
             final JPanel panel_cap = new JPanel();
             if (borderLine) {
-                panel_cap.setBorder(new MatteBorder(5, 3, 1, 2, Color.LIGHT_GRAY));
+                panel_cap.setBorder(new MatteBorder(5, 3, 1, 2, colorRow));
                 //panel_cap.setBorder(new LineBorder(Color.lightGray, 6));
             } else {
-                panel_cap.setBorder(new LineBorder(Color.lightGray, 0));
+                panel_cap.setBorder(new LineBorder(colorRow, 0));
             }
             panel_cap.setOpaque(false);
             panel_cap.setLayout(new GridLayout(1, 2, 0, 0));
@@ -469,7 +490,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             //lab.setOpaque(true);
             panel_cap.add(lab_cap_l);
             lab_cap_l.setBounds(0, 0, 100, 100);
-            lab_cap_l.setText(getLocaleMessage("board.client"));
+            lab_cap_l.setText(!"".equals(leftColCaption) ? leftColCaption : getLocaleMessage("board.client"));
 
             lab_cap_l = new JLabel();
             lab_cap_l.setFont(font_cap);
@@ -480,7 +501,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             //lab.setOpaque(true);
             panel_cap.add(lab_cap_l);
             lab_cap_l.setBounds(0, 0, 100, 100);
-            lab_cap_l.setText(getLocaleMessage("board.point"));
+            lab_cap_l.setText(!"".equals(rightColCaption) ? rightColCaption : getLocaleMessage("board.point"));
         }
         for (int i = 1; i <= linesCount; i++) {
             final Line panel = new Line();

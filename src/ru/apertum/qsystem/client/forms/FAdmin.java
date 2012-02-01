@@ -216,6 +216,7 @@ public class FAdmin extends javax.swing.JFrame {
 
             @Override
             public void windowActivated(WindowEvent e) {
+                Uses.closeSplash();
             }
 
             @Override

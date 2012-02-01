@@ -125,10 +125,10 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         if (textAreaButtonCaption.getText().length() > 2500) {
             throw new ClientException(getLocaleMessage("dialog.message2"));
         }
-        if (textAreaInfoHtml.getText().length() > 50000) {
+        if (textAreaInfoHtml.getText().length() > 100000) {
             throw new ClientException(getLocaleMessage("dialog.message3"));
         }
-        if (textAreaTextPrint.getText().length() > 50000) {
+        if (textAreaTextPrint.getText().length() > 100000) {
             throw new ClientException(getLocaleMessage("dialog.message4"));
         }
         if (textAreaButtonCaption.getText().length() < 2500 && !"".equals(textAreaButtonCaption.getText())) {
@@ -178,9 +178,10 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         jPanel4 = new javax.swing.JPanel();
         jLabel24 = new javax.swing.JLabel();
         jSplitPane2 = new javax.swing.JSplitPane();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        labelCaptionButton = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         textAreaButtonCaption = new javax.swing.JTextArea();
-        labelCaptionButton = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jSplitPane3 = new javax.swing.JSplitPane();
         jSplitPane1 = new javax.swing.JSplitPane();
@@ -192,6 +193,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         textAreaInfoHtml = new javax.swing.JTextArea();
+        jScrollPane5 = new javax.swing.JScrollPane();
         labelInfoDialog = new javax.swing.JLabel();
         panelButtons = new javax.swing.JPanel();
         buttonSave = new javax.swing.JButton();
@@ -294,39 +296,40 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(сheckBoxInputRequired)
-                    .addComponent(сheckBoxResultRequired)
                     .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel8)
-                            .addComponent(labelDayLimit))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(spinnerLimitPeriod)
-                            .addComponent(spinnerLimit)
-                            .addComponent(spinnerDayLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 48, Short.MAX_VALUE)))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(textFieldInputCaption, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 637, Short.MAX_VALUE)
-                            .addComponent(jLabel4)
+                            .addComponent(сheckBoxInputRequired)
+                            .addComponent(сheckBoxResultRequired)
                             .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(labelLimitForOnePerson)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel8)
+                                    .addComponent(labelDayLimit))
                                 .addGap(18, 18, 18)
-                                .addComponent(spinnerLimitForOnePerson, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel5))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(comboBoxCalendar, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(comboBoxSchedule, 0, 578, Short.MAX_VALUE))
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(spinnerLimitPeriod)
+                                    .addComponent(spinnerLimit)
+                                    .addComponent(spinnerDayLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 48, Short.MAX_VALUE)))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(textFieldInputCaption, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 637, Short.MAX_VALUE)
+                                    .addComponent(jLabel4)
+                                    .addGroup(jPanel3Layout.createSequentialGroup()
+                                        .addComponent(labelLimitForOnePerson)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(spinnerLimitForOnePerson, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(comboBoxCalendar, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(comboBoxSchedule, 0, 578, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -374,18 +377,27 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         jLabel24.setText(resourceMap.getString("jLabel24.text")); // NOI18N
         jLabel24.setName("jLabel24"); // NOI18N
 
-        jSplitPane2.setDividerLocation(180);
+        jSplitPane2.setDividerLocation(181);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane2.setAutoscrolls(true);
+        jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setName("jSplitPane2"); // NOI18N
+
+        jScrollPane4.setName("jScrollPane4"); // NOI18N
+
+        labelCaptionButton.setText(resourceMap.getString("labelCaptionButton.text")); // NOI18N
+        labelCaptionButton.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        labelCaptionButton.setName("labelCaptionButton"); // NOI18N
+        jScrollPane4.setViewportView(labelCaptionButton);
+
+        jSplitPane2.setRightComponent(jScrollPane4);
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
         textAreaButtonCaption.setColumns(20);
-        textAreaButtonCaption.setFont(resourceMap.getFont("textAreaButtonCaption.font")); // NOI18N
         textAreaButtonCaption.setRows(5);
         textAreaButtonCaption.setText(resourceMap.getString("textAreaButtonCaption.text")); // NOI18N
         textAreaButtonCaption.setName("textAreaButtonCaption"); // NOI18N
-        textAreaButtonCaption.setPreferredSize(new java.awt.Dimension(485, 50));
         textAreaButtonCaption.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 textAreaButtonCaptionKeyPressed(evt);
@@ -393,12 +405,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         });
         jScrollPane1.setViewportView(textAreaButtonCaption);
 
-        jSplitPane2.setTopComponent(jScrollPane1);
-
-        labelCaptionButton.setText(resourceMap.getString("labelCaptionButton.text")); // NOI18N
-        labelCaptionButton.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        labelCaptionButton.setName("labelCaptionButton"); // NOI18N
-        jSplitPane2.setRightComponent(labelCaptionButton);
+        jSplitPane2.setLeftComponent(jScrollPane1);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -505,10 +512,14 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
 
         jSplitPane3.setTopComponent(jSplitPane1);
 
+        jScrollPane5.setName("jScrollPane5"); // NOI18N
+
         labelInfoDialog.setText(resourceMap.getString("labelInfoDialog.text")); // NOI18N
         labelInfoDialog.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         labelInfoDialog.setName("labelInfoDialog"); // NOI18N
-        jSplitPane3.setRightComponent(labelInfoDialog);
+        jScrollPane5.setViewportView(labelInfoDialog);
+
+        jSplitPane3.setRightComponent(jScrollPane5);
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -650,13 +661,14 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         textFieldInputCaption.setEnabled(сheckBoxInputRequired.isSelected());
     }//GEN-LAST:event_сheckBoxInputRequiredStateChanged
 
+    private void textAreaInfoHtmlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textAreaInfoHtmlKeyReleased
+        labelInfoDialog.setText(textAreaInfoHtml.getText());
+    }//GEN-LAST:event_textAreaInfoHtmlKeyReleased
+
     private void textAreaButtonCaptionKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textAreaButtonCaptionKeyPressed
         labelCaptionButton.setText(textAreaButtonCaption.getText());
     }//GEN-LAST:event_textAreaButtonCaptionKeyPressed
 
-    private void textAreaInfoHtmlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textAreaInfoHtmlKeyReleased
-        labelInfoDialog.setText(textAreaInfoHtml.getText());
-    }//GEN-LAST:event_textAreaInfoHtmlKeyReleased
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonSave;
@@ -683,6 +695,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;

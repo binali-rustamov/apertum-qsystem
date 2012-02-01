@@ -76,7 +76,6 @@ public final class Uses {
     public static final int SERVICE_VIP = 2;
     public static final int[] SERVICE_PRIORITYS = {SERVICE_EXCLUDE, SERVICE_REMAINS, SERVICE_NORMAL, SERVICE_VIP};
     public static final LinkedHashMap<Integer, String> COEFF_WORD = new LinkedHashMap<>();
-    
     // Наименования тегов и атрибутов в протоколах XML по статистике
     public static final String TAG_REP_STATISTIC = "Статистика";
     public static final String TAG_REP_PARAM_COUNT = "Знаменатель";
@@ -146,6 +145,10 @@ public final class Uses {
     public static final String TAG_BOARD_FONT_COLOR_RIGHT = "Цвет шрифта правого столбца";
     public static final String TAG_BOARD_LINE_BORDER = "Окантовка строк";
     public static final String TAG_BOARD_LINE_DELIMITER = "Разделитель столбцов";
+    public static final String TAG_BOARD_LEFT_CAPTION = "Заголовок левого столбца";
+    public static final String TAG_BOARD_RIGHT_CAPTION = "Заголовок правого столбца";
+    public static final String TAG_BOARD_LINE_COLOR = "Цвет рамки строки табло";
+    public static final String TAG_BOARD_LINE_CAPTION = "Надпись строки табло";
     //имена тегов-разделов для табло
     public static final String TAG_BOARD = "Board";
     public static final String TAG_BOARD_MAIN = "Main";
@@ -385,6 +388,7 @@ public final class Uses {
         getListCData(list, root, text);
         return list;
     }
+
     /**
      * Получение адреса из строчки.
      * @param adress строчка типа "125.256.214.854" или "rambler.ru"
@@ -465,7 +469,7 @@ public final class Uses {
             final DataInputStream inStream;
             File f = new File(resourceName);
             if (f.exists()) {
-                    return new ImageIcon(resourceName).getImage();
+                return new ImageIcon(resourceName).getImage();
             } else {
                 inStream = new DataInputStream(o.getClass().getResourceAsStream(resourceName));
             }
@@ -632,6 +636,7 @@ public final class Uses {
         startSplash();
     }
     static ServerSocket stopStartSecond;
+
     /**
      * Создание и показ сплэш-заставки  с блокировкой запуска второй копии
      */
@@ -668,5 +673,4 @@ public final class Uses {
         g.setColor(Color.BLACK);
         g.drawString("Loading " + comps[(frame / 5) % 3] + "...", 120, 150);
     }
-    
 }

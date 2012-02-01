@@ -184,48 +184,51 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="сheckBoxInputRequired" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="сheckBoxResultRequired" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel8" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="labelDayLimit" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="spinnerLimitPeriod" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="spinnerLimit" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="spinnerDayLimit" alignment="0" pref="48" max="32767" attributes="1"/>
-                                  </Group>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="textFieldInputCaption" alignment="1" pref="637" max="32767" attributes="0"/>
-                                      <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="сheckBoxInputRequired" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="сheckBoxResultRequired" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="labelLimitForOnePerson" min="-2" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                                              <Component id="jLabel8" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="labelDayLimit" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          </Group>
                                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                                          <Component id="spinnerLimitForOnePerson" min="-2" pref="50" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="spinnerLimitPeriod" alignment="0" max="32767" attributes="1"/>
+                                              <Component id="spinnerLimit" alignment="0" max="32767" attributes="1"/>
+                                              <Component id="spinnerDayLimit" alignment="0" pref="48" max="32767" attributes="1"/>
+                                          </Group>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="textFieldInputCaption" alignment="1" pref="637" max="32767" attributes="0"/>
+                                              <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Group type="102" alignment="0" attributes="0">
+                                                  <Component id="labelLimitForOnePerson" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                                  <Component id="spinnerLimitForOnePerson" min="-2" pref="50" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
                                       </Group>
                                   </Group>
                               </Group>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="comboBoxCalendar" max="32767" attributes="1"/>
-                              <Component id="comboBoxSchedule" alignment="0" pref="578" max="32767" attributes="1"/>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="comboBoxCalendar" max="32767" attributes="1"/>
+                                      <Component id="comboBoxSchedule" alignment="0" pref="578" max="32767" attributes="1"/>
+                                  </Group>
+                              </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -442,13 +445,36 @@
                 </Component>
                 <Container class="javax.swing.JSplitPane" name="jSplitPane2">
                   <Properties>
-                    <Property name="dividerLocation" type="int" value="180"/>
+                    <Property name="dividerLocation" type="int" value="181"/>
                     <Property name="orientation" type="int" value="0"/>
+                    <Property name="autoscrolls" type="boolean" value="true"/>
+                    <Property name="continuousLayout" type="boolean" value="true"/>
                     <Property name="name" type="java.lang.String" value="jSplitPane2" noResource="true"/>
                   </Properties>
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
                   <SubComponents>
+                    <Container class="javax.swing.JScrollPane" name="jScrollPane4">
+                      <Properties>
+                        <Property name="name" type="java.lang.String" value="jScrollPane4" noResource="true"/>
+                      </Properties>
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
+                          <JSplitPaneConstraints position="right"/>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="labelCaptionButton">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" resourceKey="labelCaptionButton.text"/>
+                            <Property name="verticalAlignment" type="int" value="1"/>
+                            <Property name="name" type="java.lang.String" value="labelCaptionButton" noResource="true"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
                     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
                       <Properties>
                         <Property name="name" type="java.lang.String" value="jScrollPane1" noResource="true"/>
@@ -458,7 +484,7 @@
                       </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
-                          <JSplitPaneConstraints position="top"/>
+                          <JSplitPaneConstraints position="left"/>
                         </Constraint>
                       </Constraints>
 
@@ -467,13 +493,9 @@
                         <Component class="javax.swing.JTextArea" name="textAreaButtonCaption">
                           <Properties>
                             <Property name="columns" type="int" value="20"/>
-                            <Property name="font" type="java.awt.Font" resourceKey="textAreaButtonCaption.font"/>
                             <Property name="rows" type="int" value="5"/>
                             <Property name="text" type="java.lang.String" resourceKey="textAreaButtonCaption.text"/>
                             <Property name="name" type="java.lang.String" value="textAreaButtonCaption" noResource="true"/>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[485, 50]"/>
-                            </Property>
                           </Properties>
                           <Events>
                             <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="textAreaButtonCaptionKeyPressed"/>
@@ -481,18 +503,6 @@
                         </Component>
                       </SubComponents>
                     </Container>
-                    <Component class="javax.swing.JLabel" name="labelCaptionButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" resourceKey="labelCaptionButton.text"/>
-                        <Property name="verticalAlignment" type="int" value="1"/>
-                        <Property name="name" type="java.lang.String" value="labelCaptionButton" noResource="true"/>
-                      </Properties>
-                      <Constraints>
-                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
-                          <JSplitPaneConstraints position="right"/>
-                        </Constraint>
-                      </Constraints>
-                    </Component>
                   </SubComponents>
                 </Container>
               </SubComponents>
@@ -681,18 +691,27 @@
                         </Container>
                       </SubComponents>
                     </Container>
-                    <Component class="javax.swing.JLabel" name="labelInfoDialog">
+                    <Container class="javax.swing.JScrollPane" name="jScrollPane5">
                       <Properties>
-                        <Property name="text" type="java.lang.String" resourceKey="labelInfoDialog.text"/>
-                        <Property name="verticalAlignment" type="int" value="1"/>
-                        <Property name="name" type="java.lang.String" value="labelInfoDialog" noResource="true"/>
+                        <Property name="name" type="java.lang.String" value="jScrollPane5" noResource="true"/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
                           <JSplitPaneConstraints position="right"/>
                         </Constraint>
                       </Constraints>
-                    </Component>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="labelInfoDialog">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" resourceKey="labelInfoDialog.text"/>
+                            <Property name="verticalAlignment" type="int" value="1"/>
+                            <Property name="name" type="java.lang.String" value="labelInfoDialog" noResource="true"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
                   </SubComponents>
                 </Container>
               </SubComponents>

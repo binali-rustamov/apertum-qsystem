@@ -175,7 +175,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
 
         super.removeNodeFromParent(node);
     }
-    protected final LinkedList<T> deleted = new LinkedList<T>();
+    protected final LinkedList<T> deleted = new LinkedList<>();
 
     @Override
     public void insertNodeInto(MutableTreeNode newChild, MutableTreeNode parent, int index) {
@@ -185,7 +185,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
 
     public void save() {
         // Вложенные нужно убрать. т.к. они сотрутся по констрейнту
-        final LinkedList<T> del = new LinkedList<T>();
+        final LinkedList<T> del = new LinkedList<>();
         for (T t : deleted) {
             boolean flag = false;
             T parent = (T) t.getParent();

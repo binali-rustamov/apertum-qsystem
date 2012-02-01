@@ -36,6 +36,29 @@ import javax.persistence.Temporal;
 @Table(name = "calendar_out_days")
 public class FreeDay implements Serializable {
 
+    @Override
+    public String toString() {
+        return date.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof FreeDay) {
+            FreeDay f = (FreeDay) obj;
+            return hashCode() == f.hashCode();
+        }
+        return false;
+    }
+
+    public int hashCode() {
+        final GregorianCalendar gc = new GregorianCalendar();
+        gc.setTime(date);
+        return (int) (gc.get(GregorianCalendar.DAY_OF_YEAR ) + getCalendarId() * 1000);
+    }
+    
+    
+    
+
     public FreeDay() {
     }
 

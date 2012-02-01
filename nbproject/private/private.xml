@@ -11,8 +11,8 @@
         </file>
         <file>
             <url>src/ru/apertum/qsystem/client/forms/FClient.java</url>
-            <line>562</line>
-            <line>1318</line>
+            <line>571</line>
+            <line>1330</line>
         </file>
         <file>
             <url>src/ru/ccrs/client/forms/FClient.java</url>
@@ -90,9 +90,9 @@
         </file>
         <file>
             <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
-            <line>3655</line>
-            <line>3736</line>
-            <line>3767</line>
+            <line>3656</line>
+            <line>3737</line>
+            <line>3768</line>
         </file>
         <file>
             <url>src/ru/ccrs/client/forms/FBoardConfig.java</url>

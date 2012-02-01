@@ -176,7 +176,19 @@ public class CalendarTableModel extends AbstractTableModel {
         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
         TransactionStatus status = Spring.getInstance().getTxManager().getTransaction(def);
         try {
-            Spring.getInstance().getHt().deleteAll(days_del);
+            final LinkedList<FreeDay> dels = new LinkedList<>();
+            for (FreeDay bad : days_del) {
+                boolean f = true;
+                for (FreeDay good : days) {
+                    if (good.equals(bad)) {
+                        f = false;
+                    }
+                }
+                if (f) {
+                    dels.add(bad);
+                }
+            }
+            Spring.getInstance().getHt().deleteAll(dels);
             Spring.getInstance().getHt().saveOrUpdateAll(days);
         } catch (Exception ex) {
             Spring.getInstance().getTxManager().rollback(status);
