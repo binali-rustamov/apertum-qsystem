@@ -32,7 +32,12 @@ public class QUserList extends ATListModel<QUser> {
 
     @Override
     protected LinkedList<QUser> load() {
-        return new LinkedList<>(Spring.getInstance().getHt().loadAll(QUser.class));
+        final LinkedList<QUser> users = new LinkedList<>(Spring.getInstance().getHt().loadAll(QUser.class));
+        // если этого не проделать, то параметр количества привязанных услуг к юзеру будет пустым после рестарта сервера из админки
+        for (QUser qUser : users) {
+            qUser.setServicesCnt(qUser.getPlanServiceList().getSize());
+        }
+        return users;
     }
 
     private static class QUserListHolder {

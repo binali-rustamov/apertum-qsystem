@@ -56,6 +56,7 @@ import ru.apertum.qsystem.common.cmd.RpcGetUsersList;
 import ru.apertum.qsystem.common.cmd.RpcInviteCustomer;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.common.cmd.RpcBanList;
 import ru.apertum.qsystem.server.MainBoard;
 import ru.apertum.qsystem.server.QServer;
 import ru.apertum.qsystem.server.ServerProps;
@@ -317,6 +318,8 @@ public final class Executer {
             user.setCustomer(customer);
             // Поставил кастомеру юзера, который его вызвал.
             customer.setUser(user);
+            // только что встал типо. Поросто время нахождения в отложенных не считаетка как ожидание очереди. Инвче в statistic ожидание огромное
+            customer.setStandTime(new Date());
             // ставим время вызова
             customer.setCallTime(new Date());
             // ну и услугу определим
@@ -356,15 +359,19 @@ public final class Executer {
     /**
      * Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
      * если ввели, то тут спрашиваем у сервера есть ли возможность встать в очередь с такими введенными данными
+     * @return 1 - превышен, 0 - можно встать. 2 - забанен
      */
     final Task aboutServicePersonLimit = new Task(Uses.TASK_ABOUT_SERVICE_PERSON_LIMIT) {
 
         @Override
-        public RpcGetBool process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public RpcGetInt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
+            if (RpcBanList.getInstance().isBaned(cmdParams.textData)) {
+                return new RpcGetInt(2);
+            }
             // Если лимит количества подобных введенных данных кастомерами в день достигнут
             final QService srv = QServiceTree.getInstance().getById(cmdParams.serviceId);
-            return new RpcGetBool(srv.isLimitPersonPerDayOver(cmdParams.textData));
+            return new RpcGetInt(srv.isLimitPersonPerDayOver(cmdParams.textData) ? 1 : 0);
         }
     };
     /**
@@ -715,6 +722,18 @@ public final class Executer {
         }
     };
     /**
+     * Получить список забаненных
+     */
+    final Task getBanList = new Task(Uses.TASK_GET_BAN_LIST) {
+
+        @Override
+        public RpcBanList process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            RpcBanList.getInstance().udo(null);
+            return RpcBanList.getInstance();
+        }
+    };
+    /**
      * Удалить вызванного юзером кастомера по неявке.
      */
     final Task killCustomerTask = new Task(Uses.TASK_KILL_NEXT_CUSTOMER) {
@@ -723,6 +742,28 @@ public final class Executer {
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
+            // Если кастомер имел что-то введенное на пункте регистрации, то удалить всех таких кастомеров с такими введеными данными
+            // и отправить его в бан, ибо нехрен набирать кучу талонов и просирать очереди.
+            if (user.getCustomer().getInput_data() != null && !"".equals(user.getCustomer().getInput_data())) {
+                int cnt = 0;
+                for (QService service : QServiceTree.getInstance().getNodes()) {
+                    final LinkedList<QCustomer> for_del = new LinkedList<>();
+                    for (QCustomer customer : service.getClients()) {
+                        if (user.getCustomer().getInput_data().equals(customer.getInput_data())) {
+                            for_del.add(customer);
+                        }
+                    }
+                    for (QCustomer qCustomer : for_del) {
+                        service.removeCustomer(qCustomer);
+                    }
+                    cnt = cnt + for_del.size();
+                }
+                if (cnt != 0) {
+                    RpcBanList.getInstance().addToBanList(user.getCustomer().getInput_data());
+                }
+                QLog.l().logger().debug("Вместе с кастомером " + user.getCustomer().getPrefix() + "-" + user.getCustomer().getNumber() + " он ввел \"" + user.getCustomer().getInput_data() + "\" удалили еще его " + cnt + " проявлений.");
+            }
+
             // кастомер переходит в состояние "умерщвленности"
             user.getCustomer().setState(CustomerState.STATE_DEAD);
             try {

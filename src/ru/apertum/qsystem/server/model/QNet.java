@@ -202,6 +202,34 @@ public class QNet implements Serializable {
     public void setSound(Integer sound) {
         this.sound = sound;
     }
+    
+    /**
+     * 0 - по умолчанию, ну и т.д. по набору звуков
+     */
+    @Column(name = "voice")
+    private Integer voice = 0;
+
+    public Integer getVoice() {
+        return voice;
+    }
+
+    public void setVoice(Integer voice) {
+        this.voice = voice;
+    }
+    
+     /**
+     * Время нахождения в блеклисте в минутах. 0 - попавшие в блекслист не блокируются
+     */
+    @Column(name = "black_time")
+    private Integer blackTime = 0;
+
+    public Integer getBlackTime() {
+        return blackTime;
+    }
+
+    public void setBlackTime(Integer blackTime) {
+        this.blackTime = blackTime;
+    }
 
     /**
      * Это ID филиала в котором установлена система.

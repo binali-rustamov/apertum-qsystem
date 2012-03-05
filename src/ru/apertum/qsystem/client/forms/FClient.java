@@ -17,6 +17,8 @@
 package ru.apertum.qsystem.client.forms;
 
 import java.awt.AWTException;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -35,8 +37,10 @@ import javax.swing.ButtonGroup;
 import org.dom4j.DocumentException;
 import org.jdesktop.application.Action;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.Timer;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -378,6 +382,68 @@ public final class FClient extends javax.swing.JFrame {
         helper.setHelpListener(menuItemHelp);
         helper.enableHelpKey(panelDown, "client");
         Uses.closeSplash();
+
+
+        Font f = new Font("Time New Roman", 0, 16);
+        labelMotiv.setFont(f);
+        labelMotiv.setForeground(new Color(0, 150, 0));
+        menuBar.add(labelMotiv);
+
+        final Timer t = new Timer(1000, new TimerMotiv());
+        t.start();
+
+    }
+    private final JLabel labelMotiv = new JLabel();
+
+    class TimerMotiv implements ActionListener {
+
+        String oldKeys = "";
+        long start;
+        final String prob = "                                                                                       ";
+        long t1 = 5000;
+        long t2 = 10000;
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (!oldKeys.equals(keys_current)) {
+                oldKeys = keys_current;
+                start = new Date().getTime();
+            }
+            final String action;
+            switch (oldKeys) {
+                case KEYS_OFF:
+                    action = "Нет посетителей";
+                    t1 = 990000000;
+                    t2 = 990000900;
+                    break;
+                case KEYS_MAY_INVITE:
+                    action = "Бездействие";
+                    t1 = 60000;
+                    t2 = 120000;
+                    break;
+                case KEYS_INVITED:
+                    action = "Вызвали";
+                    t1 = 35000;
+                    t2 = 45000;
+                    break;
+                case KEYS_STARTED:
+                    action = "В работе";
+                    t1 = 300000;
+                    t2 = 60000;
+                    break;
+                case KEYS_ALL:
+                    action = "Что-то не то";
+                    t1 = 1000;
+                    t2 = 2000;
+                    break;
+                default:
+                    action = "Что-то новое";
+            }
+            final long tt = new Date().getTime() - start;
+            labelMotiv.setForeground(tt < t1 ? new Color(0, 150, 0) : (tt > t2 ? new Color(200, 0, 0) : new Color(90, 0, 230)));
+            final String tts = prob + action + "  " + tt / 1000 / 60 + ":" + (tt / 1000) % 60;
+            labelMotiv.setText(tts.substring(tts.length() - 43));
+        }
     }
 
     /**
@@ -518,12 +584,14 @@ public final class FClient extends javax.swing.JFrame {
     private static final String KEYS_MAY_INVITE = "100000";
     private static final String KEYS_INVITED = "111000";
     private static final String KEYS_STARTED = "000111";
+    private String keys_current = KEYS_OFF;
 
     /**
      * Механизм включения/отключения кнопок
      * @param regim
      */
     public void setKeyRegim(String regim) {
+        keys_current = regim;
         QLog.l().logger().trace("Конфигурация кнопок \"" + regim + "\".");
         menuItemInvitePostponed.setEnabled(KEYS_MAY_INVITE.equals(regim));
         buttonInvite.setEnabled('1' == regim.charAt(0));

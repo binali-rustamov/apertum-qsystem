@@ -137,11 +137,13 @@ public class FConfirmationStart extends JDialog {
         buttonOk.setFont(resourceMap.getFont("buttonOk.font")); // NOI18N
         buttonOk.setIcon(resourceMap.getIcon("buttonOk.icon")); // NOI18N
         buttonOk.setText(resourceMap.getString("buttonOk.text")); // NOI18N
+        buttonOk.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         buttonOk.setName("buttonOk"); // NOI18N
 
         buttonCancel.setFont(resourceMap.getFont("buttonCancel.font")); // NOI18N
         buttonCancel.setIcon(resourceMap.getIcon("buttonCancel.icon")); // NOI18N
         buttonCancel.setText(resourceMap.getString("buttonCancel.text")); // NOI18N
+        buttonCancel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         buttonCancel.setName("buttonCancel"); // NOI18N
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -170,8 +172,8 @@ public class FConfirmationStart extends JDialog {
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
                         .addComponent(buttonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 53, Short.MAX_VALUE)
-                        .addComponent(buttonOk)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 55, Short.MAX_VALUE)
+                        .addComponent(buttonOk, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(

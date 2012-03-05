@@ -515,6 +515,8 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         final GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(firstWeekDay);
         gc.set(GregorianCalendar.DAY_OF_WEEK, 2);
+        gc.set(GregorianCalendar.HOUR_OF_DAY, 0);
+        gc.set(GregorianCalendar.MINUTE, 0);
         this.firstWeekDay = gc.getTime();
         /**
          * Получим грид доступности часов для записи

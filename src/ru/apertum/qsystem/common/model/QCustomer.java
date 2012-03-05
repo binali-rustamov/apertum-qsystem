@@ -160,7 +160,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
             case STATE_WORK:
                 QLog.l().logger().debug("Начали работать с кастомером с номером \"" + getPrefix() + getNumber() + "\"");
                 getUser().getPlanService(getService()).upWait(new Date().getTime() - getStandTime().getTime());
-                break;
+                break; 
             case STATE_WORK_SECONDARY:
                 QLog.l().logger().debug("Статус: Далее по цепочки начали работать с кастомером с номером \"" + getPrefix() + getNumber() + "\"");
                 break;

@@ -1106,7 +1106,7 @@ public class FWelcome extends javax.swing.JFrame {
 
         buttonAdvance.setFont(resourceMap.getFont("buttonAdvance.font")); // NOI18N
         buttonAdvance.setText(resourceMap.getString("buttonAdvance.text")); // NOI18N
-        buttonAdvance.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonAdvance.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
         buttonAdvance.setName("buttonAdvance"); // NOI18N
         buttonAdvance.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1117,7 +1117,7 @@ public class FWelcome extends javax.swing.JFrame {
 
         buttonStandAdvance.setFont(resourceMap.getFont("buttonStandAdvance.font")); // NOI18N
         buttonStandAdvance.setText(resourceMap.getString("buttonStandAdvance.text")); // NOI18N
-        buttonStandAdvance.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonStandAdvance.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
         buttonStandAdvance.setName("buttonStandAdvance"); // NOI18N
         buttonStandAdvance.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1130,7 +1130,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonToBegin.setIcon(resourceMap.getIcon("buttonToBegin.icon")); // NOI18N
         buttonToBegin.setText(resourceMap.getString("buttonToBegin.text")); // NOI18N
         buttonToBegin.setActionCommand(resourceMap.getString("buttonToBegin.actionCommand")); // NOI18N
-        buttonToBegin.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonToBegin.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
         buttonToBegin.setName("buttonToBegin"); // NOI18N
         buttonToBegin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1143,7 +1143,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonBack.setIcon(resourceMap.getIcon("buttonBack.icon")); // NOI18N
         buttonBack.setText(resourceMap.getString("buttonBack.text")); // NOI18N
         buttonBack.setActionCommand(resourceMap.getString("buttonBack.actionCommand")); // NOI18N
-        buttonBack.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonBack.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
         buttonBack.setName("buttonBack"); // NOI18N
         buttonBack.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1169,7 +1169,7 @@ public class FWelcome extends javax.swing.JFrame {
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 372, Short.MAX_VALUE)
+            .addGap(0, 375, Short.MAX_VALUE)
         );
 
         panelLock.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1193,7 +1193,7 @@ public class FWelcome extends javax.swing.JFrame {
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1241,9 +1241,9 @@ public class FWelcome extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(panelCentreLayout.createSequentialGroup()
-                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
+                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout panelBackgroundLayout = new javax.swing.GroupLayout(panelBackground);

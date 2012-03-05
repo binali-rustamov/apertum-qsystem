@@ -31,6 +31,7 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.cmd.CmdParams;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
+import ru.apertum.qsystem.common.cmd.RpcBanList;
 import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
 import ru.apertum.qsystem.common.cmd.RpcGetAuthorizCustomer;
@@ -230,10 +231,11 @@ public class NetCommander {
      * Узнать можно ли вставать в услугу с такими введенными данными
      * @param netProperty параметры соединения с сервером.
      * @param serviceId id услуги о которой получаем информацию
-     * @return true - превышен, false - можно встать.
+     * @param inputData введенная ботва
+     * @return 1 - превышен, 0 - можно встать. 2 - забанен
      * @throws QException
      */
-    public static boolean aboutServicePersonLimitOver(INetProperty netProperty, long serviceId, String inputData) throws QException {
+    public static int aboutServicePersonLimitOver(INetProperty netProperty, long serviceId, String inputData) throws QException {
         QLog.l().logger().info("Узнать можно ли вставать в услугу с такими введенными данными.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
@@ -246,9 +248,9 @@ public class NetCommander {
             throw new QException("Проблема с командой. ", ex);
         }
         final Gson gson = GsonPool.getInstance().borrowGson();
-        final RpcGetBool rpc;
+        final RpcGetInt rpc;
         try {
-            rpc = gson.fromJson(res, RpcGetBool.class);
+            rpc = gson.fromJson(res, RpcGetInt.class);
         } catch (JsonParseException ex) {
             throw new QException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
@@ -979,6 +981,32 @@ public class NetCommander {
             GsonPool.getInstance().returnGson(gson);
         }
         return rpc.getResult();
+    }
+    
+     /**
+     * Получить список забаненных введенных данных
+     * @param netProperty
+     * @return список отложенных кастомеров
+     */
+    public static LinkedList<String> getBanedList(INetProperty netProperty) {
+        QLog.l().logger().info("Команда получение списка забаненных.");
+        // загрузим ответ
+        final String res;
+        try {
+            res = send(netProperty, Uses.TASK_GET_BAN_LIST, null);
+        } catch (QException ex) {// вывод исключений
+            throw new ClientException("Проблема с командой. ", ex);
+        }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final RpcBanList rpc;
+        try {
+            rpc = gson.fromJson(res, RpcBanList.class);
+        } catch (JsonParseException ex) {
+            throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return rpc.getBanList();
     }
 
     /**

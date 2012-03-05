@@ -127,6 +127,7 @@ public final class Uses {
     public static final String TAG_BOARD_TYPE = "Тип";
     // имена параметров для табло 
     public static final String TAG_BOARD_LINES_COUNT = "Количество строк на табло";
+    public static final String TAG_BOARD_COLS_COUNT = "Количество столбцов на табло";
     public static final String TAG_BOARD_DELAY_VISIBLE = "Минимальное время индикации на табло";
     public static final String TAG_BOARD_FON_IMG = "Фоновое изображение";
     public static final String TAG_BOARD_FONT_SIZE = "Размер шрифта";
@@ -143,6 +144,7 @@ public final class Uses {
     public static final String TAG_BOARD_FONT_COLOR_CAPTION = "Цвет шрифта заголовка";
     public static final String TAG_BOARD_FONT_COLOR_LEFT = "Цвет шрифта левого столбца";
     public static final String TAG_BOARD_FONT_COLOR_RIGHT = "Цвет шрифта правого столбца";
+    public static final String TAG_BOARD_FONT_COLOR_LINE = "Цвет надписи строки табло";
     public static final String TAG_BOARD_LINE_BORDER = "Окантовка строк";
     public static final String TAG_BOARD_LINE_DELIMITER = "Разделитель столбцов";
     public static final String TAG_BOARD_LEFT_CAPTION = "Заголовок левого столбца";
@@ -178,6 +180,7 @@ public final class Uses {
     public static final String TASK_GET_SELF = "Получить описание пользователя";
     public static final String TASK_GET_SELF_SERVICES = "Получить состояние очередей";
     public static final String TASK_GET_POSTPONED_POOL = "Получить состояние пула отложенных";
+    public static final String TASK_GET_BAN_LIST = "Получить список забаненых";
     public static final String TASK_INVITE_POSTPONED = "Вызвать отложенного из пула отложенных";
     public static final String TASK_GET_SELF_SERVICES_CHECK = "Получить состояние очередей с проверкой";
     public static final String TASK_INVITE_NEXT_CUSTOMER = "Получить следующего клиента";

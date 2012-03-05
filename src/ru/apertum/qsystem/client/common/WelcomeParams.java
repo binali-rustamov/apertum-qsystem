@@ -63,6 +63,8 @@ public class WelcomeParams {
     private static final String INFO_BUTTON = "info_button";// кнопка информационной системы на пункте регистрации
     private static final String RESPONSE_BUTTON = "response_button";// - кнопка обратной связи на пункте регистрации
     private static final String ADVANCE_BUTTON = "advance_button";// - кнопка предварительной записи на пункте регистрации
+    private static final String NUMERIC_KEYBOARD = "numeric_keyboard";// - цифровая клавиатура при вводе юзерской инфы
+    private static final String ALPHABETIC_KEYBOARD = "alphabetic_keyboard";// - буквенная клавиатура при вводе юзерской инфы
 
     private WelcomeParams() {
         loadSettings();
@@ -96,6 +98,9 @@ public class WelcomeParams {
     public int buttons_speed = 9600;
     public int buttons_parity = 0;
     public int buttons_stopbits = 1;
+    
+    public boolean numeric_keyboard = true; // - цифровая клавиатура при вводе юзерской инфы
+    public boolean alphabetic_keyboard = true; // - буквенная клавиатура при вводе юзерской инфы
 
     /**
      * Загрузим настройки.
@@ -143,5 +148,8 @@ public class WelcomeParams {
         info = "1".equals(settings.getProperty(INFO_BUTTON)) || "true".equals(settings.getProperty(INFO_BUTTON)); // кнопка информационной системы на пункте регистрации
         response = "1".equals(settings.getProperty(RESPONSE_BUTTON)) || "true".equals(settings.getProperty(RESPONSE_BUTTON)); // - кнопка обратной связи на пункте регистрации
         advance = "1".equals(settings.getProperty(ADVANCE_BUTTON)) || "true".equals(settings.getProperty(ADVANCE_BUTTON)); // - кнопка предварительной записи на пункте регистрации
+        
+        numeric_keyboard = !settings.containsKey(NUMERIC_KEYBOARD) || "1".equals(settings.getProperty(NUMERIC_KEYBOARD)) || "true".equals(settings.getProperty(NUMERIC_KEYBOARD)); // - цифровая клавиатура при вводе юзерской инфы
+        alphabetic_keyboard = !settings.containsKey(ALPHABETIC_KEYBOARD) || "1".equals(settings.getProperty(ALPHABETIC_KEYBOARD)) || "true".equals(settings.getProperty(ALPHABETIC_KEYBOARD));// - буквенная клавиатура при вводе юзерской инфы
     }
 }

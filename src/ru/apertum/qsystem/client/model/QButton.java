@@ -232,7 +232,8 @@ public class QButton extends JButton {
                                 }
                                 // если ввели, то нужно спросить у сервера есть ли возможность встать в очередь с такими введенными данными
 
-                                boolean limitPersonOver = true;
+                                //@return 1 - превышен, 0 - можно встать. 2 - забанен
+                                int limitPersonOver = 0;
                                 try {
                                     limitPersonOver = NetCommander.aboutServicePersonLimitOver(FWelcome.netProperty, service.getId(), inputData);
                                 } catch (Exception ex) {
@@ -240,8 +241,9 @@ public class QButton extends JButton {
                                     QLog.l().logger().error("Гасим жестоко опрос превышения лимита по введенным данным, но не лочим киоск. Невозможно отправить команду на сервер. ", ex);
                                     return;
                                 }
-                                if (limitPersonOver) {
-                                    form.lock("<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Количество поситителей данной услуги c такими введенными данными ограничено и истекло.</span></b></p>");
+                                if (limitPersonOver != 0) {
+                                    form.lock(limitPersonOver == 1 ? "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Количество поситителей данной услуги c такими введенными данными ограничено и истекло.</span></b></p>"
+                                            : "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Вы отклонены по неявке на вызов оператора.</span></b></p>");
                                     form.clockUnlockBack.start();
                                     return;
                                 }

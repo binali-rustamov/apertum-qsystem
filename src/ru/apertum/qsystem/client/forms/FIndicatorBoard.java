@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
@@ -139,6 +138,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         mainElement = rootParams.element(Uses.TAG_BOARD_MAIN);
         // Проствим кол-во строк и др. параметры
         this.linesCount = Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINES_COUNT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
+        final int ii = Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_COLS_COUNT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
+        this.colsCount = isMain ? (ii > 0 ? (ii > 5 ? 5 : ii) : 1) : 1;
         this.pause = Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_DELAY_VISIBLE).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         // Определим цвет табло
         this.bgColor = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FON_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
@@ -148,17 +149,21 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         this.borderLine = "1".equals(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_BORDER).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.delimiter = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_DELIMITER).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
 
+        this.colorTextLine = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_LINE).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.colorRow = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.rowCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
         this.leftColCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LEFT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
         this.rightColCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RIGHT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
         this.border = new TitledBorder(new LineBorder(colorRow), "".equals(rowCaption) ? getLocaleMessage("board.cell") : rowCaption);//  MatteBorder(1, 3, 1, 2, Color.LIGHT_GRAY);
+        border.setTitleColor(colorTextLine);
 
         if (!isDebug) {
             setUndecorated(true);
+            setType(Type.UTILITY);
         }
         initComponents();
         panelCommon.setBackground(bgColor);
+        QLog.l().logger().trace("Прочитали настройки для окна информации.");
     }
 
     public void toPosition(boolean isDebug, int x, int y) {
@@ -288,7 +293,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         }
         return localeMap.getString(key);
     }
-    private final Border border;
+    private final TitledBorder border;
 
     public class Line extends JPanel {
 
@@ -409,6 +414,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      */
     private final int linesCount;
     /**
+     * Количество выводимых столбцов
+     */
+    private final int colsCount;
+    /**
      * Цвет фона табло
      */
     private final Color bgColor;
@@ -448,9 +457,13 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Заголовок правого столбца
      */
     private final String rightColCaption;
+    /**
+     * Цвет надписи строки табло
+     */
+    private final Color colorTextLine;
 
     public int getLinesCount() {
-        return linesCount;
+        return linesCount * colsCount;
     }
     /**
      * Минимальное время индикации на табло
@@ -466,47 +479,64 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      */
     public void showLines() {
         QLog.l().logger().info("Показываем набор строк.");
-        GridLayout la = new GridLayout(linesCount + (isMain ? 1 : 0), 1, 0, 0);
+        GridLayout la = new GridLayout(linesCount + (isMain ? 1 : 0), (isMain ? colsCount : 1), 10, 0);
         panelMain.setLayout(la);
-        if (isMain) {
-            final JPanel panel_cap = new JPanel();
-            if (borderLine) {
-                panel_cap.setBorder(new MatteBorder(5, 3, 1, 2, colorRow));
-                //panel_cap.setBorder(new LineBorder(Color.lightGray, 6));
-            } else {
-                panel_cap.setBorder(new LineBorder(colorRow, 0));
-            }
-            panel_cap.setOpaque(false);
-            panel_cap.setLayout(new GridLayout(1, 2, 0, 0));
-            panelMain.add(panel_cap);
-            panel_cap.setBounds(0, 0, 100, 100);
-            JLabel lab_cap_l = new JLabel();
-            final Font font_cap = new Font(lab_cap_l.getFont().getName(), lab_cap_l.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
-            lab_cap_l.setFont(font_cap);
-            lab_cap_l.setBackground(bgColor);
-            lab_cap_l.setForeground(fgColorCaprion);
-            lab_cap_l.setHorizontalAlignment(JLabel.CENTER);
-            lab_cap_l.setVerticalAlignment(JLabel.CENTER);
-            //lab.setOpaque(true);
-            panel_cap.add(lab_cap_l);
-            lab_cap_l.setBounds(0, 0, 100, 100);
-            lab_cap_l.setText(!"".equals(leftColCaption) ? leftColCaption : getLocaleMessage("board.client"));
+        final ArrayList<JPanel> caps = new ArrayList<>();
+        for (int с = 0; с < colsCount; с++) {
+            if (isMain) {
+                final JPanel panel_cap = new JPanel();
+                caps.add(panel_cap);
+                if (borderLine) {
+                    panel_cap.setBorder(new MatteBorder(5, 3, 1, 2, colorRow));
+                    //panel_cap.setBorder(new LineBorder(Color.lightGray, 6));
+                } else {
+                    panel_cap.setBorder(new LineBorder(colorRow, 0));
+                }
+                panel_cap.setOpaque(false);
+                panel_cap.setLayout(new GridLayout(1, 2, 0, 0));
+                //panelMain.add(panel_cap);
+                panel_cap.setBounds(0, 0, 100, 100);
+                JLabel lab_cap_l = new JLabel();
+                final Font font_cap = new Font(lab_cap_l.getFont().getName(), lab_cap_l.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+                lab_cap_l.setFont(font_cap);
+                lab_cap_l.setBackground(bgColor);
+                lab_cap_l.setForeground(fgColorCaprion);
+                lab_cap_l.setHorizontalAlignment(JLabel.CENTER);
+                lab_cap_l.setVerticalAlignment(JLabel.CENTER);
+                //lab.setOpaque(true);
+                panel_cap.add(lab_cap_l);
+                lab_cap_l.setBounds(0, 0, 100, 100);
+                lab_cap_l.setText(!"".equals(leftColCaption) ? leftColCaption : getLocaleMessage("board.client"));
 
-            lab_cap_l = new JLabel();
-            lab_cap_l.setFont(font_cap);
-            lab_cap_l.setBackground(bgColor);
-            lab_cap_l.setForeground(fgColorCaprion);
-            lab_cap_l.setHorizontalAlignment(JLabel.CENTER);
-            lab_cap_l.setVerticalAlignment(JLabel.CENTER);
-            //lab.setOpaque(true);
-            panel_cap.add(lab_cap_l);
-            lab_cap_l.setBounds(0, 0, 100, 100);
-            lab_cap_l.setText(!"".equals(rightColCaption) ? rightColCaption : getLocaleMessage("board.point"));
+                lab_cap_l = new JLabel();
+                lab_cap_l.setFont(font_cap);
+                lab_cap_l.setBackground(bgColor);
+                lab_cap_l.setForeground(fgColorCaprion);
+                lab_cap_l.setHorizontalAlignment(JLabel.CENTER);
+                lab_cap_l.setVerticalAlignment(JLabel.CENTER);
+                //lab.setOpaque(true);
+                panel_cap.add(lab_cap_l);
+                lab_cap_l.setBounds(0, 0, 100, 100);
+                lab_cap_l.setText(!"".equals(rightColCaption) ? rightColCaption : getLocaleMessage("board.point"));
+            }
         }
-        for (int i = 1; i <= linesCount; i++) {
-            final Line panel = new Line();
-            labels.add(panel);
-            panelMain.add(panel);
+        if (!caps.isEmpty()) {
+            for (JPanel cap : caps) {
+               panelMain.add(cap);
+            }
+        }
+        final Line[][] cels = new Line[linesCount][colsCount];
+        for (int c = 0; c < colsCount; c++) {
+            for (int i = 0; i < linesCount; i++) {
+                final Line panel = new Line();
+                labels.add(panel);
+                cels[i][c] = panel;
+            }
+        }
+        for (Line[] lines : cels) {
+            for (Line line : lines) {
+                panelMain.add(line);
+            }
         }
         repaint();
     }
@@ -519,7 +549,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * @param blinkCount 0 - постоянное мигание, -1 не мигает. число - количество миганий
      */
     public void printRecord(int index, String number, String point, int blinkCount) {
-        if (index < linesCount) {
+        if (index < getLinesCount()) {
             labels.get(index).setLineData(number + (isMain ? delimiter + point : ""));
             labels.get(index).setBlinkCount(blinkCount == -1 ? -1 : blinkCount * 2);
             if (blinkCount != -1) {

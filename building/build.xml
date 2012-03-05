@@ -35,6 +35,8 @@
           <zip destfile="building/qsystem-${version}.zip">
                <fileset dir="" includes="readme.txt"/>
                <fileset dir="installation" includes="install.jar"/>
+               <fileset dir="installation/resource/txt" includes="install.bat"/>
+               <fileset dir="installation/resource/txt" includes="install.sh"/>
           </zip>
 
 

@@ -24,6 +24,7 @@ import javax.swing.*;
 import java.lang.Thread.*;
 import java.util.LinkedList;
 import ru.apertum.qsystem.server.ServerProps;
+import ru.apertum.qsystem.server.model.QNet;
 
 /**
  * Класс проигрывания звуковых ресурсов и файлов.
@@ -95,7 +96,6 @@ public class SoundPlayer implements Runnable {
     public void run() {
         doSounds(this, resourceList);
     }
-
     /**
      * Листенер, срабатываюшщий при начале проигрывания семплов
      */
@@ -331,7 +331,22 @@ public class SoundPlayer implements Runnable {
         }
         final LinkedList<String> res = new LinkedList<>();
         // путь к звуковым файлам
-        final String path = "/ru/apertum/qsystem/server/sound/";
+        final String voice;
+        switch (ServerProps.getInstance().getProps().getVoice()) {
+            case 1:
+                voice = "Alyona/";
+                break;
+            case 2:
+                voice = "Nikolay/";
+                break;
+            case 3:
+                voice = "Olga/";
+                break;
+            default:
+                voice = "";
+        }
+
+        final String path = "/ru/apertum/qsystem/server/sound/" + voice;
         res.add(path + "ding.wav");
         if (ServerProps.getInstance().getProps().getSound() == 2) {
             res.add(path + "client.wav");

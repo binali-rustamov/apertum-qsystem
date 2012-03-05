@@ -67,8 +67,8 @@
                       <Component id="jLabel2" alignment="0" pref="623" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="buttonCancel" min="-2" pref="293" max="-2" attributes="1"/>
-                          <EmptySpace pref="53" max="32767" attributes="0"/>
-                          <Component id="buttonOk" min="-2" max="-2" attributes="1"/>
+                          <EmptySpace pref="55" max="32767" attributes="0"/>
+                          <Component id="buttonOk" min="-2" pref="275" max="-2" attributes="1"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -100,6 +100,18 @@
             <Property name="font" type="java.awt.Font" resourceKey="buttonOk.font"/>
             <Property name="icon" type="javax.swing.Icon" resourceKey="buttonOk.icon"/>
             <Property name="text" type="java.lang.String" resourceKey="buttonOk.text"/>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                <CompoundBorder>
+                  <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                    <BevelBorder/>
+                  </Border>
+                  <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                    <BevelBorder/>
+                  </Border>
+                </CompoundBorder>
+              </Border>
+            </Property>
             <Property name="name" type="java.lang.String" value="buttonOk" noResource="true"/>
           </Properties>
         </Component>
@@ -108,6 +120,18 @@
             <Property name="font" type="java.awt.Font" resourceKey="buttonCancel.font"/>
             <Property name="icon" type="javax.swing.Icon" resourceKey="buttonCancel.icon"/>
             <Property name="text" type="java.lang.String" resourceKey="buttonCancel.text"/>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                <CompoundBorder>
+                  <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                    <BevelBorder/>
+                  </Border>
+                  <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                    <BevelBorder/>
+                  </Border>
+                </CompoundBorder>
+              </Border>
+            </Property>
             <Property name="name" type="java.lang.String" value="buttonCancel" noResource="true"/>
           </Properties>
         </Component>
