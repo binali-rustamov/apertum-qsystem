@@ -54,8 +54,12 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Component id="panelCaption" alignment="0" max="32767" attributes="0"/>
-              <Component id="panelButtons" alignment="0" pref="931" max="32767" attributes="0"/>
               <Component id="panelCentre" alignment="0" max="32767" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="panelButtons" pref="922" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -85,7 +89,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="labelCaption" alignment="0" pref="929" max="32767" attributes="0"/>
+                  <Component id="labelCaption" alignment="0" pref="940" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -258,11 +262,14 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="panelLock" max="32767" attributes="1"/>
-                          <Component id="panelMain" alignment="1" max="32767" attributes="1"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                              <Component id="panelMain" max="32767" attributes="1"/>
+                          </Group>
+                          <Component id="panelLock" alignment="1" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="buttonInfo" min="-2" pref="55" max="-2" attributes="0"/>
                           <Component id="buttonResponse" min="-2" pref="55" max="-2" attributes="0"/>
@@ -275,13 +282,13 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="panelMain" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                       <Component id="panelLock" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="buttonInfo" pref="297" max="32767" attributes="0"/>
+                      <Component id="buttonInfo" pref="295" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="buttonResponse" pref="210" max="32767" attributes="0"/>
+                      <Component id="buttonResponse" pref="208" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -290,8 +297,8 @@
             <Container class="javax.swing.JPanel" name="panelMain">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                    <EtchetBorder/>
+                  <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
+                    <MatteColorBorder/>
                   </Border>
                 </Property>
                 <Property name="font" type="java.awt.Font" resourceKey="panelMain.font"/>
@@ -305,12 +312,12 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="854" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="835" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="375" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="371" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
               </Layout>
@@ -331,7 +338,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="labelLock" pref="836" max="32767" attributes="0"/>
+                          <Component id="labelLock" pref="835" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -340,7 +347,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="labelLock" pref="104" max="32767" attributes="0"/>
+                          <Component id="labelLock" pref="101" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>

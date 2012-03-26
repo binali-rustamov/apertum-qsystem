@@ -494,6 +494,9 @@ public class FWelcome extends javax.swing.JFrame {
             case 1600:
                 delta = 50;
                 break;
+            case 1920:
+                delta = 60;
+                break;    
         }
         int cols = 3;
         int rows = 5;
@@ -1092,7 +1095,7 @@ public class FWelcome extends javax.swing.JFrame {
         panelCaption.setLayout(panelCaptionLayout);
         panelCaptionLayout.setHorizontalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 929, Short.MAX_VALUE)
+            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 940, Short.MAX_VALUE)
         );
         panelCaptionLayout.setVerticalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1156,7 +1159,7 @@ public class FWelcome extends javax.swing.JFrame {
         panelCentre.setName("panelCentre"); // NOI18N
         panelCentre.setOpaque(false);
 
-        panelMain.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        panelMain.setBorder(new javax.swing.border.MatteBorder(null));
         panelMain.setFont(resourceMap.getFont("panelMain.font")); // NOI18N
         panelMain.setName("panelMain"); // NOI18N
         panelMain.setOpaque(false);
@@ -1165,11 +1168,11 @@ public class FWelcome extends javax.swing.JFrame {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 854, Short.MAX_VALUE)
+            .addGap(0, 835, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 375, Short.MAX_VALUE)
+            .addGap(0, 371, Short.MAX_VALUE)
         );
 
         panelLock.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1186,14 +1189,14 @@ public class FWelcome extends javax.swing.JFrame {
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 836, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 835, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelLockLayout.setVerticalGroup(
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1225,10 +1228,12 @@ public class FWelcome extends javax.swing.JFrame {
         panelCentreLayout.setHorizontalGroup(
             panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelCentreLayout.createSequentialGroup()
-                .addGroup(panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(panelMain, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(panelCentreLayout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
                 .addGroup(panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(buttonInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buttonResponse, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1238,12 +1243,12 @@ public class FWelcome extends javax.swing.JFrame {
             panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelCentreLayout.createSequentialGroup()
                 .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(panelCentreLayout.createSequentialGroup()
-                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE))
+                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout panelBackgroundLayout = new javax.swing.GroupLayout(panelBackground);
@@ -1251,8 +1256,11 @@ public class FWelcome extends javax.swing.JFrame {
         panelBackgroundLayout.setHorizontalGroup(
             panelBackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 931, Short.MAX_VALUE)
             .addComponent(panelCentre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(panelBackgroundLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 922, Short.MAX_VALUE)
+                .addContainerGap())
         );
         panelBackgroundLayout.setVerticalGroup(
             panelBackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

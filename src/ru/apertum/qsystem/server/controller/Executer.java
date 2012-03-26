@@ -1294,10 +1294,11 @@ public final class Executer {
             super.process(cmdParams, ipAdress, IP);
 
             // Вытащим из базы предварительного кастомера
-            final QAdvanceCustomer advCust = new QAdvanceCustomer();
-            Spring.getInstance().getHt().load(advCust, cmdParams.customerId);
-            if (advCust.getId() == null || advCust.getAdvanceTime() == null) {
-                throw new ServerException("не найден клиент по его ID");
+            final QAdvanceCustomer advCust = Spring.getInstance().getHt().get(QAdvanceCustomer.class, cmdParams.customerId);
+            if (advCust == null || advCust.getId() == null || advCust.getAdvanceTime() == null) {
+                QLog.l().logger().debug("не найден клиент по его ID=" + cmdParams.customerId);
+                // Шлем отказ
+                return new RpcStandInService(null, "Не верный номер предварительной записи.");
             }
             final GregorianCalendar gc = new GregorianCalendar();
             if (advCust != null) {
@@ -1307,7 +1308,7 @@ public final class Executer {
             final GregorianCalendar gc1 = new GregorianCalendar();
             if (advCust != null) {
                 gc1.setTime(advCust.getAdvanceTime());
-                gc1.set(GregorianCalendar.HOUR_OF_DAY, gc1.get(GregorianCalendar.HOUR_OF_DAY) + 1);
+                gc1.set(GregorianCalendar.MINUTE, gc1.get(GregorianCalendar.MINUTE) + 20);
             }
             if (advCust != null && new Date().before(gc1.getTime()) && new Date().after(gc.getTime())) {
                 // Ставим кастомера

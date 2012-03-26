@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -34,12 +35,14 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
 import org.dom4j.DocumentException;
 import org.jdesktop.application.Action;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.Uses;
@@ -329,13 +332,17 @@ public final class FClient extends javax.swing.JFrame {
         //menuBar.setVisible(false);
         labelNextNumber.setText(getLocaleMessage("messages.noCall"));
         printCustomerNumber("", -1);
-        /*
         // Фича. По нажатию Escape закрываем форму
-        KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
-        
-        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(escapeKey, new javax.swing.Action(){});
-         */
+        // свернем по esc
+        getRootPane().registerKeyboardAction(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+            }
+        },
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
         // инициализим trayIcon, т.к. setSituation() требует работу с tray
         tray = QTray.getInstance(this, "/ru/apertum/qsystem/client/forms/resources/client.png", getLocaleMessage("messages.tray.hint"));
         tray.addItem(getLocaleMessage("messages.tray.showClient"), new ActionListener() {

@@ -243,6 +243,8 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`net` (
   `sky_server_url` VARCHAR(145) NOT NULL DEFAULT '' ,
   `zone_board_serv_addr` VARCHAR(145) NOT NULL DEFAULT '' ,
   `zone_board_serv_port` BIGINT NOT NULL DEFAULT 0 ,
+  `voice` INT NOT NULL DEFAULT 0 COMMENT '0 - по умолчанию, ну и т.д. по набору звуков' ,
+  `black_time` INT NOT NULL DEFAULT 0 COMMENT 'Время нахождения в блеклисте в минутах. 0 - попавшие в блекслист не блокируются' ,
   PRIMARY KEY (`id`) )
 ENGINE = InnoDB, 
 COMMENT = 'Сетевые настройки сервера.' ;
@@ -589,7 +591,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '1.4', 1, 999, 0, 0, 2, -1, '', '127.0.0.1', 27007);
+INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '1.5', 1, 999, 0, 0, 2, -1, '', '127.0.0.1', 27007, 0, 0);
 
 COMMIT;
 
