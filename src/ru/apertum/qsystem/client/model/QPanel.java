@@ -43,7 +43,14 @@ import ru.apertum.qsystem.common.exceptions.ServerException;
  */
 public class QPanel extends JPanel implements Serializable {
 
-    private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+    private PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+
+    public PropertyChangeSupport getPropertySupport() {
+        if (propertySupport == null) {
+            propertySupport = new PropertyChangeSupport(this);
+        }
+        return propertySupport;
+    }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -51,7 +58,7 @@ public class QPanel extends JPanel implements Serializable {
         if (listener == null) {
             return;
         }
-        propertySupport.addPropertyChangeListener(listener);
+        getPropertySupport().addPropertyChangeListener(listener);
     }
 
     @Override
@@ -60,7 +67,7 @@ public class QPanel extends JPanel implements Serializable {
         if (listener == null || propertySupport == null) {
             return;
         }
-        propertySupport.removePropertyChangeListener(listener);
+        getPropertySupport().removePropertyChangeListener(listener);
     }
     /**
      * Фоновая картинка.
@@ -81,7 +88,7 @@ public class QPanel extends JPanel implements Serializable {
         final String oldValue = resourceName;
         this.backgroundImageFile = resourceName;
         this.backgroundImage = Uses.loadImage(this, resourceName);
-        propertySupport.firePropertyChange(PROP_BACKGROUND_IMG, oldValue, resourceName);
+        getPropertySupport().firePropertyChange(PROP_BACKGROUND_IMG, oldValue, resourceName);
         repaint();
     }
 
@@ -202,7 +209,7 @@ public class QPanel extends JPanel implements Serializable {
         }
         final String oldValue = videoFile;
         this.videoFileName = videoFile;
-        propertySupport.firePropertyChange(PROP_VIDEO_FILE, oldValue, videoFile);
+        getPropertySupport().firePropertyChange(PROP_VIDEO_FILE, oldValue, videoFile);
         setVideoFile();
     }
 
@@ -227,7 +234,7 @@ public class QPanel extends JPanel implements Serializable {
     public void setNativePosition(Boolean nativePosition) {
         final Boolean oldValue = nativePosition;
         this.videoNativePosition = nativePosition;
-        propertySupport.firePropertyChange(PROP_VIDEO_NATIVE_POSITION, oldValue, nativePosition);
+        getPropertySupport().firePropertyChange(PROP_VIDEO_NATIVE_POSITION, oldValue, nativePosition);
         //setVideoFile(getVideoFileName(), nativePosition);
     }
 
@@ -266,7 +273,7 @@ public class QPanel extends JPanel implements Serializable {
     public void setStartColor(Color startColor) {
         final Color oldValue = startColor;
         this.startColor = startColor;
-        propertySupport.firePropertyChange(PROP_START_COLOR, oldValue, startColor);
+        getPropertySupport().firePropertyChange(PROP_START_COLOR, oldValue, startColor);
     }
     public static final String PROP_END_COLOR = "endColor";
     /**
@@ -281,7 +288,7 @@ public class QPanel extends JPanel implements Serializable {
     public void setEndColor(Color endColor) {
         final Color oldValue = endColor;
         this.endColor = endColor;
-        propertySupport.firePropertyChange(PROP_END_COLOR, oldValue, endColor);
+        getPropertySupport().firePropertyChange(PROP_END_COLOR, oldValue, endColor);
     }
     public static final String PROP_START_POINT = "startPoint";
     /**
@@ -297,7 +304,7 @@ public class QPanel extends JPanel implements Serializable {
     public void setStartPoint(Point startPoint) {
         final Point oldValue = startPoint;
         this.startPoint = startPoint;
-        propertySupport.firePropertyChange(PROP_START_POINT, oldValue, startPoint);
+        getPropertySupport().firePropertyChange(PROP_START_POINT, oldValue, startPoint);
     }
     public static final String PROP_END_POINT = "endPoint";
     /**
@@ -313,7 +320,7 @@ public class QPanel extends JPanel implements Serializable {
     public void setEndPoint(Point endPoint) {
         final Point oldValue = endPoint;
         this.endPoint = endPoint;
-        propertySupport.firePropertyChange(PROP_END_POINT, oldValue, endPoint);
+        getPropertySupport().firePropertyChange(PROP_END_POINT, oldValue, endPoint);
     }
     public static final String PROP_CYCLE_FILL_GRADIENT = "cycleFillGradient";
     /**
@@ -324,7 +331,7 @@ public class QPanel extends JPanel implements Serializable {
     public void setCycle(Boolean cycleFillGradient) {
         final Boolean oldValue = cycleFillGradient;
         this.cycleFillGradient = cycleFillGradient;
-        propertySupport.firePropertyChange(PROP_CYCLE_FILL_GRADIENT, oldValue, cycleFillGradient);
+        getPropertySupport().firePropertyChange(PROP_CYCLE_FILL_GRADIENT, oldValue, cycleFillGradient);
     }
 
     public Boolean getCycle() {
@@ -343,7 +350,7 @@ public class QPanel extends JPanel implements Serializable {
     public void setGradient(Boolean isGradient) {
         final Boolean oldValue = isGradient;
         this.isGradient = isGradient;
-        propertySupport.firePropertyChange(PROP_GRADIENT, oldValue, isGradient);
+        getPropertySupport().firePropertyChange(PROP_GRADIENT, oldValue, isGradient);
     }
 
     //Это "СТАНДАРТНОЕ" РИСОВАНИЕ - оно у меня полосит

@@ -591,7 +591,7 @@ private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
 
 
-    SoundPlayer.inviteClient("г1000", "103");
+    SoundPlayer.inviteClient("г1000", "103", true);
 
 
 }//GEN-LAST:event_jButton8ActionPerformed

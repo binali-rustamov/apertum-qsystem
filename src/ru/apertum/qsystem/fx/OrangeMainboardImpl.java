@@ -119,4 +119,9 @@ public class OrangeMainboardImpl implements IIndicatorBoard {
     public AFBoardRedactor getRedactor() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

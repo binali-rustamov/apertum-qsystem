@@ -39,7 +39,7 @@ import ru.apertum.qsystem.common.NetCommander;
  */
 abstract public class AFBoardRedactor extends javax.swing.JDialog {
 
-    private INetProperty netProperty;
+    protected INetProperty netProperty;
     private Element params;
     protected JFrame parent;
     protected boolean modal;
@@ -57,6 +57,10 @@ abstract public class AFBoardRedactor extends javax.swing.JDialog {
         initComponents();
         this.parent = parent;
         this.modal = modal;
+        setLocation();
+    }
+
+    private void setLocation() {
         Uses.setLocation(this);
     }
     private static ResourceMap localeMap = null;

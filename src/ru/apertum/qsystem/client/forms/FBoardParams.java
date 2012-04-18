@@ -36,7 +36,9 @@ import org.dom4j.Node;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.NetCommander;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.model.INetProperty;
 
 /**
  * Created on 14 Апрель 2009 г., 18:01
@@ -60,13 +62,15 @@ public class FBoardParams extends javax.swing.JDialog {
      * Используемая ссылка на диалоговое окно.
      */
     private static FBoardParams boardParams;
+    final INetProperty netProps;
 
     /** Creates new form FBoardParams
      * @param parent относительно чего модальна форма
      * @param modal модальна или нет
      */
-    public FBoardParams(java.awt.Frame parent, boolean modal) {
+    public FBoardParams(java.awt.Frame parent, boolean modal, INetProperty netProps) {
         super(parent, modal);
+        this.netProps = netProps;
         initComponents();
 
         buttonOk.addActionListener(new ActionListener() {
@@ -128,9 +132,9 @@ public class FBoardParams extends javax.swing.JDialog {
      * @param params
      * @param caption
      */
-    public static void changeParams(JFrame owner, Element params, String caption) {
+    public static void changeParams(JFrame owner, Element params, String caption, INetProperty netProps) {
         if (boardParams == null) {
-            boardParams = new FBoardParams(owner, true);
+            boardParams = new FBoardParams(owner, true, netProps);
         }
         Uses.setLocation(boardParams);
         boardParams.loadXML(params);
@@ -231,6 +235,7 @@ public class FBoardParams extends javax.swing.JDialog {
         textFieldFontColor = new javax.swing.JTextField();
         jScrollPane2 = new javax.swing.JScrollPane();
         runningLabel = new ru.apertum.qsystem.common.RunningLabel();
+        buttonRefreshRunningText = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -332,6 +337,14 @@ public class FBoardParams extends javax.swing.JDialog {
         runningLabel.setName("runningLabel"); // NOI18N
         jScrollPane2.setViewportView(runningLabel);
 
+        buttonRefreshRunningText.setText(resourceMap.getString("buttonRefreshRunningText.text")); // NOI18N
+        buttonRefreshRunningText.setName("buttonRefreshRunningText"); // NOI18N
+        buttonRefreshRunningText.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRefreshRunningTextActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -365,7 +378,9 @@ public class FBoardParams extends javax.swing.JDialog {
                                         .addComponent(buttonColor))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(checkBoxDate)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 338, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 189, Short.MAX_VALUE)
+                                        .addComponent(buttonRefreshRunningText)
+                                        .addGap(18, 18, 18)
                                         .addComponent(buttonRun))))))
                     .addComponent(jLabel7)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -402,7 +417,9 @@ public class FBoardParams extends javax.swing.JDialog {
                             .addComponent(jLabel8)
                             .addComponent(textFieldFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(buttonColor)))
-                    .addComponent(buttonRun))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(buttonRun)
+                        .addComponent(buttonRefreshRunningText)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(textFieldPict, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -428,13 +445,14 @@ public class FBoardParams extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 private void textFieldRunningKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textFieldRunningKeyReleased
-
-    runningLabel.setRunningText(textFieldRunning.getText());
+    //runningLabel.stop();
+    //runningLabel.setRunningText(textFieldRunning.getText());
 }//GEN-LAST:event_textFieldRunningKeyReleased
 
 private void buttonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRunActionPerformed
 
     if (buttonRun.isSelected()) {
+        runningLabel.setRunningText(textFieldRunning.getText());
         runningLabel.start();
         buttonRun.setText(getLocaleMessage("dialog.stop"));
     } else {
@@ -478,10 +496,17 @@ private void buttonColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 private void textAreaHtmlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textAreaHtmlKeyReleased
     runningLabel.setText(textAreaHtml.getText());
 }//GEN-LAST:event_textAreaHtmlKeyReleased
+
+    private void buttonRefreshRunningTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRefreshRunningTextActionPerformed
+        if (!textFieldRunning.getText().isEmpty()) {
+            NetCommander.setRunningText(netProps, textFieldRunning.getText(), params.getName());
+        }
+    }//GEN-LAST:event_buttonRefreshRunningTextActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonColor;
     private javax.swing.JButton buttonOk;
+    private javax.swing.JButton buttonRefreshRunningText;
     private javax.swing.JToggleButton buttonRun;
     private javax.swing.JCheckBox checkBoxDate;
     private javax.swing.JLabel jLabel1;

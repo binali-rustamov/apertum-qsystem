@@ -217,7 +217,7 @@ public final class Executer {
                 QLog.l().logger().debug("Повторный вызов кастомера №" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + " пользователем " + cmdParams.userId);
 
                 // просигналим звуком
-                SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint());
+                SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), false);
 
                 //разослать оповещение о том, что посетитель вызван повторно
                 //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
@@ -275,7 +275,7 @@ public final class Executer {
             // он уже есть у юзера
             try {
                 // просигналим звуком
-                SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint());
+                SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
                 // сохраняем состояния очередей.
                 QServer.savePool();
                 //разослать оповещение о том, что появился вызванный посетитель
@@ -331,7 +331,7 @@ public final class Executer {
             try {
                 // просигналим звуком
                 //SoundPlayer.play("/ru/apertum/qsystem/server/sound/sound.wav");
-                SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint());
+                SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
                 // сохраняем состояния очередей.
                 QServer.savePool();
                 //разослать оповещение о том, что появился вызванный посетитель
@@ -1475,6 +1475,48 @@ public final class Executer {
         public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             MainBoard.getInstance().refresh();
+            return new JsonRPC20();
+        }
+    };
+    /**
+     * Изменить бегущий текст на табло
+     */
+    final Task refreshRunningText = new Task(Uses.TASK_CHANGE_RUNNING_TEXT_ON_BOARD) {
+
+        @Override
+        public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            if (MainBoard.getInstance() instanceof QIndicatorBoardMonitor) {
+                final QIndicatorBoardMonitor mon = (QIndicatorBoardMonitor) MainBoard.getInstance();
+                if (Uses.TAG_BOARD_TOP.equals(cmdParams.infoItemName)) {
+                    mon.indicatorBoard.getTopRunningLabel().stop();
+                    mon.indicatorBoard.getTopRunningLabel().setText("");
+                    mon.indicatorBoard.getTopRunningLabel().setShowTime(false);
+                    mon.indicatorBoard.getTopRunningLabel().setRunningText(cmdParams.textData);
+                    mon.indicatorBoard.getTopRunningLabel().start();
+                }
+                if (Uses.TAG_BOARD_LEFT.equals(cmdParams.infoItemName)) {
+                    mon.indicatorBoard.getLeftRunningLabel().stop();
+                    mon.indicatorBoard.getLeftRunningLabel().setText("");
+                    mon.indicatorBoard.getLeftRunningLabel().setShowTime(false);
+                    mon.indicatorBoard.getLeftRunningLabel().setRunningText(cmdParams.textData);
+                    mon.indicatorBoard.getLeftRunningLabel().start();
+                }
+                if (Uses.TAG_BOARD_RIGHT.equals(cmdParams.infoItemName)) {
+                    mon.indicatorBoard.getRightRunningLabel().stop();
+                    mon.indicatorBoard.getRightRunningLabel().setText("");
+                    mon.indicatorBoard.getRightRunningLabel().setShowTime(false);
+                    mon.indicatorBoard.getRightRunningLabel().setRunningText(cmdParams.textData);
+                    mon.indicatorBoard.getRightRunningLabel().start();
+                }
+                if (Uses.TAG_BOARD_BOTTOM.equals(cmdParams.infoItemName)) {
+                    mon.indicatorBoard.getBottomRunningLabel().stop();
+                    mon.indicatorBoard.getBottomRunningLabel().setText("");
+                    mon.indicatorBoard.getBottomRunningLabel().setShowTime(false);
+                    mon.indicatorBoard.getBottomRunningLabel().setRunningText(cmdParams.textData);
+                    mon.indicatorBoard.getBottomRunningLabel().start();
+                }
+            }
             return new JsonRPC20();
         }
     };

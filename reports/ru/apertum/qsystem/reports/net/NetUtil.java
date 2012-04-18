@@ -35,7 +35,7 @@ import ru.apertum.qsystem.common.exceptions.ReportException;
  */
 public class NetUtil {
 
-    private static HashMap<HttpRequest, String> map_ec = new HashMap<HttpRequest, String>();
+    private static HashMap<HttpRequest, String> map_ec = new HashMap<>();
 
     public static synchronized String getEntityContent(HttpRequest request) {
         String result = map_ec.get(request);
@@ -45,9 +45,7 @@ public class NetUtil {
                 HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
                 try {
                     result = EntityUtils.toString(entity);
-                } catch (IOException ex) {
-                    throw new ReportException(ex.toString());
-                } catch (ParseException ex) {
+                } catch (IOException | ParseException ex) {
                     throw new ReportException(ex.toString());
                 }
             } else {
@@ -68,7 +66,7 @@ public class NetUtil {
     }
 
     public static synchronized HashMap<String, String> getCookie(String data, String delimiter) {
-        final HashMap<String, String> res = new HashMap<String, String>();
+        final HashMap<String, String> res = new HashMap<>();
         final String[] ss = data.split(delimiter);
         for (String s : ss) {
             final String[] ss0 = s.split("=");
@@ -92,7 +90,7 @@ public class NetUtil {
 
     public static synchronized HashMap<String, String> getParameters(HttpRequest request) {
         final String method = request.getRequestLine().getMethod().toUpperCase(Locale.ENGLISH);
-        final HashMap<String, String> res = new HashMap<String, String>();
+        final HashMap<String, String> res = new HashMap<>();
         final String data;
         if (method.equals("GET")) {
             String[] ss = request.getRequestLine().getUri().split("\\?");

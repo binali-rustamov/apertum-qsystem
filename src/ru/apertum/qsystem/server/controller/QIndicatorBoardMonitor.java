@@ -87,7 +87,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             }
             // Определим форму нв монитор
             indicatorBoard.toPosition(QLog.l().isDebug(), Integer.parseInt(rootParams.attributeValue("x")), Integer.parseInt(rootParams.attributeValue("y")));
-            
+
             setLinesCount(indicatorBoard.getLinesCount());
             setPause(indicatorBoard.getPause());
             if (records.size() != 0) {
@@ -214,5 +214,11 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
         close();
         indicatorBoard = null;
         initIndicatorBoard();
+    }
+
+    @Override
+    public void clear() {
+        records.clear();
+        showOnBoard(new LinkedHashSet(records.values()));
     }
 }

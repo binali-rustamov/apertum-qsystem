@@ -133,7 +133,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         FInfoDialog.level = level;
         buttonPrint.setVisible(level.isLeaf() && level.getTextPrint() != null && !level.getTextPrint().isEmpty());
         if (level.isLeaf()) {
-            final JLabel label = new JLabel(level.getHTMLText());
+            final JLabel label = new JLabel(Uses.prepareAbsolutPathForImg(level.getHTMLText()));
             final GridBagLayout gl = new GridBagLayout();
             final GridBagConstraints c = new GridBagConstraints();
             gl.setConstraints(label, c);
@@ -201,7 +201,7 @@ public class FInfoDialog extends javax.swing.JDialog {
 
         public InfoButton(final QInfoItem el) {
             this.el = el;
-            setText(el.getHTMLText());
+            setText(Uses.prepareAbsolutPathForImg(el.getHTMLText()));
             setBorder(new EtchedBorder(EtchedBorder.LOWERED));
             addActionListener(new ActionListener() {
 
@@ -246,6 +246,7 @@ public class FInfoDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
+        setUndecorated(true);
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FInfoDialog.class);
         panelAll.setBackground(resourceMap.getColor("panelAll.background")); // NOI18N

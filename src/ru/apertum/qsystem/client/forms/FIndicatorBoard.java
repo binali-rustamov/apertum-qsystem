@@ -261,7 +261,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         label.setFont(font);
 
         // загрузим текст
-        label.setText(params.getTextTrim());
+        label.setText(Uses.prepareAbsolutPathForImg(params.getTextTrim()));
         label.setRunningText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RUNNING_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         if (!"".equals(label.getRunningText())) {
             label.setSpeedRunningText(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SPEED_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
@@ -522,7 +522,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         }
         if (!caps.isEmpty()) {
             for (JPanel cap : caps) {
-               panelMain.add(cap);
+                panelMain.add(cap);
             }
         }
         final Line[][] cels = new Line[linesCount][colsCount];
@@ -950,4 +950,20 @@ private void mouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mous
     private javax.swing.JSplitPane spRight;
     private javax.swing.JSplitPane spUp;
     // End of variables declaration//GEN-END:variables
+
+    public RunningLabel getTopRunningLabel() {
+        return rlTop;
+    }
+
+    public RunningLabel getLeftRunningLabel() {
+        return rlLeft;
+    }
+
+    public RunningLabel getRightRunningLabel() {
+        return rlRight;
+    }
+
+    public RunningLabel getBottomRunningLabel() {
+        return rlDown;
+    }
 }

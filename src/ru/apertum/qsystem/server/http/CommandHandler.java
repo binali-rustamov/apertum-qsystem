@@ -79,7 +79,7 @@ public class CommandHandler extends AbstractHandler {
                 if (data == null || data.isEmpty()) {
                     status = HttpServletResponse.SC_BAD_REQUEST;
                     result = "<h1>Не получен текст коменды по http.</h1>";
-                    QLog.l().logger().error("Не получен текст коменды по http..");
+                    QLog.l().logger().error("Не получен текст команды по http..");
                     break;
                 }
                 QLog.l().logger().trace("HTTP Задание:\n" + data);

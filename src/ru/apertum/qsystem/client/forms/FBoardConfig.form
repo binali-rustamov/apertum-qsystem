@@ -71,7 +71,7 @@
                       <Component id="labelUp" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                       <Component id="buttonTop" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="546" max="32767" attributes="0"/>
+                      <EmptySpace pref="548" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -88,7 +88,7 @@
                           </Group>
                           <Component id="checkBoxUp" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="119" max="32767" attributes="0"/>
+                      <EmptySpace pref="120" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -162,7 +162,7 @@
                           <Component id="labelDown" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="buttonDown" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="544" max="32767" attributes="0"/>
+                          <EmptySpace pref="546" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -179,7 +179,7 @@
                               </Group>
                               <Component id="checkBoxDown" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="122" max="32767" attributes="0"/>
+                          <EmptySpace pref="123" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -252,7 +252,7 @@
                                   <Component id="labelLeft" min="-2" max="-2" attributes="0"/>
                                   <Component id="checkBoxLeft" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="88" max="32767" attributes="0"/>
+                              <EmptySpace pref="90" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -337,7 +337,7 @@
                                       <Component id="labelRight" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="checkBoxRight" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="137" max="32767" attributes="0"/>
+                                  <EmptySpace pref="139" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -401,7 +401,7 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="buttonMain" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="258" max="32767" attributes="0"/>
+                                  <EmptySpace pref="260" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>

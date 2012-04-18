@@ -102,7 +102,7 @@ public class QButton extends JButton {
             setVisible(false);
             return;
         }
-        setText(service.getButtonText());
+        setText(Uses.prepareAbsolutPathForImg(service.getButtonText()));
         setSize(1, 1);
         if (service.isLeaf()) {
             setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/service.png")));

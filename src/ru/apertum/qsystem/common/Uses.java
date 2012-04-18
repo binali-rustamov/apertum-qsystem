@@ -38,11 +38,14 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
@@ -208,6 +211,7 @@ public final class Uses {
     public static final String TASK_GET_CLIENT_AUTHORIZATION = "Идентифицировать клиента";
     public static final String TASK_SET_CUSTOMER_PRIORITY = "Изменить приоритет";
     public static final String TASK_CHANGE_FLEX_PRIORITY = "Изменить гибкий приоритет";
+    public static final String TASK_CHANGE_RUNNING_TEXT_ON_BOARD = "Изменить бегущий текст на табло";
     // Формат отчетов
     public static final String REPORT_FORMAT_HTML = "html";
     public static final String REPORT_FORMAT_RTF = "rtf";
@@ -675,5 +679,25 @@ public final class Uses {
         g.setPaintMode();
         g.setColor(Color.BLACK);
         g.drawString("Loading " + comps[(frame / 5) % 3] + "...", 120, 150);
+    }
+
+    public static String prepareAbsolutPathForImg(String html) {
+        final Pattern pattern = Pattern.compile("<\\s*img\\s*src\\s*=\\s*'.*?'\\s*>");//<img src='file:///E:\WORK\apertum-qsystem\config\board\q.jpg'>
+        final Matcher matcher = pattern.matcher(html);
+        String res = html;
+        while (matcher.find()) {
+            String img = matcher.group();
+            img = img.substring(img.indexOf("'") + 1, img.lastIndexOf("'"));
+            if (img.startsWith("file:///")) {
+                continue;
+            }
+            final File f = new File(img);
+            if (f.isFile()) {
+                res = res.replace("'" + img + "'", "'file:///" + f.getAbsolutePath() + "'");
+            } else {
+                QLog.l().logger().error("Не найден файл \"" + img + "\" для HTML.");
+            }
+        }
+        return res;
     }
 }

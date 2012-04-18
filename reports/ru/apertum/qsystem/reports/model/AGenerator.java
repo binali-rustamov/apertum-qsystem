@@ -247,12 +247,12 @@ public abstract class AGenerator implements IGenerator {
                 // создадим файл со шрифтами если его нет
                 final File f = new File("tahoma.ttf");
                 if (!f.exists()) {
-                    FileOutputStream fo = new FileOutputStream(f);
-                    final InputStream inStream = getClass().getResourceAsStream("/ru/apertum/qsystem/reports/fonts/tahoma.ttf");
-                    final byte[] b = Uses.readInputStream(inStream);
-                    fo.write(b);
-                    fo.flush();
-                    fo.close();
+                    try (FileOutputStream fo = new FileOutputStream(f)) {
+                        final InputStream inStream = getClass().getResourceAsStream("/ru/apertum/qsystem/reports/fonts/tahoma.ttf");
+                        final byte[] b = Uses.readInputStream(inStream);
+                        fo.write(b);
+                        fo.flush();
+                    }
                 }
                 result = genPDF(jasperPrint);
                 dataType = "application/pdf";

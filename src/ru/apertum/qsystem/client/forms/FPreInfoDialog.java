@@ -86,9 +86,9 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             preInfoDialog = new FPreInfoDialog(parent, modal);
             preInfoDialog.setTitle(getLocaleMessage("dialog.title"));
         }
-        FPreInfoDialog.htmlText = htmlText;
+        FPreInfoDialog.htmlText = Uses.prepareAbsolutPathForImg(htmlText);
         FPreInfoDialog.printText = printText;
-        preInfoDialog.labelHtml.setText(htmlText);
+        preInfoDialog.labelHtml.setText(FPreInfoDialog.htmlText);
         FPreInfoDialog.result = false;
         Uses.setLocation(preInfoDialog);
         if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {

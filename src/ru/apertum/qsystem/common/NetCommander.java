@@ -1059,4 +1059,21 @@ public class NetCommander {
             throw new ClientException("Проблема с командой. ", ex);
         }
     }
+       /**
+     * Изменение бегущей строки на табло из админской проги
+     * @param netProperty параметры соединения с сервером
+     * @param text новая строка
+     */
+    public static void setRunningText(INetProperty netProperty, String text, String nameSection) {
+        QLog.l().logger().info("Получение описания авторизованного пользователя.");
+        // загрузим ответ
+        final CmdParams params = new CmdParams();
+        params.textData = text;
+        params.infoItemName = nameSection;
+        try {
+            send(netProperty, Uses.TASK_CHANGE_RUNNING_TEXT_ON_BOARD, params);
+        } catch (QException ex) {// вывод исключений
+            throw new ClientException("Проблема с командой. ", ex);
+        }
+    }
 }

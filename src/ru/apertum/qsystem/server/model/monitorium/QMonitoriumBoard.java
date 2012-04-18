@@ -74,4 +74,9 @@ public class QMonitoriumBoard extends AIndicatorBoard {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

@@ -87,5 +87,6 @@
         <!--dependency org="org.mortbay.jetty" name="servlet-api-3.0" rev="7.0.0pre2" conf="runtime->*" transitive="false"/-->
         <!--dependency org="org.apache.tomcat" name="servlet-api" rev="6.0.33" conf="runtime->*" transitive="false"/-->
         <dependency org="org.glassfish" name="javax.servlet" rev="3.0" conf="compile->*" transitive="false"/>
+        <dependency org="javax.mail" name="mail" rev="1.4.5" conf="compile->*" transitive="false"/>
     </dependencies>
 </ivy-module>

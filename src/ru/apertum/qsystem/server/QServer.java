@@ -23,6 +23,7 @@ import com.google.gson.annotations.SerializedName;
 import java.io.*;
 import java.net.*;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Properties;
@@ -32,6 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.CodepagePrintStream;
 import ru.apertum.qsystem.common.GsonPool;
+import ru.apertum.qsystem.common.Mailer;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
@@ -40,6 +42,7 @@ import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.reports.model.QReportsList;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.controller.Executer;
 import ru.apertum.qsystem.server.http.JettyRunner;
@@ -130,16 +133,41 @@ public class QServer extends Thread {
 
         if (!(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getStartTime()).equals(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getFinishTime())))) {
             /**
-             * Таймер, по которому будем Очистка всех услуг.
+             * Таймер, по которому будем Очистка всех услуг и рассылка спама с дневным отчетом.
              */
             ATalkingClock clearServices = new ATalkingClock(Uses.DELAY_CHECK_TO_LOCK, 0) {
 
                 @Override
                 public void run() {
-                    if (Uses.format_HH_mm.format(new Date()).equals(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getStartTime()))) {
+                    // это обнуление
+                    if (Uses.format_HH_mm.format(new Date(new Date().getTime() + 10 * 60 * 1000)).equals(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getStartTime()))) {
                         QLog.l().logger().info("Очистка всех услуг.");
                         // почистим все услуги от трупов кастомеров с прошлого дня
                         QServer.clearAllQueue();
+                    }
+
+                    // это рассылка дневного отчета
+                    if (("true".equalsIgnoreCase(Mailer.fetchConfig().getProperty("mailing")) || "1".equals(Mailer.fetchConfig().getProperty("mailing")))
+                            && Uses.format_HH_mm.format(new Date(new Date().getTime() - 30 * 60 * 1000)).equals(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getFinishTime()))) {
+                        QLog.l().logger().info("Рассылка дневного отчета.");
+                        // почистим все услуги от трупов кастомеров с прошлого дня
+                        for (QUser user : QUserList.getInstance().getItems()) {
+                            if (user.getReportAccess()) {
+                                final HashMap<String, String> p = new HashMap<>();
+                                p.put("date", Uses.format_dd_MM_yyyy.format(new Date()));
+                                final byte[] result = QReportsList.getInstance().generate(user, "/distribution_job_day.pdf", p);
+                                try {
+                                    try (FileOutputStream fos = new FileOutputStream("temp/distribution_job_day.pdf")) {
+                                        fos.write(result);
+                                        fos.flush();
+                                    }
+                                    Mailer.sendReporterMailAtFon("temp/distribution_job_day.pdf");
+                                } catch (Exception ex) {
+                                    QLog.l().logger().error("Какой-то облом с дневным отчетом", ex);
+                                }
+                                break;
+                            }
+                        }
                     }
                 }
             };
@@ -317,7 +345,7 @@ public class QServer extends Thread {
             } catch (IOException e) {
                 throw new ServerException("Ошибка при записи в поток: " + e.getStackTrace());
             }
-        } catch (Exception ex) {
+        } catch (ServerException | JsonParseException ex) {
             final StringBuilder sb = new StringBuilder("\nStackTrace:\n");
             for (StackTraceElement bag : ex.getStackTrace()) {
                 sb.append("    at ").append(bag.getClassName()).append(".").append(bag.getMethodName()).append("(").append(bag.getFileName()).append(":").append(bag.getLineNumber()).append(")\n");
@@ -346,7 +374,7 @@ public class QServer extends Thread {
         saveLock.lock();
         try {
             QLog.l().logger().info("Сохранение состояния.");
-            final LinkedList<QCustomer> backup = new LinkedList<QCustomer>();// создаем список сохраняемых кастомеров
+            final LinkedList<QCustomer> backup = new LinkedList<>();// создаем список сохраняемых кастомеров
 
             for (QService service : QServiceTree.getInstance().getNodes()) {
                 backup.addAll(service.getClients());
@@ -485,6 +513,10 @@ public class QServer extends Thread {
             QService.clearNextStNumber();
             service.freeCustomers();
         }
+
+        QPostponedList.getInstance().clear();
+        MainBoard.getInstance().clear();
+
 
         // Сотрем временные файлы
         deleteTempFile();

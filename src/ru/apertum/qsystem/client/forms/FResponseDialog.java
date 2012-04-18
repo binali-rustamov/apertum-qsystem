@@ -87,7 +87,7 @@ public class FResponseDialog extends javax.swing.JDialog {
         result = null;
         Uses.setLocation(respDialog);
         if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {
-            //Uses.setFullSize(standAdvance);
+            Uses.setFullSize(respDialog);
             int[] pixels = new int[16 * 16];
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
             Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "invisibleCursor");
@@ -149,6 +149,7 @@ public class FResponseDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
+        setUndecorated(true);
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FResponseDialog.class);
         panelAll.setBackground(resourceMap.getColor("panelAll.background")); // NOI18N

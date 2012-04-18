@@ -414,7 +414,7 @@ public class FWelcome extends javax.swing.JFrame {
      */
     private void loadRootParam() {
         FWelcome.caption = root.getName();
-        labelCaption.setText(Uses.prepareAbsolutPathForImg(root.getButtonText()));
+        labelCaption.setText(root.getButtonText());
         setStateWindow(UNLOCK);
         showButtons(root, panelMain);
     }
@@ -509,7 +509,7 @@ public class FWelcome extends javax.swing.JFrame {
         }
         if (current.getChildCount() > 10) {
             cols = 3;
-            rows = Math.round(new Float(0.3) + (float)current.getChildCount() / 3);
+            rows = Math.round(new Float(0.3) + current.getChildCount() / 3);
         }
 
         GridLayout la = new GridLayout(rows, cols, delta, delta / 2);

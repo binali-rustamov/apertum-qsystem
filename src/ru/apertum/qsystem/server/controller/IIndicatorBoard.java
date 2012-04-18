@@ -62,6 +62,11 @@ public interface IIndicatorBoard {
      * Включить информационное табло.
      */
     public void showBoard();
+    
+    /**
+     * Включить информационное табло.
+     */
+    public void clear();
 
     /**
      * Получить некую информацию о табло

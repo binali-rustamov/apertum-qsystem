@@ -16,13 +16,20 @@
  */
 package ru.apertum.qsystem.reports.model;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import javax.swing.ComboBoxModel;
+import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.message.BasicHttpEntityEnclosingRequest;
+import org.apache.http.message.BasicHttpRequest;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.exceptions.ReportException;
@@ -57,10 +64,10 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
 
     @Override
     protected LinkedList<QReport> load() {
-        final LinkedList<QReport> reports = new LinkedList<QReport>(Spring.getInstance().getHt().loadAll(QReport.class));
+        final LinkedList<QReport> reports = new LinkedList<>(Spring.getInstance().getHt().loadAll(QReport.class));
         QLog.l().logRep().debug("Загружено из базы " + reports.size() + " отчетов.");
 
-        passMap = new HashMap<String, String>();
+        passMap = new HashMap<>();
         htmlRepList = "";
         htmlUsersList = "";
         // добавим аналитические отчеты
@@ -116,7 +123,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
         return selected;
     }
     // задания, доступны по их ссылкам
-    private final static HashMap<String, IGenerator> generators = new HashMap<String, IGenerator>();
+    private final static HashMap<String, IGenerator> generators = new HashMap<>();
 
     private static void addGenerator(IGenerator generator) {
         generators.put(generator.getHref().toLowerCase(), generator);
@@ -192,6 +199,21 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
 
         QLog.l().logRep().info("Генерация завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
         return result;
+    }
+
+    public synchronized byte[] generate(QUser user, String uri, HashMap<String, String> params) {
+        final HttpEntityEnclosingRequest r = new BasicHttpEntityEnclosingRequest("POST", uri);
+        r.addHeader("Cookie", "username=" + user.getName() + "; password=" + user.getPassword());
+        final StringBuilder sb = new StringBuilder();
+        for (String st : params.keySet()) {
+            sb.append("&").append(st).append("=").append(params.get(st));
+        }
+        final InputStream is = new ByteArrayInputStream(sb.substring(1).getBytes());
+        final BasicHttpEntity b = new BasicHttpEntity();
+        b.setContent(is);
+        r.setEntity(b);
+        sb.setLength(0);
+        return generate(r).getData();
     }
 
     /**
