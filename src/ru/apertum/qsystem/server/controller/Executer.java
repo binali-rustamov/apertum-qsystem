@@ -271,16 +271,31 @@ public final class Executer {
             // кастомер переходит в состояние "приглашенности"
             customer.setState(customer.getState() == CustomerState.STATE_WAIT ? CustomerState.STATE_INVITED : CustomerState.STATE_INVITED_SECONDARY);
 
+            // вот тут посмотрим, нужно ли вызывать кастомера по табло.
+            // если его услуга без вызова(настраивается в параметрах услуги), то его не нужно звать,
+            // а стазу начать что-то делать.
+            // Например кастомера отправили на комплектование товара, при этом его не нужно звать, только скомплектовать товар и
+            // заредиректить на выдачу, вот на выдаче его и нужно звать.
+            if (customer.getService().getEnable().intValue() != 1) { // услуга не требует вызова
+                // Время старта работы с юзера с кастомером.
+                customer.setStartTime(new Date());
+                // кастомер переходит в состояние "Начала обработки" или "Продолжение работы"
+                customer.setState(user.getCustomer().getState() == CustomerState.STATE_INVITED ? CustomerState.STATE_WORK : CustomerState.STATE_WORK_SECONDARY);
+            }
+
+
             // если кастомер вызвался, то его обязательно отправить в ответ
             // он уже есть у юзера
             try {
-                // просигналим звуком
-                SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
                 // сохраняем состояния очередей.
                 QServer.savePool();
-                //разослать оповещение о том, что появился вызванный посетитель
-                // Должно высветитьсяна основном табло
-                MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
+                if (customer.getService().getEnable().intValue() == 1) { // услуга требует вызова
+                    // просигналим звуком
+                    SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
+                    //разослать оповещение о том, что появился вызванный посетитель
+                    // Должно высветитьсяна основном табло
+                    MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
+                }
                 //разослать оповещение о том, что посетителя вызвали, состояние очереди изменилось
                 //рассылаем широковещетельно по UDP на определенный порт
                 Uses.sendUDPBroadcast(customer.getService().getId().toString(), ServerProps.getInstance().getProps().getClientPort());
@@ -295,7 +310,7 @@ public final class Executer {
     final Task invitePostponedTask = new Task(Uses.TASK_INVITE_POSTPONED) {
 
         /**
-         * Cинхронизируем, ато вызовут одного и того же.
+         * Cинхронизируем, а то вызовут одного и того же.
          * А еще сдесь надо вызвать метод, который "проговорит" кого и куда вазвали.
          * Может случиться ситуация когда двое вызывают последнего кастомера, первому достанется, а второму нет.
          */

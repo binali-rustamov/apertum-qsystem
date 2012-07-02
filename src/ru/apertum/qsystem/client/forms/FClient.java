@@ -146,11 +146,13 @@ public final class FClient extends javax.swing.JFrame {
             case STATE_WORK: {
                 setBlinkBoard(false);
                 setKeyRegim(KEYS_STARTED);
+                buttonFinish.setEnabled(customer.getService().getEnable() == 1);
                 break;
             }
             case STATE_WORK_SECONDARY: {
                 setBlinkBoard(false);
                 setKeyRegim(KEYS_STARTED);
+                buttonFinish.setEnabled(customer.getService().getEnable() == 1);
                 break;
             }
             default: {

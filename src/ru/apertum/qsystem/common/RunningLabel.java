@@ -211,6 +211,11 @@ public class RunningLabel extends JLabel implements Serializable {
         }
         super.paint(g);
     }
+    
+    @Override
+    public void update(Graphics g) {
+      // не знаю зачем, попытка улучшить прорисовку, но не проверено как повлияло  paint(getGraphics());
+    }
 
     /**
      * Формирование картинки сдвинутой для эффекта смещения

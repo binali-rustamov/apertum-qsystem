@@ -569,11 +569,11 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     private void showServiceInfo(QService service) {
-        labelServiceInfo.setText("<html><body text=\"#336699\"> " + getLocaleMessage("service.service") + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>"
+        labelServiceInfo.setText("<html><body text=\"#336699\"> " +(service.getEnable()==1?"":"<font color=\"#FF0000\">!*** </font>") + getLocaleMessage("service.service") + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>"
                 + "<font color=\"#"
                 + (service.getStatus() == 1
                 ? "00AA00\">" + getLocaleMessage("service.kind.active")
-                : (service.getStatus() == 0 ? "CCAA00\">" + getLocaleMessage("service.kind.not_active") : "DD0000\">" + getLocaleMessage("service.kind.unavailable")))
+                 : (service.getStatus() == 0 ? "CCAA00\">" + getLocaleMessage("service.kind.not_active") : "DD0000\">" + getLocaleMessage("service.kind.unavailable"))) + "/" + service.getPoint()  
                 + "</font>"
                 + ";    " + getLocaleMessage("service.prefix") + ": " + "<font color=\"#DD0000\">" + service.getPrefix() + "</font>" + ";  " + getLocaleMessage("service.description") + ": " + service.getDescription()
                 + ";<br>" + getLocaleMessage("service.restrict_day_reg") + ": " + (service.getDayLimit() == 0 ? getLocaleMessage("service.work_calendar.no") : service.getDayLimit())

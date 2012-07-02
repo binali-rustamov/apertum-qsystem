@@ -149,6 +149,8 @@
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/board/video.mpg" targetdir="$INSTALL_PATH/config/board/"/>
+			<file src="../config/reporter.properties" targetdir="$INSTALL_PATH/config/"/>
+			<file src="../config/reporter.html" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../www/index.html" targetdir="$INSTALL_PATH/www/"/>
             <file os="windows" src="resource/txt/StartServer.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/server.sh" targetdir="$INSTALL_PATH"/>

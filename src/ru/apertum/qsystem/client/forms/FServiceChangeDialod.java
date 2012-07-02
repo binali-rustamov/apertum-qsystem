@@ -105,7 +105,9 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         сheckBoxInputRequired.setSelected(service.getInput_required());
         textFieldInputCaption.setText(service.getInput_caption());
         сheckBoxResultRequired.setSelected(service.getResult_required());
-        
+        checkBoxBackoffice.setSelected(service.getEnable().intValue() != 1);
+        spinnerPunktReg.setValue(service.getPoint());
+
         textAreaButtonCaptionKeyPressed(null);
         textAreaInfoHtmlKeyReleased(null);
     }
@@ -140,6 +142,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         service.setInput_required(сheckBoxInputRequired.isSelected());
         service.setInput_caption(textFieldInputCaption.getText());
         service.setResult_required(сheckBoxResultRequired.isSelected());
+        service.setEnable(checkBoxBackoffice.isSelected() ? 2 : 1);
+        service.setPoint((Integer)spinnerPunktReg.getModel().getValue());
         service.setPreInfoHtml(textAreaInfoHtml.getText());
         service.setPreInfoPrintText(textAreaTextPrint.getText());
     }
@@ -195,6 +199,9 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         textAreaInfoHtml = new javax.swing.JTextArea();
         jScrollPane5 = new javax.swing.JScrollPane();
         labelInfoDialog = new javax.swing.JLabel();
+        checkBoxBackoffice = new javax.swing.JCheckBox();
+        jLabel9 = new javax.swing.JLabel();
+        spinnerPunktReg = new javax.swing.JSpinner();
         panelButtons = new javax.swing.JPanel();
         buttonSave = new javax.swing.JButton();
         buttonCancel = new javax.swing.JButton();
@@ -540,6 +547,15 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel5.TabConstraints.tabTitle"), jPanel5); // NOI18N
 
+        checkBoxBackoffice.setText(resourceMap.getString("checkBoxBackoffice.text")); // NOI18N
+        checkBoxBackoffice.setName("checkBoxBackoffice"); // NOI18N
+
+        jLabel9.setText(resourceMap.getString("jLabel9.text")); // NOI18N
+        jLabel9.setName("jLabel9"); // NOI18N
+
+        spinnerPunktReg.setModel(new javax.swing.SpinnerNumberModel(0, 0, 99, 1));
+        spinnerPunktReg.setName("spinnerPunktReg"); // NOI18N
+
         javax.swing.GroupLayout panelPropsLayout = new javax.swing.GroupLayout(panelProps);
         panelProps.setLayout(panelPropsLayout);
         panelPropsLayout.setHorizontalGroup(
@@ -553,8 +569,14 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                         .addComponent(comboBoxEnabled, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel21)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(textFieldPrefix, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(checkBoxBackoffice)
                         .addGap(18, 18, 18)
-                        .addComponent(textFieldPrefix, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jLabel9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spinnerPunktReg, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(panelPropsLayout.createSequentialGroup()
                         .addComponent(jLabel22)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -578,7 +600,10 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                     .addComponent(comboBoxEnabled, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
                     .addComponent(jLabel21)
-                    .addComponent(textFieldPrefix, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(textFieldPrefix, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(checkBoxBackoffice)
+                    .addComponent(jLabel9)
+                    .addComponent(spinnerPunktReg, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelPropsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(textFieldServiceDescript, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -668,10 +693,10 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private void textAreaButtonCaptionKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textAreaButtonCaptionKeyPressed
         labelCaptionButton.setText(textAreaButtonCaption.getText());
     }//GEN-LAST:event_textAreaButtonCaptionKeyPressed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonSave;
+    private javax.swing.JCheckBox checkBoxBackoffice;
     private javax.swing.JComboBox comboBoxCalendar;
     private javax.swing.JComboBox comboBoxEnabled;
     private javax.swing.JComboBox comboBoxSchedule;
@@ -687,6 +712,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -711,6 +737,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JSpinner spinnerLimit;
     private javax.swing.JSpinner spinnerLimitForOnePerson;
     private javax.swing.JSpinner spinnerLimitPeriod;
+    private javax.swing.JSpinner spinnerPunktReg;
     private javax.swing.JTextArea textAreaButtonCaption;
     private javax.swing.JTextArea textAreaInfoHtml;
     private javax.swing.JTextArea textAreaTextPrint;

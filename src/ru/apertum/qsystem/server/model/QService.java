@@ -104,6 +104,9 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
     public final void setId(Long id) {
         this.id = id;
     }
+    /**
+     * Состояние услуги. 1 - доступна, 0 - недоступна, -1 - невидима.
+     */
     @Column(name = "status")
     @Expose
     @SerializedName("status")
@@ -111,6 +114,23 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
 
     public Integer getStatus() {
         return status;
+    }
+    /**
+     * Пунктов регистрации может быть много.
+     * Наборы кнопок на разных киосках могут быть разные.
+     * Указание для какого пункта регистрации услуга, 0-для всех, х-для киоска х.
+     */
+    @Column(name = "point")
+    @Expose
+    @SerializedName("point")
+    private Integer point = 0;
+
+    public Integer getPoint() {
+        return point;
+    }
+
+    public void setPoint(Integer point) {
+        this.point = point;
     }
 
     public final void setStatus(Integer status) {
@@ -169,11 +189,9 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
         this.advanceLimitPeriod = advanceLimitPeriod;
     }
     /**
-     * Удаленный или нет.
-     * Нельзя их из базы гасить чтоб констрейнты не поехали.
-     * 0 - удаленный
-     * 1 - действующий
-     *  Только для БД.
+     * Способ вызова клиента юзером
+     * 1 - стандартно
+     * 2 - backoffice, т.е. вызов следующего без табло и звука, запершение только редиректом
      */
     @Column(name = "enable")
     @Expose
@@ -752,13 +770,11 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
 
     @Override
     public void remove(int index) {
-        this.setEnable(0);
         this.childrenOfService.remove(index);
     }
 
     @Override
     public void remove(MutableTreeNode node) {
-        ((QService) node).setEnable(0);
         this.childrenOfService.remove((QService) node);
     }
 

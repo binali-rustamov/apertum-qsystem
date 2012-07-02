@@ -43,6 +43,7 @@ public class WelcomeParams {
     /**
      * Константы хранения параметров в файле.
      */
+    private static final String POINT = "point";
     private static final String LEFT_MARGIN = "left_margin";
     private static final String TOP_MARGIN = "top_margin";
     private static final String LINE_HEIGTH = "line_heigth";
@@ -56,6 +57,7 @@ public class WelcomeParams {
     private static final String DELAY_PRINT = "delay_print";
     private static final String DELAY_BACK = "delay_back";
     private static final String LOGO_IMG = "logo_img";
+    private static final String BACKGROUND_IMG = "background_img";
     private static final String PROMO_TXT = "promo_text";
     private static final String BOTTOM_TXT = "bottom_text";
     private static final String ASK_LIMIT = "ask_limit";
@@ -70,6 +72,7 @@ public class WelcomeParams {
     private WelcomeParams() {
         loadSettings();
     }
+    public int point; // указание для какого пункта регистрации услуга, 0-для всех, х-для киоска х.
     public int leftMargin; // отступ слева
     public int topMargin; // отступ сверху
     public int lineHeigth = 12; // Ширина строки
@@ -83,7 +86,8 @@ public class WelcomeParams {
     public boolean advance = true; // - кнопка предварительной записи на пункте регистрации
     public int logoLeft = 50; // Отступ печати логотипа слева
     public int logoTop = -5; // Отступ печати логотипа сверху
-    public String logoImg = "/ru/apertum/qsystem/client/forms/resources/logo_ticket.png"; // Отступ печати логотипа сверху
+    public String logoImg = "/ru/apertum/qsystem/client/forms/resources/logo_ticket.png"; // логотип сверху
+    public String backgroundImg = "/ru/apertum/qsystem/client/forms/resources/fon_welcome.jpg"; // фоновая картинка
     public String promoText = "Aperum projects, e-mail: info@aperum.ru"; // промотекст, печатающийся мелким шрифтом перед штрихкодом.
     public String bottomText = "\u041f\u0440\u0438\u044f\u0442\u043d\u043e\u0433\u043e \u043e\u0436\u0438\u0434\u0430\u043d\u0438\u044f. \u0421\u043f\u0430\u0441\u0438\u0431\u043e."; // произвольный текст, печатающийся в конце квитанции после штрихкода
     public int askLimit = 3; // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь
@@ -124,6 +128,7 @@ public class WelcomeParams {
         } catch (IOException ex) {
             throw new ClientException("\u041f\u0440\u043e\u0431\u043b\u0435\u043c\u044b \u0441 \u0447\u0442\u0435\u043d\u0438\u0435\u043c \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u043e\u0432. " + ex);
         }
+        point = settings.containsKey(POINT) ? Integer.parseInt(settings.getProperty(POINT)) : 1; // указание для какого пункта регистрации услуга, 0-для всех, х-для киоска х.
         leftMargin = Integer.parseInt(settings.getProperty(LEFT_MARGIN)); // отступ слева
         topMargin = Integer.parseInt(settings.getProperty(TOP_MARGIN)); //  отступ сверху
         lineHeigth = Integer.parseInt(settings.getProperty(LINE_HEIGTH)); // Ширина строки
@@ -137,6 +142,7 @@ public class WelcomeParams {
         delayPrint = Integer.parseInt(settings.getProperty(DELAY_PRINT)); // Задержка заставки при печати в мсек.
         delayBack = Integer.parseInt(settings.getProperty(DELAY_BACK)); // Задержка заставки при печати в мсек.
         logoImg = settings.getProperty(LOGO_IMG);
+        backgroundImg = settings.containsKey(BACKGROUND_IMG) ? settings.getProperty(BACKGROUND_IMG): "/ru/apertum/qsystem/client/forms/resources/fon_welcome.jpg";
         promoText = settings.getProperty(PROMO_TXT);
         bottomText = settings.getProperty(BOTTOM_TXT);
         askLimit = Integer.parseInt(settings.getProperty(ASK_LIMIT)); // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь

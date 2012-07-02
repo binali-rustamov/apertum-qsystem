@@ -495,32 +495,44 @@ public class FWelcome extends javax.swing.JFrame {
                 break;
             case 1920:
                 delta = 60;
-                break;    
+                break;
         }
         int cols = 3;
         int rows = 5;
-        if (current.getChildCount() < 4) {
+
+        // посмотрим сколько реальных кнопок нужно отобразить
+        // тут есть невидимые услуги и услуги не с того киоска
+        int childCount = 0;
+        for (QService service : current.getChildren()) {
+            if (service.getStatus() != -1 && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
+                childCount++;
+            }
+        }
+
+        if (childCount < 4) {
             cols = 1;
             rows = 3;
         }
-        if (current.getChildCount() > 3 && current.getChildCount() < 11) {
+        if (childCount > 3 && childCount < 11) {
             cols = 2;
-            rows = Math.round(new Float(current.getChildCount()) / 2);
+            rows = Math.round(new Float(childCount) / 2);
         }
-        if (current.getChildCount() > 10) {
+        if (childCount > 10) {
             cols = 3;
-            rows = Math.round(new Float(0.3) + (float)current.getChildCount() / 3);
+            rows = Math.round(new Float(0.3) + (float) childCount / 3);
         }
 
         GridLayout la = new GridLayout(rows, cols, delta, delta / 2);
         panel.setLayout(la);
         for (QService service : current.getChildren()) {
             final QButton button = new QButton(service, this, panelMain, "");
-            if (button.isIsVisible()) {
+            if (button.isIsVisible() && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
                 panel.add(button);
             }
         }
         setVisible(true);
+        buttonBack.setVisible(current != root);
+        buttonToBegin.setVisible(current != root);
     }
 
     public void clearPanel(JPanel panel) {
@@ -947,8 +959,8 @@ public class FWelcome extends javax.swing.JFrame {
     }
 
     public void setVisibleButtons(boolean visible) {
-        buttonBack.setVisible(visible);
-        buttonToBegin.setVisible(visible);
+        buttonBack.setVisible(visible && current != root);
+        buttonToBegin.setVisible(visible && current != root);
 
         buttonStandAdvance.setVisible(WelcomeParams.getInstance().advance && visible);
         buttonAdvance.setVisible(WelcomeParams.getInstance().advance && visible);
@@ -1058,7 +1070,7 @@ public class FWelcome extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panelBackground = new QPanel("/ru/apertum/qsystem/client/forms/resources/fon_welcome.jpg");
+        panelBackground = new QPanel(WelcomeParams.getInstance().backgroundImg);
         panelCaption = new javax.swing.JPanel();
         labelCaption = new javax.swing.JLabel();
         panelButtons = new javax.swing.JPanel();
@@ -1094,7 +1106,7 @@ public class FWelcome extends javax.swing.JFrame {
         panelCaption.setLayout(panelCaptionLayout);
         panelCaptionLayout.setHorizontalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 940, Short.MAX_VALUE)
+            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1001, Short.MAX_VALUE)
         );
         panelCaptionLayout.setVerticalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1167,11 +1179,11 @@ public class FWelcome extends javax.swing.JFrame {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 835, Short.MAX_VALUE)
+            .addGap(0, 896, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 371, Short.MAX_VALUE)
+            .addGap(0, 422, Short.MAX_VALUE)
         );
 
         panelLock.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1188,14 +1200,14 @@ public class FWelcome extends javax.swing.JFrame {
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 835, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 896, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelLockLayout.setVerticalGroup(
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1242,12 +1254,12 @@ public class FWelcome extends javax.swing.JFrame {
             panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelCentreLayout.createSequentialGroup()
                 .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(panelCentreLayout.createSequentialGroup()
-                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
+                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
+                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout panelBackgroundLayout = new javax.swing.GroupLayout(panelBackground);
@@ -1258,7 +1270,7 @@ public class FWelcome extends javax.swing.JFrame {
             .addComponent(panelCentre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelBackgroundLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 922, Short.MAX_VALUE)
+                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 983, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelBackgroundLayout.setVerticalGroup(
@@ -1268,7 +1280,8 @@ public class FWelcome extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelCentre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(panelButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
