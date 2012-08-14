@@ -34,6 +34,11 @@
             <spec txt="RMI port:" id="clnPort" layout="N:6:6" set="0:3129"/>
             <validator class="com.izforge.izpack.util.NotEmptyValidator" txt="Invalid Port"/>
         </field>
+		
+		<field type="staticText" align="left" txt="Client point settings" id="requestClient"/>
+        <field type="rule" variable="clientPoint">
+            <spec txt="RMI point:" id="clnPoint" layout="N:4:4" set=""/>
+        </field>
 
     </panel>
 </userInput>

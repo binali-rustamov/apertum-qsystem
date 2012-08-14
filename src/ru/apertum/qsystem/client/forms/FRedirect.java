@@ -16,9 +16,13 @@
  */
 package ru.apertum.qsystem.client.forms;
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.HashMap;
+import java.util.LinkedList;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.tree.TreeNode;
@@ -28,7 +32,9 @@ import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.model.JTreeComboBox;
 import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.server.model.ATreeModel;
 import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
@@ -88,23 +94,60 @@ public class FRedirect extends JDialog {
         if (service == null) {
             throw new ClientException("Невозможно получить список предлагаемых услуг.");
         }
+        final LinkedList<QService> list = new LinkedList<>();
         QServiceTree.sailToStorm(service, new ISailListener() {
 
             @Override
             public void actionPerformed(TreeNode service) {
-                if (service.isLeaf()) {
-                    comboBoxServices.addItem(((QService)service).getName());
-                    ids.put(((QService)service).getName(), ((QService)service).getId());
+                list.add((QService) service);
+            }
+        });
+        ServiceTreeModel.list = list;
+        comboBoxServices = new JTreeComboBox(new ServiceTreeModel());
+        // cmp.setSize(250, 24);
+        panelTreeCmbx.setLayout(new GridLayout(1, 1));
+        panelTreeCmbx.add(comboBoxServices);
+
+        for (QService qService : list) {
+            if (qService.isLeaf()) {
+                comboBoxServices.setSelectedItem(qService);
+                lastSelected = qService;
+                break;
+            }
+        }
+
+        comboBoxServices.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (((QService) e.getItem()).isLeaf()) {
+                    lastSelected = (QService) e.getItem();
+                } else {
+                    comboBoxServices.setSelectedItem(lastSelected);
                 }
             }
         });
 
-        comboBoxServices.setSelectedIndex(0);
 
         setLocation(Math.round(owner.getLocation().x + owner.getWidth() / 2 - getWidth() / 2),
                 Math.round(owner.getLocation().y + owner.getHeight() / 2 - getHeight() / 2));
     }
+    final JTreeComboBox comboBoxServices;
+    private QService lastSelected = null;
 
+    private static final class ServiceTreeModel extends ATreeModel<QService> {
+
+        public static LinkedList<QService> list;
+
+        public ServiceTreeModel() {
+            super();
+        }
+
+        @Override
+        protected LinkedList<QService> load() {
+            return list;
+        }
+    }
     private final HashMap<String, Long> ids = new HashMap<>();
 
     /**
@@ -133,8 +176,8 @@ public class FRedirect extends JDialog {
         return ok ? servicesForm : null;
     }
 
-    public long getServiceId() {
-        return ids.get((String)servicesForm.comboBoxServices.getSelectedItem());
+    public QService getSelectedService() {
+        return (QService) comboBoxServices.getSelectedItem();
     }
 
     public boolean getRequestBack() {
@@ -157,12 +200,11 @@ public class FRedirect extends JDialog {
         buttonOk = new javax.swing.JButton();
         buttonCancel = new javax.swing.JButton();
         checkBoxBack = new javax.swing.JCheckBox();
-        comboBoxServices = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         textAreaTempComments = new javax.swing.JTextArea();
+        panelTreeCmbx = new javax.swing.JPanel();
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FRedirect.class);
         setTitle(resourceMap.getString("Form.title")); // NOI18N
@@ -177,14 +219,8 @@ public class FRedirect extends JDialog {
         checkBoxBack.setText(resourceMap.getString("checkBoxBack.text")); // NOI18N
         checkBoxBack.setName("checkBoxBack"); // NOI18N
 
-        comboBoxServices.setName("comboBoxServices"); // NOI18N
-
         jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
         jLabel1.setName("jLabel1"); // NOI18N
-
-        jLabel2.setIcon(resourceMap.getIcon("jLabel2.icon")); // NOI18N
-        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
-        jLabel2.setName("jLabel2"); // NOI18N
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel1.border.title"))); // NOI18N
         jPanel1.setName("jPanel1"); // NOI18N
@@ -206,7 +242,21 @@ public class FRedirect extends JDialog {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
+        );
+
+        panelTreeCmbx.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        panelTreeCmbx.setName("panelTreeCmbx"); // NOI18N
+
+        javax.swing.GroupLayout panelTreeCmbxLayout = new javax.swing.GroupLayout(panelTreeCmbx);
+        panelTreeCmbx.setLayout(panelTreeCmbxLayout);
+        panelTreeCmbxLayout.setHorizontalGroup(
+            panelTreeCmbxLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 428, Short.MAX_VALUE)
+        );
+        panelTreeCmbxLayout.setVerticalGroup(
+            panelTreeCmbxLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 26, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -216,30 +266,28 @@ public class FRedirect extends JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(checkBoxBack)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel1))
+                    .addComponent(jLabel1)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(buttonOk)
-                        .addGap(18, 18, 18)
-                        .addComponent(buttonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(comboBoxServices, 0, 432, Short.MAX_VALUE))
-                .addContainerGap())
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(panelTreeCmbx, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(checkBoxBack, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(buttonOk)
+                                .addGap(18, 18, 18)
+                                .addComponent(buttonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
+                .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboBoxServices, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panelTreeCmbx, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(32, 32, 32)
@@ -258,11 +306,10 @@ public class FRedirect extends JDialog {
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonOk;
     private javax.swing.JCheckBox checkBoxBack;
-    private javax.swing.JComboBox comboBoxServices;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel panelTreeCmbx;
     private javax.swing.JTextArea textAreaTempComments;
     // End of variables declaration//GEN-END:variables
 }

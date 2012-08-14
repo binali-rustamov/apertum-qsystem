@@ -68,6 +68,7 @@ public class WelcomeParams {
     private static final String NUMERIC_KEYBOARD = "numeric_keyboard";// - цифровая клавиатура при вводе юзерской инфы
     private static final String ALPHABETIC_KEYBOARD = "alphabetic_keyboard";// - буквенная клавиатура при вводе юзерской инфы
     private static final String INPUT_FONT_SIZE = "input_font_size";// - размер шрифта вводимого текста клиентом
+    private static final String LINES_BUTTON_COUNT = "lines_button_count";// - количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
 
     private WelcomeParams() {
         loadSettings();
@@ -92,6 +93,7 @@ public class WelcomeParams {
     public String bottomText = "\u041f\u0440\u0438\u044f\u0442\u043d\u043e\u0433\u043e \u043e\u0436\u0438\u0434\u0430\u043d\u0438\u044f. \u0421\u043f\u0430\u0441\u0438\u0431\u043e."; // произвольный текст, печатающийся в конце квитанции после штрихкода
     public int askLimit = 3; // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь
     public int pageLinesCount = 30; // Количество строк на странице.
+    public int linesButtonCount = 5; // количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
     /**
      * Задержка заставки при печати в мсек.
      */
@@ -147,6 +149,7 @@ public class WelcomeParams {
         bottomText = settings.getProperty(BOTTOM_TXT);
         askLimit = Integer.parseInt(settings.getProperty(ASK_LIMIT)); // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь
         pageLinesCount = settings.getProperty(PAGE_LINES_COUNT) == null ? 70 : Integer.parseInt(settings.getProperty(PAGE_LINES_COUNT)); // Количество строк на странице
+        linesButtonCount = settings.getProperty(LINES_BUTTON_COUNT) == null ? 5 : Integer.parseInt(settings.getProperty(LINES_BUTTON_COUNT)); // количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
         buttons_COM = settings.getProperty("buttons_COM");
         buttons_databits = Integer.parseInt(settings.getProperty("buttons_databits"));
         buttons_speed = Integer.parseInt(settings.getProperty("buttons_speed"));

@@ -1181,8 +1181,8 @@ public class FAdmin extends javax.swing.JFrame {
         treeInfo.scrollPathToVisible(path);
         treeInfo.setSelectionPath(path);
         textFieldInfoItemName.setEnabled(true);
-        textPaneInfoItem.setEnabled(true);
-        textPaneInfoPrint.setEnabled(true);
+        //textPaneInfoItem.setEnabled(true);
+        //textPaneInfoPrint.setEnabled(true);
 
         QLog.l().logger().debug("Добавлен инфоузел \"" + infoName + "\" в группу \"" + parentItem.getName() + "\"");
     }
@@ -2624,7 +2624,6 @@ public class FAdmin extends javax.swing.JFrame {
         jScrollPane9.setName("jScrollPane9"); // NOI18N
 
         textPaneInfoItem.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("textPaneInfoItem.border.title"))); // NOI18N
-        textPaneInfoItem.setEnabled(false);
         textPaneInfoItem.setName("textPaneInfoItem"); // NOI18N
         textPaneInfoItem.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -2657,7 +2656,6 @@ public class FAdmin extends javax.swing.JFrame {
         );
 
         textFieldInfoItemName.setText(resourceMap.getString("textFieldInfoItemName.text")); // NOI18N
-        textFieldInfoItemName.setEnabled(false);
         textFieldInfoItemName.setName("textFieldInfoItemName"); // NOI18N
         textFieldInfoItemName.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -3195,22 +3193,22 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel16Layout.createSequentialGroup()
                 .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel16Layout.createSequentialGroup()
-                        .addGap(9, 9, 9)
-                        .addComponent(jLabel11))
-                    .addGroup(jPanel16Layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(spinnerFirstNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(spinnerLastNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel12))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel22, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel20, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE))
-                .addContainerGap())
-            .addGroup(jPanel16Layout.createSequentialGroup()
-                .addComponent(jPanel21, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+                        .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel16Layout.createSequentialGroup()
+                                .addGap(9, 9, 9)
+                                .addComponent(jLabel11))
+                            .addGroup(jPanel16Layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(spinnerFirstNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(spinnerLastNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel12))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel22, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel20, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)))
+                    .addComponent(jPanel21, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -3672,14 +3670,14 @@ private void buttonRestartServerActionPerformed(java.awt.event.ActionEvent evt) 
 
 private void textFieldInfoItemNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textFieldInfoItemNameKeyReleased
     final QInfoItem item = (QInfoItem) treeInfo.getLastSelectedPathComponent();
-    if (item != null && !item.isRoot()) {
+    if (item != null/* && !item.isRoot()*/) {
         item.setName(textFieldInfoItemName.getText());
     }
 }//GEN-LAST:event_textFieldInfoItemNameKeyReleased
 
 private void textPaneInfoItemKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textPaneInfoItemKeyReleased
     final QInfoItem item = (QInfoItem) treeInfo.getLastSelectedPathComponent();
-    if (item != null && !item.isRoot()) {
+    if (item != null/* && !item.isRoot()*/) {
         item.setHTMLText(textPaneInfoItem.getText());
         labelInfoItem.setText(textPaneInfoItem.getText());
     }
@@ -3688,9 +3686,9 @@ private void textPaneInfoItemKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIR
 private void treeInfoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeInfoMouseClicked
     final QInfoItem item = (QInfoItem) treeInfo.getLastSelectedPathComponent();
     if (item != null) {
-        textFieldInfoItemName.setEnabled(!item.isRoot());
-        textPaneInfoItem.setEnabled(!item.isRoot());
-        textPaneInfoPrint.setEnabled(!item.isRoot());
+        //textFieldInfoItemName.setEnabled(!item.isRoot());
+        //textPaneInfoItem.setEnabled(!item.isRoot());
+        //textPaneInfoPrint.setEnabled(!item.isRoot());
     }
 }//GEN-LAST:event_treeInfoMouseClicked
 
@@ -3768,7 +3766,7 @@ private void tableCalendarFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRS
 
 private void textPaneInfoPrintKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textPaneInfoPrintKeyReleased
     final QInfoItem item = (QInfoItem) treeInfo.getLastSelectedPathComponent();
-    if (item != null && !item.isRoot()) {
+    if (item != null /*&& !item.isRoot()*/) {
         item.setTextPrint(textPaneInfoPrint.getText());
     }
 }//GEN-LAST:event_textPaneInfoPrintKeyReleased

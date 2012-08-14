@@ -33,6 +33,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.dom4j.Element;
 import org.dom4j.Node;
+import org.dom4j.tree.DefaultElement;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
@@ -173,6 +174,29 @@ public class FBoardParams extends javax.swing.JDialog {
         spinnerSpeed.setValue(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SPEED_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
         runningLabel.setSpeedRunningText((Integer) spinnerSpeed.getValue());
         checkBoxDate.setSelected("1".equals(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SIMPLE_DATE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+        if (!Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT).isEmpty()) {
+            checkBoxGridNext.setSelected("1".equals(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+            spinnerGridNextCols.setValue(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_COLS).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+            spinnerGridNextRows.setValue(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_ROWS).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+        } else {
+            Element n = new DefaultElement(Uses.TAG_BOARD_PROP);
+            n.addAttribute(Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT);
+            n.addAttribute(Uses.TAG_BOARD_TYPE, "" + Uses.BOARD_TYPE_BOOL);
+            n.addAttribute(Uses.TAG_BOARD_VALUE, "0");
+            params.add(n);
+
+            n = new DefaultElement(Uses.TAG_BOARD_PROP);
+            n.addAttribute(Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_COLS);
+            n.addAttribute(Uses.TAG_BOARD_TYPE, "" + Uses.BOARD_TYPE_INT);
+            n.addAttribute(Uses.TAG_BOARD_VALUE, "1");
+            params.add(n);
+
+            n = new DefaultElement(Uses.TAG_BOARD_PROP);
+            n.addAttribute(Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_ROWS);
+            n.addAttribute(Uses.TAG_BOARD_TYPE, "" + Uses.BOARD_TYPE_INT);
+            n.addAttribute(Uses.TAG_BOARD_VALUE, "5");
+            params.add(n);
+        }
         runningLabel.setShowTime(checkBoxDate.isSelected());
         this.params = params;
     }
@@ -200,6 +224,9 @@ public class FBoardParams extends javax.swing.JDialog {
             Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SPEED_TEXT).get(0).addAttribute(Uses.TAG_BOARD_VALUE, String.valueOf((Integer) spinnerSpeed.getValue()));
             Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR).get(0).addAttribute(Uses.TAG_BOARD_VALUE, textFieldFontColor.getText());
             Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SIMPLE_DATE).get(0).addAttribute(Uses.TAG_BOARD_VALUE, checkBoxDate.isSelected() ? "1" : "0");
+            Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT).get(0).addAttribute(Uses.TAG_BOARD_VALUE, checkBoxGridNext.isSelected() ? "1" : "0");
+            Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_COLS).get(0).addAttribute(Uses.TAG_BOARD_VALUE, String.valueOf((Integer) spinnerGridNextCols.getValue()));
+            Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_ROWS).get(0).addAttribute(Uses.TAG_BOARD_VALUE, String.valueOf((Integer) spinnerGridNextRows.getValue()));
 
         }
     }
@@ -236,6 +263,11 @@ public class FBoardParams extends javax.swing.JDialog {
         jScrollPane2 = new javax.swing.JScrollPane();
         runningLabel = new ru.apertum.qsystem.common.RunningLabel();
         buttonRefreshRunningText = new javax.swing.JButton();
+        checkBoxGridNext = new javax.swing.JCheckBox();
+        jLabel3 = new javax.swing.JLabel();
+        spinnerGridNextCols = new javax.swing.JSpinner();
+        jLabel9 = new javax.swing.JLabel();
+        spinnerGridNextRows = new javax.swing.JSpinner();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -345,55 +377,85 @@ public class FBoardParams extends javax.swing.JDialog {
             }
         });
 
+        checkBoxGridNext.setText(resourceMap.getString("checkBoxGridNext.text")); // NOI18N
+        checkBoxGridNext.setName("checkBoxGridNext"); // NOI18N
+        checkBoxGridNext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkBoxGridNextActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
+        jLabel3.setName("jLabel3"); // NOI18N
+
+        spinnerGridNextCols.setModel(new javax.swing.SpinnerNumberModel(1, 1, 10, 1));
+        spinnerGridNextCols.setName("spinnerGridNextCols"); // NOI18N
+
+        jLabel9.setText(resourceMap.getString("jLabel9.text")); // NOI18N
+        jLabel9.setName("jLabel9"); // NOI18N
+
+        spinnerGridNextRows.setModel(new javax.swing.SpinnerNumberModel(1, 1, 10, 1));
+        spinnerGridNextRows.setName("spinnerGridNextRows"); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 670, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(checkBoxGridNext)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spinnerGridNextCols, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spinnerGridNextRows, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(checkBoxDate, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(buttonOk)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buttonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(textFieldRunning, javax.swing.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                            .addComponent(textFieldRunning, javax.swing.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(spinnerFontSize, javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(spinnerSpeed, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addGroup(layout.createSequentialGroup()
+                                        .addGap(18, 18, 18)
                                         .addComponent(jLabel8)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(textFieldFontColor, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(buttonColor))
+                                        .addComponent(buttonColor)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 234, Short.MAX_VALUE))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(checkBoxDate)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 189, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(buttonRefreshRunningText)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(buttonRun))))))
-                    .addComponent(jLabel7)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addGap(31, 31, 31)
-                        .addComponent(textFieldPict, javax.swing.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(18, 18, 18)))
+                                .addComponent(buttonRun))))
+                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 670, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel6))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(textFieldVideo, javax.swing.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE))
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel5))
+                        .addGap(9, 9, 9)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(textFieldPict, javax.swing.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE)
+                            .addComponent(textFieldVideo, javax.swing.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -408,8 +470,7 @@ public class FBoardParams extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
-                            .addComponent(spinnerSpeed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(checkBoxDate))
+                            .addComponent(spinnerSpeed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel7)
@@ -421,6 +482,15 @@ public class FBoardParams extends javax.swing.JDialog {
                         .addComponent(buttonRun)
                         .addComponent(buttonRefreshRunningText)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(checkBoxDate)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(checkBoxGridNext)
+                    .addComponent(jLabel3)
+                    .addComponent(spinnerGridNextCols, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9)
+                    .addComponent(spinnerGridNextRows, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(textFieldPict, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
@@ -431,7 +501,7 @@ public class FBoardParams extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -464,6 +534,9 @@ private void buttonRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 private void checkBoxDateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxDateActionPerformed
 
     runningLabel.setShowTime(checkBoxDate.isSelected());
+    if (checkBoxDate.isSelected()) {
+        checkBoxGridNext.setSelected(!checkBoxDate.isSelected());
+    }
 
 }//GEN-LAST:event_checkBoxDateActionPerformed
 
@@ -498,10 +571,16 @@ private void textAreaHtmlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
 }//GEN-LAST:event_textAreaHtmlKeyReleased
 
     private void buttonRefreshRunningTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRefreshRunningTextActionPerformed
-        if (!textFieldRunning.getText().isEmpty()) {
+        if (!textFieldRunning.getText().isEmpty() && netProps != null) {
             NetCommander.setRunningText(netProps, textFieldRunning.getText(), params.getName());
         }
     }//GEN-LAST:event_buttonRefreshRunningTextActionPerformed
+
+    private void checkBoxGridNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxGridNextActionPerformed
+        if (checkBoxGridNext.isSelected()) {
+            checkBoxDate.setSelected(!checkBoxGridNext.isSelected());
+        }
+    }//GEN-LAST:event_checkBoxGridNextActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonColor;
@@ -509,17 +588,22 @@ private void textAreaHtmlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
     private javax.swing.JButton buttonRefreshRunningText;
     private javax.swing.JToggleButton buttonRun;
     private javax.swing.JCheckBox checkBoxDate;
+    private javax.swing.JCheckBox checkBoxGridNext;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private ru.apertum.qsystem.common.RunningLabel runningLabel;
     private javax.swing.JSpinner spinnerFontSize;
+    private javax.swing.JSpinner spinnerGridNextCols;
+    private javax.swing.JSpinner spinnerGridNextRows;
     private javax.swing.JSpinner spinnerSpeed;
     private javax.swing.JTextArea textAreaHtml;
     private javax.swing.JTextField textFieldFontColor;

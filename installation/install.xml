@@ -113,7 +113,7 @@
 			<file src="i18n/license-gpl3-rus.txt" targetdir="$INSTALL_PATH/license/"/>
 			<file src="i18n/license-gpl3-ukr.txt" targetdir="$INSTALL_PATH/license/"/>
 			<file type="properties" src="../config/langs.properties" targetdir="$INSTALL_PATH/config/"/>
-			<fileset dir="../config/board" includes="*.jpg,*.gif,*.png" targetdir="$INSTALL_PATH/config/board/"/>
+			<fileset dir="../config/board" includes="*.jpg,*.gif,*.png,*.mpg" targetdir="$INSTALL_PATH/config/board/"/>
             <file os="windows" src="D:/Files/Downloads/jmf-2_1_1e-windows-i586.exe" targetdir="$INSTALL_PATH/JMF"/>
             <!-- file os="unix" src="D:/Distrib/JMF/jmf-2_1_1e-linux-i586.bin" targetdir="$INSTALL_PATH/JMF"/ -->
             <!--executable os="windows" targetfile="$INSTALL_PATH/JMF/jmf-2_1_1e-windows-i586.exe" stage="postinstall"/-->
@@ -148,7 +148,6 @@
             <file src="../db/qsystem.sql" targetdir="$INSTALL_PATH/DB/"/>
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
-			<file src="../config/board/video.mpg" targetdir="$INSTALL_PATH/config/board/"/>
 			<file src="../config/reporter.properties" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/reporter.html" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../www/index.html" targetdir="$INSTALL_PATH/www/"/>

@@ -95,7 +95,7 @@ public class FWelcome extends javax.swing.JFrame {
 
     private static ResourceMap localeMap = null;
 
-    private static String getLocaleMessage(String key) {
+    public static String getLocaleMessage(String key) {
         if (localeMap == null) {
             localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FWelcome.class);
         }
@@ -107,6 +107,7 @@ public class FWelcome extends javax.swing.JFrame {
     public static final String OFF = "Выключен";
     public static String LOCK_MESSAGE = "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>" + getLocaleMessage("messages.lock_messages") + "</span></b></p>";
     public static QService root;
+    public static int pageNumber = 0;// на одном уровне может понадобиться листать услуги, не то они расползуться. Это вместо скрола.
     /**
      * XML-список отзывов. перврначально null, грузится при первом обращении. Использовать через геттер.
      */
@@ -470,6 +471,9 @@ public class FWelcome extends javax.swing.JFrame {
     public void showButtons(QService current, JPanel panel) {
 
         QLog.l().logger().info("Показываем набор кнопок уровня: " + current.getName());
+        if (current != FWelcome.current) { // если смена уровней то страница уровня становится нулевая
+            pageNumber = 0;
+        }
         if (current != root && current.getParent() == null) {
             current.setParent(FWelcome.current);
         }
@@ -522,14 +526,34 @@ public class FWelcome extends javax.swing.JFrame {
             rows = Math.round(new Float(0.3) + (float) childCount / 3);
         }
 
-        GridLayout la = new GridLayout(rows, cols, delta, delta / 2);
+        // поправка на то что если кнопок на уровне много и они уже в три колонки, то задействуем ограничение по линиям, а то расползутся
+        if (rows > WelcomeParams.getInstance().linesButtonCount && cols >= 3) {
+            rows = WelcomeParams.getInstance().linesButtonCount;
+            panelForPaging.setVisible(true);
+        } else {
+            panelForPaging.setVisible(false);
+        }
+
+        final GridLayout la = new GridLayout(rows, cols, delta, delta / 2);
         panel.setLayout(la);
+        int i = 0;
         for (QService service : current.getChildren()) {
+            boolean f = true;
+            if (i / (cols * rows) != pageNumber) { // смотрим каая страница из текущего уровня отображается
+                f = false;
+            }
+
             final QButton button = new QButton(service, this, panelMain, "");
             if (button.isIsVisible() && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
-                panel.add(button);
+                if (f) {
+                    panel.add(button);
+                    buttonForwardPage.setEnabled((i + 1) != childCount); // это чтоб кнопки листания небыли доступны когда листать дальше некуда
+                }
+                i++;
             }
         }
+        buttonBackPage.setEnabled(pageNumber > 0); // это чтоб кнопки листания небыли доступны когда листать дальше некуда
+
         setVisible(true);
         buttonBack.setVisible(current != root);
         buttonToBegin.setVisible(current != root);
@@ -1084,6 +1108,11 @@ public class FWelcome extends javax.swing.JFrame {
         labelLock = new javax.swing.JLabel();
         buttonInfo = new javax.swing.JButton();
         buttonResponse = new javax.swing.JButton();
+        panelForPaging = new javax.swing.JPanel();
+        buttonBackPage = new javax.swing.JButton();
+        buttonForwardPage = new javax.swing.JButton();
+        labelBackPage = new javax.swing.JLabel();
+        labelForwardPage = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FWelcome.class);
@@ -1106,7 +1135,7 @@ public class FWelcome extends javax.swing.JFrame {
         panelCaption.setLayout(panelCaptionLayout);
         panelCaptionLayout.setHorizontalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1001, Short.MAX_VALUE)
+            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1000, Short.MAX_VALUE)
         );
         panelCaptionLayout.setVerticalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1179,11 +1208,11 @@ public class FWelcome extends javax.swing.JFrame {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 896, Short.MAX_VALUE)
+            .addGap(0, 895, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 422, Short.MAX_VALUE)
+            .addGap(0, 353, Short.MAX_VALUE)
         );
 
         panelLock.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1200,14 +1229,14 @@ public class FWelcome extends javax.swing.JFrame {
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 896, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 895, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelLockLayout.setVerticalGroup(
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1257,9 +1286,72 @@ public class FWelcome extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(panelCentreLayout.createSequentialGroup()
-                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
+                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
+        );
+
+        panelForPaging.setBorder(new javax.swing.border.MatteBorder(null));
+        panelForPaging.setName("panelForPaging"); // NOI18N
+        panelForPaging.setOpaque(false);
+
+        buttonBackPage.setFont(resourceMap.getFont("buttonForwardPage.font")); // NOI18N
+        buttonBackPage.setIcon(resourceMap.getIcon("buttonBackPage.icon")); // NOI18N
+        buttonBackPage.setText(resourceMap.getString("buttonBackPage.text")); // NOI18N
+        buttonBackPage.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
+        buttonBackPage.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        buttonBackPage.setName("buttonBackPage"); // NOI18N
+        buttonBackPage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonBackPageActionPerformed(evt);
+            }
+        });
+
+        buttonForwardPage.setFont(resourceMap.getFont("buttonForwardPage.font")); // NOI18N
+        buttonForwardPage.setIcon(resourceMap.getIcon("buttonForwardPage.icon")); // NOI18N
+        buttonForwardPage.setText(resourceMap.getString("buttonForwardPage.text")); // NOI18N
+        buttonForwardPage.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
+        buttonForwardPage.setName("buttonForwardPage"); // NOI18N
+        buttonForwardPage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonForwardPageActionPerformed(evt);
+            }
+        });
+
+        labelBackPage.setFont(resourceMap.getFont("labelBackPage.font")); // NOI18N
+        labelBackPage.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        labelBackPage.setText(resourceMap.getString("labelBackPage.text")); // NOI18N
+        labelBackPage.setName("labelBackPage"); // NOI18N
+
+        labelForwardPage.setFont(resourceMap.getFont("labelForwardPage.font")); // NOI18N
+        labelForwardPage.setText(resourceMap.getString("labelForwardPage.text")); // NOI18N
+        labelForwardPage.setName("labelForwardPage"); // NOI18N
+
+        javax.swing.GroupLayout panelForPagingLayout = new javax.swing.GroupLayout(panelForPaging);
+        panelForPaging.setLayout(panelForPagingLayout);
+        panelForPagingLayout.setHorizontalGroup(
+            panelForPagingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelForPagingLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(labelBackPage, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(buttonBackPage)
+                .addGap(18, 18, 18)
+                .addComponent(buttonForwardPage)
+                .addGap(18, 18, 18)
+                .addComponent(labelForwardPage, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        panelForPagingLayout.setVerticalGroup(
+            panelForPagingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelForPagingLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelForPagingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(buttonBackPage, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+                    .addComponent(labelForwardPage, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+                    .addComponent(labelBackPage, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+                    .addComponent(buttonForwardPage, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout panelBackgroundLayout = new javax.swing.GroupLayout(panelBackground);
@@ -1267,11 +1359,12 @@ public class FWelcome extends javax.swing.JFrame {
         panelBackgroundLayout.setHorizontalGroup(
             panelBackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(panelCentre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelBackgroundLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 983, Short.MAX_VALUE)
+                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 982, Short.MAX_VALUE)
                 .addContainerGap())
+            .addComponent(panelForPaging, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panelCentre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         panelBackgroundLayout.setVerticalGroup(
             panelBackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1279,6 +1372,8 @@ public class FWelcome extends javax.swing.JFrame {
                 .addComponent(panelCaption, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelCentre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelForPaging, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1421,19 +1516,39 @@ private void buttonResponseActionPerformed(java.awt.event.ActionEvent evt) {//GE
 private void buttonInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonInfoActionPerformed
     FInfoDialog.showResponseDialog(this, getInfoTree(), true, true, WelcomeParams.getInstance().delayBack * 3);
 }//GEN-LAST:event_buttonInfoActionPerformed
+
+    private void buttonBackPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBackPageActionPerformed
+        if (pageNumber > 0) {
+            pageNumber--;
+            showButtons(current, panelMain);
+            buttonBackPage.setEnabled(pageNumber > 0);
+        }
+
+    }//GEN-LAST:event_buttonBackPageActionPerformed
+
+    private void buttonForwardPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonForwardPageActionPerformed
+        pageNumber++;
+        showButtons(current, panelMain);
+        buttonBackPage.setEnabled(pageNumber > 0);
+    }//GEN-LAST:event_buttonForwardPageActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAdvance;
     private javax.swing.JButton buttonBack;
+    private javax.swing.JButton buttonBackPage;
+    private javax.swing.JButton buttonForwardPage;
     private javax.swing.JButton buttonInfo;
     private javax.swing.JButton buttonResponse;
     private javax.swing.JButton buttonStandAdvance;
     private javax.swing.JButton buttonToBegin;
+    private javax.swing.JLabel labelBackPage;
     private javax.swing.JLabel labelCaption;
+    private javax.swing.JLabel labelForwardPage;
     private javax.swing.JLabel labelLock;
     private javax.swing.JPanel panelBackground;
     private javax.swing.JPanel panelButtons;
     private javax.swing.JPanel panelCaption;
     private javax.swing.JPanel panelCentre;
+    private javax.swing.JPanel panelForPaging;
     private javax.swing.JPanel panelLock;
     private javax.swing.JPanel panelMain;
     // End of variables declaration//GEN-END:variables

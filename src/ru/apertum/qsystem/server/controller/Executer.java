@@ -695,6 +695,10 @@ public final class Executer {
         public RpcGetSelfSituation process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
+            //от юзера может приехать новое название его кабинета, ну пересел чувак.
+            if (cmdParams.textData != null && !cmdParams.textData.equals("")) {
+                user.setPoint(cmdParams.textData);
+            }
             final LinkedList<RpcGetSelfSituation.SelfService> servs = new LinkedList<>();
             for (QPlanService planService : user.getPlanServices()) {
                 final QService service = QServiceTree.getInstance().getById(planService.getService().getId());
@@ -709,10 +713,19 @@ public final class Executer {
      * Отсечем дубляжи запуска от одних и тех же юзеров. но с разных компов
      */
     final Task getCheckSelfTask = new Task(Uses.TASK_GET_SELF_SERVICES_CHECK) {
+        // надо запоминать название пунктов приема из БД для юзеров, не то перетрется клиентской настройкой и не восстановить
+
+        final HashMap<QUser, String> points = new HashMap<>();
 
         @Override
         public synchronized RpcGetBool process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
+            //от юзера может приехать новое название его кабинета, ну пересел чувак.
+            if (points.get(QUserList.getInstance().getById(cmdParams.userId)) == null) {
+                points.put(QUserList.getInstance().getById(cmdParams.userId), QUserList.getInstance().getById(cmdParams.userId).getPoint());
+            } else {
+                QUserList.getInstance().getById(cmdParams.userId).setPoint(points.get(QUserList.getInstance().getById(cmdParams.userId)));
+            }
             // Отсечем дубляжи запуска от одних и тех же юзеров. но с разных компов
             // пришло с запросом от юзера имеющегося в региных
             //System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" + userId);

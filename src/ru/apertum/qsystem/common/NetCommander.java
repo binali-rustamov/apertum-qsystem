@@ -301,6 +301,7 @@ public class NetCommander {
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.userId = userId;
+        params.textData = pointId;
         String res;
         try {
             res = send(netProperty, Uses.TASK_GET_SELF_SERVICES, params);
@@ -319,6 +320,12 @@ public class NetCommander {
         }
         return rpc.getResult();
     }
+    
+    /**
+     * Подпорочка, нужна для того чтоб настроить маркеровку окна приема на клиенте и переслать на сервер, чтоб заменить значение из БД.
+     * Это значение, если есть, передается в строке параметров при старке клиентской проги и засовывается сюда, вот такая мегаинициализация.
+     */
+    static public String pointId = null;
 
     /**
      * Проверка на то что такой юзер уже залогинен в систему
@@ -331,6 +338,7 @@ public class NetCommander {
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.userId = userId;
+        params.textData = pointId;
         final String res;
         try {
             res = send(netProperty, Uses.TASK_GET_SELF_SERVICES_CHECK, params);

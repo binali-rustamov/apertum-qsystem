@@ -34,7 +34,7 @@ public class QServiceTree extends ATreeModel<QService> {
 
     @Override
     protected LinkedList<QService> load() {
-        return new LinkedList<QService>(Spring.getInstance().getHt().loadAll(QService.class));
+        return new LinkedList<>(Spring.getInstance().getHt().loadAll(QService.class));
     }
 
     private static class QServiceTreeHolder {

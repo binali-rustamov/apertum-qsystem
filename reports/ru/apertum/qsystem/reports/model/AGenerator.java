@@ -36,6 +36,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRHtmlExporter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
+import net.sf.jasperreports.engine.export.oasis.JROdsExporter;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -236,13 +237,21 @@ public abstract class AGenerator implements IGenerator {
                 result = buf.toString().replaceAll("nullpx", "resources/px").replaceFirst("<body text=\"#000000\"", "<body text=\"#000000\"  background=\"resources/setka.gif\" bgproperties=\"fixed\"").replaceAll("bgcolor=\"white\"", "bgcolor=\"CCDDEE\"").replaceAll("nullimg_", "img_").getBytes("UTF-8");
                 dataType = "text/html";
             } else if (Uses.REPORT_FORMAT_RTF.equalsIgnoreCase(format)) {
-                final JRRtfExporter exporter = new JRRtfExporter();
+                final JRRtfExporter exporter = new JRRtfExporter(); 
                 exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, baos);
                 exporter.exportReport();
                 result = baos.toByteArray();
                 dataType = "application/rtf";
+            } else if (Uses.REPORT_FORMAT_ODS.equalsIgnoreCase(format)) {
+                final JROdsExporter exporter = new JROdsExporter(); 
+                exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, baos);
+                exporter.exportReport();
+                result = baos.toByteArray();
+                dataType = "application/ods";    
             } else if (Uses.REPORT_FORMAT_PDF.equalsIgnoreCase(format)) {
                 // создадим файл со шрифтами если его нет
                 final File f = new File("tahoma.ttf");

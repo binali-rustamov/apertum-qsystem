@@ -25,6 +25,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  * Сетевые настройки системы.
@@ -202,7 +203,6 @@ public class QNet implements Serializable {
     public void setSound(Integer sound) {
         this.sound = sound;
     }
-    
     /**
      * 0 - по умолчанию, ну и т.д. по набору звуков
      */
@@ -216,8 +216,7 @@ public class QNet implements Serializable {
     public void setVoice(Integer voice) {
         this.voice = voice;
     }
-    
-     /**
+    /**
      * Время нахождения в блеклисте в минутах. 0 - попавшие в блекслист не блокируются
      */
     @Column(name = "black_time")
@@ -230,7 +229,6 @@ public class QNet implements Serializable {
     public void setBlackTime(Integer blackTime) {
         this.blackTime = blackTime;
     }
-
     /**
      * Это ID филиала в котором установлена система.
      * Нужно для идентификации в облачном сервисе
@@ -249,7 +247,7 @@ public class QNet implements Serializable {
      * URL облачного сервиса, к которому будет коннектится плагин
      * Зачем это в БД? Да чо-бы проще было настраивать, а то придется как-то плагин отдельно админить. не все догадаются.
      */
-    @Column(name="sky_server_url")
+    @Column(name = "sky_server_url")
     private String skyServerUrl;
 
     public String getSkyServerUrl() {
@@ -259,22 +257,31 @@ public class QNet implements Serializable {
     public void setSkyServerUrl(String skyServerUrl) {
         this.skyServerUrl = skyServerUrl;
     }
-    
     /**
      * адрес зонного сервера отображения хода очереди, к которому будет коннектится плагин
      * Зачем это в БД? Да чо-бы проще было настраивать, а то придется как-то плагин отдельно админить. не все догадаются.
      */
-    @Column(name="zone_board_serv_addr")
+    @Column(name = "zone_board_serv_addr")
     private String zoneBoardServAddr;
 
     public String getZoneBoardServAddr() {
         return zoneBoardServAddr;
     }
+    @Transient
+    private String[] zbsal = null;
+
+    public String[] getZoneBoardServAddrList() {
+        if (zbsal == null || zbsal.length == 0) {
+            String l = getZoneBoardServAddr();
+            l = l.replaceAll("  ", " ");
+            zbsal = l.split(", |; |,|;| ");
+        }
+        return zbsal;
+    }
 
     public void setZoneBoardServAddr(String zoneBoardServAddr) {
         this.zoneBoardServAddr = zoneBoardServAddr;
     }
-    
     /**
      * Это порт зонального сервера отображения очереди на котором он будет принимать данные
      * Нужно для идентификации в облачном сервисе
@@ -289,6 +296,4 @@ public class QNet implements Serializable {
     public void setZoneBoardServPort(Integer zoneBoardServPort) {
         this.zoneBoardServPort = zoneBoardServPort;
     }
-
-    
 }

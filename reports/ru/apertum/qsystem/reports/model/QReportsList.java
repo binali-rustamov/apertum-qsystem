@@ -27,9 +27,6 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
-import org.apache.http.message.BasicHttpRequest;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.exceptions.ReportException;
@@ -79,6 +76,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
                     + "<a href=\"" + report.getHref() + ".html\" target=\"_blank\">" + report.getName() + "</a>\n"
                     + "<a href=\"" + report.getHref() + ".rtf\" target=\"_blank\">[RTF]</a>\n"
                     + "<a href=\"" + report.getHref() + ".pdf\" target=\"_blank\">[PDF]</a>\n"
+                    + "<a href=\"" + report.getHref() + ".ods\" target=\"_blank\">[ODS]</a>\n"
                     + "</td>\n"
                     + "</tr>\n");
         }

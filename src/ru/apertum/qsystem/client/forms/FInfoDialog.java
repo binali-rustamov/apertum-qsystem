@@ -115,11 +115,15 @@ public class FInfoDialog extends javax.swing.JDialog {
             infoDialog.setCursor(transparentCursor);
 
         }
+        infoDialog.LabelCaption2.setText(respList.getHTMLText());
         infoDialog.showLevel(FInfoDialog.root);
         if (infoDialog.clockBack.isActive()) {
             infoDialog.clockBack.stop();
         }
-        infoDialog.clockBack.start();
+        if (infoDialog.clockBack.getInterval() < 1000) {
+            infoDialog.clockBack.start();
+        }
+
         infoDialog.setVisible(true);
         return result;
     }
@@ -369,7 +373,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1024, Short.MAX_VALUE)
+            .addGap(0, 1004, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -382,7 +386,10 @@ public class FInfoDialog extends javax.swing.JDialog {
             panelAllLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(panelBottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(panelAllLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         panelAllLayout.setVerticalGroup(
             panelAllLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

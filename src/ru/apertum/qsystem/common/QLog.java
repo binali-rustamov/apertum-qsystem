@@ -114,7 +114,7 @@ public class QLog {
         return LogerHolder.INSTANCE;
     }
     private static String[] args1 = new String[0];
-    private static boolean isServer1 = false;
+    public static boolean isServer1 = false;
 
     public static QLog initial(String[] args, boolean isServer) {
         args1 = args;

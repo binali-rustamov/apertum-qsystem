@@ -23,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
 import javax.imageio.ImageIO;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -35,6 +37,9 @@ import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.SoundPlayer;
 import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.server.model.QService;
+import ru.apertum.qsystem.server.model.QServiceTree;
 
 /**
  * Вывод информации на мониторы.
@@ -118,6 +123,25 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             indicatorBoard.printRecord(t, "", "", -1);
         }
         markShowed(records);
+
+
+        if (QLog.isServer1) { // если это не сервер, то QServiceTree полезет в спринг
+            final LinkedList<String> nexts = new LinkedList<>();
+            final PriorityQueue<QCustomer> customers = new PriorityQueue<>();
+            for (QService service : QServiceTree.getInstance().getNodes()) {
+                if (service.isLeaf()) {
+                    for (QCustomer qCustomer : service.getClients()) {
+                        customers.add(qCustomer);
+                    }
+                }
+            }
+            QCustomer qCustomer = customers.poll();
+            while (qCustomer != null) {
+                nexts.add(qCustomer.getPrefix() + qCustomer.getNumber());
+                qCustomer = customers.poll();
+            }
+            indicatorBoard.showNext(nexts);
+        }
     }
 
     /**

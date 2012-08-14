@@ -38,7 +38,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -140,7 +139,10 @@ public final class Uses {
     public static final String TAG_BOARD_VIDEO_FILE = "Видеофайл";
     public static final String TAG_BOARD_VISIBLE_PANEL = "visible";
     public static final String TAG_BOARD_SPEED_TEXT = "Скорость бегущего текста";
+    public static final String TAG_BOARD_GRID_NEXT_COLS = "Колонки табл след";
+    public static final String TAG_BOARD_GRID_NEXT_ROWS = "Строки табл след";
     public static final String TAG_BOARD_SIMPLE_DATE = "Простая дата";
+    public static final String TAG_BOARD_GRID_NEXT = "Таблица следующих";
     public static final String TAG_BOARD_FON_COLOR = "Цвет фона";
     public static final String TAG_BOARD_FONT_SIZE_CAPTION = "Размер шрифта заголовка";
     public static final String TAG_BOARD_FONT_SIZE_LINE = "Размер шрифта строк";
@@ -152,6 +154,7 @@ public final class Uses {
     public static final String TAG_BOARD_LINE_DELIMITER = "Разделитель столбцов";
     public static final String TAG_BOARD_LEFT_CAPTION = "Заголовок левого столбца";
     public static final String TAG_BOARD_RIGHT_CAPTION = "Заголовок правого столбца";
+    public static final String TAG_BOARD_GRID_NEXT_CAPTION = "Заголовок таблицы следующих";
     public static final String TAG_BOARD_LINE_COLOR = "Цвет рамки строки табло";
     public static final String TAG_BOARD_LINE_CAPTION = "Надпись строки табло";
     //имена тегов-разделов для табло
@@ -216,6 +219,7 @@ public final class Uses {
     public static final String REPORT_FORMAT_HTML = "html";
     public static final String REPORT_FORMAT_RTF = "rtf";
     public static final String REPORT_FORMAT_PDF = "pdf";
+    public static final String REPORT_FORMAT_ODS = "ods";
     // Якорь для списка аналитических отчетов
     public static final String ANCHOR_REPORT_LIST = "<tr><td><center>#REPORT_LIST_ANCHOR#</center></td></tr>";
     public static final String ANCHOR_DATA_FOR_REPORT = "#DATA_FOR_REPORT#";

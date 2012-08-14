@@ -32,7 +32,8 @@ import javax.swing.border.CompoundBorder;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.server.model.response.QRespItem;
 
@@ -53,7 +54,6 @@ public class FResponseDialog extends javax.swing.JDialog {
     }
     private static Long result = null;
     private static int delay = 10000;
-
     private static ResourceMap localeMap = null;
 
     private static String getLocaleMessage(String key) {
@@ -77,7 +77,7 @@ public class FResponseDialog extends javax.swing.JDialog {
         QLog.l().logger().info("Выбор отзыва");
         if (respDialog == null) {
             respDialog = new FResponseDialog(parent, modal);
-            respDialog.panelMain.setLayout(new GridLayout(respList.size(), 1));
+            respDialog.panelMain.setLayout(new GridLayout(respList.size(), 1, 15, 40));
             for (QRespItem item : respList) {
                 final RespButton button = new RespButton(item);
                 respDialog.panelMain.add(button);
@@ -97,7 +97,9 @@ public class FResponseDialog extends javax.swing.JDialog {
         if (respDialog.clockBack.isActive()) {
             respDialog.clockBack.stop();
         }
-        respDialog.clockBack.start();
+        if (respDialog.clockBack.getInterval() < 1000) {
+            respDialog.clockBack.start();
+        }
         respDialog.setVisible(true);
         return result;
     }
@@ -177,7 +179,7 @@ public class FResponseDialog extends javax.swing.JDialog {
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelUpLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(LabelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 816, Short.MAX_VALUE)
+                .addComponent(LabelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 906, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelUpLayout.setVerticalGroup(
@@ -212,7 +214,7 @@ public class FResponseDialog extends javax.swing.JDialog {
             .addGroup(panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(611, Short.MAX_VALUE))
+                .addContainerGap(701, Short.MAX_VALUE))
         );
         panelBottomLayout.setVerticalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -230,11 +232,11 @@ public class FResponseDialog extends javax.swing.JDialog {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 836, Short.MAX_VALUE)
+            .addGap(0, 826, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 241, Short.MAX_VALUE)
+            .addGap(0, 499, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout panelAllLayout = new javax.swing.GroupLayout(panelAll);
@@ -243,15 +245,18 @@ public class FResponseDialog extends javax.swing.JDialog {
             panelAllLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(panelBottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(panelAllLayout.createSequentialGroup()
+                .addGap(50, 50, 50)
+                .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(50, 50, 50))
         );
         panelAllLayout.setVerticalGroup(
             panelAllLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelAllLayout.createSequentialGroup()
                 .addComponent(panelUp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(panelBottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 

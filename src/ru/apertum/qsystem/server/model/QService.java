@@ -298,7 +298,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
      * происходит при определении параметров нумерации.
      */
     @Transient
-    private static int lastStNumber = 0;
+    private static int lastStNumber = Integer.MIN_VALUE;
 
     public QService() {
         super();
@@ -316,6 +316,9 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
     synchronized public int getNextNumber() {
         if (lastNumber == Integer.MIN_VALUE) {
             lastNumber = ServerProps.getInstance().getProps().getFirstNumber() - 1;
+        }
+        if (lastStNumber == Integer.MIN_VALUE) {
+            lastStNumber = ServerProps.getInstance().getProps().getFirstNumber() - 1;
         }
         if (lastNumber >= ServerProps.getInstance().getProps().getLastNumber()) {
             clearNextNumber();
@@ -426,8 +429,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
      * а если этот префикс совпадает с префиксом самой услуги,
      * то при номере кастомера больше последнего номера ведущегося в услуге,
      * нужно сменить номер ведущийся в системе на кастомеровский.
-     * @param element XML-представление чего-либо требующее внесения в него информации
-     * о услуге.
+     * @param customer кастомер в которого добавить
      */
     private void updateInfo(QCustomer customer) {
         final int number = customer.getNumber();

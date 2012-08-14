@@ -30,6 +30,8 @@ import java.awt.event.WindowEvent;
 import java.awt.image.MemoryImageSource;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -188,7 +190,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                 }
             });
         } else {
-            setSize(1024, 768);
+            setSize(1280, 720);
         }
     }
 
@@ -242,6 +244,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             panelCommon.setBackgroundImgage(filePath);
         }
 
+        nexts.clear();
+        el_nexts.clear();
         loadPanel(topElement, rlTop, panelUp);
         loadPanel(bottomElement, rlDown, panelDown);
         loadPanel(leftElement, rlLeft, panelLeft);
@@ -261,7 +265,25 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         label.setFont(font);
 
         // загрузим текст
-        label.setText(Uses.prepareAbsolutPathForImg(params.getTextTrim()));
+        if ("1".equals(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE))) {
+            // таблица ближайших
+            label.setVerticalAlignment(1);
+            label.setText("<HTML>"
+                    + "<table  cellpadding='5' align='center' border='1' bordercolor='0'>"
+                    + "<tr><td>"
+                    + "<p align=center>"
+                    + "<span style='font-size:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ".0pt;color:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ";'>"
+                    + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)
+                    + "</span></p>"
+                    + "</td></tr>"
+                    + "<tr>"
+                    + "</table>");
+            nexts.add(label);
+            el_nexts.put(label, params);
+        } else {
+            // просто хтмл-текст
+            label.setText(Uses.prepareAbsolutPathForImg(params.getTextTrim()));
+        }
         label.setRunningText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RUNNING_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         if (!"".equals(label.getRunningText())) {
             label.setSpeedRunningText(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SPEED_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
@@ -283,6 +305,43 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             label.setVisible(false);
             panel.setVideoFileName(filePath);
             panel.startVideo();
+        }
+    }
+    /**
+     * это лейблы, в которых будут таблицы ближайших клиентосов
+     */
+    private ArrayList<RunningLabel> nexts = new ArrayList<>();
+    private HashMap<RunningLabel, Element> el_nexts = new HashMap<>();
+
+    public boolean needNext() {
+        return !nexts.isEmpty();
+    }
+
+    public void showNext(LinkedList<String> list) {
+        for (RunningLabel rl : nexts) {
+            String grid = "<HTML>"
+                    + "<table cellpadding='5' align='center' border='1' frame='border' bordercolor='0'>"
+                    + "<tr><td colspan='" + Uses.elementsByAttr(el_nexts.get(rl), Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_COLS).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + "'>"
+                    + "<p align=center>"
+                    + "<span style='font-size:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ".0pt;color:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ";'>"
+                    + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)
+                    + "</span></p>"
+                    + "</td></tr>";
+            int t = 0;
+            for (int i = 0; i < Integer.parseInt(Uses.elementsByAttr(el_nexts.get(rl), Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_ROWS).get(0).attributeValue(Uses.TAG_BOARD_VALUE)); i++) {
+                grid = grid + "<tr>";
+                for (int j = 0; j < Integer.parseInt(Uses.elementsByAttr(el_nexts.get(rl), Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_COLS).get(0).attributeValue(Uses.TAG_BOARD_VALUE)); j++) {
+                    grid = grid + "<td>"
+                            + "<p align=center><span style='font-size:" + Uses.elementsByAttr(el_nexts.get(rl), Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ".0pt;color:" + Uses.elementsByAttr(el_nexts.get(rl), Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ";'>"
+                            + (t < list.size() ? list.get(t) : "")
+                            + "</span></p>"
+                            + "</td>";
+                    t++;
+                }
+                grid = grid + "</tr>";
+            }
+            grid = grid + "</table>";
+            rl.setText(grid);
         }
     }
     private static ResourceMap localeMap = null;
@@ -659,7 +718,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelUp.setLayout(panelUpLayout);
         panelUpLayout.setHorizontalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlTop, javax.swing.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
+            .addComponent(rlTop, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
         );
         panelUpLayout.setVerticalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -706,11 +765,11 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelDown.setLayout(panelDownLayout);
         panelDownLayout.setHorizontalGroup(
             panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)
+            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
         );
         panelDownLayout.setVerticalGroup(
             panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
         );
 
         spDown.setBottomComponent(panelDown);
@@ -765,7 +824,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelLeft.setLayout(panelLeftLayout);
         panelLeftLayout.setHorizontalGroup(
             panelLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlLeft, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+            .addGroup(panelLeftLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(rlLeft, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
+                .addContainerGap())
         );
         panelLeftLayout.setVerticalGroup(
             panelLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -812,7 +874,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelRight.setLayout(panelRightLayout);
         panelRightLayout.setHorizontalGroup(
             panelRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlRight, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelRightLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(rlRight, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
+                .addContainerGap())
         );
         panelRightLayout.setVerticalGroup(
             panelRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -858,11 +923,11 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelCommon.setLayout(panelCommonLayout);
         panelCommonLayout.setHorizontalGroup(
             panelCommonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
+            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
         );
         panelCommonLayout.setVerticalGroup(
             panelCommonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
+            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());

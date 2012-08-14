@@ -7,7 +7,9 @@
 	<str id="CPaddr" txt="Check-point address:"/>
 	<str id="CPport" txt="Check-point port:"/>
 	<str id="requestServ" txt="For feedback server with clients and point of registration:"/>
+	<str id="requestClient" txt="The numbering of the operating position (optional):"/>
 	<str id="clnPort" txt="Client port:"/>
+	<str id="clnPoint" txt="Number of workplace:"/>
 	<str id="forCP" txt="For check-point:"/>
 	<str id="kindCP" txt="Choise kind of check-point:"/>
 	<str id="tach" txt="Select Services on the touch terminal"/>

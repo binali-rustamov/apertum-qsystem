@@ -83,7 +83,7 @@ abstract public class AFBoardRedactor extends javax.swing.JDialog {
     }
 
     /**
-     * Метод передачи данных в редактор для ихменения
+     * Метод передачи данных в редактор для изменения
      * @param netProperty параметры сети для получения с сервера конфигурации
      * @throws DocumentException
      */

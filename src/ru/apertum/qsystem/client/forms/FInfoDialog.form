@@ -50,7 +50,11 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Component id="panelUp" alignment="0" max="32767" attributes="0"/>
               <Component id="panelBottom" alignment="0" max="32767" attributes="0"/>
-              <Component id="panelMain" alignment="0" max="32767" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="panelMain" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -278,7 +282,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="1024" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="1004" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">

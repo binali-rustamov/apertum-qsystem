@@ -24,12 +24,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.QPanel;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
@@ -60,8 +61,14 @@ public class FAbout extends javax.swing.JDialog {
      * @param modal режим модальности
      */
     public static void showAbout(JFrame parent, boolean modal) {
-        getForm(parent, modal, "");
-        aboutForm.setVisible(true);
+        loadVersionSt();
+        if (!"0".equals(CMRC_)) {
+            JOptionPane.showMessageDialog(parent, getLocaleMessage("about.version") + " : " + VERSION_ + "\n"
+                    + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2012", "QSystem", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            getForm(parent, modal, "");
+            aboutForm.setVisible(true);
+        }
     }
 
     /**
@@ -71,8 +78,15 @@ public class FAbout extends javax.swing.JDialog {
      * @param verDB отображаемая версия БД.
      */
     public static void showAbout(JFrame parent, boolean modal, String verDB) {
-        getForm(parent, modal, verDB);
-        aboutForm.setVisible(true);
+        loadVersionSt();
+        if (!"0".equals(CMRC_)) {
+            JOptionPane.showMessageDialog(parent, getLocaleMessage("about.version") + " : " + VERSION_ + "\n"
+                    + ("".equals(verDB) ? "" : (getLocaleMessage("about.db_version") + " : " + verDB))
+                    + "\n" + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2012", "QSystem", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            getForm(parent, modal, verDB);
+            aboutForm.setVisible(true);
+        }
     }
 
     /**
@@ -105,21 +119,35 @@ public class FAbout extends javax.swing.JDialog {
     /**
      * Загрузим параметры сборки билда из файла с версией.
      */
-    private void loadVersion() {
+    public static void loadVersionSt() {
         final Properties settings = new Properties();
         //"/ru/apertum/qsystem/reports/web/"
-        final InputStream inStream = this.getClass().getResourceAsStream("/ru/apertum/qsystem/common/version.properties");
+        final InputStream inStream = new String().getClass().getResourceAsStream("/ru/apertum/qsystem/common/version.properties");
 
         try {
             settings.load(inStream);
         } catch (IOException ex) {
             throw new ClientException("Проблемы с чтением версии. " + ex);
         }
-        labelDate.setText(getLocaleMessage("about.data") + " : " + settings.getProperty(DATE));
-        labelVersion.setText(getLocaleMessage("about.version") + " : " + settings.getProperty(VERSION));
+        DATE_ = settings.getProperty(DATE);
+        VERSION_ = settings.getProperty(VERSION);
+        VERSION_DB_ = settings.getProperty(VERSION_DB);
+        CMRC_ = settings.getProperty(CMRC);
     }
     public final static String DATE = "date";
     public final static String VERSION = "version";
+    public final static String VERSION_DB = "version_db";
+    public final static String CMRC = "cmrc";
+    public static String DATE_ = "";
+    public static String VERSION_ = "";
+    public static String VERSION_DB_ = "";
+    public static String CMRC_ = "";
+
+    private void loadVersion() {
+        loadVersionSt();
+        labelDate.setText(getLocaleMessage("about.data") + " : " + DATE_);
+        labelVersion.setText(getLocaleMessage("about.version") + " : " + VERSION_);
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -286,9 +314,7 @@ private void jButton1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
 private void labelRightMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labelRightMouseClicked
     try {
         Desktop.getDesktop().browse(new URI("http://www.apertum.ru"));
-    } catch (URISyntaxException ex) {
-        QLog.l().logger().error(ex);
-    } catch (IOException ex) {
+    } catch (URISyntaxException | IOException ex) {
         QLog.l().logger().error(ex);
     }
 }//GEN-LAST:event_labelRightMouseClicked

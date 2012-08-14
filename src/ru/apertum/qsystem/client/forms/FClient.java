@@ -127,7 +127,7 @@ public final class FClient extends javax.swing.JFrame {
         } else {
             s = "<br>" + s + "<br>" + customer.getInput_data();
         }
-        labelNextCustomerInfo.setText("<html><b><span style='color:blue'> " + getLocaleMessage("messages.service") + ": " + customer.getService().getName() + "<br>" + getLocaleMessage("messages.priority") + ": " + priority + s + "</span></b>");
+        labelNextCustomerInfo.setText("<html><b><span style='color:#000000'> " + getLocaleMessage("messages.service") + ": " + customer.getService().getName() + "<br>" + getLocaleMessage("messages.priority") + ": " + priority + s + "</span></b>");
         textAreaComments.setText(customer.getTempComments());
         textAreaComments.setCaretPosition(0);
         // прикроем кнопки, которые недоступны на этом этапе работы с кастомером.
@@ -369,7 +369,7 @@ public final class FClient extends javax.swing.JFrame {
                 System.exit(0);
             }
         });
-        labelUser.setText(user.getName() + " - " + user.getPoint());
+        labelUser.setText(user.getName() + " - " + (NetCommander.pointId != null && !NetCommander.pointId.equals("") ? NetCommander.pointId : user.getPoint()));
         setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
 
         int ii = 1;
@@ -729,7 +729,7 @@ public final class FClient extends javax.swing.JFrame {
             return;
         }
 
-        NetCommander.redirectCustomer(netProperty, user.getId(), dlg.getServiceId(), dlg.getRequestBack(), user.getName() + ": " + dlg.getTempComments());
+        NetCommander.redirectCustomer(netProperty, user.getId(), dlg.getSelectedService().getId(), dlg.getRequestBack(), user.getName() + ": " + dlg.getTempComments());
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
         setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
@@ -1318,6 +1318,13 @@ public final class FClient extends javax.swing.JFrame {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.startSplashClient();
         QLog.initial(args, false);
+        // тут нужно провести мегаинициализацию номера пункта окна работника
+        for (Integer i = 0; i < args.length - 2; i++) {
+            if ("-point".equals(args[i])) {
+                NetCommander.pointId = args[i + 1];
+                break;
+            }
+        }
         final IClientNetProperty netProperty = new ClientNetProperty(args);
         // это заплата на баг с коннектом.
         // без предконнекта из main в дальнейшем сокет не хочет работать,

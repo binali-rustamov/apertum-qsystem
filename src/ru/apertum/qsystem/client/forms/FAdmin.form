@@ -2177,7 +2177,6 @@
                             </TitledBorder>
                           </Border>
                         </Property>
-                        <Property name="enabled" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="textPaneInfoItem" noResource="true"/>
                       </Properties>
                       <Events>
@@ -2235,7 +2234,6 @@
                 <Component class="javax.swing.JTextField" name="textFieldInfoItemName">
                   <Properties>
                     <Property name="text" type="java.lang.String" resourceKey="textFieldInfoItemName.text"/>
-                    <Property name="enabled" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="textFieldInfoItemName" noResource="true"/>
                   </Properties>
                   <Events>

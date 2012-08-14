@@ -26,11 +26,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import ru.apertum.qsystem.client.Locales;
+import ru.apertum.qsystem.client.forms.FAbout;
 import ru.apertum.qsystem.common.CodepagePrintStream;
 import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.Mailer;
@@ -38,7 +38,6 @@ import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
-import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
@@ -46,6 +45,7 @@ import ru.apertum.qsystem.reports.model.QReportsList;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.controller.Executer;
 import ru.apertum.qsystem.server.http.JettyRunner;
+import ru.apertum.qsystem.server.model.QNet;
 import ru.apertum.qsystem.server.model.QPlanService;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
@@ -83,39 +83,36 @@ public class QServer extends Thread {
 
 
         System.out.println("Welcome to the QSystem server. Your MySQL mast be prepared.");
-        final Properties settings = new Properties();
-        final InputStream inStream = settings.getClass().getResourceAsStream("/ru/apertum/qsystem/common/version.properties");
-        try {
-            settings.load(inStream);
-        } catch (IOException ex) {
-            throw new ClientException("Проблемы с чтением версии. " + ex);
-        }
-        System.out.println("Server version: " + settings.getProperty("version") + "-community QSystem Server (GPL)");
-        System.out.println("Database version: " + settings.getProperty("version_db") + " for MySQL 5.1-community Server (GPL)");
-        System.out.println("Released : " + settings.getProperty("date"));
+        FAbout.loadVersionSt();
+        if ("0".equals(FAbout.CMRC_)) {
+            System.out.println("Server version: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
+            System.out.println("Database version: " + FAbout.VERSION_DB_ + " for MySQL 5.1-community Server (GPL)");
+            System.out.println("Released : " + FAbout.DATE_);
 
-        System.out.println("Copyright (c) 2010-2012, Apertum Projects and/or its affiliates. All rights reserved.");
-        System.out.println("This software comes with ABSOLUTELY NO WARRANTY. This is free software,");
-        System.out.println("and you are welcome to modify and redistribute it under the GPL v3 license");
-        System.out.println("Text of this license on your language located in the folder with the program.");
+            System.out.println("Copyright (c) 2010-2012, Apertum Projects and/or its affiliates. All rights reserved.");
+            System.out.println("This software comes with ABSOLUTELY NO WARRANTY. This is free software,");
+            System.out.println("and you are welcome to modify and redistribute it under the GPL v3 license");
+            System.out.println("Text of this license on your language located in the folder with the program.");
+        }
 
         System.out.println("Type 'exit' to stop work and close server.");
         System.out.println();
 
+        if ("0".equals(FAbout.CMRC_)) {
+            System.out.println("Добро пожаловать на сервер QSystem. Для работы необходим MySQL5.1 или выше.");
+            System.out.println("Версия сервера: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
+            System.out.println("Версия базы данных: " + FAbout.VERSION_DB_ + " for MySQL 5.1-community Server (GPL)");
+            System.out.println("Дата выпуска : " + FAbout.DATE_);
+            System.out.println("Copyright (c) 2010, Apertum Projects. Все права защищены.");
+            System.out.println("QSystem является свободным программным обеспечением, вы можете");
+            System.out.println("распространять и/или изменять его согласно условиям Стандартной Общественной");
+            System.out.println("Лицензии GNU (GNU GPL), опубликованной Фондом свободного программного");
+            System.out.println("обеспечения (FSF), либо Лицензии версии 3, либо более поздней версии.");
 
-        System.out.println("Добро пожаловать на сервер QSystem. Для работы необходим MySQL5.1 или выше.");
-        System.out.println("Версия сервера: " + settings.getProperty("version") + "-community QSystem Server (GPL)");
-        System.out.println("Версия базы данных: " + settings.getProperty("version_db") + " for MySQL 5.1-community Server (GPL)");
-        System.out.println("Дата выпуска : " + settings.getProperty("date"));
-        System.out.println("Copyright (c) 2010, Apertum Projects. Все права защищены.");
-        System.out.println("QSystem является свободным программным обеспечением, вы можете");
-        System.out.println("распространять и/или изменять его согласно условиям Стандартной Общественной");
-        System.out.println("Лицензии GNU (GNU GPL), опубликованной Фондом свободного программного");
-        System.out.println("обеспечения (FSF), либо Лицензии версии 3, либо более поздней версии.");
-
-        System.out.println("Вы должны были получить копию Стандартной Общественной Лицензии GNU вместе");
-        System.out.println("с этой программой. Если это не так, напишите в Фонд Свободного ПО ");
-        System.out.println("(Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA)");
+            System.out.println("Вы должны были получить копию Стандартной Общественной Лицензии GNU вместе");
+            System.out.println("с этой программой. Если это не так, напишите в Фонд Свободного ПО ");
+            System.out.println("(Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA)");
+        }
 
         System.out.println("Набирите 'exit' чтобы штатно остановить работу сервера.");
         System.out.println();
@@ -130,6 +127,8 @@ public class QServer extends Thread {
         MainBoard.getInstance().showBoard();
 
         loadPool();
+
+        // test ServerProps.getInstance().getProps().getZoneBoardServAddrList();
 
         if (!(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getStartTime()).equals(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getFinishTime())))) {
             /**
@@ -448,7 +447,6 @@ public class QServer extends Thread {
                 throw new ServerException(ex);
             }
             final Scanner scan = new Scanner(fis, "utf8");
-            boolean flag = true;
             String rec_data = "";
             while (scan.hasNextLine()) {
                 rec_data += scan.nextLine();
@@ -510,9 +508,9 @@ public class QServer extends Thread {
         // почистим все услуги от трупов кастомеров
         for (QService service : QServiceTree.getInstance().getNodes()) {
             service.clearNextNumber();
-            QService.clearNextStNumber();
             service.freeCustomers();
         }
+        QService.clearNextStNumber();
 
         QPostponedList.getInstance().clear();
         MainBoard.getInstance().clear();
@@ -533,10 +531,12 @@ public class QServer extends Thread {
     }
 
     public static void deleteTempFile() {
+        QLog.l().logger().debug("Удаляем " + Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE);
         File file = new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE);
         if (file.exists()) {
             file.delete();
         }
+        QLog.l().logger().debug("Удаляем " + Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATATISTIC_FILE);
         file = new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATATISTIC_FILE);
         if (file.exists()) {
             file.delete();

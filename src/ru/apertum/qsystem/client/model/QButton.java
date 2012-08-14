@@ -105,9 +105,9 @@ public class QButton extends JButton {
         setText(Uses.prepareAbsolutPathForImg(service.getButtonText()));
         setSize(1, 1);
         if (service.isLeaf()) {
-            setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/service.png")));
+            setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/serv_btn.png")));
         } else {
-            setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/inFolder.png")));
+            setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/folder.png")));
         }
         addActionListener(new ActionListener() {
 
@@ -120,7 +120,9 @@ public class QButton extends JButton {
                         if (form.clockBack.isActive()) {
                             form.clockBack.stop();
                         }
-                        form.clockBack.start();
+                        if (form.clockBack.getInterval() > 999) {
+                            form.clockBack.start();
+                        }
                     }
                     if (service.isLeaf()) {
 
@@ -144,9 +146,9 @@ public class QButton extends JButton {
                                     t = 24;
                                     gc_time.add(GregorianCalendar.HOUR_OF_DAY, -1);
                                 }
-                                form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:green'>Пожалуйста возьмите талон предварительной записи на:<br><br><br></span>"
-                                        + "<span style='font-size:60.0pt;color:blue'>" + Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()) + "<br></span>"
-                                        + "<span style='font-size:60.0pt;color:blue'>" + "c " + t + ":00 до " + (t + 1) + ":00" + "</span></p>",
+                                form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + "<br><br><br></span>"
+                                        + "<span style='font-size:80.0pt;color:blue'>" + Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()) + "<br></span>"
+                                        + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + " " + t + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + " " + (t + 1) + ":00" + "</span></p>",
                                         "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
                                 // печатаем результат
                                 new Thread(new Runnable() {
@@ -192,17 +194,17 @@ public class QButton extends JButton {
                             // Если услуга не обрабатывается ни одним пользователем то в count вернется Uses.LOCK_INT
                             // вот трех еще потерплю, а больше низачто!
                             if (count == Uses.LOCK_INT) {
-                                form.lock("<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Выбранная услуга не обрабатывается. Обратитесь к администратору.</span></b></p>");
+                                form.lock("<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.service_not_available") + "</span></b></p>");
                                 form.clockUnlockBack.start();
                                 return;
                             }
                             if (count == Uses.LOCK_FREE_INT) {
-                                form.lock("<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Выбранная услуга сейчас не оказывается по расписанию. Обратитесь к администратору.</span></b></p>");
+                                form.lock("<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.service_not_available_by_schedule") + "</span></b></p>");
                                 form.clockUnlockBack.start();
                                 return;
                             }
                             if (count == Uses.LOCK_PER_DAY_INT) {
-                                form.lock("<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Количество поситителей данной услуги ограничено и истекло.</span></b></p>");
+                                form.lock("<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.clients_enough") + "</span></b></p>");
                                 form.clockUnlockBack.start();
                                 return;
                             }
@@ -222,7 +224,7 @@ public class QButton extends JButton {
                         String inputData = null;
                         ATalkingClock clock;
                         if (!isActive) {
-                            clock = form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:50.0pt;color:green'>В данный момент услуга не может быть оказана!</span>", "/ru/apertum/qsystem/client/forms/resources/noActive.png");
+                            clock = form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + FWelcome.getLocaleMessage("qbutton.right_naw_can_not") + "</span>", "/ru/apertum/qsystem/client/forms/resources/noActive.png");
                         } else {
                             //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
                             if (service.getInput_required()) {
@@ -242,13 +244,13 @@ public class QButton extends JButton {
                                     return;
                                 }
                                 if (limitPersonOver != 0) {
-                                    form.lock(limitPersonOver == 1 ? "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Количество поситителей данной услуги c такими введенными данными ограничено и истекло.</span></b></p>"
-                                            : "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>Вы отклонены по неявке на вызов оператора.</span></b></p>");
+                                    form.lock(limitPersonOver == 1 ? "<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.ticket_with_nom_finished") + "</span></b></p>"
+                                            : "<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.denail_by_lost") + "</span></b></p>");
                                     form.clockUnlockBack.start();
                                     return;
                                 }
                             }
-                            clock = form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:50.0pt;color:green'>Пожалуйста возьмите талон!</span>", "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
+                            clock = form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + FWelcome.getLocaleMessage("qbutton.take_ticket") + "</span>", "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
                         }
 
                         //выполним задание если услуга активна
@@ -264,9 +266,9 @@ public class QButton extends JButton {
                                 return;
                             }
                             clock.stop();
-                            clock = form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:green'>Пожалуйста возьмите талон!<br></span>"
-                                    + "<span style='font-size:20.0pt;color:blue'>ваш номер<br></span>"
-                                    + "<span style='font-size:100.0pt;color:blue'>" + res.getPrefix() + res.getNumber() + "</span></p>",
+                            clock = form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + FWelcome.getLocaleMessage("qbutton.take_ticket") + "<br></span>"
+                                    + "<span style='font-size:60.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.your_nom") + "<br></span>"
+                                    + "<span style='font-size:130.0pt;color:blue'>" + res.getPrefix() + res.getNumber() + "</span></p>",
                                     "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
 
 
