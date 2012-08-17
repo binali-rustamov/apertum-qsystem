@@ -148,7 +148,7 @@ public class QButton extends JButton {
                                 }
                                 form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + "<br><br><br></span>"
                                         + "<span style='font-size:80.0pt;color:blue'>" + Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()) + "<br></span>"
-                                        + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + " " + t + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + " " + (t + 1) + ":00" + "</span></p>",
+                                        + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + t + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00" + "</span></p>",
                                         "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
                                 // печатаем результат
                                 new Thread(new Runnable() {
