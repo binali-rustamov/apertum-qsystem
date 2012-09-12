@@ -42,12 +42,16 @@ public class QAdvanceCustomer implements Serializable {
 
     public QAdvanceCustomer() {
     }
+
+    public QAdvanceCustomer(String inputData) {
+        this.inputData = inputData;
+    }
     @Id
     @Column(name = "id")
     //@GeneratedValue(strategy = GenerationType.AUTO)
     @Expose
     @SerializedName("id")
-    private Long id = new Date().getTime();
+    private Long id = new Date().getTime() % 1000000;
 
     public Long getId() {
         return id;
@@ -110,4 +114,16 @@ public class QAdvanceCustomer implements Serializable {
     public void setAuthorizationCustomer(QAuthorizationCustomer authorizationCustomer) {
         this.authorizationCustomer = authorizationCustomer;
     }
- }
+    @Column(name = "input_data")
+    @Expose
+    @SerializedName("input_data")
+    private String inputData;
+
+    public String getInputData() {
+        return inputData;
+    }
+
+    public void setInputData(String inputData) {
+        this.inputData = inputData;
+    }
+}

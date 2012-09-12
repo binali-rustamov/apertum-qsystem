@@ -733,15 +733,17 @@ public class NetCommander {
      * @param serviceId услуга, в которую пытаемся встать.
      * @param date
      * @param advancedCustomer ID авторизованного кастомера
+     * @param inputData введеные по требованию услуги данные клиентом, может быть null если не вводили
      * @return предварительный кастомер
      */
-    public static QAdvanceCustomer standInServiceAdvance(INetProperty netProperty, long serviceId, Date date, long advancedCustomer) {
+    public static QAdvanceCustomer standInServiceAdvance(INetProperty netProperty, long serviceId, Date date, long advancedCustomer, String inputData) {
         QLog.l().logger().info("Записать предварительно в очередь.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.serviceId = serviceId;
         params.date = date.getTime();
         params.customerId = advancedCustomer;
+        params.textData = inputData;
         final String res;
         try {
             res = send(netProperty, Uses.TASK_ADVANCE_STAND_IN, params);

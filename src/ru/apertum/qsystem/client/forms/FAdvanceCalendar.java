@@ -74,6 +74,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
     private static QAdvanceCustomer result = null;
     private static int delay = 10000;
     private static long advancedCustomer = -1;
+    private static String inputData = null;
 
     /**
      * Статический метод который показывает модально диалог выбора времени для предварительной записи клиентов.
@@ -84,11 +85,13 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
      * @param fullscreen растягивать форму на весь экран и прятать мышку или нет
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
      * @param advCustomer ID клиента предварительно идентифицированного, например в регистратуре по медполису
+     * @param inputData введеные клиентом данные перед регистрацией, если это требуется в услуге. null если не вводили.
      * @return  если null, то отказались от предварительной записи
      */
-    public static QAdvanceCustomer showCalendar(Frame parent, boolean modal, INetProperty netProperty, QService service, boolean fullscreen, int delay, long advCustomer) {
+    public static QAdvanceCustomer showCalendar(Frame parent, boolean modal, INetProperty netProperty, QService service, boolean fullscreen, int delay, long advCustomer, String inputData) {
         FAdvanceCalendar.delay = delay;
         FAdvanceCalendar.advancedCustomer = advCustomer;
+        FAdvanceCalendar.inputData = inputData;
         QLog.l().logger().info("Выбор времени для предварительной записи");
         if (advanceCalendar == null) {
             advanceCalendar = new FAdvanceCalendar(parent, modal);
@@ -594,7 +597,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
                             clockBack.stop();
                         }
                         // ставим предварительного кастомера
-                        result = NetCommander.standInServiceAdvance(netProperty, service.getId(), date, advancedCustomer);
+                        result = NetCommander.standInServiceAdvance(netProperty, service.getId(), date, advancedCustomer, inputData);
                         // закрываем диалог выбора предварительного выбора времени
                         setVisible(false);
                     }
@@ -621,7 +624,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
                             clockBack.stop();
                         }
                         // ставим предварительного кастомера
-                        result = NetCommander.standInServiceAdvance(netProperty, service.getId(), date, advancedCustomer);
+                        result = NetCommander.standInServiceAdvance(netProperty, service.getId(), date, advancedCustomer, inputData);
                         // закрываем диалог выбора предварительного выбора времени
                         setVisible(false);
                     }

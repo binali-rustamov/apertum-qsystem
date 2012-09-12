@@ -73,6 +73,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`services` (
   `pre_info_html` TEXT NOT NULL COMMENT 'html текст информационного сообщения перед постановкой в очередь' ,
   `pre_info_print_text` TEXT NOT NULL COMMENT 'текст для печати при необходимости перед постановкой в очередь' ,
   `point` INT NOT NULL DEFAULT 0 COMMENT 'указание для какого пункта регистрации услуга, 0-для всех, х-для киоска х.' ,
+  `ticket_text` VARCHAR(1500) NULL COMMENT 'Текст напечатается на талоне.' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_servises_parent_id_servises_id`
     FOREIGN KEY (`prent_id` )
@@ -349,6 +350,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`advance` (
   `advance_time` DATETIME NOT NULL COMMENT 'Время предварительной записи' ,
   `priority` INT NOT NULL DEFAULT 2 COMMENT 'Приоритет заранее записавшегося клиента.' ,
   `clients_authorization_id` BIGINT NULL DEFAULT NULL COMMENT 'Определено если клиент авторизовался' ,
+  `input_data` VARCHAR(150) NULL COMMENT 'Введеные при предвариловке данные клиента если услуга этого требует' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_scenario_services`
     FOREIGN KEY (`service_id` )
@@ -562,8 +564,8 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`) VALUES (1, 'Дерево услуг', 'Дерево услуг', '-', '<html><b><p align=center><u><span style=\'font-size:30.0pt;color:blue\'>Предлагаемые услуги</span></u><br><br><span style=\'font-size:20.0pt;color:red\'>выберите требуемую услугу', 1, 1, NULL, 0, 0, 1, 14, NULL, 0, '', 0, NULL, '', '', 0);
-INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`) VALUES (2, 'Услуга', 'Описание услуги', 'А', '<html><b><p align=center><span style=\'font-size:20.0pt;color:blue\'>Некая услуга', 1, 1, 1, 0, 0, 1, 14, 1, 0, '', 0, 1, '', '', 0);
+INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`) VALUES (1, 'Дерево услуг', 'Дерево услуг', '-', '<html><b><p align=center><u><span style=\'font-size:30.0pt;color:blue\'>Предлагаемые услуги</span></u><br><br><span style=\'font-size:20.0pt;color:red\'>выберите требуемую услугу', 1, 1, NULL, 0, 0, 1, 14, NULL, 0, '', 0, NULL, '', '', 0, NULL);
+INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`) VALUES (2, 'Услуга', 'Описание услуги', 'А', '<html><b><p align=center><span style=\'font-size:20.0pt;color:blue\'>Некая услуга', 1, 1, 1, 0, 0, 1, 14, 1, 0, '', 0, 1, '', '', 0, NULL);
 
 COMMIT;
 

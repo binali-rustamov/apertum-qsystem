@@ -69,6 +69,7 @@ public class WelcomeParams {
     private static final String ALPHABETIC_KEYBOARD = "alphabetic_keyboard";// - буквенная клавиатура при вводе юзерской инфы
     private static final String INPUT_FONT_SIZE = "input_font_size";// - размер шрифта вводимого текста клиентом
     private static final String LINES_BUTTON_COUNT = "lines_button_count";// - количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
+    private static final String BUTTON_TYPE = "button_type";// - это внешний вид кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
 
     private WelcomeParams() {
         loadSettings();
@@ -94,6 +95,7 @@ public class WelcomeParams {
     public int askLimit = 3; // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь
     public int pageLinesCount = 30; // Количество строк на странице.
     public int linesButtonCount = 5; // количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
+    public String buttonType = ""; // - это внешний вид кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
     /**
      * Задержка заставки при печати в мсек.
      */
@@ -144,7 +146,7 @@ public class WelcomeParams {
         delayPrint = Integer.parseInt(settings.getProperty(DELAY_PRINT)); // Задержка заставки при печати в мсек.
         delayBack = Integer.parseInt(settings.getProperty(DELAY_BACK)); // Задержка заставки при печати в мсек.
         logoImg = settings.getProperty(LOGO_IMG);
-        backgroundImg = settings.containsKey(BACKGROUND_IMG) ? settings.getProperty(BACKGROUND_IMG): "/ru/apertum/qsystem/client/forms/resources/fon_welcome.jpg";
+        backgroundImg = settings.containsKey(BACKGROUND_IMG) ? settings.getProperty(BACKGROUND_IMG) : "/ru/apertum/qsystem/client/forms/resources/fon_welcome.jpg";
         promoText = settings.getProperty(PROMO_TXT);
         bottomText = settings.getProperty(BOTTOM_TXT);
         askLimit = Integer.parseInt(settings.getProperty(ASK_LIMIT)); // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь
@@ -162,5 +164,54 @@ public class WelcomeParams {
         numeric_keyboard = !settings.containsKey(NUMERIC_KEYBOARD) || "1".equals(settings.getProperty(NUMERIC_KEYBOARD)) || "true".equals(settings.getProperty(NUMERIC_KEYBOARD)); // - цифровая клавиатура при вводе юзерской инфы
         alphabetic_keyboard = !settings.containsKey(ALPHABETIC_KEYBOARD) || "1".equals(settings.getProperty(ALPHABETIC_KEYBOARD)) || "true".equals(settings.getProperty(ALPHABETIC_KEYBOARD));// - буквенная клавиатура при вводе юзерской инфы
         input_font_size = settings.containsKey(INPUT_FONT_SIZE) ? Integer.parseInt(settings.getProperty(INPUT_FONT_SIZE)) : 64; // - размер шрифта при вводе юзерской инфы
+        if (settings.containsKey(BUTTON_TYPE)) {
+            switch (settings.getProperty(BUTTON_TYPE)) {
+                case "1":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn1.png";
+                    break;
+                case "2":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn2.png";
+                    break;
+                case "3":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn3.png";
+                    break;
+                case "4":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn4.png";
+                    break;
+                case "5":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn5.png";
+                    break;
+                case "6":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn6.png";
+                    break;
+                case "7":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn7.png";
+                    break;
+                case "8":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn8.png";
+                    break;
+                case "9":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn9.png";
+                    break;
+                case "10":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn10.png";
+                    break;
+                case "11":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn11.png";
+                    break;
+                case "12":
+                    buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn12.png";
+                    break;
+                default:
+                    final File f = new File(settings.getProperty(BUTTON_TYPE));
+                    if (f.exists()) {
+                        buttonType = settings.getProperty(BUTTON_TYPE);
+                    } else {
+                        buttonType = "";
+                    }
+            }
+        } else {
+            buttonType = "";
+        }
     }
 }

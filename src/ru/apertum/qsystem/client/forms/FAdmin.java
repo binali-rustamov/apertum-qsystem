@@ -569,11 +569,11 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     private void showServiceInfo(QService service) {
-        labelServiceInfo.setText("<html><body text=\"#336699\"> " +(service.getEnable()==1?"":"<font color=\"#FF0000\">!*** </font>") + getLocaleMessage("service.service") + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>"
+        labelServiceInfo.setText("<html><body text=\"#336699\"> " + (service.getEnable() == 1 ? "" : "<font color=\"#FF0000\">!*** </font>") + getLocaleMessage("service.service") + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>"
                 + "<font color=\"#"
                 + (service.getStatus() == 1
                 ? "00AA00\">" + getLocaleMessage("service.kind.active")
-                 : (service.getStatus() == 0 ? "CCAA00\">" + getLocaleMessage("service.kind.not_active") : "DD0000\">" + getLocaleMessage("service.kind.unavailable"))) + "/" + service.getPoint()  
+                : (service.getStatus() == 0 ? "CCAA00\">" + getLocaleMessage("service.kind.not_active") : "DD0000\">" + getLocaleMessage("service.kind.unavailable"))) + "/" + service.getPoint()
                 + "</font>"
                 + ";    " + getLocaleMessage("service.prefix") + ": " + "<font color=\"#DD0000\">" + service.getPrefix() + "</font>" + ";  " + getLocaleMessage("service.description") + ": " + service.getDescription()
                 + ";<br>" + getLocaleMessage("service.restrict_day_reg") + ": " + (service.getDayLimit() == 0 ? getLocaleMessage("service.work_calendar.no") : service.getDayLimit())
@@ -1315,7 +1315,7 @@ public class FAdmin extends javax.swing.JFrame {
             //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
             String inputData = null;
             if (service.getInput_required()) {
-                inputData = FInputDialog.showInputDialog(this, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getInput_caption());
+                inputData = (String) JOptionPane.showInputDialog(this, service.getInput_caption(), "***", 3, null, null, "");
                 if (inputData == null || inputData.isEmpty()) {
                     return;
                 }
@@ -3968,9 +3968,18 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     public void standAdvance() {
         final QService service = (QService) treeServices.getLastSelectedPathComponent();
         if (service != null && service.isLeaf()) {
+
+            String inputData = null;
+            if (service.getInput_required()) {
+                inputData = (String) JOptionPane.showInputDialog(this, service.getInput_caption(), "***", 3, null, null, "");
+                if (inputData == null) {
+                    return;
+                }
+            }
+
             final QAdvanceCustomer res;
             try {
-                res = FAdvanceCalendar.showCalendar(this, true, new ServerNetProperty(), service, false, 0, -1);
+                res = FAdvanceCalendar.showCalendar(this, true, new ServerNetProperty(), service, false, 0, -1, inputData);
             } catch (Exception ex) {
                 throw new ClientException(getLocaleMessage("admin.send_cmd_adv.err") + " " + ex);
             }
@@ -3986,7 +3995,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                 }
             }).start();
 
-            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.client_adv_dialog.msg_1") + " \"" + service.getName() + "\". " + getLocaleMessage("admin.client_adv_dialog.msg_2") + " \"" + res.getAdvanceTime() + "\".", getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.client_adv_dialog.msg_1") + " \"" + service.getName() + "\". " + getLocaleMessage("admin.client_adv_dialog.msg_2") + " \"" + res.getId() + "\".", getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.INFORMATION_MESSAGE);
         }
     }
     /**

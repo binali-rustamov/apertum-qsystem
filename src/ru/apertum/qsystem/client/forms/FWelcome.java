@@ -543,7 +543,7 @@ public class FWelcome extends javax.swing.JFrame {
                 f = false;
             }
 
-            final QButton button = new QButton(service, this, panelMain, "");
+            final QButton button = new QButton(service, this, panelMain, WelcomeParams.getInstance().buttonType);
             if (button.isIsVisible() && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
                 if (f) {
                     panel.add(button);
@@ -658,9 +658,34 @@ public class FWelcome extends javax.swing.JFrame {
                 write(getLocaleMessage("ticket.time"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
 
                 write(Uses.format_for_label.format(customer.getStandTime()), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                // если клиент что-то ввел, то напечатаем это на его талоне
                 if (customer.getService().getInput_required()) {
                     write(customer.getService().getInput_caption(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                     write(customer.getInput_data(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                }
+                // если в услуге есть что напечатать на талоне, то напечатаем это на его талоне
+                if (customer.getService().getTicketText() != null && !customer.getService().getTicketText().isEmpty()) {
+                    String tt = customer.getService().getTicketText();
+                    while (tt.length() != 0) {
+                        String prn;
+                        if (tt.length() > WelcomeParams.getInstance().lineLenght) {
+                            int fl = 0;
+                            for (int i = WelcomeParams.getInstance().lineLenght; i > 0; i--) {
+
+                                if (" ".equals(tt.substring(i - 1, i))) {
+                                    fl = i;
+                                    break;
+                                }
+                            }
+                            int pos = fl == 0 ? WelcomeParams.getInstance().lineLenght : fl;
+                            prn = tt.substring(0, pos);
+                            tt = tt.substring(pos, tt.length());
+                        } else {
+                            prn = tt;
+                            tt = "";
+                        }
+                        write(prn, ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                    }
                 }
                 write(getLocaleMessage("ticket.wait"), ++line, WelcomeParams.getInstance().leftMargin, 1.8, 1);
                 write(WelcomeParams.getInstance().promoText, ++line, WelcomeParams.getInstance().leftMargin, 0.7, 0.4);
@@ -776,7 +801,7 @@ public class FWelcome extends javax.swing.JFrame {
                     gc_time.add(GregorianCalendar.HOUR_OF_DAY, -1);
                 }
                 write(Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()), ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
-                write("c " + (t) + ":00 до " + (t + 1) + ":00", ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
+                write(FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + (t) + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00", ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
 
 
                 line = line + 2;
@@ -807,6 +832,37 @@ public class FWelcome extends javax.swing.JFrame {
                 write(getLocaleMessage("ticket.reg_time"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
 
                 write(Uses.format_for_label.format(new Date()), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+
+                // если клиент что-то ввел, то напечатаем это на его талоне
+                if (advCustomer.getService().getInput_required()) {
+                    write(advCustomer.getService().getInput_caption(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                    write(advCustomer.getAuthorizationCustomer().getName(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1); // тут кривовато передали введеные дпнные
+                }
+
+                // если в услуге есть что напечатать на талоне, то напечатаем это на его талоне
+                if (advCustomer.getService().getTicketText() != null && !advCustomer.getService().getTicketText().isEmpty()) {
+                    String tt = advCustomer.getService().getTicketText();
+                    while (tt.length() != 0) {
+                        String prn;
+                        if (tt.length() > WelcomeParams.getInstance().lineLenght) {
+                            int fl = 0;
+                            for (int i = WelcomeParams.getInstance().lineLenght; i > 0; i--) {
+
+                                if (" ".equals(tt.substring(i - 1, i))) {
+                                    fl = i;
+                                    break;
+                                }
+                            }
+                            int pos = fl == 0 ? WelcomeParams.getInstance().lineLenght : fl;
+                            prn = tt.substring(0, pos);
+                            tt = tt.substring(pos, tt.length());
+                        } else {
+                            prn = tt;
+                            tt = "";
+                        }
+                        write(prn, ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                    }
+                }
 
                 write(getLocaleMessage("ticket.adv_code"), ++line, WelcomeParams.getInstance().leftMargin, 1.3, 1);
                 int y = write("", ++line, 0, 1, 1);

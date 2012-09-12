@@ -16,15 +16,22 @@
  */
 package ru.apertum.qsystem.client.model;
 
+import java.awt.AlphaComposite;
 import ru.apertum.qsystem.client.common.WelcomeParams;
 import ru.apertum.qsystem.common.NetCommander;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -40,6 +47,7 @@ import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
+import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.apertum.qsystem.server.model.QService;
 
 /**
@@ -51,7 +59,7 @@ import ru.apertum.qsystem.server.model.QService;
 public class QButton extends JButton {
 
     /**
-     * XML - описание кнопки
+     * Услуга, висящая на кнопке
      */
     private final QService service;
     /**
@@ -74,26 +82,43 @@ public class QButton extends JButton {
     }
     private final static int NO_ACTIVE = 0;
     private final static int NO_VISIBLE = -1;
+    private final static HashMap<String, Image> imgs = new HashMap<>();
 
     public QButton(final QService service, FWelcome frm, JPanel prt, String resourceName) {
         super();
-        setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new BevelBorder(BevelBorder.RAISED)));
+
         this.form = frm;
         this.service = service;
         this.parent = prt;
-        // Нарисуем картинку на кнопке если надо
+        // Нарисуем картинку на кнопке если надо. Загрузить можно из файла или ресурса
         if ("".equals(resourceName)) {
             background = null;
         } else {
-            final DataInputStream inStream = new DataInputStream(getClass().getResourceAsStream(resourceName));
-            byte[] b = null;
-            try {
-                b = new byte[inStream.available()];
-                inStream.readFully(b);
-            } catch (IOException ex) {
-                QLog.l().logger().error(ex);
+            background = imgs.get(resourceName);
+            if (background == null) {
+                File file = new File(resourceName);
+                if (file.exists()) {
+                    try {
+                        background = ImageIO.read(file);
+                        imgs.put(resourceName, background);
+                    } catch (IOException ex) {
+                        background = null;
+                        QLog.l().logger().error(ex);
+                    }
+                } else {
+                    final DataInputStream inStream = new DataInputStream(getClass().getResourceAsStream(resourceName));
+                    byte[] b = null;
+                    try {
+                        b = new byte[inStream.available()];
+                        inStream.readFully(b);
+                    } catch (IOException ex) {
+                        background = null;
+                        QLog.l().logger().error(ex);
+                    }
+                    background = new ImageIcon(b).getImage();
+                    imgs.put(resourceName, background);
+                }
             }
-            background = new ImageIcon(b).getImage();
         }
         // посмотрим доступна ли данная услуга или группа услуг
         isVisible = NO_VISIBLE != service.getStatus();
@@ -109,6 +134,17 @@ public class QButton extends JButton {
         } else {
             setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/folder.png")));
         }
+
+        //займемся внешним видом
+        // либо просто стандартная кнопка, либо картинка на кнопке если она есть
+        if (background == null) {
+            setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new BevelBorder(BevelBorder.RAISED)));
+        } else {
+            setOpaque(false);
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+        }
+
         addActionListener(new ActionListener() {
 
             @Override
@@ -132,12 +168,30 @@ public class QButton extends JButton {
                             // Если Предварительная запись, то пытаемся предватительно встать и выходим из обработке кнопки.
                             if (FWelcome.isAdvanceRegim()) {
                                 form.setAdvanceRegim(false);
-                                final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service, true, WelcomeParams.getInstance().delayBack * 2, form.advancedCustomer);
+                                
+                                //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода, т.к. потом при постановки в очередь предварительных
+                                // нет ввода данных, только номера регистрации.
+                                String inputData = null;
+                                if (service.getInput_required()) {
+                                    inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getInput_caption());
+                                    if (inputData == null) {
+                                        return;
+                                    }
+                                }
+                                
+                                final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service, true, WelcomeParams.getInstance().delayBack * 2, form.advancedCustomer, inputData);
                                 //Если res == null значит отказались от выбора
                                 if (res == null) {
                                     form.showMed();
                                     return;
                                 }
+                                
+                                // приложим введенное клиентом чтобы потом напечатать.
+                                if (service.getInput_required()) {
+                                    res.setAuthorizationCustomer(new QAuthorizationCustomer(inputData));
+                                }
+                                
+                                
                                 //вешаем заставку
                                 final GregorianCalendar gc_time = new GregorianCalendar();
                                 gc_time.setTime(res.getAdvanceTime());
@@ -304,15 +358,33 @@ public class QButton extends JButton {
         clockPush.start();
          */
     }
-    private final Image background;
+    private Image background;
 
     @Override
     public void paintComponent(Graphics g) {
         if (background != null) {
-            g.drawImage(background, 0, 0, null);
-            repaint();
+            //Image scaledImage = background.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH); // это медленный вариант
+            final Image scaledImage = resizeToBig(background, getWidth(), getHeight());
+            final Graphics2D g2 = (Graphics2D) g;
+            g2.drawImage(scaledImage, 0, 0, null, null);
+            super.paintComponent(g);
         } else {
             super.paintComponent(g);
         }
+    }
+
+    private Image resizeToBig(Image originalImage, int biggerWidth, int biggerHeight) {
+        final BufferedImage resizedImage = new BufferedImage(biggerWidth, biggerHeight, BufferedImage.TYPE_INT_ARGB);
+        final Graphics2D g = resizedImage.createGraphics();
+
+        g.setComposite(AlphaComposite.Src);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g.drawImage(originalImage, 0, 0, biggerWidth, biggerHeight, this);
+        g.dispose();
+
+        return resizedImage;
     }
 }

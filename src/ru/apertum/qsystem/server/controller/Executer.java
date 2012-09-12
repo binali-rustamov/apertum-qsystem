@@ -89,13 +89,13 @@ import ru.apertum.qsystem.server.model.schedule.QSchedule;
  * @author Evgeniy Egorov
  */
 public final class Executer {
-
+    
     public static Executer getInstance() {
         return ExecuterHolder.INSTANCE;
     }
-
+    
     private static class ExecuterHolder {
-
+        
         private static final Executer INSTANCE = new Executer();
     }
 
@@ -123,15 +123,15 @@ public final class Executer {
      * метод process исполняет задание.
      */
     private class Task {
-
+        
         protected final String name;
         protected CmdParams cmdParams;
-
+        
         public Task(String name) {
             this.name = name;
             tasks.put(name, this);
         }
-
+        
         public Object process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             QLog.l().logger().debug("Выполняем : \"" + name + "\"");
             this.cmdParams = cmdParams;
@@ -146,13 +146,13 @@ public final class Executer {
      * Ставим кастомера в очередь.  
      */
     final AddCustomerTask addCustomerTask = new AddCustomerTask(Uses.TASK_STAND_IN);
-
+    
     class AddCustomerTask extends Task {
-
+        
         public AddCustomerTask(String name) {
             super(name);
         }
-
+        
         @Override
         public RpcStandInService process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -222,7 +222,7 @@ public final class Executer {
                 //разослать оповещение о том, что посетитель вызван повторно
                 //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
                 MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
-
+                
                 return new RpcInviteCustomer(user.getCustomer());
             }
 
@@ -364,7 +364,7 @@ public final class Executer {
      * Получить перечень услуг
      */
     final Task getServicesTask = new Task(Uses.TASK_GET_SERVICES) {
-
+        
         @Override
         public RpcGetAllServices process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -377,7 +377,7 @@ public final class Executer {
      * @return 1 - превышен, 0 - можно встать. 2 - забанен
      */
     final Task aboutServicePersonLimit = new Task(Uses.TASK_ABOUT_SERVICE_PERSON_LIMIT) {
-
+        
         @Override
         public RpcGetInt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -393,7 +393,7 @@ public final class Executer {
      * Получить описание состояния услуги
      */
     final Task aboutTask = new Task(Uses.TASK_ABOUT_SERVICE) {
-
+        
         @Override
         public RpcGetInt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -506,7 +506,7 @@ public final class Executer {
      * Получить описание пользователей для выбора
      */
     final Task getUsersTask = new Task(Uses.TASK_GET_USERS) {
-
+        
         @Override
         public RpcGetUsersList process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -518,12 +518,12 @@ public final class Executer {
      * Получить состояние сервера.
      */
     private final Task getServerState = new Task(Uses.TASK_SERVER_STATE) {
-
+        
         @Override
         public RpcGetServerState process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final LinkedList<RpcGetServerState.ServiceInfo> srvs = new LinkedList<>();
-
+            
             for (QService service : QServiceTree.getInstance().getNodes()) {
                 if (service.isLeaf()) {
                     final QCustomer customer = service.peekCustomer();
@@ -538,9 +538,9 @@ public final class Executer {
      */
     private final LiveTask checkUserLive = new LiveTask(Uses.TASK_I_AM_LIVE);
     private static final Object forRefr = new Object();
-
+    
     private class LiveTask extends Task {
-
+        
         public LiveTask(String name) {
             super(name);
         }
@@ -556,7 +556,7 @@ public final class Executer {
          * Адрес пользователя -> его байтовое прeдставление
          */
         private final HashMap<String, byte[]> ipByAddr = new HashMap<>();
-
+        
         public boolean hasId(Long id) {
             synchronized (forRefr) {
                 return addrByID.get(id) != null;
@@ -568,7 +568,7 @@ public final class Executer {
          */
         public void refreshUsersFon() {
             Thread th = new Thread(new Runnable() {
-
+                
                 @Override
                 public void run() {
                     refreshUsers();
@@ -674,7 +674,7 @@ public final class Executer {
                 }
             }
         }
-
+        
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             synchronized (forRefr) {
@@ -690,7 +690,7 @@ public final class Executer {
      * Получить описание состояния очередей для пользователя.
      */
     final Task getSelfServicesTask = new Task(Uses.TASK_GET_SELF_SERVICES) {
-
+        
         @Override
         public RpcGetSelfSituation process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -716,7 +716,7 @@ public final class Executer {
         // надо запоминать название пунктов приема из БД для юзеров, не то перетрется клиентской настройкой и не восстановить
 
         final HashMap<QUser, String> points = new HashMap<>();
-
+        
         @Override
         public synchronized RpcGetBool process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -742,7 +742,7 @@ public final class Executer {
      * Получить состояние пула отложенных
      */
     final Task getPostponedPoolInfo = new Task(Uses.TASK_GET_POSTPONED_POOL) {
-
+        
         @Override
         public synchronized RpcGetPostponedPoolInfo process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -753,7 +753,7 @@ public final class Executer {
      * Получить список забаненных
      */
     final Task getBanList = new Task(Uses.TASK_GET_BAN_LIST) {
-
+        
         @Override
         public RpcBanList process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -765,7 +765,7 @@ public final class Executer {
      * Удалить вызванного юзером кастомера по неявке.
      */
     final Task killCustomerTask = new Task(Uses.TASK_KILL_NEXT_CUSTOMER) {
-
+        
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -810,7 +810,7 @@ public final class Executer {
      * Начать работу с вызванноым кастомером.
      */
     final Task getStartCustomerTask = new Task(Uses.TASK_START_CUSTOMER) {
-
+        
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -829,7 +829,7 @@ public final class Executer {
      * Перемещение вызванного юзером кастомера в пул отложенных.
      */
     final Task customerToPostponeTask = new Task(Uses.TASK_CUSTOMER_TO_POSTPON) {
-
+        
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -866,7 +866,7 @@ public final class Executer {
      * Изменение отложенному кастомеру статуса
      */
     final Task postponCustomerChangeStatusTask = new Task(Uses.TASK_POSTPON_CHANGE_STATUS) {
-
+        
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -880,14 +880,14 @@ public final class Executer {
             } else {
                 return new JsonRPC20(new JsonRPC20Error(JsonRPC20Error.POSTPONED_NOT_FOUND, cmdParams.customerId));
             }
-
+            
         }
     };
     /**
      * Закончить работу с вызванноым кастомером.
      */
     final Task getFinishCustomerTask = new Task(Uses.TASK_FINISH_CUSTOMER) {
-
+        
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -953,7 +953,7 @@ public final class Executer {
      * Переадресовать клиента к другой услуге.
      */
     final Task redirectCustomerTask = new Task(Uses.TASK_REDIRECT_CUSTOMER) {
-
+        
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1017,7 +1017,7 @@ public final class Executer {
      * Привязка услуги пользователю на горячую по команде. Это обработчик этой команды.
      */
     final Task setServiceFire = new Task(Uses.TASK_SET_SERVICE_FIRE) {
-
+        
         @Override
         synchronized public RpcGetSrt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1032,7 +1032,7 @@ public final class Executer {
                 return new RpcGetSrt("Требуемый пользователь не присутствует в текущей загруженной конфигурации сервера.");
             }
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
-
+            
             if (user.hasService(cmdParams.serviceId)) {
                 return new RpcGetSrt("Требуемая услуга уже назначена этому пользователю.");
             }
@@ -1047,7 +1047,7 @@ public final class Executer {
      * Удаление привязка услуги пользователю на горячую по команде. Это обработчик этой команды.
      */
     final Task deleteServiceFire = new Task(Uses.TASK_DELETE_SERVICE_FIRE) {
-
+        
         @Override
         synchronized public RpcGetSrt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1061,7 +1061,7 @@ public final class Executer {
                 return new RpcGetSrt("Требуемый пользователь не присутствует в текущей загруженной конфигурации сервера.");
             }
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
-
+            
             if (!user.hasService(cmdParams.serviceId)) {
                 return new RpcGetSrt("Требуемая услуга не назначена этому пользователю.");
             }
@@ -1077,7 +1077,7 @@ public final class Executer {
      * Это XML-файл лежащий в папку приложения mainboard.xml
      */
     final Task getBoardConfig = new Task(Uses.TASK_GET_BOARD_CONFIG) {
-
+        
         @Override
         public RpcGetSrt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1089,7 +1089,7 @@ public final class Executer {
      * Это XML-файл лежащий в папку приложения mainboard.xml
      */
     final Task saveBoardConfig = new Task(Uses.TASK_SAVE_BOARD_CONFIG) {
-
+        
         @Override
         synchronized public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1105,7 +1105,7 @@ public final class Executer {
      * Получение таблици записанных ранее клиентов на неделю.
      */
     final Task getGridOfWeek = new Task(Uses.TASK_GET_GRID_OF_WEEK) {
-
+        
         @Override
         public RpcGetGridOfWeek process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1115,17 +1115,17 @@ public final class Executer {
             if (sch == null) {
                 return new RpcGetGridOfWeek(new RpcGetGridOfWeek.GridAndParams("Требуемая услуга не имеет расписания."));
             }
-
+            
             final Date startWeek = new Date(cmdParams.date);
             final GregorianCalendar gc = new GregorianCalendar();
             gc.setTime(startWeek);
             gc.set(GregorianCalendar.DAY_OF_YEAR, gc.get(GregorianCalendar.DAY_OF_YEAR) + 7);
             final Date endWeek = gc.getTime();
-
+            
             QLog.l().logger().trace("Загрузим уже занятых позиций ранее записанными кастомерами от " + Uses.format_for_rep.format(startWeek) + " до " + Uses.format_for_rep.format(endWeek));
             // Загрузим уже занятых позиций ранее записанными кастомерами
             List<QAdvanceCustomer> advCustomers = Spring.getInstance().getHt().find("FROM QAdvanceCustomer a WHERE advance_time >'" + Uses.format_for_rep.format(startWeek) + "' and advance_time <= '" + Uses.format_for_rep.format(endWeek) + "' and service_id = " + service.getId());
-
+            
             final GridAndParams advCusts = new GridAndParams();
             advCusts.setStartTime(ServerProps.getInstance().getProps().getStartTime());
             advCusts.setFinishTime(ServerProps.getInstance().getProps().getFinishTime());
@@ -1184,7 +1184,7 @@ public final class Executer {
                             default:
                                 ;
                         }
-
+                        
                     }
                     // Если работаем в этот день то определим часы на которые еще можно записаться
                     if (!(start == null || end == null)) {
@@ -1226,8 +1226,8 @@ public final class Executer {
                             gc.set(GregorianCalendar.HOUR_OF_DAY, gc.get(GregorianCalendar.HOUR_OF_DAY) + 1);
                             start = gc.getTime();
                         }
-
-
+                        
+                        
                     }
                 } // проверка на нерабочий день календаря
                 // переход на следующий день
@@ -1261,15 +1261,15 @@ public final class Executer {
      * Записать кастомера предварительно в услугу.
      */
     final Task standAdvanceInService = new Task(Uses.TASK_ADVANCE_STAND_IN) {
-
+        
         @Override
         synchronized public RpcGetAdvanceCustomer process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-
+            
             final QService service = QServiceTree.getInstance().getById(cmdParams.serviceId);
             QLog.l().logger().trace("Предварительно записываем к услуге \"" + cmdParams.serviceId + "\" -> " + service.getPrefix() + ' ' + service.getName() + '\'');
             // Создадим вновь испеченного кастомера
-            final QAdvanceCustomer customer = new QAdvanceCustomer();
+            final QAdvanceCustomer customer = new QAdvanceCustomer(cmdParams.textData);
 
             // Определим ID авторизованного пользователя, если небыло авторизации, то оно = -1
             final Long authCustonerID = cmdParams.customerId;
@@ -1297,7 +1297,7 @@ public final class Executer {
             QLog.l().logger().debug("Старт сохранения предварительной записи в СУБД.");
             //Uses.getSessionFactory().merge(this);
             Spring.getInstance().getTt().execute(new TransactionCallbackWithoutResult() {
-
+                
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus status) {
                     try {
@@ -1316,7 +1316,7 @@ public final class Executer {
      * Поставить кастомера в очередь предварительно записанного. Проверить бронь, поставить или отказать.
      */
     final Task standAdvanceCheckAndStand = new Task(Uses.TASK_ADVANCE_CHECK_AND_STAND) {
-
+        
         @Override
         public RpcStandInService process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1343,7 +1343,7 @@ public final class Executer {
                 //трем запись в таблице предварительных записей
 
                 Spring.getInstance().getTt().execute(new TransactionCallbackWithoutResult() {
-
+                    
                     @Override
                     protected void doInTransactionWithoutResult(TransactionStatus status) {
                         try {
@@ -1361,8 +1361,9 @@ public final class Executer {
                 params.serviceId = advCust.getService().getId();
                 params.password = "";
                 params.priority = advCust.getPriority();
+                params.textData = advCust.getInputData();
                 final RpcStandInService txtCustomer = addCustomerTask.process(params, ipAdress, IP);
-
+                txtCustomer.getResult().setInput_data(advCust.getInputData());
                 return txtCustomer;
             } else {
                 String answer;
@@ -1382,7 +1383,7 @@ public final class Executer {
      * Получение списка отзывов.
      */
     final Task getResponseList = new Task(Uses.TASK_GET_RESPONSE_LIST) {
-
+        
         @Override
         public RpcGetRespList process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1393,7 +1394,7 @@ public final class Executer {
      * Регистрация отзыва.
      */
     final Task setResponseAnswer = new Task(Uses.TASK_SET_RESPONSE_ANSWER) {
-
+        
         @Override
         public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1402,7 +1403,7 @@ public final class Executer {
             event.setDate(new Date());
             event.setRespID(cmdParams.responseId);
             Spring.getInstance().getTt().execute(new TransactionCallbackWithoutResult() {
-
+                
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus status) {
                     try {
@@ -1422,7 +1423,7 @@ public final class Executer {
      * Получение информационного дерева.
      */
     final Task getInfoTree = new Task(Uses.TASK_GET_INFO_TREE) {
-
+        
         @Override
         public RpcGetInfoTree process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1433,7 +1434,7 @@ public final class Executer {
      * Идентифицировать кастомера по его ID.
      */
     final Task getClientAuthorization = new Task(Uses.TASK_GET_CLIENT_AUTHORIZATION) {
-
+        
         @Override
         public RpcGetAuthorizCustomer process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1451,7 +1452,7 @@ public final class Executer {
      * Получение списка результатов по окончанию работы пользователя с клиентом.
      */
     final Task getResultsList = new Task(Uses.TASK_GET_RESULTS_LIST) {
-
+        
         @Override
         public RpcGetResultsList process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1462,7 +1463,7 @@ public final class Executer {
      * Изменение приоритета кастомеру
      */
     final Task setCustomerPriority = new Task(Uses.TASK_SET_CUSTOMER_PRIORITY) {
-
+        
         @Override
         public RpcGetSrt process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1482,7 +1483,7 @@ public final class Executer {
      * Рестарт сервера из админки
      */
     final Task restartServer = new Task(Uses.TASK_RESTART) {
-
+        
         @Override
         public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1498,7 +1499,7 @@ public final class Executer {
      * Рестарт главного табло из админки
      */
     final Task restarMainTablo = new Task(Uses.TASK_RESTART_MAIN_TABLO) {
-
+        
         @Override
         public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1510,7 +1511,7 @@ public final class Executer {
      * Изменить бегущий текст на табло
      */
     final Task refreshRunningText = new Task(Uses.TASK_CHANGE_RUNNING_TEXT_ON_BOARD) {
-
+        
         @Override
         public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1552,7 +1553,7 @@ public final class Executer {
      * Запрос на изменение приоритетор оказываемых услуг от юзеров
      */
     final Task changeFlexPriority = new Task(Uses.TASK_CHANGE_FLEX_PRIORITY) {
-
+        
         @Override
         public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -1587,14 +1588,14 @@ public final class Executer {
         if (tasks.get(rpc.getMethod()) == null) {
             throw new ServerException("В задании не верно указано название действия: '" + rpc.getMethod() + "'");
         }
-
+        
         final Object result;
         // Вызов обработчика задания не синхронизирован
         // Синхронизация переехала внутрь самих обработчиков с помощью блокировок
         // Это сделано потому что появилось много заданий, которые не надо синхронизировать.
         // А то что необходимо синхронизировать, то синхронизится в самих обработчиках.
         result = tasks.get(rpc.getMethod()).process(rpc.getParams(), ipAdress, IP);
-
+        
         QLog.l().logger().info("Задание завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
         return result;
     }

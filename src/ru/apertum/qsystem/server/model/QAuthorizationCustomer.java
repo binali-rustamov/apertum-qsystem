@@ -38,6 +38,11 @@ public class QAuthorizationCustomer implements Serializable {
 
     public QAuthorizationCustomer() {
     }
+    // это добавлено для предвариловки с вводом клиентских данных
+
+    public QAuthorizationCustomer(String name) {
+        this.name = name;
+    }
     @Id
     @Column(name = "id")
     //@GeneratedValue(strategy = GenerationType.AUTO)
