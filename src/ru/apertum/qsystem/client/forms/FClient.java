@@ -1319,7 +1319,7 @@ public final class FClient extends javax.swing.JFrame {
         Uses.startSplashClient();
         QLog.initial(args, false);
         // тут нужно провести мегаинициализацию номера пункта окна работника
-        for (Integer i = 0; i < args.length - 2; i++) {
+        for (Integer i = 0; i < args.length - 1; i++) {
             if ("-point".equals(args[i])) {
                 NetCommander.pointId = args[i + 1];
                 break;

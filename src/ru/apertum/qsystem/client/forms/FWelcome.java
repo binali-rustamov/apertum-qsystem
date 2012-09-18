@@ -883,8 +883,11 @@ public class FWelcome extends javax.swing.JFrame {
                     } catch (OutputException ex) {
                         QLog.l().logger().error("Ошибка вывода штрихкода. " + ex);
                     }
+                    line = line + 3;
+                } else {
+                    write(advCustomer.getId().toString(), ++line, WelcomeParams.getInstance().leftMargin, 2.0, 1.7);
                 }
-                line = line + 3;
+                
                 write(WelcomeParams.getInstance().promoText, ++line, WelcomeParams.getInstance().leftMargin, 0.7, 0.4);
                 //Напечатаем текст внизу билета
 
