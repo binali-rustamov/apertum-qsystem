@@ -64,7 +64,7 @@ public class RpcGetGridOfWeek extends JsonRPC20 {
 
         public void addTime(Date time) {
             if (times == null) {
-                times = new LinkedList<Date>();
+                times = new LinkedList<>();
             }
             times.add(time);
         }
@@ -85,6 +85,17 @@ public class RpcGetGridOfWeek extends JsonRPC20 {
         @Expose
         @SerializedName("limit_period")
         private int advanceLimitPeriod;
+        @Expose
+        @SerializedName("limit_time")
+        private int advanceTimePeriod;
+
+        public int getAdvanceTimePeriod() {
+            return advanceTimePeriod;
+        }
+
+        public void setAdvanceTimePeriod(int advanceTimePeriod) {
+            this.advanceTimePeriod = advanceTimePeriod;
+        }
 
         public int getAdvanceLimit() {
             return advanceLimit;

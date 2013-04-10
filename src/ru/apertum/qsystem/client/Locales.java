@@ -76,15 +76,15 @@ public class Locales {
     /**
      * eng -> Locale(eng)
      */
-    private final HashMap<String, Locale> locales = new HashMap<String, Locale>();
+    private final HashMap<String, Locale> locales = new HashMap<>();
     /**
      * English -> eng
      */
-    private final HashMap<String, String> lngs = new HashMap<String, String>();
+    private final HashMap<String, String> lngs = new HashMap<>();
     /**
      * eng -> English 
      */
-    private final HashMap<String, String> lngs_names = new HashMap<String, String>();
+    private final HashMap<String, String> lngs_names = new HashMap<>();
 
     public static Locales getInstance() {
         return LocalesHolder.INSTANCE;
@@ -97,18 +97,10 @@ public class Locales {
     private final String LANG_CURRENT = "locale.current";
 
     public Locale getLangCurrent() {
-        if (isJoke) {
-            return new Locale("uk", "UA");
-        }
         return locales.get(config.getString(LANG_CURRENT)) == null ? Locale.getDefault() : locales.get(config.getString(LANG_CURRENT));
     }
 
-    private static final boolean isJoke = (new GregorianCalendar()).get(GregorianCalendar.MONTH) == GregorianCalendar.APRIL && (new GregorianCalendar()).get(GregorianCalendar.DAY_OF_MONTH) == 1;
-
     public String getLangCurrName() {
-        if (isJoke) {
-            return lngs_names.get("ukr");
-        }
         return "".equals(config.getString(LANG_CURRENT)) ? lngs_names.get("eng") : lngs_names.get(config.getString(LANG_CURRENT));
     }
 
@@ -121,7 +113,7 @@ public class Locales {
     }
 
     public ArrayList<String> getAvailableLocales() {
-        final ArrayList<String> res = new ArrayList<String>(lngs.keySet());
+        final ArrayList<String> res = new ArrayList<>(lngs.keySet());
         return res;
     }
 }

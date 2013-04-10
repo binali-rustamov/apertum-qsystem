@@ -32,6 +32,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import ru.apertum.qsystem.client.forms.AFBoardRedactor;
 import ru.apertum.qsystem.client.forms.FBoardConfig;
+import ru.apertum.qsystem.client.forms.FCallDialog;
 import ru.apertum.qsystem.client.forms.FIndicatorBoard;
 import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.QLog;
@@ -40,6 +41,7 @@ import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
+import ru.apertum.qsystem.server.model.QUser;
 
 /**
  * Вывод информации на мониторы.
@@ -113,34 +115,49 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
         QLog.l().logger().info("Создание табло для телевизоров или мониторов.");
     }
 
+    /**
+     * Переопределено что бы вызвать появление таблички с номером вызванного поверх главного табло
+     * @param user
+     * @param customer 
+     */
+    @Override
+    public synchronized void inviteCustomer(QUser user, QCustomer customer) {
+        super.inviteCustomer(user, customer);
+        if (indicatorBoard != null) {
+            indicatorBoard.showCallPanel(customer.getPrefix() + customer.getNumber(), user.getPoint());
+        }
+    }
+
     @Override
     protected void showOnBoard(LinkedHashSet<Record> records) {
-        int i = 0;
-        for (Record rec : records) {
-            indicatorBoard.printRecord(i++, rec.customerNumber, rec.point, rec.getState() == CustomerState.STATE_INVITED ? 0 : -1);
-        }
-        for (int t = i; t < getLinesCount(); t++) {
-            indicatorBoard.printRecord(t, "", "", -1);
-        }
-        markShowed(records);
+        if (indicatorBoard != null) {
+            int i = 0;
+            for (Record rec : records) {
+                indicatorBoard.printRecord(i++, rec.customerNumber, rec.point, rec.getState() == CustomerState.STATE_INVITED ? 0 : -1);
+            }
+            for (int t = i; t < getLinesCount(); t++) {
+                indicatorBoard.printRecord(t, "", "", -1);
+            }
+            markShowed(records);
 
 
-        if (QLog.isServer1) { // если это не сервер, то QServiceTree полезет в спринг
-            final LinkedList<String> nexts = new LinkedList<>();
-            final PriorityQueue<QCustomer> customers = new PriorityQueue<>();
-            for (QService service : QServiceTree.getInstance().getNodes()) {
-                if (service.isLeaf()) {
-                    for (QCustomer qCustomer : service.getClients()) {
-                        customers.add(qCustomer);
+            if (QLog.isServer1) { // если это не сервер, то QServiceTree полезет в спринг
+                final LinkedList<String> nexts = new LinkedList<>();
+                final PriorityQueue<QCustomer> customers = new PriorityQueue<>();
+                for (QService service : QServiceTree.getInstance().getNodes()) {
+                    if (service.isLeaf()) {
+                        for (QCustomer qCustomer : service.getClients()) {
+                            customers.add(qCustomer);
+                        }
                     }
                 }
+                QCustomer qCustomer = customers.poll();
+                while (qCustomer != null) {
+                    nexts.add(qCustomer.getPrefix() + qCustomer.getNumber());
+                    qCustomer = customers.poll();
+                }
+                indicatorBoard.showNext(nexts);
             }
-            QCustomer qCustomer = customers.poll();
-            while (qCustomer != null) {
-                nexts.add(qCustomer.getPrefix() + qCustomer.getNumber());
-                qCustomer = customers.poll();
-            }
-            indicatorBoard.showNext(nexts);
         }
     }
 

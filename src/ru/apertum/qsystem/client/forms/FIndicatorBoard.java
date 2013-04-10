@@ -171,7 +171,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     public void toPosition(boolean isDebug, int x, int y) {
         // Определим форму нв монитор
         setLocation(x, y);
-
+        setAlwaysOnTop(!isDebug);
+        setResizable(isDebug);
         // Отрехтуем форму в зависимости от режима.
         if (!isDebug) {
 
@@ -269,7 +270,9 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             // таблица ближайших
             label.setVerticalAlignment(1);
             label.setText("<HTML>"
-                    + "<table  cellpadding='5' align='center' border='1' bordercolor='0'>"
+                    + "<table  cellpadding='5' align='center' border='"
+                    + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_FRAME_BORDER).get(0).attributeValue(Uses.TAG_BOARD_VALUE)
+                    + "' bordercolor='0'>"
                     + "<tr><td>"
                     + "<p align=center>"
                     + "<span style='font-size:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ".0pt;color:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ";'>"
@@ -617,6 +620,13 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         }
     }
 
+    public void showCallPanel(String number, String point) {
+        if (isMain && "1".equals(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_CALL_PANEL).get(0).attributeValue(Uses.TAG_BOARD_VALUE))) {
+            QLog.l().logger().info("Демонстрация номера вызванного \"" + number + " - " + point + "\" для показа в диалоге на главном табло.");
+            FCallDialog.getInstance(this, mainElement).show(number, point);
+        }
+    }
+
     /**
      * Включение/выключение звука видеородиков на табло
      * @param mute наличие звука в роликах
@@ -665,6 +675,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FIndicatorBoard.class);
         setTitle(resourceMap.getString("Form.title")); // NOI18N
+        setAlwaysOnTop(true);
         setName("Form"); // NOI18N
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
@@ -825,9 +836,9 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelLeftLayout.setHorizontalGroup(
             panelLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLeftLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(rlLeft, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(0, 0, 0)
+                .addComponent(rlLeft, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
         panelLeftLayout.setVerticalGroup(
             panelLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -875,9 +886,9 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelRightLayout.setHorizontalGroup(
             panelRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelRightLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(rlRight, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(0, 0, 0)
+                .addComponent(rlRight, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
         panelRightLayout.setVerticalGroup(
             panelRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

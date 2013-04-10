@@ -168,7 +168,7 @@ public class QButton extends JButton {
                             // Если Предварительная запись, то пытаемся предватительно встать и выходим из обработке кнопки.
                             if (FWelcome.isAdvanceRegim()) {
                                 form.setAdvanceRegim(false);
-                                
+
                                 //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода, т.к. потом при постановки в очередь предварительных
                                 // нет ввода данных, только номера регистрации.
                                 String inputData = null;
@@ -178,31 +178,33 @@ public class QButton extends JButton {
                                         return;
                                     }
                                 }
-                                
+
                                 final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service, true, WelcomeParams.getInstance().delayBack * 2, form.advancedCustomer, inputData);
                                 //Если res == null значит отказались от выбора
                                 if (res == null) {
                                     form.showMed();
                                     return;
                                 }
-                                
+
                                 // приложим введенное клиентом чтобы потом напечатать.
                                 if (service.getInput_required()) {
                                     res.setAuthorizationCustomer(new QAuthorizationCustomer(inputData));
                                 }
-                                
-                                
+
+
                                 //вешаем заставку
                                 final GregorianCalendar gc_time = new GregorianCalendar();
                                 gc_time.setTime(res.getAdvanceTime());
                                 int t = gc_time.get(GregorianCalendar.HOUR_OF_DAY);
+                                String t_m = ("" + gc_time.get(GregorianCalendar.MINUTE) + "0000").substring(0, 2);
                                 if (t == 0) {
                                     t = 24;
                                     gc_time.add(GregorianCalendar.HOUR_OF_DAY, -1);
                                 }
                                 form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + "<br><br><br></span>"
                                         + "<span style='font-size:80.0pt;color:blue'>" + Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()) + "<br></span>"
-                                        + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + t + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00" + "</span></p>",
+                                        // + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + t + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00" + "</span></p>",
+                                        + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_come_to") + " " + t + ":" + t_m + " " + "</span></p>",
                                         "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
                                 // печатаем результат
                                 new Thread(new Runnable() {
@@ -222,7 +224,7 @@ public class QButton extends JButton {
                             // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
                             // если есть текст, то показываем диалог
                             if (service.getPreInfoHtml() != null && !"".equals(service.getPreInfoHtml())) {
-                                if (!FPreInfoDialog.showPreInfoDialog(form, service.getPreInfoHtml(), service.getPreInfoPrintText(), true, true, WelcomeParams.getInstance().delayBack)) {
+                                if (!FPreInfoDialog.showPreInfoDialog(form, service.getPreInfoHtml(), service.getPreInfoPrintText(), true, true, WelcomeParams.getInstance().delayBack * 2)) {
                                     // выходим т.к. кастомер отказался продолжать
                                     return;
                                 }

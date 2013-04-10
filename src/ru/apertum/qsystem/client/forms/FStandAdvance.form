@@ -4,6 +4,7 @@
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
+    <Property name="undecorated" type="boolean" value="true"/>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -37,12 +38,15 @@
       <Properties>
         <Property name="background" type="java.awt.Color" resourceKey="panelAll.background"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
-            <BevelBorder/>
+          <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+            <LineBorder thickness="7"/>
           </Border>
         </Property>
         <Property name="name" type="java.lang.String" value="panelAll" noResource="true"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new QPanel(WelcomeParams.getInstance().backgroundImg);"/>
+      </AuxValues>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -77,8 +81,8 @@
             <Property name="endPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
               <Point value="[0, 70]"/>
             </Property>
-            <Property name="gradient" type="java.lang.Boolean" value="true"/>
             <Property name="name" type="java.lang.String" value="panelUp" noResource="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
             <Property name="startColor" type="java.awt.Color" resourceKey="panelUp.startColor"/>
             <Property name="startPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
               <Point value="[0, -50]"/>
@@ -90,7 +94,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabel2" max="32767" attributes="0"/>
+                      <Component id="jLabel2" pref="836" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -127,8 +131,8 @@
             <Property name="endPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
               <Point value="[0, 100]"/>
             </Property>
-            <Property name="gradient" type="java.lang.Boolean" value="true"/>
             <Property name="name" type="java.lang.String" value="panelBottom" noResource="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
             <Property name="startColor" type="java.awt.Color" resourceKey="panelBottom.startColor"/>
           </Properties>
 
@@ -137,9 +141,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButton1" min="-2" pref="224" max="-2" attributes="0"/>
-                      <EmptySpace pref="391" max="32767" attributes="0"/>
                       <Component id="jButton2" min="-2" pref="215" max="-2" attributes="0"/>
+                      <EmptySpace pref="397" max="32767" attributes="0"/>
+                      <Component id="jButton1" min="-2" pref="224" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -148,9 +152,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jButton1" alignment="0" pref="78" max="32767" attributes="0"/>
-                          <Component id="jButton2" alignment="0" pref="78" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jButton1" alignment="3" pref="78" max="32767" attributes="0"/>
+                          <Component id="jButton2" alignment="3" pref="78" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -163,6 +167,18 @@
                 <Property name="font" type="java.awt.Font" resourceKey="jButton1.font"/>
                 <Property name="icon" type="javax.swing.Icon" resourceKey="jButton1.icon"/>
                 <Property name="text" type="java.lang.String" resourceKey="jButton1.text"/>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                    <CompoundBorder>
+                      <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                        <BevelBorder/>
+                      </Border>
+                      <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                        <BevelBorder/>
+                      </Border>
+                    </CompoundBorder>
+                  </Border>
+                </Property>
                 <Property name="name" type="java.lang.String" value="jButton1" noResource="true"/>
               </Properties>
               <Events>
@@ -174,6 +190,18 @@
                 <Property name="font" type="java.awt.Font" resourceKey="jButton2.font"/>
                 <Property name="icon" type="javax.swing.Icon" resourceKey="jButton2.icon"/>
                 <Property name="text" type="java.lang.String" resourceKey="jButton2.text"/>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                    <CompoundBorder>
+                      <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                        <BevelBorder/>
+                      </Border>
+                      <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                        <BevelBorder/>
+                      </Border>
+                    </CompoundBorder>
+                  </Border>
+                </Property>
                 <Property name="name" type="java.lang.String" value="jButton2" noResource="true"/>
               </Properties>
               <Events>
@@ -191,6 +219,7 @@
               </Border>
             </Property>
             <Property name="name" type="java.lang.String" value="panelMain" noResource="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
 
           <Layout>
@@ -210,7 +239,7 @@
                       <Component id="panelAdvKod" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="panelButtonsNumeric" min="-2" pref="95" max="-2" attributes="0"/>
-                      <EmptySpace pref="40" max="32767" attributes="0"/>
+                      <EmptySpace pref="32" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -222,8 +251,8 @@
                 <Property name="endPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
                   <Point value="[0, 50]"/>
                 </Property>
-                <Property name="gradient" type="java.lang.Boolean" value="true"/>
                 <Property name="name" type="java.lang.String" value="panelAdvKod" noResource="true"/>
+                <Property name="opaque" type="boolean" value="false"/>
                 <Property name="startColor" type="java.awt.Color" resourceKey="panelAdvKod.startColor"/>
               </Properties>
 
@@ -232,7 +261,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="labelKod" pref="830" max="32767" attributes="0"/>
+                          <Component id="labelKod" pref="836" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -250,11 +279,20 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelKod">
                   <Properties>
+                    <Property name="background" type="java.awt.Color" resourceKey="labelKod.background"/>
                     <Property name="font" type="java.awt.Font" resourceKey="labelKod.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="labelKod.foreground"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelKod.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                        <LineBorder thickness="8">
+                          <Property name="color" resourceKey="labelKod.border.lineColor"/>
+                        </LineBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="labelKod" noResource="true"/>
+                    <Property name="opaque" type="boolean" value="true"/>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -268,11 +306,14 @@
                   </Border>
                 </Property>
                 <Property name="name" type="java.lang.String" value="panelButtonsNumeric" noResource="true"/>
+                <Property name="opaque" type="boolean" value="false"/>
               </Properties>
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
                 <Property name="columns" type="int" value="0"/>
+                <Property name="horizontalGap" type="int" value="5"/>
                 <Property name="rows" type="int" value="1"/>
+                <Property name="verticalGap" type="int" value="2"/>
               </Layout>
               <SubComponents>
                 <Component class="javax.swing.JButton" name="jButton3">
@@ -280,6 +321,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton3.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton3" noResource="true"/>
                   </Properties>
                   <Events>
@@ -291,6 +344,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton4.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton4" noResource="true"/>
                   </Properties>
                   <Events>
@@ -302,6 +367,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton5.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton5" noResource="true"/>
                   </Properties>
                   <Events>
@@ -313,6 +390,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton6.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton6" noResource="true"/>
                   </Properties>
                   <Events>
@@ -324,6 +413,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton7.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton7" noResource="true"/>
                   </Properties>
                   <Events>
@@ -335,6 +436,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton8.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton8" noResource="true"/>
                   </Properties>
                   <Events>
@@ -346,6 +459,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton9.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton9" noResource="true"/>
                   </Properties>
                   <Events>
@@ -357,6 +482,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton10.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton10" noResource="true"/>
                   </Properties>
                   <Events>
@@ -368,6 +505,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton11.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton11" noResource="true"/>
                   </Properties>
                   <Events>
@@ -379,6 +528,18 @@
                     <Property name="font" type="java.awt.Font" resourceKey="jButton7.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton7.foreground"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton12.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton12" noResource="true"/>
                   </Properties>
                   <Events>
@@ -391,6 +552,18 @@
                     <Property name="foreground" type="java.awt.Color" resourceKey="jButton13.foreground"/>
                     <Property name="icon" type="javax.swing.Icon" resourceKey="jButton13.icon"/>
                     <Property name="text" type="java.lang.String" resourceKey="jButton13.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
+                        <CompoundBorder>
+                          <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                        </CompoundBorder>
+                      </Border>
+                    </Property>
                     <Property name="name" type="java.lang.String" value="jButton13" noResource="true"/>
                   </Properties>
                   <Events>

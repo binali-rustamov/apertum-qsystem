@@ -44,6 +44,9 @@
         </Property>
         <Property name="name" type="java.lang.String" value="panelAll" noResource="true"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new QPanel(WelcomeParams.getInstance().backgroundImg);"/>
+      </AuxValues>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -78,8 +81,8 @@
             <Property name="endPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
               <Point value="[0, 70]"/>
             </Property>
-            <Property name="gradient" type="java.lang.Boolean" value="true"/>
             <Property name="name" type="java.lang.String" value="panelUp" noResource="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
             <Property name="startColor" type="java.awt.Color" resourceKey="panelUp.startColor"/>
             <Property name="startPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
               <Point value="[0, -50]"/>
@@ -100,7 +103,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="LabelCaption2" pref="59" max="32767" attributes="0"/>
+                      <Component id="LabelCaption2" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -128,8 +131,8 @@
             <Property name="endPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
               <Point value="[0, 100]"/>
             </Property>
-            <Property name="gradient" type="java.lang.Boolean" value="true"/>
             <Property name="name" type="java.lang.String" value="panelBottom" noResource="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
             <Property name="startColor" type="java.awt.Color" resourceKey="panelBottom.startColor"/>
           </Properties>
 
@@ -242,6 +245,7 @@
               </Border>
             </Property>
             <Property name="name" type="java.lang.String" value="panelMain" noResource="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
 
           <Layout>
@@ -258,7 +262,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="354" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="351" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -274,6 +278,7 @@
                   </Border>
                 </Property>
                 <Property name="name" type="java.lang.String" value="jScrollPane1" noResource="true"/>
+                <Property name="opaque" type="boolean" value="false"/>
               </Properties>
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
@@ -283,6 +288,13 @@
                     <Property name="background" type="java.awt.Color" resourceKey="labelHtml.background"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelHtml.text"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                        <LineBorder thickness="10">
+                          <Property name="color" resourceKey="labelHtml.border.lineColor"/>
+                        </LineBorder>
+                      </Border>
+                    </Property>
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="name" type="java.lang.String" value="labelHtml" noResource="true"/>
                     <Property name="opaque" type="boolean" value="true"/>

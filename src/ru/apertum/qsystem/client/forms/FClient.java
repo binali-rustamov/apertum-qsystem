@@ -638,7 +638,13 @@ public final class FClient extends javax.swing.JFrame {
     public void inviteNextCustomer(ActionEvent evt) {
         final long start = go();
         // Вызываем кастомера
-        NetCommander.inviteNextCustomer(netProperty, user.getId());
+        final QCustomer cust = NetCommander.inviteNextCustomer(netProperty, user.getId());
+        if (cust.getPostponPeriod() > 0) {
+            JOptionPane.showMessageDialog(this,
+                    getLocaleMessage("invite.posponed.mess.1") + " " + cust.getPostponPeriod() + " " + getLocaleMessage("invite.posponed.mess.2") + " \"" + cust.getPostponedStatus() + "\".",
+                    getLocaleMessage("invite.posponed.title"),
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
         // Показываем обстановку
         setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
         end(start);
@@ -1029,9 +1035,11 @@ public final class FClient extends javax.swing.JFrame {
         jScrollPane2.setName("jScrollPane2"); // NOI18N
         jScrollPane2.setOpaque(false);
 
+        labelSituation.setBackground(resourceMap.getColor("labelSituation.background")); // NOI18N
         labelSituation.setText(resourceMap.getString("labelSituation.text")); // NOI18N
         labelSituation.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         labelSituation.setName("labelSituation"); // NOI18N
+        labelSituation.setOpaque(true);
         jScrollPane2.setViewportView(labelSituation);
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
@@ -1042,7 +1050,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel5.TabConstraints.tabTitle"), jPanel5); // NOI18N
@@ -1053,9 +1061,11 @@ public final class FClient extends javax.swing.JFrame {
         jScrollPane3.setName("jScrollPane3"); // NOI18N
         jScrollPane3.setOpaque(false);
 
+        labelSituationAll.setBackground(resourceMap.getColor("labelSituationAll.background")); // NOI18N
         labelSituationAll.setText(resourceMap.getString("labelSituationAll.text")); // NOI18N
         labelSituationAll.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         labelSituationAll.setName("labelSituationAll"); // NOI18N
+        labelSituationAll.setOpaque(true);
         jScrollPane3.setViewportView(labelSituationAll);
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
@@ -1066,7 +1076,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel6.TabConstraints.tabTitle"), jPanel6); // NOI18N
@@ -1075,9 +1085,11 @@ public final class FClient extends javax.swing.JFrame {
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
+        labelMessage.setBackground(resourceMap.getColor("labelMessage.background")); // NOI18N
         labelMessage.setText(resourceMap.getString("labelMessage.text")); // NOI18N
         labelMessage.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         labelMessage.setName("labelMessage"); // NOI18N
+        labelMessage.setOpaque(true);
         jScrollPane1.setViewportView(labelMessage);
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
@@ -1088,7 +1100,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel7.TabConstraints.tabTitle"), jPanel7); // NOI18N
@@ -1132,7 +1144,7 @@ public final class FClient extends javax.swing.JFrame {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(labelResume, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)))
+                        .addComponent(labelResume, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -1147,7 +1159,7 @@ public final class FClient extends javax.swing.JFrame {
                     .addComponent(jLabel4)
                     .addComponent(labelResume))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
@@ -1413,15 +1425,27 @@ public final class FClient extends javax.swing.JFrame {
     public void moveToPOstponed() {
         final long start = go();
 
+        /*
         String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
         if (status == null) {
+        return;
+        }
+         * 
+         */
+        if (moveToPostponed == null) {
+            moveToPostponed = new FMoveToPostponed(fClient, true, getResults());
+        }
+        Uses.setLocation(moveToPostponed);
+        moveToPostponed.setVisible(true);
+        if (!moveToPostponed.isOK()) {
             return;
         }
-        NetCommander.сustomerToPostpone(netProperty, user.getId(), status);
+        NetCommander.сustomerToPostpone(netProperty, user.getId(), moveToPostponed.getResult(), moveToPostponed.getPeriod());
         // Показываем обстановку
         setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
         end(start);
     }
+    private FMoveToPostponed moveToPostponed;
 
     @Action
     public void invitePostponed() {

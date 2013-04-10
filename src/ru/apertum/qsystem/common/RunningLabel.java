@@ -322,7 +322,7 @@ public class RunningLabel extends JLabel implements Serializable {
 
     public void setBackgroundImage(String resourceName) {
         final String oldValue = resourceName;
-        this.backgroundImg = Uses.loadImage(this, resourceName);
+        this.backgroundImg = Uses.loadImage(this, resourceName, "");
         propertySupport.firePropertyChange(PROP_BLINK_COUNT, oldValue, resourceName);
         needRepaint();
     }

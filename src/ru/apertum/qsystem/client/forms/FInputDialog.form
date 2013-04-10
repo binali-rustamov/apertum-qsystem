@@ -44,6 +44,9 @@
         </Property>
         <Property name="name" type="java.lang.String" value="panelAll" noResource="true"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new QPanel(WelcomeParams.getInstance().backgroundImg);"/>
+      </AuxValues>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -78,8 +81,8 @@
             <Property name="endPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
               <Point value="[0, 70]"/>
             </Property>
-            <Property name="gradient" type="java.lang.Boolean" value="true"/>
             <Property name="name" type="java.lang.String" value="panelUp" noResource="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
             <Property name="startColor" type="java.awt.Color" resourceKey="panelUp.startColor"/>
             <Property name="startPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
               <Point value="[0, -50]"/>
@@ -128,8 +131,8 @@
             <Property name="endPoint" type="java.awt.Point" editor="org.netbeans.beaninfo.editors.PointEditor">
               <Point value="[0, 100]"/>
             </Property>
-            <Property name="gradient" type="java.lang.Boolean" value="true"/>
             <Property name="name" type="java.lang.String" value="panelBottom" noResource="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
             <Property name="startColor" type="java.awt.Color" resourceKey="panelBottom.startColor"/>
           </Properties>
 
@@ -216,22 +219,28 @@
               </Border>
             </Property>
             <Property name="name" type="java.lang.String" value="panelMain" noResource="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
 
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jPanel1" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jPanel1" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="panelAdvKod" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="panelButtonsNumeric" alignment="1" pref="1112" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="panelButtonsNumeric" pref="1112" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="panelAdvKod" alignment="0" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -251,8 +260,10 @@
             <Container class="ru.apertum.qsystem.client.model.QPanel" name="panelAdvKod">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
-                    <MatteColorBorder/>
+                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                    <LineBorder thickness="8">
+                      <Property name="color" resourceKey="panelAdvKod.border.lineColor"/>
+                    </LineBorder>
                   </Border>
                 </Property>
                 <Property name="endColor" type="java.awt.Color" resourceKey="panelAdvKod.endColor"/>
@@ -267,31 +278,25 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="labelKod" pref="1110" max="32767" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="labelKod" alignment="0" pref="1096" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="labelKod" pref="144" max="32767" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="labelKod" alignment="1" pref="152" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
               </Layout>
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelKod">
                   <Properties>
+                    <Property name="background" type="java.awt.Color" resourceKey="labelKod.background"/>
                     <Property name="font" type="java.awt.Font" resourceKey="labelKod.font"/>
                     <Property name="foreground" type="java.awt.Color" resourceKey="labelKod.foreground"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelKod.text"/>
                     <Property name="name" type="java.lang.String" value="labelKod" noResource="true"/>
+                    <Property name="opaque" type="boolean" value="true"/>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -305,6 +310,7 @@
                   </Border>
                 </Property>
                 <Property name="name" type="java.lang.String" value="panelButtonsNumeric" noResource="true"/>
+                <Property name="opaque" type="boolean" value="false"/>
               </Properties>
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">

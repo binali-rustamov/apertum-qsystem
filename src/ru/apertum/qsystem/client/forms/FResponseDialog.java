@@ -32,6 +32,8 @@ import javax.swing.border.CompoundBorder;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.common.WelcomeParams;
+import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
@@ -93,6 +95,9 @@ public class FResponseDialog extends javax.swing.JDialog {
             Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "invisibleCursor");
             respDialog.setCursor(transparentCursor);
 
+        } else {
+            respDialog.setSize(1280, 1024);
+            Uses.setLocation(respDialog);
         }
         if (respDialog.clockBack.isActive()) {
             respDialog.clockBack.stop();
@@ -142,7 +147,7 @@ public class FResponseDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panelAll = new ru.apertum.qsystem.client.model.QPanel();
+        panelAll = new QPanel(WelcomeParams.getInstance().backgroundImg);
         panelUp = new ru.apertum.qsystem.client.model.QPanel();
         LabelCaption = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
@@ -162,8 +167,8 @@ public class FResponseDialog extends javax.swing.JDialog {
         panelUp.setCycle(java.lang.Boolean.FALSE);
         panelUp.setEndColor(resourceMap.getColor("panelUp.endColor")); // NOI18N
         panelUp.setEndPoint(new java.awt.Point(0, 70));
-        panelUp.setGradient(java.lang.Boolean.TRUE);
         panelUp.setName("panelUp"); // NOI18N
+        panelUp.setOpaque(false);
         panelUp.setStartColor(resourceMap.getColor("panelUp.startColor")); // NOI18N
         panelUp.setStartPoint(new java.awt.Point(0, -50));
 
@@ -179,7 +184,7 @@ public class FResponseDialog extends javax.swing.JDialog {
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelUpLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(LabelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 906, Short.MAX_VALUE)
+                .addComponent(LabelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 947, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelUpLayout.setVerticalGroup(
@@ -192,8 +197,8 @@ public class FResponseDialog extends javax.swing.JDialog {
 
         panelBottom.setBorder(new javax.swing.border.MatteBorder(null));
         panelBottom.setEndPoint(new java.awt.Point(0, 100));
-        panelBottom.setGradient(java.lang.Boolean.TRUE);
         panelBottom.setName("panelBottom"); // NOI18N
+        panelBottom.setOpaque(false);
         panelBottom.setStartColor(resourceMap.getColor("panelBottom.startColor")); // NOI18N
 
         jButton2.setFont(resourceMap.getFont("jButton2.font")); // NOI18N
@@ -214,7 +219,7 @@ public class FResponseDialog extends javax.swing.JDialog {
             .addGroup(panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(701, Short.MAX_VALUE))
+                .addContainerGap(742, Short.MAX_VALUE))
         );
         panelBottomLayout.setVerticalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -227,12 +232,13 @@ public class FResponseDialog extends javax.swing.JDialog {
         panelMain.setBackground(resourceMap.getColor("panelMain.background")); // NOI18N
         panelMain.setBorder(new javax.swing.border.MatteBorder(null));
         panelMain.setName("panelMain"); // NOI18N
+        panelMain.setOpaque(false);
 
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 826, Short.MAX_VALUE)
+            .addGap(0, 867, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

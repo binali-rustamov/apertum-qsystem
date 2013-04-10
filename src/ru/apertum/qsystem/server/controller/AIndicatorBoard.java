@@ -237,7 +237,6 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
         //запись может быть не найдена после рестарта сервера, список номеров на табло не бакапится
         if (rec == null) {
             rec = new Record(user.getName(), user.getPoint(), ((QUser) user).getCustomer().getPrefix() + ((QUser) user).getCustomer().getNumber(), user.getAdressRS(), getPause());
-            ;
         }
         rec.setState(CustomerState.STATE_WORK);
         show(rec);

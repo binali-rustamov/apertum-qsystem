@@ -87,7 +87,7 @@ public class QPanel extends JPanel implements Serializable {
     public final void setBackgroundImgage(String resourceName) {
         final String oldValue = resourceName;
         this.backgroundImageFile = resourceName;
-        this.backgroundImage = Uses.loadImage(this, resourceName);
+        this.backgroundImage = Uses.loadImage(this, resourceName, "");
         getPropertySupport().firePropertyChange(PROP_BACKGROUND_IMG, oldValue, resourceName);
         repaint();
     }

@@ -67,4 +67,7 @@ public class CmdParams {
     @Expose
     @SerializedName("info_item_name")
     public String infoItemName;
+    @Expose
+    @SerializedName("postponed_period")
+    public int postponedPeriod;
 }

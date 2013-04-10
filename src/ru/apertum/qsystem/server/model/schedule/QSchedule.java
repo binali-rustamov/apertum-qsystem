@@ -21,6 +21,8 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -49,21 +51,19 @@ public class QSchedule implements IidGetter, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null){
+        if (o == null) {
             return false;
         }
-        if (!(o instanceof QSchedule)){
+        if (!(o instanceof QSchedule)) {
             throw new TypeNotPresentException("Неправильный тип для сравнения", new ServerException("Неправильный тип для сравнения"));
         }
-        return id.equals(((QSchedule)o).id);
+        return id.equals(((QSchedule) o).id);
     }
 
     @Override
     public int hashCode() {
         return (int) (this.id != null ? this.id : 0);
     }
-
-
 
     public void setId(Long id) {
         this.id = id;
@@ -267,5 +267,82 @@ public class QSchedule implements IidGetter, Serializable {
 
     public void setTime_end_7(Date time_end_7) {
         this.time_end_7 = time_end_7;
+    }
+    @ManyToOne
+    @JoinColumn(name = "breaks_id1")
+    private QBreaks breaks_1;
+
+    public QBreaks getBreaks_1() {
+        return breaks_1;
+    }
+
+    public void setBreaks_1(QBreaks breaks_1) {
+        this.breaks_1 = breaks_1;
+    }
+    @ManyToOne
+    @JoinColumn(name = "breaks_id2")
+    private QBreaks breaks_2;
+    @ManyToOne
+    @JoinColumn(name = "breaks_id3")
+    private QBreaks breaks_3;
+    @ManyToOne
+    @JoinColumn(name = "breaks_id4")
+    private QBreaks breaks_4;
+    @ManyToOne
+    @JoinColumn(name = "breaks_id5")
+    private QBreaks breaks_5;
+    @ManyToOne
+    @JoinColumn(name = "breaks_id6")
+    private QBreaks breaks_6;
+    @ManyToOne
+    @JoinColumn(name = "breaks_id7")
+    private QBreaks breaks_7;
+
+    public QBreaks getBreaks_2() {
+        return breaks_2;
+    }
+
+    public void setBreaks_2(QBreaks breaks_2) {
+        this.breaks_2 = breaks_2;
+    }
+
+    public QBreaks getBreaks_3() {
+        return breaks_3;
+    }
+
+    public void setBreaks_3(QBreaks breaks_3) {
+        this.breaks_3 = breaks_3;
+    }
+
+    public QBreaks getBreaks_4() {
+        return breaks_4;
+    }
+
+    public void setBreaks_4(QBreaks breaks_4) {
+        this.breaks_4 = breaks_4;
+    }
+
+    public QBreaks getBreaks_5() {
+        return breaks_5;
+    }
+
+    public void setBreaks_5(QBreaks breaks_5) {
+        this.breaks_5 = breaks_5;
+    }
+
+    public QBreaks getBreaks_6() {
+        return breaks_6;
+    }
+
+    public void setBreaks_6(QBreaks breaks_6) {
+        this.breaks_6 = breaks_6;
+    }
+
+    public QBreaks getBreaks_7() {
+        return breaks_7;
+    }
+
+    public void setBreaks_7(QBreaks breaks_7) {
+        this.breaks_7 = breaks_7;
     }
 }

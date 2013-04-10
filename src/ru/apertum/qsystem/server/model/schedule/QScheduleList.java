@@ -42,7 +42,7 @@ public class QScheduleList extends ATListModel<QSchedule> implements ComboBoxMod
 
     @Override
     protected LinkedList<QSchedule> load() {
-        return new LinkedList<QSchedule>(Spring.getInstance().getHt().loadAll(QSchedule.class));
+        return new LinkedList<>(Spring.getInstance().getHt().loadAll(QSchedule.class));
     }
     private QSchedule selected;
 

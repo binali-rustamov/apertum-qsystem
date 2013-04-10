@@ -25,6 +25,8 @@ import java.awt.image.MemoryImageSource;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.common.WelcomeParams;
+import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.model.ATalkingClock;
@@ -123,7 +125,7 @@ public class FStandAdvance extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panelAll = new ru.apertum.qsystem.client.model.QPanel();
+        panelAll = new QPanel(WelcomeParams.getInstance().backgroundImg);
         panelUp = new ru.apertum.qsystem.client.model.QPanel();
         jLabel2 = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
@@ -147,18 +149,19 @@ public class FStandAdvance extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
+        setUndecorated(true);
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FStandAdvance.class);
         panelAll.setBackground(resourceMap.getColor("panelAll.background")); // NOI18N
-        panelAll.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        panelAll.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 7));
         panelAll.setName("panelAll"); // NOI18N
 
         panelUp.setBorder(new javax.swing.border.MatteBorder(null));
         panelUp.setCycle(java.lang.Boolean.FALSE);
         panelUp.setEndColor(resourceMap.getColor("panelUp.endColor")); // NOI18N
         panelUp.setEndPoint(new java.awt.Point(0, 70));
-        panelUp.setGradient(java.lang.Boolean.TRUE);
         panelUp.setName("panelUp"); // NOI18N
+        panelUp.setOpaque(false);
         panelUp.setStartColor(resourceMap.getColor("panelUp.startColor")); // NOI18N
         panelUp.setStartPoint(new java.awt.Point(0, -50));
 
@@ -174,7 +177,7 @@ public class FStandAdvance extends javax.swing.JDialog {
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelUpLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 836, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelUpLayout.setVerticalGroup(
@@ -187,13 +190,14 @@ public class FStandAdvance extends javax.swing.JDialog {
 
         panelBottom.setBorder(new javax.swing.border.MatteBorder(null));
         panelBottom.setEndPoint(new java.awt.Point(0, 100));
-        panelBottom.setGradient(java.lang.Boolean.TRUE);
         panelBottom.setName("panelBottom"); // NOI18N
+        panelBottom.setOpaque(false);
         panelBottom.setStartColor(resourceMap.getColor("panelBottom.startColor")); // NOI18N
 
         jButton1.setFont(resourceMap.getFont("jButton1.font")); // NOI18N
         jButton1.setIcon(resourceMap.getIcon("jButton1.icon")); // NOI18N
         jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton1.setName("jButton1"); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -204,6 +208,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton2.setFont(resourceMap.getFont("jButton2.font")); // NOI18N
         jButton2.setIcon(resourceMap.getIcon("jButton2.icon")); // NOI18N
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
+        jButton2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton2.setName("jButton2"); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -217,36 +222,40 @@ public class FStandAdvance extends javax.swing.JDialog {
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 391, Short.MAX_VALUE)
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 397, Short.MAX_VALUE)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         panelBottomLayout.setVerticalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE))
+                .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
         panelMain.setBackground(resourceMap.getColor("panelMain.background")); // NOI18N
         panelMain.setBorder(new javax.swing.border.MatteBorder(null));
         panelMain.setName("panelMain"); // NOI18N
+        panelMain.setOpaque(false);
 
         panelAdvKod.setEndColor(resourceMap.getColor("panelAdvKod.endColor")); // NOI18N
         panelAdvKod.setEndPoint(new java.awt.Point(0, 50));
-        panelAdvKod.setGradient(java.lang.Boolean.TRUE);
         panelAdvKod.setName("panelAdvKod"); // NOI18N
+        panelAdvKod.setOpaque(false);
         panelAdvKod.setStartColor(resourceMap.getColor("panelAdvKod.startColor")); // NOI18N
 
+        labelKod.setBackground(resourceMap.getColor("labelKod.background")); // NOI18N
         labelKod.setFont(resourceMap.getFont("labelKod.font")); // NOI18N
         labelKod.setForeground(resourceMap.getColor("labelKod.foreground")); // NOI18N
         labelKod.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelKod.setText(resourceMap.getString("labelKod.text")); // NOI18N
+        labelKod.setBorder(javax.swing.BorderFactory.createLineBorder(resourceMap.getColor("labelKod.border.lineColor"), 8)); // NOI18N
         labelKod.setName("labelKod"); // NOI18N
+        labelKod.setOpaque(true);
 
         javax.swing.GroupLayout panelAdvKodLayout = new javax.swing.GroupLayout(panelAdvKod);
         panelAdvKod.setLayout(panelAdvKodLayout);
@@ -254,7 +263,7 @@ public class FStandAdvance extends javax.swing.JDialog {
             panelAdvKodLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelAdvKodLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelKod, javax.swing.GroupLayout.DEFAULT_SIZE, 830, Short.MAX_VALUE)
+                .addComponent(labelKod, javax.swing.GroupLayout.DEFAULT_SIZE, 836, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelAdvKodLayout.setVerticalGroup(
@@ -268,11 +277,13 @@ public class FStandAdvance extends javax.swing.JDialog {
         panelButtonsNumeric.setBackground(resourceMap.getColor("panelButtonsNumeric.background")); // NOI18N
         panelButtonsNumeric.setBorder(new javax.swing.border.MatteBorder(null));
         panelButtonsNumeric.setName("panelButtonsNumeric"); // NOI18N
-        panelButtonsNumeric.setLayout(new java.awt.GridLayout());
+        panelButtonsNumeric.setOpaque(false);
+        panelButtonsNumeric.setLayout(new java.awt.GridLayout(1, 0, 5, 2));
 
         jButton3.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton3.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton3.setText(resourceMap.getString("jButton3.text")); // NOI18N
+        jButton3.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton3.setName("jButton3"); // NOI18N
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -284,6 +295,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton4.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton4.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton4.setText(resourceMap.getString("jButton4.text")); // NOI18N
+        jButton4.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton4.setName("jButton4"); // NOI18N
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -295,6 +307,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton5.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton5.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton5.setText(resourceMap.getString("jButton5.text")); // NOI18N
+        jButton5.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton5.setName("jButton5"); // NOI18N
         jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -306,6 +319,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton6.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton6.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton6.setText(resourceMap.getString("jButton6.text")); // NOI18N
+        jButton6.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton6.setName("jButton6"); // NOI18N
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -317,6 +331,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton7.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton7.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton7.setText(resourceMap.getString("jButton7.text")); // NOI18N
+        jButton7.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton7.setName("jButton7"); // NOI18N
         jButton7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -328,6 +343,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton8.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton8.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton8.setText(resourceMap.getString("jButton8.text")); // NOI18N
+        jButton8.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton8.setName("jButton8"); // NOI18N
         jButton8.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -339,6 +355,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton9.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton9.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton9.setText(resourceMap.getString("jButton9.text")); // NOI18N
+        jButton9.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton9.setName("jButton9"); // NOI18N
         jButton9.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -350,6 +367,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton10.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton10.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton10.setText(resourceMap.getString("jButton10.text")); // NOI18N
+        jButton10.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton10.setName("jButton10"); // NOI18N
         jButton10.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -361,6 +379,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton11.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton11.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton11.setText(resourceMap.getString("jButton11.text")); // NOI18N
+        jButton11.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton11.setName("jButton11"); // NOI18N
         jButton11.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -372,6 +391,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton12.setFont(resourceMap.getFont("jButton7.font")); // NOI18N
         jButton12.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton12.setText(resourceMap.getString("jButton12.text")); // NOI18N
+        jButton12.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton12.setName("jButton12"); // NOI18N
         jButton12.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -384,6 +404,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton13.setForeground(resourceMap.getColor("jButton13.foreground")); // NOI18N
         jButton13.setIcon(resourceMap.getIcon("jButton13.icon")); // NOI18N
         jButton13.setText(resourceMap.getString("jButton13.text")); // NOI18N
+        jButton13.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
         jButton13.setName("jButton13"); // NOI18N
         jButton13.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -408,7 +429,7 @@ public class FStandAdvance extends javax.swing.JDialog {
                 .addComponent(panelAdvKod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelButtonsNumeric, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout panelAllLayout = new javax.swing.GroupLayout(panelAll);

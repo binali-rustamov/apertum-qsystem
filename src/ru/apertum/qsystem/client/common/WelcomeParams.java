@@ -147,6 +147,9 @@ public class WelcomeParams {
         delayBack = Integer.parseInt(settings.getProperty(DELAY_BACK)); // Задержка заставки при печати в мсек.
         logoImg = settings.getProperty(LOGO_IMG);
         backgroundImg = settings.containsKey(BACKGROUND_IMG) ? settings.getProperty(BACKGROUND_IMG) : "/ru/apertum/qsystem/client/forms/resources/fon_welcome.jpg";
+        if (!new File(backgroundImg).exists()) {
+            backgroundImg = "/ru/apertum/qsystem/client/forms/resources/fon_welcome.jpg";
+        }
         promoText = settings.getProperty(PROMO_TXT);
         bottomText = settings.getProperty(BOTTOM_TXT);
         askLimit = Integer.parseInt(settings.getProperty(ASK_LIMIT)); // Критический размер очереди после которого спрашивать клиентов о готовности встать в очередь

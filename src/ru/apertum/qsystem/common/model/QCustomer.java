@@ -133,7 +133,11 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
         // поддержка расширяемости плагинами
         for (final IChangeCustomerStateEvent event : ServiceLoader.load(IChangeCustomerStateEvent.class)) {
             QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
-            event.change(this, state, newServiceId);
+            try {
+                event.change(this, state, newServiceId);
+            } catch (Throwable tr) {
+                QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+            }
         }
         this.state = state;
 
@@ -144,6 +148,9 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
                 break;
             case STATE_WAIT:
                 QLog.l().logger().debug("Статус: Кастомер пришел и ждет с номером \"" + getPrefix() + getNumber() + "\"");
+                break;
+            case STATE_WAIT_AFTER_POSTPONED:
+                QLog.l().logger().debug("Статус: Кастомер был возвращен из отложенных по истечению времени и ждет с номером \"" + getPrefix() + getNumber() + "\"");
                 break;
             case STATE_INVITED:
                 QLog.l().logger().debug("Статус: Пригласили кастомера с номером \"" + getPrefix() + getNumber() + "\"");
@@ -160,7 +167,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
             case STATE_WORK:
                 QLog.l().logger().debug("Начали работать с кастомером с номером \"" + getPrefix() + getNumber() + "\"");
                 getUser().getPlanService(getService()).upWait(new Date().getTime() - getStandTime().getTime());
-                break; 
+                break;
             case STATE_WORK_SECONDARY:
                 QLog.l().logger().debug("Статус: Далее по цепочки начали работать с кастомером с номером \"" + getPrefix() + getNumber() + "\"");
                 break;
@@ -454,12 +461,36 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
     public void setPostponedStatus(String postponedStatus) {
         this.postponedStatus = postponedStatus;
     }
+    /**
+     * Период отложенности в минутах. 0 - бессрочно;
+     */
+    @Expose
+    @SerializedName("postpone_period")
+    private int postponPeriod = 0;
+
+    @Transient
+    public int getPostponPeriod() {
+        return postponPeriod;
+    }
+
+    public void setPostponPeriod(int postponPeriod) {
+        this.postponPeriod = postponPeriod;
+        startPontpone = new Date().getTime();
+        finishPontpone = startPontpone + postponPeriod * 1000 * 60;
+    }
+    private long startPontpone = 0;
+    private long finishPontpone = 0;
+
+    @Transient
+    public long getFinishPontpone() {
+        return finishPontpone;
+    }
 
     /**
      * Вернет XML-строку, описывающую кастомера
      */
     @Override
     public String toString() {
-        return prefix + getNumber() + " " + postponedStatus;
+        return prefix + getNumber() + (postponedStatus.isEmpty() ? "" : " " + postponedStatus + (postponPeriod > 0 ? " (" + postponPeriod + "min.)" : ""));
     }
 }

@@ -24,7 +24,9 @@ import java.util.GregorianCalendar;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
 import ru.apertum.qsystem.common.Uses;
+
 /**
  * Класс панели для нажатия при выборе время предварительной записи.
  * @author Evgeniy Egorov
@@ -37,13 +39,18 @@ public class QAvancePanel extends QPanel {
 
     public QAvancePanel(IAdviceEvent advanceEvent, Date adviceDate, final boolean enable) {
         event = advanceEvent;
-        data = adviceDate;
+        final GregorianCalendar gc11 = new GregorianCalendar();
+        gc11.setTime(adviceDate);
+        gc11.set(GregorianCalendar.SECOND, 0);
+        gc11.set(GregorianCalendar.MILLISECOND, 0);
+        data = gc11.getTime();
         //Элементы на ячейке
         setBorder(BorderFactory.createMatteBorder(0, 1, 1, 0, Color.blue));
         setLayout(new GridLayout(1, 1));
         label.setVerticalAlignment(SwingConstants.CENTER);
         label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setText("<html><b><p align=center><span style='font-size:12.0pt;color:black'>" + ( "00:00".equals(Uses.format_HH_mm.format(data)) ? "24:00" : Uses.format_HH_mm.format(data) ) + "</span><br/><span style='font-size:13.0pt;color:" + (enable ? "green'>Свободно" : "red'>Занято"));
+        //label.setText("<html><b><p align=center><span style='font-size:12.0pt;color:black'>" + ( "00:00".equals(Uses.format_HH_mm.format(data)) ? "24:00" : Uses.format_HH_mm.format(data) ) + "</span><br/><span style='font-size:13.0pt;color:" + (enable ? "green'>Свободно" : "red'>Занято"));
+        label.setText("<html><b><p align=center><span style='font-size:22.0pt;color:" + (enable ? "black" : "red") + "'>" + ("00:00".equals(Uses.format_HH_mm.format(data)) ? "24:00" : Uses.format_HH_mm.format(data)) + "</span>");
         add(label);
         //Реакция на нажатие мышки
         addMouseListener(new java.awt.event.MouseAdapter() {
@@ -57,7 +64,7 @@ public class QAvancePanel extends QPanel {
         });
         //Градиент
         setStartPoint(new Point(30, 0));
-        setEndPoint(enable ? new Point(400, 400) :  new Point(80, 10));
+        setEndPoint(enable ? new Point(400, 400) : new Point(160, 160));
         setStartColor(Color.white);
         final GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(data);
@@ -70,6 +77,7 @@ public class QAvancePanel extends QPanel {
             setEndColor(Color.DARK_GRAY);
         }
         setGradient(true);
+        setBorder(new LineBorder(Color.GRAY, 5));
 
     }
 

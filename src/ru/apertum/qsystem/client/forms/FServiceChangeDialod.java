@@ -18,13 +18,16 @@ package ru.apertum.qsystem.client.forms;
 
 import java.awt.Frame;
 import javax.swing.ComboBoxModel;
+import javax.swing.tree.TreeNode;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.QService;
+import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
@@ -88,6 +91,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         textAreaTextPrint.setText(service.getPreInfoPrintText());
         comboBoxEnabled.setSelectedIndex(service.getStatus() * (-1) + 1);
         comboBoxEnabled.setEnabled(!service.isRoot());
+        comboBoxPeriod.setSelectedIndex((service.getAdvanceTimePeriod() - 30) / 15);
         spinnerDayLimit.setValue(service.getDayLimit());
         spinnerLimitForOnePerson.setValue(service.getPersonDayLimit());
         spinnerLimit.setValue(service.getAdvanceLimit());
@@ -115,13 +119,6 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private QService service;
 
     private void saveService() {
-        service.setPrefix(textFieldPrefix.getText());
-        service.setName(textFieldServiceName.getText());
-        service.setDescription(textFieldServiceDescript.getText());
-        service.setDayLimit((Integer) spinnerDayLimit.getValue());
-        service.setPersonDayLimit((Integer) spinnerLimitForOnePerson.getValue());
-        service.setAdvanceLinit((Integer) spinnerLimit.getValue());
-        service.setAdvanceLimitPeriod((Integer) spinnerLimitPeriod.getValue() < 0 ? 0 : (Integer) spinnerLimitPeriod.getValue());
         if ("".equals(textAreaButtonCaption.getText())) {
             throw new ClientException(getLocaleMessage("dialog.message1"));
         }
@@ -137,6 +134,29 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         if (textAreaButtonCaption.getText().length() < 2500 && !"".equals(textAreaButtonCaption.getText())) {
             service.setButtonText(textAreaButtonCaption.getText());
         }
+
+        QServiceTree.sailToStorm(QServiceTree.getInstance().getRoot(), new ISailListener() {
+
+            @Override
+            public void actionPerformed(TreeNode srvc) {
+                if (!service.equals(srvc) && srvc.isLeaf()) { 
+                    final String pr = ((QService) srvc).getPrefix();
+                    if (!pr.isEmpty() && pr.equalsIgnoreCase(textFieldPrefix.getText())) {
+                        System.out.println(pr);
+                        throw new ClientException(getLocaleMessage("dialog.message5"));
+                    }
+                }
+            }
+        });
+        service.setPrefix(textFieldPrefix.getText());
+        service.setAdvanceTimePeriod(comboBoxPeriod.getSelectedIndex() * 15 + 30);
+        service.setName(textFieldServiceName.getText());
+        service.setDescription(textFieldServiceDescript.getText());
+        service.setDayLimit((Integer) spinnerDayLimit.getValue());
+        service.setPersonDayLimit((Integer) spinnerLimitForOnePerson.getValue());
+        service.setAdvanceLinit((Integer) spinnerLimit.getValue());
+        service.setAdvanceLimitPeriod((Integer) spinnerLimitPeriod.getValue() < 0 ? 0 : (Integer) spinnerLimitPeriod.getValue());
+
         service.setStatus((comboBoxEnabled.getSelectedIndex() - 1) * (-1));
         service.setSchedule((QSchedule) comboBoxSchedule.getModel().getSelectedItem());
         service.setCalendar((QCalendar) comboBoxCalendar.getModel().getSelectedItem());
@@ -144,7 +164,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         service.setInput_caption(textFieldInputCaption.getText());
         service.setResult_required(сheckBoxResultRequired.isSelected());
         service.setEnable(checkBoxBackoffice.isSelected() ? 2 : 1);
-        service.setPoint((Integer)spinnerPunktReg.getModel().getValue());
+        service.setPoint((Integer) spinnerPunktReg.getModel().getValue());
         service.setPreInfoHtml(textAreaInfoHtml.getText());
         service.setPreInfoPrintText(textAreaTextPrint.getText());
         service.setTicketText(textFieldTicketText.getText());
@@ -183,6 +203,9 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         labelLimitForOnePerson = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         textFieldTicketText = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
+        comboBoxPeriod = new javax.swing.JComboBox();
+        jLabel12 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel24 = new javax.swing.JLabel();
         jSplitPane2 = new javax.swing.JSplitPane();
@@ -308,6 +331,15 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         textFieldTicketText.setText(resourceMap.getString("textFieldTicketText.text")); // NOI18N
         textFieldTicketText.setName("textFieldTicketText"); // NOI18N
 
+        jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N
+        jLabel11.setName("jLabel11"); // NOI18N
+
+        comboBoxPeriod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "30", "45", "60", "75", "90", "105", "120" }));
+        comboBoxPeriod.setName("comboBoxPeriod"); // NOI18N
+
+        jLabel12.setText(resourceMap.getString("jLabel12.text")); // NOI18N
+        jLabel12.setName("jLabel12"); // NOI18N
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -326,7 +358,13 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(spinnerLimitPeriod)
                             .addComponent(spinnerLimit)
-                            .addComponent(spinnerDayLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 48, Short.MAX_VALUE)))
+                            .addComponent(spinnerDayLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 48, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel11)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(comboBoxPeriod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel12))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -360,7 +398,10 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(spinnerLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(spinnerLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel11)
+                    .addComponent(comboBoxPeriod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel12))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(spinnerLimitPeriod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -714,9 +755,12 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JCheckBox checkBoxBackoffice;
     private javax.swing.JComboBox comboBoxCalendar;
     private javax.swing.JComboBox comboBoxEnabled;
+    private javax.swing.JComboBox comboBoxPeriod;
     private javax.swing.JComboBox comboBoxSchedule;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;

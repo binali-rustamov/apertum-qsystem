@@ -26,19 +26,27 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.SocketException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.UnknownHostException;
+import java.nio.charset.MalformedInputException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -155,8 +163,17 @@ public final class Uses {
     public static final String TAG_BOARD_LEFT_CAPTION = "Заголовок левого столбца";
     public static final String TAG_BOARD_RIGHT_CAPTION = "Заголовок правого столбца";
     public static final String TAG_BOARD_GRID_NEXT_CAPTION = "Заголовок таблицы следующих";
+    public static final String TAG_BOARD_GRID_NEXT_FRAME_BORDER = "Рамка таблицы следующих";
     public static final String TAG_BOARD_LINE_COLOR = "Цвет рамки строки табло";
     public static final String TAG_BOARD_LINE_CAPTION = "Надпись строки табло";
+    public static final String TAG_BOARD_CALL_PANEL = "Панель вызванного";
+    public static final String TAG_BOARD_CALL_PANEL_BACKGROUND = "Картинка панели вызванного";
+    public static final String TAG_BOARD_CALL_PANEL_X = "Панель вызванного-X";
+    public static final String TAG_BOARD_CALL_PANEL_Y = "Панель вызванного-Y";
+    public static final String TAG_BOARD_CALL_PANEL_WIDTH = "Панель вызванного-ширина";
+    public static final String TAG_BOARD_CALL_PANEL_HEIGHT = "Панель вызванного-высота";
+    public static final String TAG_BOARD_CALL_PANEL_DELAY = "Панель вызванного-время показа сек";
+    public static final String TAG_BOARD_CALL_PANEL_TEMPLATE = "Панель вызванного-текст html+###";
     //имена тегов-разделов для табло
     public static final String TAG_BOARD = "Board";
     public static final String TAG_BOARD_MAIN = "Main";
@@ -471,9 +488,10 @@ public final class Uses {
      *  Если Параметр пустой, то возвращает null.
      * @param o Объект для загрузки ресурса из jar, чаще всего класс в котором понадобилась эта картинка.
      * @param resourceName путь к ресурсу или файлу картинки. Может быть пустым.
+     * @param defaultResourceName Если нифайла ни ресурса не найдется, то загрузится этот ресурс
      * @return
      */
-    public static Image loadImage(Object o, String resourceName) {
+    public static Image loadImage(Object o, String resourceName, String defaultResourceName) {
         if ("".equals(resourceName)) {
             return null;
         } else {
@@ -482,7 +500,21 @@ public final class Uses {
             if (f.exists()) {
                 return new ImageIcon(resourceName).getImage();
             } else {
-                inStream = new DataInputStream(o.getClass().getResourceAsStream(resourceName));
+                final InputStream is = o.getClass().getResourceAsStream(resourceName);
+                if (is == null) {
+                    if (defaultResourceName == null || defaultResourceName.isEmpty()) {
+                        return new BufferedImage(2000, 2000, BufferedImage.TYPE_INT_RGB);
+                    }
+                    if (o.getClass().getResourceAsStream(defaultResourceName) == null) {
+                        QLog.l().logger().error("При загрузки ресурса не нашлось ни файла, ни ресурса, НИ ДЕФОЛТНОГО РЕСУРСА \"" + defaultResourceName + "\"");
+                        return new BufferedImage(2000, 2000, BufferedImage.TYPE_INT_RGB);
+                    }
+                    inStream = new DataInputStream(o.getClass().getResourceAsStream(defaultResourceName));
+                } else {
+                    inStream = new DataInputStream(is);
+                }
+
+
             }
             byte[] b = null;
             try {
@@ -576,6 +608,35 @@ public final class Uses {
         PRIORITYS_WORD.put(PRIORITY_NORMAL, "Нормальный");
         PRIORITYS_WORD.put(PRIORITY_HI, "Повышенный");
         PRIORITYS_WORD.put(PRIORITY_VIP, "V.I.P");
+    }
+
+    /**
+     * Загрузка всех jar из папки в класспаф
+     * @param folder из этой папки закрузим.
+     */
+    public static void loadPlugins(String folder) {
+        // Загрузка плагинов из папки plugins
+        QLog.l().logger().info("Загрузка плагинов из папки plugins.");
+        final File[] list = new File(folder).listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.toLowerCase().endsWith(".jar");
+            }
+        });
+        final URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+        final Class sysclass = URLClassLoader.class;
+        final Class[] parameters = new Class[]{URL.class};
+        for (File file : list) {
+            QLog.l().logger().debug("Плагин " + file.getName());
+            try {
+                final Method method = sysclass.getDeclaredMethod("addURL", parameters);
+                method.setAccessible(true);
+                method.invoke(sysloader, new Object[]{file.toURI().toURL()});
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | MalformedURLException ex) {
+                QLog.l().logger().error("Плагин " + file.getName() + " НЕ загружен. " + ex);
+            }
+        }
     }
 
     /**

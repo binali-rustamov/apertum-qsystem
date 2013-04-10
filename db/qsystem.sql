@@ -7,6 +7,19 @@ CREATE SCHEMA IF NOT EXISTS `qsystem` ;
 USE `qsystem` ;
 
 -- -----------------------------------------------------
+-- Table `qsystem`.`breaks`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `qsystem`.`breaks` ;
+
+CREATE  TABLE IF NOT EXISTS `qsystem`.`breaks` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT ,
+  `name` VARCHAR(245) NOT NULL DEFAULT 'Unknown' ,
+  PRIMARY KEY (`id`) )
+ENGINE = InnoDB, 
+COMMENT = 'Списки наборов перерывов для привязки к дневному расписанию' ;
+
+
+-- -----------------------------------------------------
 -- Table `qsystem`.`schedule`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `qsystem`.`schedule` ;
@@ -29,9 +42,65 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`schedule` (
   `time_end_6` TIME NULL DEFAULT NULL ,
   `time_begin_7` TIME NULL DEFAULT NULL ,
   `time_end_7` TIME NULL DEFAULT NULL ,
-  PRIMARY KEY (`id`) )
+  `breaks_id1` BIGINT NULL ,
+  `breaks_id2` BIGINT NULL ,
+  `breaks_id3` BIGINT NULL ,
+  `breaks_id4` BIGINT NULL ,
+  `breaks_id5` BIGINT NULL ,
+  `breaks_id6` BIGINT NULL ,
+  `breaks_id7` BIGINT NULL ,
+  PRIMARY KEY (`id`) ,
+  CONSTRAINT `fk_schedule_breaks1`
+    FOREIGN KEY (`breaks_id1` )
+    REFERENCES `qsystem`.`breaks` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_schedule_breaks2`
+    FOREIGN KEY (`breaks_id2` )
+    REFERENCES `qsystem`.`breaks` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_schedule_breaks3`
+    FOREIGN KEY (`breaks_id7` )
+    REFERENCES `qsystem`.`breaks` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_schedule_breaks4`
+    FOREIGN KEY (`breaks_id3` )
+    REFERENCES `qsystem`.`breaks` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_schedule_breaks5`
+    FOREIGN KEY (`breaks_id4` )
+    REFERENCES `qsystem`.`breaks` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_schedule_breaks6`
+    FOREIGN KEY (`breaks_id5` )
+    REFERENCES `qsystem`.`breaks` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_schedule_breaks7`
+    FOREIGN KEY (`breaks_id6` )
+    REFERENCES `qsystem`.`breaks` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Справочник расписаний для услуг' ;
+
+CREATE INDEX `idx_schedule_breaks1` ON `qsystem`.`schedule` (`breaks_id1` ASC) ;
+
+CREATE INDEX `idx_schedule_breaks2` ON `qsystem`.`schedule` (`breaks_id2` ASC) ;
+
+CREATE INDEX `idx_schedule_breaks3` ON `qsystem`.`schedule` (`breaks_id7` ASC) ;
+
+CREATE INDEX `idx_schedule_breaks4` ON `qsystem`.`schedule` (`breaks_id3` ASC) ;
+
+CREATE INDEX `idx_schedule_breaks5` ON `qsystem`.`schedule` (`breaks_id4` ASC) ;
+
+CREATE INDEX `idx_schedule_breaks6` ON `qsystem`.`schedule` (`breaks_id5` ASC) ;
+
+CREATE INDEX `idx_schedule_breaks7` ON `qsystem`.`schedule` (`breaks_id6` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -65,6 +134,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`services` (
   `person_day_limit` INT NOT NULL DEFAULT 0 COMMENT 'ограничение выданных билетов в день клиентам с одинаковыми введенными данными. 0-нет ограничения' ,
   `advance_limit` INT NOT NULL DEFAULT 1 COMMENT 'Ограничение по количеству предварительно регистрировшихся в час' ,
   `advance_limit_period` INT NULL DEFAULT 14 COMMENT 'ограничение в днях, в пределах которого можно записаться вперед. может быть null или 0 если нет ограничения' ,
+  `advance_time_period` INT NOT NULL DEFAULT 60 COMMENT 'периоды, на которые делится день, для записи предварительно' ,
   `schedule_id` BIGINT NULL DEFAULT NULL COMMENT 'План работы услуги' ,
   `input_required` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Обязывать кастомера вводить что-то перед постоновкой в очередь' ,
   `input_caption` VARCHAR(200) NOT NULL DEFAULT 'Введите номер документа' COMMENT 'Текст над полем ввода обязательного ввода' ,
@@ -475,6 +545,28 @@ CREATE INDEX `idx_planserv` ON `qsystem`.`users_services_users` (`planServices_i
 
 CREATE INDEX `idx_user` ON `qsystem`.`users_services_users` (`users_id` ASC) ;
 
+
+-- -----------------------------------------------------
+-- Table `qsystem`.`break`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `qsystem`.`break` ;
+
+CREATE  TABLE IF NOT EXISTS `qsystem`.`break` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT ,
+  `breaks_id` BIGINT NULL ,
+  `from_time` TIME NOT NULL ,
+  `to_time` TIME NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  CONSTRAINT `fk_break_breaks1`
+    FOREIGN KEY (`breaks_id` )
+    REFERENCES `qsystem`.`breaks` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB, 
+COMMENT = 'Перерывы в работе для предвариловки' ;
+
+CREATE INDEX `idx_break_breaks1` ON `qsystem`.`break` (`breaks_id` ASC) ;
+
 USE `qsystem`;
 
 DELIMITER $$
@@ -545,8 +637,8 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`schedule` (`id`, `name`, `type`, `time_begin_1`, `time_end_1`, `time_begin_2`, `time_end_2`, `time_begin_3`, `time_end_3`, `time_begin_4`, `time_end_4`, `time_begin_5`, `time_end_5`, `time_begin_6`, `time_end_6`, `time_begin_7`, `time_end_7`) VALUES (1, 'План работы с 8.00 до 17.00', 0, '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00');
-INSERT INTO `qsystem`.`schedule` (`id`, `name`, `type`, `time_begin_1`, `time_end_1`, `time_begin_2`, `time_end_2`, `time_begin_3`, `time_end_3`, `time_begin_4`, `time_end_4`, `time_begin_5`, `time_end_5`, `time_begin_6`, `time_end_6`, `time_begin_7`, `time_end_7`) VALUES (2, 'План работы по четным/нечетным', 1, '08:00:00	', '13:00:00', '12:00:00', '17:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `qsystem`.`schedule` (`id`, `name`, `type`, `time_begin_1`, `time_end_1`, `time_begin_2`, `time_end_2`, `time_begin_3`, `time_end_3`, `time_begin_4`, `time_end_4`, `time_begin_5`, `time_end_5`, `time_begin_6`, `time_end_6`, `time_begin_7`, `time_end_7`, `breaks_id1`, `breaks_id2`, `breaks_id3`, `breaks_id4`, `breaks_id5`, `breaks_id6`, `breaks_id7`) VALUES (1, 'План работы с 8.00 до 17.00', 0, '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00', '08:00:00', '17:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `qsystem`.`schedule` (`id`, `name`, `type`, `time_begin_1`, `time_end_1`, `time_begin_2`, `time_end_2`, `time_begin_3`, `time_end_3`, `time_begin_4`, `time_end_4`, `time_begin_5`, `time_end_5`, `time_begin_6`, `time_end_6`, `time_begin_7`, `time_end_7`, `breaks_id1`, `breaks_id2`, `breaks_id3`, `breaks_id4`, `breaks_id5`, `breaks_id6`, `breaks_id7`) VALUES (2, 'План работы по четным/нечетным', 1, '08:00:00	', '13:00:00', '12:00:00', '17:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 COMMIT;
 
@@ -564,8 +656,8 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`) VALUES (1, 'Дерево услуг', 'Дерево услуг', '-', '<html><b><p align=center><u><span style=\'font-size:30.0pt;color:blue\'>Предлагаемые услуги</span></u><br><br><span style=\'font-size:20.0pt;color:red\'>выберите требуемую услугу', 1, 1, NULL, 0, 0, 1, 14, NULL, 0, '', 0, NULL, '', '', 0, NULL);
-INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`) VALUES (2, 'Услуга', 'Описание услуги', 'А', '<html><b><p align=center><span style=\'font-size:20.0pt;color:blue\'>Некая услуга', 1, 1, 1, 0, 0, 1, 14, 1, 0, '', 0, 1, '', '', 0, NULL);
+INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`) VALUES (1, 'Дерево услуг', 'Дерево услуг', '-', '<html><b><p align=center><u><span style=\'font-size:30.0pt;color:blue\'>Предлагаемые услуги</span></u><br><br><span style=\'font-size:20.0pt;color:red\'>выберите требуемую услугу', 1, 1, NULL, 0, 0, 1, 14, 60, NULL, 0, '', 0, NULL, '', '', 0, NULL);
+INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`) VALUES (2, 'Услуга', 'Описание услуги', 'А', '<html><b><p align=center><span style=\'font-size:20.0pt;color:blue\'>Некая услуга', 1, 1, 1, 0, 0, 1, 14, 60, 1, 0, '', 0, 1, '', '', 0, NULL);
 
 COMMIT;
 
@@ -594,7 +686,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '1.5', 1, 999, 0, 0, 2, -1, '', '127.0.0.1', 27007, 0, 0);
+INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '1.8', 1, 999, 0, 0, 2, -1, '', '127.0.0.1', 27007, 0, 0);
 
 COMMIT;
 
@@ -616,7 +708,7 @@ INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) 
 INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (2, 'Статистический отчет в разрезе персонала за период', 'ru.apertum.qsystem.reports.formirovators.StatisticUsers', '/ru/apertum/qsystem/reports/templates/statisticUsersPeriod.jasper', 'statistic_period_users');
 INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (3, 'Отчет по распределению клиентов по виду услуг за период', 'ru.apertum.qsystem.reports.formirovators.RatioServices', '/ru/apertum/qsystem/reports/templates/ratioServicesPeriod.jasper', 'ratio_period_services');
 INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (4, 'Распределение нагрузки внутри дня', 'ru.apertum.qsystem.reports.formirovators.DistributionJobDay', '/ru/apertum/qsystem/reports/templates/DistributionJobDay.jasper', 'distribution_job_day');
-INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (5, 'Распредение нагрузки внутри дня для услуги', 'ru.apertum.qsystem.reports.formirovators.DistributionJobDayServices', '/ru/apertum/qsystem/reports/templates/DistributionJobDayServices.jasper', 'distribution_job_services');
+INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (5, 'Распределение нагрузки внутри дня для услуги', 'ru.apertum.qsystem.reports.formirovators.DistributionJobDayServices', '/ru/apertum/qsystem/reports/templates/DistributionJobDayServices.jasper', 'distribution_job_services');
 INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (6, 'Распределение нагрузки внутри дня для пользователя', 'ru.apertum.qsystem.reports.formirovators.DistributionJobDayUsers', '/ru/apertum/qsystem/reports/templates/DistributionJobDayUsers.jasper', 'distribution_job_users');
 INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (7, 'Распределение среднего времени ожидания внутри дня', 'ru.apertum.qsystem.reports.formirovators.DistributionWaitDay', '/ru/apertum/qsystem/reports/templates/DistributionWaitDay.jasper', 'distribution_wait_day');
 INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (8, 'Распределение среднего времени ожидания внутри дня для услуги', 'ru.apertum.qsystem.reports.formirovators.DistributionWaitDayServices', '/ru/apertum/qsystem/reports/templates/DistributionWaitDayServices.jasper', 'distribution_wait_services');
@@ -634,7 +726,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`information` (`id`, `parent_id`, `name`, `text`, `text_print`) VALUES (1, NULL, 'Справочная система', '<html><b><p align=center><span style=\'font-size:20.0pt;color:green\'>Справвочная информационная система.<br>Для  получения детальной информации обратитесь к менеджеру</span></b>', 'Для  получения детальной информации обратитесь к менеджеру');
+INSERT INTO `qsystem`.`information` (`id`, `parent_id`, `name`, `text`, `text_print`) VALUES (1, NULL, 'Справочная система', '<html><b><p align=center><span style=\'font-size:25.0pt;color:black\'>Справочная информационная система.<br>Для  получения детальной информации обратитесь к менеджеру</span></b>', 'Для  получения детальной информации обратитесь к менеджеру');
 
 COMMIT;
 

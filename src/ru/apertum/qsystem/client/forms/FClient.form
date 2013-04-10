@@ -731,9 +731,11 @@
                               <SubComponents>
                                 <Component class="javax.swing.JLabel" name="labelSituation">
                                   <Properties>
+                                    <Property name="background" type="java.awt.Color" resourceKey="labelSituation.background"/>
                                     <Property name="text" type="java.lang.String" resourceKey="labelSituation.text"/>
                                     <Property name="verticalAlignment" type="int" value="1"/>
                                     <Property name="name" type="java.lang.String" value="labelSituation" noResource="true"/>
+                                    <Property name="opaque" type="boolean" value="true"/>
                                   </Properties>
                                 </Component>
                               </SubComponents>
@@ -776,9 +778,11 @@
                               <SubComponents>
                                 <Component class="javax.swing.JLabel" name="labelSituationAll">
                                   <Properties>
+                                    <Property name="background" type="java.awt.Color" resourceKey="labelSituationAll.background"/>
                                     <Property name="text" type="java.lang.String" resourceKey="labelSituationAll.text"/>
                                     <Property name="verticalAlignment" type="int" value="1"/>
                                     <Property name="name" type="java.lang.String" value="labelSituationAll" noResource="true"/>
+                                    <Property name="opaque" type="boolean" value="true"/>
                                   </Properties>
                                 </Component>
                               </SubComponents>
@@ -819,9 +823,11 @@
                               <SubComponents>
                                 <Component class="javax.swing.JLabel" name="labelMessage">
                                   <Properties>
+                                    <Property name="background" type="java.awt.Color" resourceKey="labelMessage.background"/>
                                     <Property name="text" type="java.lang.String" resourceKey="labelMessage.text"/>
                                     <Property name="verticalAlignment" type="int" value="1"/>
                                     <Property name="name" type="java.lang.String" value="labelMessage" noResource="true"/>
+                                    <Property name="opaque" type="boolean" value="true"/>
                                   </Properties>
                                 </Component>
                               </SubComponents>

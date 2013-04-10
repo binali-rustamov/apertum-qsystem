@@ -44,6 +44,7 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.ServiceLoader;
 import javax.imageio.ImageIO;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -76,6 +77,7 @@ import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.IClientNetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.extra.IPrintTicket;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.apertum.qsystem.server.model.QService;
@@ -311,6 +313,8 @@ public class FWelcome extends javax.swing.JFrame {
      */
     public static void main(final String args[]) throws Exception {
         QLog.initial(args, false);
+        // Загрузка плагинов из папки plugins
+        Uses.loadPlugins("./plugins/");
         Locale.setDefault(Locales.getInstance().getLangCurrent());
         LOCK_MESSAGE = "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>" + getLocaleMessage("messages.lock_messages") + "</span></b></p>";
         netProperty = new ClientNetProperty(args);
@@ -570,7 +574,23 @@ public class FWelcome extends javax.swing.JFrame {
     }
 
     public static synchronized void printTicket(final QCustomer customer) {
-        Printable canvas = new Printable() {
+
+        // поддержка расширяемости плагинами
+        boolean flag = false;
+        for (final IPrintTicket event : ServiceLoader.load(IPrintTicket.class)) {
+            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+            try {
+                flag = event.printTicket(customer, FWelcome.caption);
+            } catch (Throwable tr) {
+                QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+            }
+            // раз напечатили и хорошь
+            if (flag) {
+                return;
+            }
+        }
+
+        final Printable canvas = new Printable() {
 
             private int write(String text, int line, int x, double kx, double ky) {
                 g2.scale(kx, ky);
@@ -588,7 +608,7 @@ public class FWelcome extends javax.swing.JFrame {
                 }
                 g2 = (Graphics2D) graphics;
                 if (WelcomeParams.getInstance().logo) {
-                    g2.drawImage(Uses.loadImage(this, WelcomeParams.getInstance().logoImg), WelcomeParams.getInstance().logoLeft, WelcomeParams.getInstance().logoTop, null);
+                    g2.drawImage(Uses.loadImage(this, WelcomeParams.getInstance().logoImg, "/ru/apertum/qsystem/client/forms/resources/logo_ticket_a.png"), WelcomeParams.getInstance().logoLeft, WelcomeParams.getInstance().logoTop, null);
                 }
                 g2.scale(WelcomeParams.getInstance().scaleHorizontal, WelcomeParams.getInstance().scaleVertical);
                 //позиционируем начало координат 
@@ -764,7 +784,24 @@ public class FWelcome extends javax.swing.JFrame {
     }
 
     public static synchronized void printTicketAdvance(final QAdvanceCustomer advCustomer) {
-        Printable canvas = new Printable() {
+
+        // поддержка расширяемости плагинами
+        boolean flag = false;
+        for (final IPrintTicket event : ServiceLoader.load(IPrintTicket.class)) {
+            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+            try {
+                flag = event.printTicketAdvance(advCustomer, FWelcome.caption);
+            } catch (Throwable tr) {
+                QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+            }
+            // раз напечатили и хорошь
+            if (flag) {
+                return;
+            }
+        }
+
+
+        final Printable canvas = new Printable() {
 
             private int write(String text, int line, int x, double kx, double ky) {
                 g2.scale(kx, ky);
@@ -782,7 +819,7 @@ public class FWelcome extends javax.swing.JFrame {
                 }
                 g2 = (Graphics2D) graphics;
                 if (WelcomeParams.getInstance().logo) {
-                    g2.drawImage(Uses.loadImage(this, WelcomeParams.getInstance().logoImg), WelcomeParams.getInstance().logoLeft, WelcomeParams.getInstance().logoTop, null);
+                    g2.drawImage(Uses.loadImage(this, WelcomeParams.getInstance().logoImg, "/ru/apertum/qsystem/client/forms/resources/logo_ticket_a.png"), WelcomeParams.getInstance().logoLeft, WelcomeParams.getInstance().logoTop, null);
                 }
                 g2.scale(WelcomeParams.getInstance().scaleHorizontal, WelcomeParams.getInstance().scaleVertical);
                 //позиционируем начало координат
@@ -796,12 +833,14 @@ public class FWelcome extends javax.swing.JFrame {
                 final GregorianCalendar gc_time = new GregorianCalendar();
                 gc_time.setTime(advCustomer.getAdvanceTime());
                 int t = gc_time.get(GregorianCalendar.HOUR_OF_DAY);
+                String t_m = ("" + gc_time.get(GregorianCalendar.MINUTE) + "0000").substring(0, 2);
                 if (t == 0) {
                     t = 24;
                     gc_time.add(GregorianCalendar.HOUR_OF_DAY, -1);
                 }
                 write(Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()), ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
-                write(FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + (t) + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00", ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
+                //write(FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + (t) + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00", ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
+                write(FWelcome.getLocaleMessage("qbutton.take_adv_ticket_come_to") + " " + (t) + ":" + t_m, ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
 
 
                 line = line + 2;
@@ -887,7 +926,7 @@ public class FWelcome extends javax.swing.JFrame {
                 } else {
                     write(advCustomer.getId().toString(), ++line, WelcomeParams.getInstance().leftMargin, 2.0, 1.7);
                 }
-                
+
                 write(WelcomeParams.getInstance().promoText, ++line, WelcomeParams.getInstance().leftMargin, 0.7, 0.4);
                 //Напечатаем текст внизу билета
 
@@ -987,7 +1026,7 @@ public class FWelcome extends javax.swing.JFrame {
 
                 g2 = (Graphics2D) graphics;
                 if (pageIndex == 0 && WelcomeParams.getInstance().logo) {
-                    g2.drawImage(Uses.loadImage(this, WelcomeParams.getInstance().logoImg), WelcomeParams.getInstance().logoLeft, WelcomeParams.getInstance().logoTop, null);
+                    g2.drawImage(Uses.loadImage(this, WelcomeParams.getInstance().logoImg, "/ru/apertum/qsystem/client/forms/resources/logo_ticket_a.png"), WelcomeParams.getInstance().logoLeft, WelcomeParams.getInstance().logoTop, null);
                 }
                 g2.scale(WelcomeParams.getInstance().scaleHorizontal, WelcomeParams.getInstance().scaleVertical);
                 //позиционируем начало координат
@@ -1543,8 +1582,8 @@ private void buttonStandAdvanceActionPerformed(java.awt.event.ActionEvent evt) {
 
         if (res.getMethod() == null) {// костыль. тут приедет текст запрета если нельзя встать в очередь
 
-            showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:green'>" + getLocaleMessage("ticket.get_caption") + "<br></span>"
-                    + "<span style='font-size:20.0pt;color:blue'>" + getLocaleMessage("ticket.get_caption_number") + "<br></span>"
+            showDelayFormPrint("<HTML><b><p align=center><span style='font-size:50.0pt;color:green'>" + getLocaleMessage("ticket.get_caption") + "<br></span>"
+                    + "<span style='font-size:60.0pt;color:blue'>" + getLocaleMessage("ticket.get_caption_number") + "<br></span>"
                     + "<span style='font-size:100.0pt;color:blue'>" + res.getResult().getPrefix() + res.getResult().getNumber() + "</span></p>",
                     "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
 
@@ -1558,7 +1597,7 @@ private void buttonStandAdvanceActionPerformed(java.awt.event.ActionEvent evt) {
                 }
             }).start();
         } else {
-            showDelayFormPrint("<HTML><b><p align=center><span style='font-size:30.0pt;color:red'>" + res.getMethod(),
+            showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:red'>" + res.getMethod(),
                     "/ru/apertum/qsystem/client/forms/resources/noActive.png");
         }
     }

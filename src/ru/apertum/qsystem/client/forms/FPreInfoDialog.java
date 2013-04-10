@@ -33,7 +33,10 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.client.common.WelcomeParams;
+import ru.apertum.qsystem.client.model.QPanel;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
 /**
@@ -59,7 +62,6 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         initComponents();
         buttonBack.setVisible(!FWelcome.isInfo);
     }
-
     private static ResourceMap localeMap = null;
 
     private static String getLocaleMessage(String key) {
@@ -97,7 +99,9 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
             Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "invisibleCursor");
             preInfoDialog.setCursor(transparentCursor);
-
+        } else {
+            preInfoDialog.setSize(1280, 1024);
+            Uses.setLocation(preInfoDialog);
         }
         preInfoDialog.clockBack.start();
         preInfoDialog.setVisible(true);
@@ -123,7 +127,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panelAll = new ru.apertum.qsystem.client.model.QPanel();
+        panelAll = new QPanel(WelcomeParams.getInstance().backgroundImg);
         panelUp = new ru.apertum.qsystem.client.model.QPanel();
         LabelCaption2 = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
@@ -147,8 +151,8 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         panelUp.setCycle(java.lang.Boolean.FALSE);
         panelUp.setEndColor(resourceMap.getColor("panelUp.endColor")); // NOI18N
         panelUp.setEndPoint(new java.awt.Point(0, 70));
-        panelUp.setGradient(java.lang.Boolean.TRUE);
         panelUp.setName("panelUp"); // NOI18N
+        panelUp.setOpaque(false);
         panelUp.setStartColor(resourceMap.getColor("panelUp.startColor")); // NOI18N
         panelUp.setStartPoint(new java.awt.Point(0, -50));
 
@@ -171,14 +175,14 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelUpLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
+                .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         panelBottom.setBorder(new javax.swing.border.MatteBorder(null));
         panelBottom.setEndPoint(new java.awt.Point(0, 100));
-        panelBottom.setGradient(java.lang.Boolean.TRUE);
         panelBottom.setName("panelBottom"); // NOI18N
+        panelBottom.setOpaque(false);
         panelBottom.setStartColor(resourceMap.getColor("panelBottom.startColor")); // NOI18N
 
         javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FPreInfoDialog.class, this);
@@ -230,14 +234,17 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         panelMain.setBackground(resourceMap.getColor("panelMain.background")); // NOI18N
         panelMain.setBorder(new javax.swing.border.MatteBorder(null));
         panelMain.setName("panelMain"); // NOI18N
+        panelMain.setOpaque(false);
 
         jScrollPane1.setBackground(resourceMap.getColor("jScrollPane1.background")); // NOI18N
         jScrollPane1.setBorder(new javax.swing.border.MatteBorder(null));
         jScrollPane1.setName("jScrollPane1"); // NOI18N
+        jScrollPane1.setOpaque(false);
 
         labelHtml.setBackground(resourceMap.getColor("labelHtml.background")); // NOI18N
         labelHtml.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelHtml.setText(resourceMap.getString("labelHtml.text")); // NOI18N
+        labelHtml.setBorder(javax.swing.BorderFactory.createLineBorder(resourceMap.getColor("labelHtml.border.lineColor"), 10)); // NOI18N
         labelHtml.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         labelHtml.setName("labelHtml"); // NOI18N
         labelHtml.setOpaque(true);
@@ -256,7 +263,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

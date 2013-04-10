@@ -189,6 +189,23 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
         this.advanceLimitPeriod = advanceLimitPeriod;
     }
     /**
+     * Деление сетки предварительной записи
+     */
+    @Column(name = "advance_time_period")
+    @Expose
+    @SerializedName("advance_time_period")
+    private Integer advanceTimePeriod = 60;
+
+    public Integer getAdvanceTimePeriod() {
+        return advanceTimePeriod;
+    }
+
+    public void setAdvanceTimePeriod(Integer advanceTimePeriod) {
+        this.advanceTimePeriod = advanceTimePeriod;
+    }
+    
+    
+    /**
      * Способ вызова клиента юзером
      * 1 - стандартно
      * 2 - backoffice, т.е. вызов следующего без табло и звука, запершение только редиректом

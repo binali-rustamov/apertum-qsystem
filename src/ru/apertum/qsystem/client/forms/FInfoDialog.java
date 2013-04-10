@@ -16,10 +16,9 @@
  */
 package ru.apertum.qsystem.client.forms;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
@@ -29,11 +28,13 @@ import java.awt.event.ActionListener;
 import java.awt.image.MemoryImageSource;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.border.EtchedBorder;
+import javax.swing.border.LineBorder;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.common.WelcomeParams;
+import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
@@ -114,6 +115,9 @@ public class FInfoDialog extends javax.swing.JDialog {
             Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "invisibleCursor");
             infoDialog.setCursor(transparentCursor);
 
+        } else {
+            infoDialog.setSize(1280, 1024);
+            Uses.setLocation(infoDialog);
         }
         infoDialog.LabelCaption2.setText(respList.getHTMLText());
         infoDialog.showLevel(FInfoDialog.root);
@@ -129,20 +133,24 @@ public class FInfoDialog extends javax.swing.JDialog {
     }
 
     private void showLevel(QInfoItem level) {
-        infoDialog.panelMain.removeAll();
-        infoDialog.panelMain.repaint();
+        panelMain.removeAll();
+        panelMain.repaint();
         if (level.getParent() == null && level != root) {
             level.setParent(FInfoDialog.level);
         }
         FInfoDialog.level = level;
-        buttonPrint.setVisible(level.isLeaf() && level.getTextPrint() != null && !level.getTextPrint().isEmpty());
-        if (level.isLeaf()) {
-            final JLabel label = new JLabel(Uses.prepareAbsolutPathForImg(level.getHTMLText()));
-            final GridBagLayout gl = new GridBagLayout();
-            final GridBagConstraints c = new GridBagConstraints();
-            gl.setConstraints(label, c);
+        buttonPrint.setVisible((level.isLeaf() && level.getTextPrint() != null && !level.getTextPrint().isEmpty())
+                || (level.getChildCount() == 1 && level.getChildren().getFirst().getTextPrint() != null && !level.getChildren().getFirst().getTextPrint().isEmpty()));
+        if (level.isLeaf() || level.getChildCount() == 1) {
+            final JLabel label = new JLabel(Uses.prepareAbsolutPathForImg(level.isLeaf() ? level.getHTMLText() : level.getChildren().getFirst().getHTMLText()));
+            label.setBackground(Color.WHITE);
+            label.setOpaque(true);
+            label.setBorder(new LineBorder(Color.GRAY, 10));
+            label.setHorizontalAlignment(JLabel.CENTER);
+            final GridLayout gl = new GridLayout();
             panelMain.setLayout(gl);
             panelMain.add(label);
+            label.setBounds(-1, -1, panelMain.getWidth() + 2, panelMain.getHeight() + 2);
         } else {
             int delta = 10;
             switch (Toolkit.getDefaultToolkit().getScreenSize().width) {
@@ -161,6 +169,9 @@ public class FInfoDialog extends javax.swing.JDialog {
                 case 1600:
                     delta = 50;
                     break;
+                case 1920:
+                    delta = 60;
+                    break;
             }
             int cols = 3;
             int rows = 5;
@@ -176,10 +187,10 @@ public class FInfoDialog extends javax.swing.JDialog {
                 cols = 3;
                 rows = Math.round(new Float(0.3) + level.getChildCount() / 3);
             }
-            infoDialog.panelMain.setLayout(new GridLayout(rows, cols, delta, delta / 2));
+            panelMain.setLayout(new GridLayout(rows, cols, 0, 0/*delta, delta / 2*/));
             for (QInfoItem item : level.getChildren()) {
                 final InfoButton button = new InfoButton(item);
-                infoDialog.panelMain.add(button);
+                panelMain.add(button);
             }
             if (level != root) {
                 preLevel = level.getParent();
@@ -206,7 +217,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         public InfoButton(final QInfoItem el) {
             this.el = el;
             setText(Uses.prepareAbsolutPathForImg(el.getHTMLText()));
-            setBorder(new EtchedBorder(EtchedBorder.LOWERED));
+            setBorder(new LineBorder(Color.GRAY, 10));
             addActionListener(new ActionListener() {
 
                 @Override
@@ -238,7 +249,7 @@ public class FInfoDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panelAll = new ru.apertum.qsystem.client.model.QPanel();
+        panelAll = new QPanel(WelcomeParams.getInstance().backgroundImg);
         panelUp = new ru.apertum.qsystem.client.model.QPanel();
         LabelCaption2 = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
@@ -261,8 +272,8 @@ public class FInfoDialog extends javax.swing.JDialog {
         panelUp.setCycle(java.lang.Boolean.FALSE);
         panelUp.setEndColor(resourceMap.getColor("panelUp.endColor")); // NOI18N
         panelUp.setEndPoint(new java.awt.Point(0, 70));
-        panelUp.setGradient(java.lang.Boolean.TRUE);
         panelUp.setName("panelUp"); // NOI18N
+        panelUp.setOpaque(false);
         panelUp.setStartColor(resourceMap.getColor("panelUp.startColor")); // NOI18N
         panelUp.setStartPoint(new java.awt.Point(0, -50));
 
@@ -291,8 +302,8 @@ public class FInfoDialog extends javax.swing.JDialog {
 
         panelBottom.setBorder(new javax.swing.border.MatteBorder(null));
         panelBottom.setEndPoint(new java.awt.Point(0, 100));
-        panelBottom.setGradient(java.lang.Boolean.TRUE);
         panelBottom.setName("panelBottom"); // NOI18N
+        panelBottom.setOpaque(false);
         panelBottom.setStartColor(resourceMap.getColor("panelBottom.startColor")); // NOI18N
 
         javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FInfoDialog.class, this);
@@ -368,6 +379,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         panelMain.setBackground(resourceMap.getColor("panelMain.background")); // NOI18N
         panelMain.setBorder(new javax.swing.border.MatteBorder(null));
         panelMain.setName("panelMain"); // NOI18N
+        panelMain.setOpaque(false);
 
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
@@ -432,8 +444,10 @@ public class FInfoDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_buttonInRootActionPerformed
 
     private void buttonBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBackActionPerformed
-        if (level.isLeaf()) {
-            showLevel(level.getParent());
+        if (level.isLeaf() || level.getChildCount() == 1) {
+            if (level.getParent() != null) {
+                showLevel(level.getParent());
+            }
         } else {
             showLevel(preLevel);
         }

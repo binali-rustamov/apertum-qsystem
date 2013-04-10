@@ -45,7 +45,6 @@ import ru.apertum.qsystem.reports.model.QReportsList;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.controller.Executer;
 import ru.apertum.qsystem.server.http.JettyRunner;
-import ru.apertum.qsystem.server.model.QNet;
 import ru.apertum.qsystem.server.model.QPlanService;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
@@ -86,10 +85,10 @@ public class QServer extends Thread {
         FAbout.loadVersionSt();
         if ("0".equals(FAbout.CMRC_)) {
             System.out.println("Server version: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
-            System.out.println("Database version: " + FAbout.VERSION_DB_ + " for MySQL 5.1-community Server (GPL)");
+            System.out.println("Database version: " + FAbout.VERSION_DB_ + " for MySQL 5.4-community Server (GPL)");
             System.out.println("Released : " + FAbout.DATE_);
 
-            System.out.println("Copyright (c) 2010-2012, Apertum Projects and/or its affiliates. All rights reserved.");
+            System.out.println("Copyright (c) 2010-2013, Apertum Projects and/or its affiliates. All rights reserved.");
             System.out.println("This software comes with ABSOLUTELY NO WARRANTY. This is free software,");
             System.out.println("and you are welcome to modify and redistribute it under the GPL v3 license");
             System.out.println("Text of this license on your language located in the folder with the program.");
@@ -101,9 +100,9 @@ public class QServer extends Thread {
         if ("0".equals(FAbout.CMRC_)) {
             System.out.println("Добро пожаловать на сервер QSystem. Для работы необходим MySQL5.1 или выше.");
             System.out.println("Версия сервера: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
-            System.out.println("Версия базы данных: " + FAbout.VERSION_DB_ + " for MySQL 5.1-community Server (GPL)");
+            System.out.println("Версия базы данных: " + FAbout.VERSION_DB_ + " for MySQL 5.4-community Server (GPL)");
             System.out.println("Дата выпуска : " + FAbout.DATE_);
-            System.out.println("Copyright (c) 2010, Apertum Projects. Все права защищены.");
+            System.out.println("Copyright (c) 2013, Apertum Projects. Все права защищены.");
             System.out.println("QSystem является свободным программным обеспечением, вы можете");
             System.out.println("распространять и/или изменять его согласно условиям Стандартной Общественной");
             System.out.println("Лицензии GNU (GNU GPL), опубликованной Фондом свободного программного");
@@ -122,6 +121,10 @@ public class QServer extends Thread {
         final long start = System.currentTimeMillis();
         QLog.initial(args, true);
 
+        // Загрузка плагинов из папки plugins
+        Uses.loadPlugins("./plugins/");
+
+        // Отчетный сервер, выступающий в роли вэбсервера, обрабатывающего запросы на выдачу отчетов
         WebServer.getInstance().startWebServer(ServerProps.getInstance().getProps().getWebServerPort());
         // запускаем движок индикации сообщения для кастомеров
         MainBoard.getInstance().showBoard();

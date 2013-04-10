@@ -41,6 +41,6 @@ public class QResponseList extends ATListModel<QRespItem> {
 
     @Override
     protected LinkedList<QRespItem> load() {
-        return new LinkedList<QRespItem>(Spring.getInstance().getHt().loadAll(QRespItem.class));
+        return new LinkedList<>(Spring.getInstance().getHt().loadAll(QRespItem.class));
     }
 }

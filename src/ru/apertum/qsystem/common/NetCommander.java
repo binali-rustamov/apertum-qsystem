@@ -410,12 +410,13 @@ public class NetCommander {
      * @param userId
      * @param status просто строка. берется из возможных состояний завершения работы
      */
-    public static void сustomerToPostpone(INetProperty netProperty, long userId, String status) {
+    public static void сustomerToPostpone(INetProperty netProperty, long userId, String status, int postponedPeriod) {
         QLog.l().logger().info("Перемещение вызванного юзером кастомера в пул отложенных.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.userId = userId;
         params.textData = status;
+        params.postponedPeriod = postponedPeriod;
         try {
             send(netProperty, Uses.TASK_CUSTOMER_TO_POSTPON, params);
         } catch (QException e) {// вывод исключений
