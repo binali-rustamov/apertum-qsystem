@@ -70,6 +70,10 @@ public class WelcomeParams {
     private static final String INPUT_FONT_SIZE = "input_font_size";// - размер шрифта вводимого текста клиентом
     private static final String LINES_BUTTON_COUNT = "lines_button_count";// - количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
     private static final String BUTTON_TYPE = "button_type";// - это внешний вид кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
+    private static final String BUTTON_IMG = "button_img";// - это присутствие пиктограммы услуги или группы на кнопке
+    private static final String TOP_SIZE = "top_size";// - это ширина верхней панели на п.р. с видом кнопок
+    private static final String TOP_IMG = "top_img";// - это картинка на верхней панели на п.р. с видом кнопок
+    private static final String TOP_IMG_SECONDARY = "top_img_secondary";// - это картинка на верхней панели на п.р. на вторичных диалогах
 
     private WelcomeParams() {
         loadSettings();
@@ -96,6 +100,10 @@ public class WelcomeParams {
     public int pageLinesCount = 30; // Количество строк на странице.
     public int linesButtonCount = 5; // количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
     public String buttonType = ""; // - это внешний вид кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
+    public boolean buttonImg = true; // - это присутствие пиктограммы услуги или группы на кнопке
+    public int topSize = 0; // - это ширина верхней панели на п.р. с видом кнопок
+    public String topImg = ""; // - это картинка на верхней панели на п.р. с видом кнопок
+    public String topImgSecondary = ""; // - это картинка на верхней панели на п.р. на вторичных диалогах
     /**
      * Задержка заставки при печати в мсек.
      */
@@ -216,5 +224,9 @@ public class WelcomeParams {
         } else {
             buttonType = "";
         }
+        buttonImg = "1".equals(settings.getProperty(BUTTON_IMG, "1")) || "true".equals(settings.getProperty(BUTTON_IMG, "true")); // кнопка информационной системы на пункте регистрации
+        topImg = settings.getProperty(TOP_IMG, "");
+        topImgSecondary = settings.getProperty(TOP_IMG_SECONDARY, "");
+        topSize = Integer.parseInt(settings.getProperty(TOP_SIZE, "0"));
     }
 }

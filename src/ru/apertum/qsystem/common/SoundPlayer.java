@@ -325,13 +325,28 @@ public class SoundPlayer implements Runnable {
      * @param pointNumber  номер кабинета, куда вызвали
      */
     public static void inviteClient(String clientNumber, String pointNumber, boolean isFirst) {
-        if (ServerProps.getInstance().getProps().getSound() == 0) {
+        inviteClient(clientNumber, pointNumber, isFirst, null, null, null);
+    }
+
+    /**
+     * Проговорить вызов клиента голосом
+     * @param clientNumber номер вызываемого клиента
+     * @param pointNumber  номер кабинета, куда вызвали
+     * @param inviteType  Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать
+     * @param voiceType  Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать
+     * @param pointType  Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать 0 - кабинет, 1 - окно, 2 - стойка
+     */
+    public static void inviteClient(String clientNumber, String pointNumber, boolean isFirst, Integer inviteType, Integer voiceType, Integer pointType) {
+        final int ivt = inviteType == null ? ServerProps.getInstance().getProps().getSound() : inviteType;
+        final int voc = voiceType == null ? ServerProps.getInstance().getProps().getVoice() : voiceType;
+        final int pnt = pointType == null ? ServerProps.getInstance().getProps().getPoint() : pointType;
+        if (ivt == 0) {
             return;
         }
         final LinkedList<String> res = new LinkedList<>();
         // путь к звуковым файлам
         final String voice;
-        switch (ServerProps.getInstance().getProps().getVoice()) {
+        switch (voc) {
             case 1:
                 voice = "Alyona/";
                 break;
@@ -346,16 +361,16 @@ public class SoundPlayer implements Runnable {
         }
 
         final String path = "/ru/apertum/qsystem/server/sound/" + voice;
-        if ((isFirst && ServerProps.getInstance().getProps().getSound() == 2) || ServerProps.getInstance().getProps().getSound() == 1 || ServerProps.getInstance().getProps().getSound() == 3) {
+        if ((isFirst && ivt == 2) || ivt == 1 || ivt == 3) {
             res.add(path + "ding.wav");
         }
 
-        if (ServerProps.getInstance().getProps().getSound() == 3 || (!isFirst && ServerProps.getInstance().getProps().getSound() == 2)) {
+        if (ivt == 3 || (!isFirst && ivt == 2)) {
             res.add(path + "client.wav");
 
             res.addAll(toSoundSimple(path, clientNumber));
 
-            switch (ServerProps.getInstance().getProps().getPoint()) {
+            switch (pnt) {
                 case 0:
                     res.add(path + "tocabinet.wav");
                     break;

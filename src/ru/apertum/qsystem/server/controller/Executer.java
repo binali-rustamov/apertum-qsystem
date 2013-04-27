@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.dom4j.DocumentHelper;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -222,6 +225,8 @@ public final class Executer {
             if (isRecall) {
                 QLog.l().logger().debug("Повторный вызов кастомера №" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + " пользователем " + cmdParams.userId);
 
+                // кастомер переходит в состояние в котором был в такое и переходит.
+                user.getCustomer().setState(user.getCustomer().getState());
                 // просигналим звуком
                 SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), false);
 
@@ -410,6 +415,32 @@ public final class Executer {
      */
     final Task aboutTask = new Task(Uses.TASK_ABOUT_SERVICE) {
 
+        // чтоб каждый раз в бд не лазить для проверки сколько предварительных сегодня по этой услуге
+        final HashMap<QService, Integer> cntm = new HashMap<>();
+        int day_y = -100; // для смены дня проверки
+
+        private int getAdvancedCountToday(QService service) {
+            final GregorianCalendar today = new GregorianCalendar();
+            if (today.get(GregorianCalendar.DAY_OF_YEAR) != day_y) {
+                day_y = today.get(GregorianCalendar.DAY_OF_YEAR);
+                cntm.clear();
+            }
+            if (cntm.get(service) != null) {
+                return cntm.get(service);
+            }
+            final DetachedCriteria dc = DetachedCriteria.forClass(QAdvanceCustomer.class);
+            dc.setProjection(Projections.rowCount());
+            today.set(GregorianCalendar.HOUR_OF_DAY, 0);
+            final Date today_m = today.getTime();
+            today.set(GregorianCalendar.HOUR_OF_DAY, 24);
+            dc.add(Restrictions.between("advanceTime", today_m, today.getTime()));
+            dc.add(Restrictions.eq("service", service));
+            final Integer cnt = (Integer) (Spring.getInstance().getHt().findByCriteria(dc).get(0));
+            cntm.put(service, cnt);
+            QLog.l().logger().debug("Посмотрели сколько предварительных записалось в " + service.getName() + ". Их " + cnt);
+            return cnt;
+        }
+
         @Override
         public RpcGetInt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
@@ -418,7 +449,7 @@ public final class Executer {
             final Date day = new Date();
             final QService srv = QServiceTree.getInstance().getById(cmdParams.serviceId);
             // Если не лимит количества возможных обработанных в день достигнут
-            if (srv.isLimitPerDayOver()) {
+            if (srv.isLimitPerDayOver(getAdvancedCountToday(srv))) {
                 QLog.l().logger().warn("Услуга \"" + cmdParams.serviceId + "\" не обрабатывается исходя из достижения лимита возможной обработки кастомеров в день.");
                 return new RpcGetInt(Uses.LOCK_PER_DAY_INT);
             }

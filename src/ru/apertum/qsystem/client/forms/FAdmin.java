@@ -17,6 +17,9 @@
 package ru.apertum.qsystem.client.forms;
 
 import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -39,6 +42,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DropMode;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -56,7 +60,9 @@ import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.INetProperty;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionListener;
@@ -100,7 +106,6 @@ import ru.apertum.qsystem.server.model.response.QRespItem;
 import ru.apertum.qsystem.server.model.response.QResponseList;
 import ru.apertum.qsystem.server.model.results.QResult;
 import ru.apertum.qsystem.server.model.results.QResultList;
-import ru.apertum.qsystem.server.model.schedule.QBreak;
 import ru.apertum.qsystem.server.model.schedule.QBreaks;
 import ru.apertum.qsystem.server.model.schedule.QBreaksList;
 import ru.apertum.qsystem.server.model.schedule.QScheduleList;
@@ -388,11 +393,6 @@ public class FAdmin extends javax.swing.JFrame {
         // Грузим конфигурацию
         loadConfig();
 
-        /*
-        userListChange();
-        serviceListChange();
-        siteListChange();
-         */
         spinnerPropServerPort.getModel().addChangeListener(new ChangeNet());
         spinnerPropClientPort.getModel().addChangeListener(new ChangeNet());
         spinnerWebServerPort.getModel().addChangeListener(new ChangeNet());
@@ -417,6 +417,81 @@ public class FAdmin extends javax.swing.JFrame {
         helper.enableHelpKey(jPanel18, "results");
 
         Uses.closeSplash();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        treeServices.setTransferHandler(new TransferHandler() {
+
+            @Override
+            public boolean canImport(TransferHandler.TransferSupport info) {
+                final JTree.DropLocation dl = (JTree.DropLocation) info.getDropLocation();
+                if (dl.getChildIndex() == -1) {
+                    return false;
+                }
+                // Get the string that is being dropped.
+                final Transferable t = info.getTransferable();
+                final QService data;
+                try {
+                    data = (QService) t.getTransferData(DataFlavor.stringFlavor);
+                    return (data.getParent().getId().equals(((QService) dl.getPath().getLastPathComponent()).getId()));
+                } catch (UnsupportedFlavorException | IOException e) {
+                    return false;
+                }
+            }
+
+            @Override
+            public boolean importData(TransferHandler.TransferSupport info) {
+                if (!info.isDrop()) {
+                    return false;
+                }
+                final QService data;
+                try {
+                    data = (QService) info.getTransferable().getTransferData(DataFlavor.stringFlavor);
+                } catch (UnsupportedFlavorException | IOException e) {
+                    System.err.println(e);
+                    return false;
+                }
+                final JTree.DropLocation dl = (JTree.DropLocation) info.getDropLocation();
+                final TreePath tp = dl.getPath();
+                final QService parent = (QService) tp.getLastPathComponent();
+                ((QServiceTree) treeServices.getModel()).moveNode(data, parent, dl.getChildIndex());
+                return true;
+            }
+
+            @Override
+            public int getSourceActions(JComponent c) {
+                return MOVE;
+            }
+
+            @Override
+            protected Transferable createTransferable(JComponent c) {
+                return (QService) ((JTree) c).getLastSelectedPathComponent();
+            }
+        });
+        treeServices.setDropMode(DropMode.INSERT);
+
+
+
+
+
+
+
+
+
+
+
     }
 
     /**
@@ -572,7 +647,7 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     private void showServiceInfo(QService service) {
-        labelServiceInfo.setText("<html><body text=\"#336699\"> " + (service.getEnable() == 1 ? "" : "<font color=\"#FF0000\">!*** </font>") + getLocaleMessage("service.service") + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>"
+        labelServiceInfo.setText("<html><body text=\"#336699\"> " + (service.getEnable() == 1 ? "" : "<font color=\"#FF0000\">!*** </font>") + getLocaleMessage("service.service") + service.getSeqId() + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>"
                 + "<font color=\"#"
                 + (service.getStatus() == 1
                 ? "00AA00\">" + getLocaleMessage("service.kind.active")
@@ -910,6 +985,8 @@ public class FAdmin extends javax.swing.JFrame {
     public static void main(String args[]) throws Exception {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.startSplash();
+        // Загрузка плагинов из папки plugins
+        Uses.loadPlugins("./plugins/");
         QLog.initial(args, false);
         // Определим кто работает на данном месте.
         FLogin.logining(QUserList.getInstance(), null, true, 3, FLogin.LEVEL_ADMIN);
@@ -1911,7 +1988,7 @@ public class FAdmin extends javax.swing.JFrame {
                             .addComponent(buttonRestart, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(buttonShutDown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(buttonLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(labelWelcomeState, javax.swing.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE))
+                    .addComponent(labelWelcomeState, javax.swing.GroupLayout.DEFAULT_SIZE, 885, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -2057,7 +2134,7 @@ public class FAdmin extends javax.swing.JFrame {
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(buttonRefreshBan)
@@ -2131,6 +2208,8 @@ public class FAdmin extends javax.swing.JFrame {
         treeServices.setModel(null);
         treeServices.setAutoscrolls(true);
         treeServices.setComponentPopupMenu(popupServices);
+        treeServices.setDragEnabled(true);
+        treeServices.setDropMode(javax.swing.DropMode.ON);
         treeServices.setName("treeServices"); // NOI18N
         treeServices.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -2154,11 +2233,11 @@ public class FAdmin extends javax.swing.JFrame {
             jPanel25Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel25Layout.createSequentialGroup()
                 .addComponent(jButton5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
                 .addComponent(jButton4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton3))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
         );
         jPanel25Layout.setVerticalGroup(
             jPanel25Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2199,7 +2278,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jButton6)
                 .addGap(10, 10, 10))
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
         );
         jPanel26Layout.setVerticalGroup(
             jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2404,8 +2483,8 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 852, Short.MAX_VALUE)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 852, Short.MAX_VALUE))
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 917, Short.MAX_VALUE)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 917, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -2507,9 +2586,9 @@ public class FAdmin extends javax.swing.JFrame {
                     .addComponent(buttonSchedulleDelete))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                    .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
                     .addComponent(jLabel21)
-                    .addComponent(textFieldScheduleName, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
+                    .addComponent(textFieldScheduleName, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton20, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -2669,11 +2748,11 @@ public class FAdmin extends javax.swing.JFrame {
                                 .addComponent(jButton17)
                                 .addGap(18, 18, 18)
                                 .addComponent(jButton15))
-                            .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE)
+                            .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 698, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel19Layout.createSequentialGroup()
                                 .addComponent(jLabel23)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)))))
+                                .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         jPanel19Layout.setVerticalGroup(
@@ -2743,7 +2822,7 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel14.setLayout(jPanel14Layout);
         jPanel14Layout.setHorizontalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane17, javax.swing.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)
+            .addComponent(jScrollPane17, javax.swing.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2792,14 +2871,14 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(jButton9)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton10))
-                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane16, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
+                    .addComponent(jScrollPane16, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
                     .addComponent(jPanel14, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
                     .addComponent(jLabel22, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(textFieldInfoItemName, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE))
+                    .addComponent(textFieldInfoItemName, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -2868,7 +2947,7 @@ public class FAdmin extends javax.swing.JFrame {
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel15Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelRespinse, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
+                .addComponent(labelRespinse, javax.swing.GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel15Layout.setVerticalGroup(
@@ -2909,10 +2988,10 @@ public class FAdmin extends javax.swing.JFrame {
                     .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE)
+                    .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE)
                     .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel16)
-                    .addComponent(textFieldResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE))
+                    .addComponent(textFieldResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel13Layout.setVerticalGroup(
@@ -2969,7 +3048,7 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel18Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 854, Short.MAX_VALUE)
+                    .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 919, Short.MAX_VALUE)
                     .addGroup(jPanel18Layout.createSequentialGroup()
                         .addComponent(jButton11)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -3467,7 +3546,7 @@ public class FAdmin extends javax.swing.JFrame {
                     .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jTabbedPane2, 0, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(

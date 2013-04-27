@@ -120,6 +120,7 @@ public class FInfoDialog extends javax.swing.JDialog {
             Uses.setLocation(infoDialog);
         }
         infoDialog.LabelCaption2.setText(respList.getHTMLText());
+        
         infoDialog.showLevel(FInfoDialog.root);
         if (infoDialog.clockBack.isActive()) {
             infoDialog.clockBack.stop();
@@ -187,7 +188,7 @@ public class FInfoDialog extends javax.swing.JDialog {
                 cols = 3;
                 rows = Math.round(new Float(0.3) + level.getChildCount() / 3);
             }
-            panelMain.setLayout(new GridLayout(rows, cols, 0, 0/*delta, delta / 2*/));
+            panelMain.setLayout(new GridLayout(rows, cols, delta/2, delta/2));
             for (QInfoItem item : level.getChildren()) {
                 final InfoButton button = new InfoButton(item);
                 panelMain.add(button);
@@ -250,7 +251,7 @@ public class FInfoDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         panelAll = new QPanel(WelcomeParams.getInstance().backgroundImg);
-        panelUp = new ru.apertum.qsystem.client.model.QPanel();
+        panelUp = new QPanel(WelcomeParams.getInstance().topImgSecondary);
         LabelCaption2 = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
         jButton2 = new javax.swing.JButton();
@@ -265,7 +266,6 @@ public class FInfoDialog extends javax.swing.JDialog {
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FInfoDialog.class);
         panelAll.setBackground(resourceMap.getColor("panelAll.background")); // NOI18N
-        panelAll.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         panelAll.setName("panelAll"); // NOI18N
 
         panelUp.setBorder(new javax.swing.border.MatteBorder(null));
@@ -274,30 +274,24 @@ public class FInfoDialog extends javax.swing.JDialog {
         panelUp.setEndPoint(new java.awt.Point(0, 70));
         panelUp.setName("panelUp"); // NOI18N
         panelUp.setOpaque(false);
+        panelUp.setPreferredSize(new java.awt.Dimension(1026, 150));
         panelUp.setStartColor(resourceMap.getColor("panelUp.startColor")); // NOI18N
         panelUp.setStartPoint(new java.awt.Point(0, -50));
 
         LabelCaption2.setFont(resourceMap.getFont("LabelCaption2.font")); // NOI18N
         LabelCaption2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         LabelCaption2.setText(resourceMap.getString("LabelCaption2.text")); // NOI18N
-        LabelCaption2.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         LabelCaption2.setName("LabelCaption2"); // NOI18N
 
         javax.swing.GroupLayout panelUpLayout = new javax.swing.GroupLayout(panelUp);
         panelUp.setLayout(panelUpLayout);
         panelUpLayout.setHorizontalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelUpLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 1004, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 1030, Short.MAX_VALUE)
         );
         panelUpLayout.setVerticalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelUpLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
         );
 
         panelBottom.setBorder(new javax.swing.border.MatteBorder(null));
@@ -355,7 +349,7 @@ public class FInfoDialog extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 108, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 114, Short.MAX_VALUE)
                 .addComponent(buttonPrint, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(buttonInRoot, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -385,18 +379,18 @@ public class FInfoDialog extends javax.swing.JDialog {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1004, Short.MAX_VALUE)
+            .addGap(0, 1010, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 321, Short.MAX_VALUE)
+            .addGap(0, 260, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout panelAllLayout = new javax.swing.GroupLayout(panelAll);
         panelAll.setLayout(panelAllLayout);
         panelAllLayout.setHorizontalGroup(
             panelAllLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, 1032, Short.MAX_VALUE)
             .addComponent(panelBottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelAllLayout.createSequentialGroup()
                 .addContainerGap()

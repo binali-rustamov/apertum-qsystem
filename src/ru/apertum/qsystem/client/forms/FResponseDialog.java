@@ -148,7 +148,7 @@ public class FResponseDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         panelAll = new QPanel(WelcomeParams.getInstance().backgroundImg);
-        panelUp = new ru.apertum.qsystem.client.model.QPanel();
+        panelUp = new QPanel(WelcomeParams.getInstance().topImgSecondary);
         LabelCaption = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
         jButton2 = new javax.swing.JButton();
@@ -160,7 +160,6 @@ public class FResponseDialog extends javax.swing.JDialog {
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FResponseDialog.class);
         panelAll.setBackground(resourceMap.getColor("panelAll.background")); // NOI18N
-        panelAll.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         panelAll.setName("panelAll"); // NOI18N
 
         panelUp.setBorder(new javax.swing.border.MatteBorder(null));
@@ -169,30 +168,24 @@ public class FResponseDialog extends javax.swing.JDialog {
         panelUp.setEndPoint(new java.awt.Point(0, 70));
         panelUp.setName("panelUp"); // NOI18N
         panelUp.setOpaque(false);
+        panelUp.setPreferredSize(new java.awt.Dimension(969, 150));
         panelUp.setStartColor(resourceMap.getColor("panelUp.startColor")); // NOI18N
         panelUp.setStartPoint(new java.awt.Point(0, -50));
 
         LabelCaption.setFont(resourceMap.getFont("LabelCaption.font")); // NOI18N
         LabelCaption.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         LabelCaption.setText(resourceMap.getString("LabelCaption.text")); // NOI18N
-        LabelCaption.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         LabelCaption.setName("LabelCaption"); // NOI18N
 
         javax.swing.GroupLayout panelUpLayout = new javax.swing.GroupLayout(panelUp);
         panelUp.setLayout(panelUpLayout);
         panelUpLayout.setHorizontalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelUpLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(LabelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 947, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(LabelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 973, Short.MAX_VALUE)
         );
         panelUpLayout.setVerticalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelUpLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(LabelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(LabelCaption, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
         );
 
         panelBottom.setBorder(new javax.swing.border.MatteBorder(null));
@@ -219,7 +212,7 @@ public class FResponseDialog extends javax.swing.JDialog {
             .addGroup(panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(742, Short.MAX_VALUE))
+                .addContainerGap(748, Short.MAX_VALUE))
         );
         panelBottomLayout.setVerticalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -238,18 +231,18 @@ public class FResponseDialog extends javax.swing.JDialog {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 867, Short.MAX_VALUE)
+            .addGap(0, 873, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 499, Short.MAX_VALUE)
+            .addGap(0, 438, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout panelAllLayout = new javax.swing.GroupLayout(panelAll);
         panelAll.setLayout(panelAllLayout);
         panelAllLayout.setHorizontalGroup(
             panelAllLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, 975, Short.MAX_VALUE)
             .addComponent(panelBottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelAllLayout.createSequentialGroup()
                 .addGap(50, 50, 50)

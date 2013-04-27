@@ -18,6 +18,10 @@ package ru.apertum.qsystem.server.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
@@ -65,7 +69,7 @@ import ru.apertum.qsystem.server.model.schedule.QSchedule;
  */
 @Entity
 @Table(name = "services")
-public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, Serializable {
+public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, Transferable, Serializable {
 
     /**
      * множество кастомеров, вставших в очередь к этой услуге
@@ -203,8 +207,6 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
     public void setAdvanceTimePeriod(Integer advanceTimePeriod) {
         this.advanceTimePeriod = advanceTimePeriod;
     }
-    
-    
     /**
      * Способ вызова клиента юзером
      * 1 - стандартно
@@ -222,6 +224,23 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
     public void setEnable(Integer enable) {
         this.enable = enable;
     }
+    /**
+     * Способ вызова клиента юзером
+     * 1 - стандартно
+     * 2 - backoffice, т.е. вызов следующего без табло и звука, запершение только редиректом
+     */
+    @Column(name = "seq_id")
+    private Integer seqId = 0;
+
+    public Integer getSeqId() {
+        return seqId;
+    }
+
+    public void setSeqId(Integer seqId) {
+        this.seqId = seqId;
+    }
+
+    
     /**
      * Требовать или нет от пользователя после окончания работы с клиентом по этой услуге
      * обозначить результат этой работы выбрав пункт из словаря результатов
@@ -302,7 +321,6 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
     public void setPreInfoPrintText(String preInfoPrintText) {
         this.preInfoPrintText = preInfoPrintText;
     }
-    
     /**
      * текст для печати при необходимости перед постановкой в очередь
      */
@@ -318,7 +336,6 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
     public void setTicketText(String ticketText) {
         this.ticketText = ticketText;
     }
-    
     /**
      * последний номер, выданный последнему кастомеру при номерировании клиентов обособлено в услуге.
      * тут такой замут. когда услугу создаешь из json где-то на клиенте, то там же спринг-контекст не поднят
@@ -413,10 +430,11 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
 
     /**
      * Иссяк лимит на возможных обработанных в день по услуге или нет
+     * @param advCusts сколько предварительнозаписанных уже есть в очереди
      * @return true - превышен, в очередь становиться нельзя; false - можно в очередь встать
      */
-    public boolean isLimitPerDayOver() {
-        return getDayLimit() != 0 && getDay() == new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR) && getDayLimit() <= getCountPerDay();
+    public boolean isLimitPerDayOver(int advCusts) {
+        return getDayLimit() != 0 && getDay() == new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR) && getDayLimit() - advCusts <= getCountPerDay();
     }
     /**
      * Сколько кастомеров уже прошло услугу сегодня
@@ -826,6 +844,33 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, S
             setParentId(parentService.id);
         } else {
             parentId = null;
+        }
+    }
+    /**
+     * data flavor used to get back a DnDNode from data transfer
+     */
+    public static final DataFlavor DnDNode_FLAVOR = new DataFlavor(QService.class, "Drag and drop Node");
+    /**
+     * list of all flavors that this DnDNode can be transfered as
+     */
+    protected static DataFlavor[] flavors = {QService.DnDNode_FLAVOR};
+
+    @Override
+    public DataFlavor[] getTransferDataFlavors() {
+        return flavors;
+    }
+
+    @Override
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+        return true;
+    }
+
+    @Override
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+        if (this.isDataFlavorSupported(flavor)) {
+            return this;
+        } else {
+            throw new UnsupportedFlavorException(flavor);
         }
     }
 }

@@ -87,6 +87,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         if (preInfoDialog == null) {
             preInfoDialog = new FPreInfoDialog(parent, modal);
             preInfoDialog.setTitle(getLocaleMessage("dialog.title"));
+            preInfoDialog.LabelCaption2.setText(getLocaleMessage("LabelCaption2.text"));
         }
         FPreInfoDialog.htmlText = Uses.prepareAbsolutPathForImg(htmlText);
         FPreInfoDialog.printText = printText;
@@ -128,7 +129,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         panelAll = new QPanel(WelcomeParams.getInstance().backgroundImg);
-        panelUp = new ru.apertum.qsystem.client.model.QPanel();
+        panelUp = new QPanel(WelcomeParams.getInstance().topImgSecondary);
         LabelCaption2 = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
         jButton2 = new javax.swing.JButton();
@@ -144,7 +145,6 @@ public class FPreInfoDialog extends javax.swing.JDialog {
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FPreInfoDialog.class);
         panelAll.setBackground(resourceMap.getColor("panelAll.background")); // NOI18N
-        panelAll.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         panelAll.setName("panelAll"); // NOI18N
 
         panelUp.setBorder(new javax.swing.border.MatteBorder(null));
@@ -153,30 +153,24 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         panelUp.setEndPoint(new java.awt.Point(0, 70));
         panelUp.setName("panelUp"); // NOI18N
         panelUp.setOpaque(false);
+        panelUp.setPreferredSize(new java.awt.Dimension(880, 150));
         panelUp.setStartColor(resourceMap.getColor("panelUp.startColor")); // NOI18N
         panelUp.setStartPoint(new java.awt.Point(0, -50));
 
         LabelCaption2.setFont(resourceMap.getFont("LabelCaption2.font")); // NOI18N
         LabelCaption2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         LabelCaption2.setText(resourceMap.getString("LabelCaption2.text")); // NOI18N
-        LabelCaption2.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         LabelCaption2.setName("LabelCaption2"); // NOI18N
 
         javax.swing.GroupLayout panelUpLayout = new javax.swing.GroupLayout(panelUp);
         panelUp.setLayout(panelUpLayout);
         panelUpLayout.setHorizontalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelUpLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 858, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE)
         );
         panelUpLayout.setVerticalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelUpLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(LabelCaption2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
         );
 
         panelBottom.setBorder(new javax.swing.border.MatteBorder(null));
@@ -214,7 +208,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
                 .addComponent(buttonInRoot, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(buttonBack, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -256,14 +250,14 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 858, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 864, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -271,7 +265,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         panelAll.setLayout(panelAllLayout);
         panelAllLayout.setHorizontalGroup(
             panelAllLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, 886, Short.MAX_VALUE)
             .addComponent(panelBottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );

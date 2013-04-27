@@ -334,7 +334,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N
         jLabel11.setName("jLabel11"); // NOI18N
 
-        comboBoxPeriod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "30", "45", "60", "75", "90", "105", "120" }));
+        comboBoxPeriod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "30", "45", "60", "75", "90", "105", "120", "135", "150" }));
         comboBoxPeriod.setName("comboBoxPeriod"); // NOI18N
 
         jLabel12.setText(resourceMap.getString("jLabel12.text")); // NOI18N

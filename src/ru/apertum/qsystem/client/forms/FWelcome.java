@@ -19,6 +19,7 @@ package ru.apertum.qsystem.client.forms;
 import ru.apertum.qsystem.client.common.WelcomeParams;
 import com.google.gson.Gson;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -382,6 +383,9 @@ public class FWelcome extends javax.swing.JFrame {
             });
         }
         initComponents();
+        if (WelcomeParams.getInstance().topSize != 0) {
+            panelCaption.setPreferredSize(new Dimension(panelCaption.getWidth(), WelcomeParams.getInstance().topSize));
+        }
         try {
             setIconImage(ImageIO.read(FAdmin.class.getResource("/ru/apertum/qsystem/client/forms/resources/checkIn.png")));
         } catch (IOException ex) {
@@ -412,6 +416,12 @@ public class FWelcome extends javax.swing.JFrame {
         buttonAdvance.setVisible(WelcomeParams.getInstance().advance);
         buttonStandAdvance.setVisible(WelcomeParams.getInstance().advance);
         showMed();
+        // Если режим инфокиоска, то не показываем кнопки предвариловки
+        // Показали информацию и все
+        if (FWelcome.isInfo) {
+            buttonAdvance.setVisible(false);
+            buttonStandAdvance.setVisible(false);
+        }
     }
 
     /**
@@ -680,7 +690,7 @@ public class FWelcome extends javax.swing.JFrame {
                 write(Uses.format_for_label.format(customer.getStandTime()), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (customer.getService().getInput_required()) {
-                    write(customer.getService().getInput_caption(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                    write(customer.getService().getInput_caption().replaceAll("<.*?>",""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                     write(customer.getInput_data(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                 }
                 // если в услуге есть что напечатать на талоне, то напечатаем это на его талоне
@@ -874,7 +884,7 @@ public class FWelcome extends javax.swing.JFrame {
 
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (advCustomer.getService().getInput_required()) {
-                    write(advCustomer.getService().getInput_caption(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                    write(advCustomer.getService().getInput_caption().replaceAll("<.*?>",""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                     write(advCustomer.getAuthorizationCustomer().getName(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1); // тут кривовато передали введеные дпнные
                 }
 
@@ -1089,6 +1099,39 @@ public class FWelcome extends javax.swing.JFrame {
 
         buttonInfo.setVisible(WelcomeParams.getInstance().info && visible);
         buttonResponse.setVisible(WelcomeParams.getInstance().response && visible);
+        
+        int cols = 3;
+        int rows = 5;
+
+        // посмотрим сколько реальных кнопок нужно отобразить
+        // тут есть невидимые услуги и услуги не с того киоска
+        int childCount = 0;
+        for (QService service : current.getChildren()) {
+            if (service.getStatus() != -1 && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
+                childCount++;
+            }
+        }
+
+        if (childCount < 4) {
+            cols = 1;
+            rows = 3;
+        }
+        if (childCount > 3 && childCount < 11) {
+            cols = 2;
+            rows = Math.round(new Float(childCount) / 2);
+        }
+        if (childCount > 10) {
+            cols = 3;
+            rows = Math.round(new Float(0.3) + (float) childCount / 3);
+        }
+
+        // поправка на то что если кнопок на уровне много и они уже в три колонки, то задействуем ограничение по линиям, а то расползутся
+        if (visible && rows > WelcomeParams.getInstance().linesButtonCount && cols >= 3) {
+            rows = WelcomeParams.getInstance().linesButtonCount;
+            panelForPaging.setVisible(true);
+        } else {
+            panelForPaging.setVisible(false);
+        }
     }
     //==================================================================================================================
     //С рабочего места администратора должна быть возможность заблокировать пункт постановки в очередь, 
@@ -1193,7 +1236,7 @@ public class FWelcome extends javax.swing.JFrame {
     private void initComponents() {
 
         panelBackground = new QPanel(WelcomeParams.getInstance().backgroundImg);
-        panelCaption = new javax.swing.JPanel();
+        panelCaption = new QPanel(WelcomeParams.getInstance().topImg);
         labelCaption = new javax.swing.JLabel();
         panelButtons = new javax.swing.JPanel();
         buttonAdvance = new javax.swing.JButton();
@@ -1224,7 +1267,9 @@ public class FWelcome extends javax.swing.JFrame {
         panelCaption.setBorder(new javax.swing.border.MatteBorder(null));
         panelCaption.setName("panelCaption"); // NOI18N
         panelCaption.setOpaque(false);
+        panelCaption.setPreferredSize(new java.awt.Dimension(1008, 150));
 
+        labelCaption.setFont(resourceMap.getFont("labelCaption.font")); // NOI18N
         labelCaption.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelCaption.setText(resourceMap.getString("labelCaption.text")); // NOI18N
         labelCaption.setName("labelCaption"); // NOI18N
@@ -1233,11 +1278,11 @@ public class FWelcome extends javax.swing.JFrame {
         panelCaption.setLayout(panelCaptionLayout);
         panelCaptionLayout.setHorizontalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1000, Short.MAX_VALUE)
+            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1058, Short.MAX_VALUE)
         );
         panelCaptionLayout.setVerticalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelCaption, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE)
+            .addComponent(labelCaption, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
         );
 
         panelButtons.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1306,11 +1351,11 @@ public class FWelcome extends javax.swing.JFrame {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 895, Short.MAX_VALUE)
+            .addGap(0, 953, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 353, Short.MAX_VALUE)
+            .addGap(0, 355, Short.MAX_VALUE)
         );
 
         panelLock.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1327,14 +1372,14 @@ public class FWelcome extends javax.swing.JFrame {
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 895, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 953, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelLockLayout.setVerticalGroup(
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1384,9 +1429,9 @@ public class FWelcome extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(panelCentreLayout.createSequentialGroup()
-                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
+                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
+                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
         );
 
         panelForPaging.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1431,13 +1476,13 @@ public class FWelcome extends javax.swing.JFrame {
             panelForPagingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelForPagingLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelBackPage, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                .addComponent(labelBackPage, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(buttonBackPage)
                 .addGap(18, 18, 18)
                 .addComponent(buttonForwardPage)
                 .addGap(18, 18, 18)
-                .addComponent(labelForwardPage, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                .addComponent(labelForwardPage, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelForPagingLayout.setVerticalGroup(
@@ -1456,10 +1501,10 @@ public class FWelcome extends javax.swing.JFrame {
         panelBackground.setLayout(panelBackgroundLayout);
         panelBackgroundLayout.setHorizontalGroup(
             panelBackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1060, Short.MAX_VALUE)
             .addGroup(panelBackgroundLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 982, Short.MAX_VALUE)
+                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 1040, Short.MAX_VALUE)
                 .addContainerGap())
             .addComponent(panelForPaging, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(panelCentre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1517,7 +1562,8 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         FWelcome.advanceRegim = advanceRegim;
         buttonToBeginActionPerformed(null);
         if (advanceRegim) {
-            labelCaption.setText("<html><b><p align=center><span style='font-size:30.0pt;color:red'>" + getLocaleMessage("messages.select_adv_servece"));
+            labelCaption.setText("<html><p align=center><span style='font-size:55.0;color:#DC143C'>" + getLocaleMessage("messages.select_adv_servece1")
+                    + "</span><br><span style='font-size:45.0;color:#DC143C'><i>" + getLocaleMessage("messages.select_adv_servece2") + "</i>");
             buttonAdvance.setText("<html><p align=center>" + getLocaleMessage("lable.reg_calcel"));
             //возврат в начальное состояние из диалога предварительной записи.
             if (clockBack.isActive()) {

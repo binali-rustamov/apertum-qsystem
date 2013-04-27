@@ -48,29 +48,36 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
     protected abstract LinkedList<T> load();
 
     protected final void createTree() {
-        nodes = load();
+        final LinkedList<T> nodes = load();
         for (T node : nodes) {
             if (node.getParentId() == null) {
                 setRoot(node);
                 break;
             }
         }
-        bildTree(getRoot());
+        bildTree(getRoot(), nodes);
         QLog.l().logger().info("Создали дерево.");
     }
 
-    private void bildTree(T root) {
+    private void bildTree(T root, LinkedList<T> nodes) {
         for (T node : nodes) {
             if (root.getId().equals(node.getParentId())) {
                 node.setParent(root);
                 root.addChild(node);
-                bildTree(node);
+                bildTree(node, nodes);
             }
         }
     }
-    private LinkedList<T> nodes;
 
     public LinkedList<T> getNodes() {
+        final LinkedList<T> nodes = new LinkedList<>();
+        sailToStorm(root, new ISailListener() {
+
+            @Override
+            public void actionPerformed(TreeNode service) {
+                nodes.add((T) service);
+            }
+        });
         return nodes;
     }
 
@@ -80,7 +87,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
      * @return если не найдено то вернет null.
      */
     public T getById(long id) {
-        for (T node : nodes) {
+        for (T node : getNodes()) {
             if (id == node.getId()) {
                 return node;
             }
@@ -94,7 +101,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
      * @return есть или нет
      */
     public boolean hasById(long id) {
-        for (T node : nodes) {
+        for (T node : getNodes()) {
             if (id == node.getId()) {
                 return true;
             }
@@ -108,7 +115,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
      * @return есть или нет
      */
     public boolean hasByName(String name) {
-        for (T node : nodes) {
+        for (T node : getNodes()) {
             if (name.equals(node.getName())) {
                 return true;
             }
@@ -117,7 +124,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
     }
 
     public int size() {
-        return nodes.size();
+        return getNodes().size();
     }
 
     /**
@@ -171,16 +178,37 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
             }
         });
         deleted.add((T) node);
-        nodes.removeAll(deleted);
 
         super.removeNodeFromParent(node);
+        updateSeqSibling((QService) node.getParent());
     }
     protected final LinkedList<T> deleted = new LinkedList<>();
 
     @Override
     public void insertNodeInto(MutableTreeNode newChild, MutableTreeNode parent, int index) {
-        nodes.add((T) newChild);
         super.insertNodeInto(newChild, parent, index);
+        updateSeqSibling((QService) parent);
+    }
+
+    public void moveNode(MutableTreeNode moveChild, MutableTreeNode parent, int index) {
+        int pos = 0;
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            if (((QService) parent.getChildAt(i)).getId().equals(((QService) moveChild).getId())) {
+                super.removeNodeFromParent((MutableTreeNode) parent.getChildAt(i));
+                pos = i;
+                break;
+            }
+        }
+        super.insertNodeInto(moveChild, parent, index - (pos < index ? 1 : 0));
+        updateSeqSibling((QService) parent);
+    }
+
+    public void updateSeqSibling(QService parent) {
+        QService sib = (QService) ((QService) parent).getFirstChild();
+        while (sib != null) {
+            sib.setSeqId(parent.getIndex(sib));
+            sib = (QService) sib.getNextSibling();
+        }
     }
 
     public void save() {
@@ -195,7 +223,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
                         flag = true;
                     }
                 }
-                if (!flag){
+                if (!flag) {
                     parent = (T) parent.getParent();
                 }
             }
@@ -206,6 +234,6 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
         deleted.removeAll(del);
         Spring.getInstance().getHt().deleteAll(deleted);
         deleted.clear();
-        Spring.getInstance().getHt().saveOrUpdateAll(nodes);
+        Spring.getInstance().getHt().saveOrUpdateAll(getNodes());
     }
 }

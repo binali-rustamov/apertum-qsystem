@@ -129,10 +129,12 @@ public class QButton extends JButton {
         }
         setText(Uses.prepareAbsolutPathForImg(service.getButtonText()));
         setSize(1, 1);
-        if (service.isLeaf()) {
-            setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/serv_btn.png")));
-        } else {
-            setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/folder.png")));
+        if (WelcomeParams.getInstance().buttonImg) {
+            if (service.isLeaf()) {
+                setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/serv_btn.png")));
+            } else {
+                setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/folder.png")));
+            }
         }
 
         //займемся внешним видом
@@ -345,20 +347,6 @@ public class QButton extends JButton {
             }
         });//addActionListener
 
-
-
-        /*
-        ATalkingClock clockPush = new ATalkingClock(5000, 0) {
-        
-        @Override
-        public void run() {
-        for (ActionListener l : getActionListeners()){
-        l.actionPerformed(null);
-        }
-        }
-        };
-        clockPush.start();
-         */
     }
     private Image background;
 

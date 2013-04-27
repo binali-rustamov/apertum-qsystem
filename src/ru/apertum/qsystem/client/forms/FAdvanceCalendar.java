@@ -117,8 +117,6 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
                 Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "invisibleCursor");
                 advanceCalendar.setCursor(transparentCursor);
                 advanceCalendar.setVisible(true);
-                advanceCalendar.setUndecorated(true);
-
             } else {
                 advanceCalendar.setSize(1280, 1024);
                 Uses.setLocation(advanceCalendar);
