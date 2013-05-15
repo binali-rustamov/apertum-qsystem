@@ -69,7 +69,7 @@ import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
-import ru.apertum.qsystem.common.cmd.JsonRPC20;
+import ru.apertum.qsystem.common.cmd.AJsonRPC20;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
 import ru.apertum.qsystem.common.cmd.RpcGetSrt;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
@@ -224,10 +224,10 @@ public class FWelcome extends javax.swing.JFrame {
                 }
                 QLog.l().logger().trace("Задание:\n" + data);
 
-                final JsonRPC20 rpc;
+                final AJsonRPC20 rpc;
                 final Gson gson = GsonPool.getInstance().borrowGson();
                 try {
-                    rpc = gson.fromJson(data, JsonRPC20.class);
+                    rpc = gson.fromJson(data, AJsonRPC20.class);
                 } finally {
                     GsonPool.getInstance().returnGson(gson);
                 }

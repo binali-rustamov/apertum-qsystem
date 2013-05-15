@@ -31,7 +31,7 @@ import ru.apertum.qsystem.server.ServerProps;
 public class RpcBanList extends JsonRPC20 {
 
     @Expose
-    @SerializedName("ban")
+    @SerializedName("result")
     private final LinkedList<String> banCustomers = new LinkedList<>();
 
     public LinkedList<String> getBanList() {

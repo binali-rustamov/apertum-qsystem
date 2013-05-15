@@ -29,7 +29,7 @@ public class RpcGetBool extends JsonRPC20 {
     }
     
     @Expose
-    @SerializedName("bool")
+    @SerializedName("result")
     private boolean result;
 
     public void setResult(boolean result) {

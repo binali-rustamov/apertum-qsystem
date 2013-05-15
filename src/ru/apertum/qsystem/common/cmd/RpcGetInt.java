@@ -29,7 +29,7 @@ public class RpcGetInt extends JsonRPC20 {
     }
     
     @Expose
-    @SerializedName("int")
+    @SerializedName("result")
     private int result;
 
     public void setResult(int result) {

@@ -30,7 +30,7 @@ public class RpcGetAuthorizCustomer extends JsonRPC20 {
     }
     
     @Expose
-    @SerializedName("auth_customer")
+    @SerializedName("result")
     private QAuthorizationCustomer result;
 
     public void setResult(QAuthorizationCustomer result) {

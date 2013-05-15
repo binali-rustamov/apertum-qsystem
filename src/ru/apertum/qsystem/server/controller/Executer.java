@@ -39,8 +39,10 @@ import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.cmd.CmdParams;
+import ru.apertum.qsystem.common.cmd.AJsonRPC20;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.cmd.JsonRPC20Error;
+import ru.apertum.qsystem.common.cmd.JsonRPC20OK;
 import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
 import ru.apertum.qsystem.common.cmd.RpcGetAuthorizCustomer;
@@ -326,7 +328,7 @@ public final class Executer {
          * Может случиться ситуация когда двое вызывают последнего кастомера, первому достанется, а второму нет.
          */
         @Override
-        synchronized public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        synchronized public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             // синхронизация работы с клиентом
 
@@ -341,7 +343,7 @@ public final class Executer {
                 customer = QPostponedList.getInstance().getById(cmdParams.customerId);
 
                 if (customer == null) {
-                    return new JsonRPC20(new JsonRPC20Error(JsonRPC20Error.POSTPONED_NOT_FOUND, cmdParams.customerId));
+                    return new JsonRPC20Error(JsonRPC20Error.ErrorRPC.POSTPONED_NOT_FOUND, cmdParams.customerId);
                 } else {
                     QPostponedList.getInstance().removeElement(customer);
                 }
@@ -723,14 +725,14 @@ public final class Executer {
         }
 
         @Override
-        public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             synchronized (forRefr) {
                 super.process(cmdParams, ipAdress, IP);
                 addrByID.put(cmdParams.userId, ipAdress);
                 idByAddr.put(ipAdress, cmdParams.userId);
                 ipByAddr.put(ipAdress, IP);
             }
-            return new JsonRPC20();
+            return new JsonRPC20OK();
         }
     };
     /**
@@ -814,7 +816,7 @@ public final class Executer {
     final Task killCustomerTask = new Task(Uses.TASK_KILL_NEXT_CUSTOMER) {
 
         @Override
-        public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             // Если кастомер имел что-то введенное на пункте регистрации, то удалить всех таких кастомеров с такими введеными данными
@@ -849,7 +851,7 @@ public final class Executer {
                 // Должно подтереться основном табло
                 MainBoard.getInstance().killCustomer(user);
             } finally {
-                return new JsonRPC20();
+                return new JsonRPC20OK();
             }
         }
     };
@@ -859,7 +861,7 @@ public final class Executer {
     final Task getStartCustomerTask = new Task(Uses.TASK_START_CUSTOMER) {
 
         @Override
-        public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             // Время старта работы с юзера с кастомером.
@@ -870,7 +872,7 @@ public final class Executer {
             MainBoard.getInstance().workCustomer(user);
             // сохраняем состояния очередей.
             QServer.savePool();
-            return new JsonRPC20();
+            return new JsonRPC20OK();
         }
     };
     /**
@@ -879,7 +881,7 @@ public final class Executer {
     final Task customerToPostponeTask = new Task(Uses.TASK_CUSTOMER_TO_POSTPON) {
 
         @Override
-        public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             // вот он все это творит
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
@@ -908,7 +910,7 @@ public final class Executer {
             } catch (Throwable t) {
                 QLog.l().logger().error("Загнулось под конец.", t);
             } finally {
-                return new JsonRPC20();
+                return new JsonRPC20OK();
             }
         }
     };
@@ -918,7 +920,7 @@ public final class Executer {
     final Task postponCustomerChangeStatusTask = new Task(Uses.TASK_POSTPON_CHANGE_STATUS) {
 
         @Override
-        public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QCustomer cust = QPostponedList.getInstance().getById(cmdParams.customerId);
             if (cust != null) {
@@ -926,9 +928,9 @@ public final class Executer {
                 //разослать оповещение о том, что посетителя вызвали, состояние очереди изменилось
                 //рассылаем широковещетельно по UDP на определенный порт
                 Uses.sendUDPBroadcast(Uses.TASK_REFRESH_POSTPONED_POOL, ServerProps.getInstance().getProps().getClientPort());
-                return new JsonRPC20();
+                return new JsonRPC20OK();
             } else {
-                return new JsonRPC20(new JsonRPC20Error(JsonRPC20Error.POSTPONED_NOT_FOUND, cmdParams.customerId));
+                return new JsonRPC20Error(JsonRPC20Error.ErrorRPC.POSTPONED_NOT_FOUND, cmdParams.customerId);
             }
 
         }
@@ -939,7 +941,7 @@ public final class Executer {
     final Task getFinishCustomerTask = new Task(Uses.TASK_FINISH_CUSTOMER) {
 
         @Override
-        public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             // вот он все это творит
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
@@ -995,7 +997,7 @@ public final class Executer {
                 //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
                 MainBoard.getInstance().killCustomer(user);
             } finally {
-                return new JsonRPC20();
+                return new JsonRPC20OK();
             }
         }
     };
@@ -1005,7 +1007,7 @@ public final class Executer {
     final Task redirectCustomerTask = new Task(Uses.TASK_REDIRECT_CUSTOMER) {
 
         @Override
-        public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             final QCustomer customer = user.getCustomer();
@@ -1059,7 +1061,7 @@ public final class Executer {
                 //рассылаем широковещетельно по UDP на определенный порт. Должно подтереться на основном табло
                 MainBoard.getInstance().killCustomer(user);
             } finally {
-                return new JsonRPC20();
+                return new JsonRPC20OK();
             }
         }
     };
@@ -1141,14 +1143,14 @@ public final class Executer {
     final Task saveBoardConfig = new Task(Uses.TASK_SAVE_BOARD_CONFIG) {
 
         @Override
-        synchronized public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        synchronized public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             try {
                 MainBoard.getInstance().saveConfig(DocumentHelper.parseText(cmdParams.textData).getRootElement());
             } catch (DocumentException ex) {
                 QLog.l().logger().error("Не сохранилась конфигурация табло.", ex);
             }
-            return new JsonRPC20();
+            return new JsonRPC20OK();
         }
     };
     /**
@@ -1514,12 +1516,13 @@ public final class Executer {
     final Task setResponseAnswer = new Task(Uses.TASK_SET_RESPONSE_ANSWER) {
 
         @Override
-        public JsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            final JsonRPC20 rpc = new JsonRPC20();
+            final JsonRPC20OK rpc = new JsonRPC20OK();
             final QRespEvent event = new QRespEvent();
             event.setDate(new Date());
             event.setRespID(cmdParams.responseId);
+            final JsonRPC20Error rpcErr = new JsonRPC20Error(0, null);
             Spring.getInstance().getTt().execute(new TransactionCallbackWithoutResult() {
 
                 @Override
@@ -1528,13 +1531,13 @@ public final class Executer {
                         Spring.getInstance().getHt().saveOrUpdate(event);
                         QLog.l().logger().debug("Сохранили отзыв в базе.");
                     } catch (Exception ex) {
-                        rpc.setError(new JsonRPC20Error(JsonRPC20Error.RESPONCE_NOT_SAVE, ex));
+                        rpcErr.setError(new JsonRPC20Error.ErrorRPC(JsonRPC20Error.ErrorRPC.RESPONCE_NOT_SAVE, ex));
                         QLog.l().logger().error("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
                         status.setRollbackOnly();
                     }
                 }
             });
-            return rpc;
+            return rpcErr.getError().getCode() == 0 || rpcErr.getError().getData() == null ? rpc : rpcErr;
         }
     };
     /**
@@ -1603,14 +1606,14 @@ public final class Executer {
     final Task restartServer = new Task(Uses.TASK_RESTART) {
 
         @Override
-        public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             QServer.savePool();
             ServerEvents.getInstance().restartEvent();
             QPostponedList.getInstance().clear();
             QServer.loadPool();
             MainBoard.getInstance().refresh();
-            return new JsonRPC20();
+            return new JsonRPC20OK();
         }
     };
     /**
@@ -1619,10 +1622,10 @@ public final class Executer {
     final Task restarMainTablo = new Task(Uses.TASK_RESTART_MAIN_TABLO) {
 
         @Override
-        public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             MainBoard.getInstance().refresh();
-            return new JsonRPC20();
+            return new JsonRPC20OK();
         }
     };
     /**
@@ -1631,7 +1634,7 @@ public final class Executer {
     final Task refreshRunningText = new Task(Uses.TASK_CHANGE_RUNNING_TEXT_ON_BOARD) {
 
         @Override
-        public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             if (MainBoard.getInstance() instanceof QIndicatorBoardMonitor) {
                 final QIndicatorBoardMonitor mon = (QIndicatorBoardMonitor) MainBoard.getInstance();
@@ -1664,23 +1667,25 @@ public final class Executer {
                     mon.indicatorBoard.getBottomRunningLabel().start();
                 }
             }
-            return new JsonRPC20();
+            return new JsonRPC20OK();
         }
     };
     /**
-     * Запрос на изменение приоритетор оказываемых услуг от юзеров
+     * Запрос на изменение приоритетов оказываемых услуг от юзеров
      */
     final Task changeFlexPriority = new Task(Uses.TASK_CHANGE_FLEX_PRIORITY) {
 
         @Override
-        public JsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public AJsonRPC20 process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             for (String str : cmdParams.textData.split("&")) {
                 final String[] ss = str.split("=");
-                user.getPlanService(Long.parseLong(ss[0])).setCoefficient(Integer.parseInt(ss[1]));
+                if (!"".equals(ss[0]) && !"".equals(ss[1])) {
+                    user.getPlanService(Long.parseLong(ss[0])).setCoefficient(Integer.parseInt(ss[1]));
+                }
             }
-            return new JsonRPC20();
+            return new JsonRPC20OK();
         }
     };
 

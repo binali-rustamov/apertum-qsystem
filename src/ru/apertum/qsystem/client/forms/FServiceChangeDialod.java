@@ -82,7 +82,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private void loadService(QService service) {
         this.service = service;
         textFieldPrefix.setText(service.getPrefix());
-        textFieldPrefix.setEditable(service.isLeaf());
+        //textFieldPrefix.setEditable(service.isLeaf());
         textFieldServiceName.setText(service.getName());
         textFieldServiceName.setEditable(service.isRoot());
         textFieldServiceDescript.setText(service.getDescription());

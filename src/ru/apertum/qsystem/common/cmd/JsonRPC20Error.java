@@ -25,54 +25,75 @@ import java.util.HashMap;
  *
  * @author Evgeniy Egorov
  */
-public class JsonRPC20Error {
+public class JsonRPC20Error extends AJsonRPC20 {
 
-    public static final Integer UNKNOWN_ERROR = -1;
-    public static final Integer RESPONCE_NOT_SAVE = 2;
-    public static final Integer POSTPONED_NOT_FOUND = 3;
+    public static class ErrorRPC {
 
-    public static final class ErrorCode {
+        public static final Integer UNKNOWN_ERROR = -1;
+        public static final Integer RESPONCE_NOT_SAVE = 2;
+        public static final Integer POSTPONED_NOT_FOUND = 3;
 
-        private static final HashMap<Integer, String> MESSAGE = new HashMap<Integer, String>();
+        public static final class ErrorCode {
 
-        public static String getMessage(Integer code) {
-            return MESSAGE.get(code);
+            private static final HashMap<Integer, String> MESSAGE = new HashMap<>();
+
+            public static String getMessage(Integer code) {
+                return MESSAGE.get(code);
+            }
+
+            static {
+                MESSAGE.put(UNKNOWN_ERROR, "Unknown error.");
+                MESSAGE.put(RESPONCE_NOT_SAVE, "Не сохранили отзыв в базе.");
+                MESSAGE.put(POSTPONED_NOT_FOUND, "Отложенный пользователь не найден по его ID.");
+            }
         }
 
-        static {
-            MESSAGE.put(UNKNOWN_ERROR, "Unknown error.");
-            MESSAGE.put(RESPONCE_NOT_SAVE, "Не сохранили отзыв в базе.");
-            MESSAGE.put(POSTPONED_NOT_FOUND, "Отложенный пользователь не найден по его ID.");
+        public ErrorRPC() {
         }
+
+        public ErrorRPC(Integer code, Object data) {
+            this.code = code;
+            this.message = ErrorCode.getMessage(code);
+            this.data = data;
+        }
+
+        public Integer getCode() {
+            return code;
+        }
+
+        public Object getData() {
+            return data;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+        @Expose
+        @SerializedName("code")
+        private Integer code;
+        @Expose
+        @SerializedName("message")
+        private String message;
+        @Expose
+        @SerializedName("data")
+        private Object data;
     }
 
     public JsonRPC20Error() {
     }
 
     public JsonRPC20Error(Integer code, Object data) {
-        this.code = code;
-        this.message = ErrorCode.getMessage(code);
-        this.data = data;
-    }
-
-    public Integer getCode() {
-        return code;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public String getMessage() {
-        return message;
+        error = new ErrorRPC(code, data);
     }
     @Expose
-    @SerializedName("code")
-    private Integer code;
-    @Expose
-    @SerializedName("message")
-    private String message;
-    @Expose
-    @SerializedName("data")
-    private Object data;
+    @SerializedName("error")
+    private ErrorRPC error;
+
+    public void setError(ErrorRPC error) {
+        this.error = error;
+    }
+
+    public ErrorRPC getError() {
+        return error;
+    }
 }

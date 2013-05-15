@@ -145,7 +145,7 @@
             <file os="unix" src="resource/bin/libjli.so" targetdir="$INSTALL_PATH/dist"/>
             <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH/dist"/>
             <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH/dist"/>
-            <file src="../plugins/" targetdir="$INSTALL_PATH/plugins/"/>
+            <file src="../plugins/" targetdir="$INSTALL_PATH/"/>
             <file src="../db/qsystem.sql" targetdir="$INSTALL_PATH/DB/"/>
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
@@ -159,7 +159,7 @@
             <description>Администрирование</description>
             <file src="../config/welcome.properties" targetdir="$INSTALL_PATH/config/"/>
             <file src="../config/admin.properties" targetdir="$INSTALL_PATH/config/"/>
-			<file src="../plugins/" targetdir="$INSTALL_PATH/plugins/"/>
+			<file src="../plugins/" targetdir="$INSTALL_PATH/"/>
             <file os="windows" src="resource/txt/StartAdmin.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/admin.sh" targetdir="$INSTALL_PATH"/>
             <parsable targetfile="$INSTALL_PATH/config/admin.properties"/>

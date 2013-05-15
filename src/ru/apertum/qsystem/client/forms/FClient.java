@@ -1008,7 +1008,7 @@ public final class FClient extends javax.swing.JFrame {
                 .addComponent(jLayeredPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel2.setBorder(new javax.swing.border.MatteBorder(null));
         jPanel2.setName("jPanel2"); // NOI18N
         jPanel2.setOpaque(false);
 

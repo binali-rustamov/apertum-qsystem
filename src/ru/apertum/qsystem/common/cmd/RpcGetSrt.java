@@ -29,7 +29,7 @@ public class RpcGetSrt extends JsonRPC20 {
     }
     
     @Expose
-    @SerializedName("str")
+    @SerializedName("result")
     private String result;
 
     public void setResult(String result) {

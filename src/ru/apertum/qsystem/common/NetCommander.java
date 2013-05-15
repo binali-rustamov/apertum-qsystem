@@ -30,7 +30,9 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import ru.apertum.qsystem.common.cmd.CmdParams;
+import ru.apertum.qsystem.common.cmd.AJsonRPC20;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
+import ru.apertum.qsystem.common.cmd.JsonRPC20Error;
 import ru.apertum.qsystem.common.cmd.RpcBanList;
 import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
@@ -82,7 +84,7 @@ public class NetCommander {
         return sendRpc(netProperty, jsonRpc);
     }
 
-    synchronized public static String sendRpc(INetProperty netProperty, JsonRPC20 jsonRpc) throws QException {
+    synchronized public static String sendRpc(INetProperty netProperty, AJsonRPC20 jsonRpc) throws QException {
         final String message;
         Gson gson = GsonPool.getInstance().borrowGson();
         try {
@@ -117,7 +119,7 @@ public class NetCommander {
         }
         gson = GsonPool.getInstance().borrowGson();
         try {
-            JsonRPC20 rpc = gson.fromJson(data, JsonRPC20.class);
+            final JsonRPC20Error rpc = gson.fromJson(data, JsonRPC20Error.class);
             if (rpc == null) {
                 throw new QException("Ошибка на сервере не позволила сформировать ответ.");
             }

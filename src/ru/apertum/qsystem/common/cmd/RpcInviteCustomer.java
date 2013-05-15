@@ -30,7 +30,7 @@ public class RpcInviteCustomer extends JsonRPC20 {
     }
     
     @Expose
-    @SerializedName("customer")
+    @SerializedName("result")
     private QCustomer result;
 
     public void setResult(QCustomer result) {
