@@ -80,6 +80,14 @@
             <Property name="name" type="java.lang.String" value="jMenuItem22" noResource="true"/>
           </Properties>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="jMenuItem42">
+          <Properties>
+            <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
+              <action class="ru.apertum.qsystem.client.forms.FAdmin" id="editLangs" methodName="editLangs"/>
+            </Property>
+            <Property name="name" type="java.lang.String" value="jMenuItem42" noResource="true"/>
+          </Properties>
+        </MenuItem>
         <Component class="javax.swing.JSeparator" name="jSeparator8">
           <Properties>
             <Property name="name" type="java.lang.String" value="jSeparator8" noResource="true"/>
@@ -107,6 +115,14 @@
               <action class="ru.apertum.qsystem.client.forms.FAdmin" id="standAdvance" methodName="standAdvance"/>
             </Property>
             <Property name="name" type="java.lang.String" value="jMenuItem24" noResource="true"/>
+          </Properties>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="jMenuItem44">
+          <Properties>
+            <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
+              <action class="ru.apertum.qsystem.client.forms.FAdmin" id="setDisableService" methodName="setDisableService"/>
+            </Property>
+            <Property name="name" type="java.lang.String" value="jMenuItem44" noResource="true"/>
           </Properties>
         </MenuItem>
         <Component class="javax.swing.JSeparator" name="jSeparator5">
@@ -509,6 +525,14 @@
                   <action class="ru.apertum.qsystem.client.forms.FAdmin" id="changePriority" methodName="changePriority"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="jMenuItem37" noResource="true"/>
+              </Properties>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem43">
+              <Properties>
+                <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
+                  <action class="ru.apertum.qsystem.client.forms.FAdmin" id="checkClient" methodName="checkClient"/>
+                </Property>
+                <Property name="name" type="java.lang.String" value="jMenuItem43" noResource="true"/>
               </Properties>
             </MenuItem>
           </SubComponents>

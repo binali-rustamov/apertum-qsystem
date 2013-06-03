@@ -139,11 +139,11 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButton2" min="-2" pref="215" max="-2" attributes="0"/>
-                      <EmptySpace pref="397" max="32767" attributes="0"/>
-                      <Component id="jButton1" min="-2" pref="224" max="-2" attributes="0"/>
+                      <Component id="jButton2" min="-2" pref="281" max="-2" attributes="0"/>
+                      <EmptySpace pref="276" max="32767" attributes="0"/>
+                      <Component id="jButton1" min="-2" pref="279" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -179,6 +179,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="jButton1" noResource="true"/>
               </Properties>
               <Events>
@@ -202,6 +203,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="jButton2" noResource="true"/>
               </Properties>
               <Events>
@@ -239,7 +241,7 @@
                       <Component id="panelAdvKod" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="panelButtonsNumeric" min="-2" pref="95" max="-2" attributes="0"/>
-                      <EmptySpace pref="32" max="32767" attributes="0"/>
+                      <EmptySpace pref="31" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -270,7 +272,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="labelKod" pref="78" max="32767" attributes="0"/>
+                          <Component id="labelKod" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>

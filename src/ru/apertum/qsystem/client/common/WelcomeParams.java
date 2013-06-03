@@ -52,6 +52,7 @@ public class WelcomeParams {
     private static final String SCALE_HORIZONTAL = "scale_horizontal";
     private static final String LOGO = "logo";
     private static final String BARCODE = "barcode";
+    private static final String INPUT_DATA_QR = "input_data_qrcode";
     private static final String LOGO_LEFT = "logo_left";
     private static final String LOGO_TOP = "logo_top";
     private static final String DELAY_PRINT = "delay_print";
@@ -86,7 +87,8 @@ public class WelcomeParams {
     public double scaleVertical = 0.8; // маштабирование по вертикале
     public double scaleHorizontal = 0.8; // машcтабирование по горизонтали
     public boolean logo = true; // присутствие логотипа на квитанции
-    public boolean barcode = true; // присутствие штрихкода на квитанции
+    public int barcode = 1; // присутствие штрихкода на квитанции
+    public boolean input_data_qrcode = true; // присутствие qr-штрихкода на квитанции если клиент ввел свои персональные данные
     public boolean info = true; // кнопка информационной системы на пункте регистрации
     public boolean response = true; // - кнопка обратной связи на пункте регистрации
     public boolean advance = true; // - кнопка предварительной записи на пункте регистрации
@@ -148,7 +150,8 @@ public class WelcomeParams {
         scaleVertical = Double.parseDouble(settings.getProperty(SCALE_VERTICAL)); // маштабирование по вертикале
         scaleHorizontal = Double.parseDouble(settings.getProperty(SCALE_HORIZONTAL)); // машcтабирование по вертикале
         logo = "1".equals(settings.getProperty(LOGO)) || "true".equals(settings.getProperty(LOGO)); // присутствие логотипа на квитанции
-        barcode = "1".equals(settings.getProperty(BARCODE)) || "true".equals(settings.getProperty(BARCODE)); // присутствие штрихкода на квитанции
+        input_data_qrcode = "1".equals(settings.getProperty(INPUT_DATA_QR)) || "true".equals(settings.getProperty(INPUT_DATA_QR)); // присутствие qr-штрихкода на квитанции если клиент ввел свои персональные данные
+        barcode = "1".equals(settings.getProperty(BARCODE)) ? 1 : ("2".equals(settings.getProperty(BARCODE)) ? 2 : 0); // присутствие штрихкода на квитанции 1-128B/2-QR
         logoLeft = Integer.parseInt(settings.getProperty(LOGO_LEFT)); // Отступ печати логотипа слева
         logoTop = Integer.parseInt(settings.getProperty(LOGO_TOP)); // Отступ печати логотипа сверху
         delayPrint = Integer.parseInt(settings.getProperty(DELAY_PRINT)); // Задержка заставки при печати в мсек.

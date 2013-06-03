@@ -27,6 +27,7 @@ import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.QService;
+import ru.apertum.qsystem.server.model.QServiceLang;
 import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
@@ -70,8 +71,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         QLog.l().logger().info("Редактирование услуги \"" + service.getName() + "\"");
         if (serviceChangeDialod == null) {
             serviceChangeDialod = new FServiceChangeDialod(parent, modal);
-            serviceChangeDialod.setTitle("Редактирование параметров услуги");
         }
+        serviceChangeDialod.setTitle("Редактирование параметров услуги");
         serviceChangeDialod.comboBoxSchedule.setModel(scheduleModel);
         serviceChangeDialod.comboBoxCalendar.setModel(calendarModel);
         serviceChangeDialod.loadService(service);
@@ -81,6 +82,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
 
     private void loadService(QService service) {
         this.service = service;
+        this.serviceLng = null;
         textFieldPrefix.setText(service.getPrefix());
         //textFieldPrefix.setEditable(service.isLeaf());
         textFieldServiceName.setText(service.getName());
@@ -113,6 +115,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         checkBoxBackoffice.setSelected(service.getEnable().intValue() != 1);
         spinnerPunktReg.setValue(service.getPoint());
 
+        setHide(true);
         textAreaButtonCaptionKeyPressed(null);
         textAreaInfoHtmlKeyReleased(null);
     }
@@ -139,7 +142,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
 
             @Override
             public void actionPerformed(TreeNode srvc) {
-                if (!service.equals(srvc) && srvc.isLeaf()) { 
+                if (!service.equals(srvc) && srvc.isLeaf()) {
                     final String pr = ((QService) srvc).getPrefix();
                     if (!pr.isEmpty() && pr.equalsIgnoreCase(textFieldPrefix.getText())) {
                         System.out.println(pr);
@@ -168,6 +171,82 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         service.setPreInfoHtml(textAreaInfoHtml.getText());
         service.setPreInfoPrintText(textAreaTextPrint.getText());
         service.setTicketText(textFieldTicketText.getText());
+    }
+
+    private void setHide(boolean b) {
+        textFieldPrefix.setEnabled(b);
+        comboBoxEnabled.setEnabled(b);
+        comboBoxEnabled.setEnabled(b);
+        comboBoxPeriod.setEnabled(b);
+        spinnerDayLimit.setEnabled(b);
+        spinnerLimitForOnePerson.setEnabled(b);
+        spinnerLimit.setEnabled(b);
+        spinnerLimitPeriod.setEnabled(b);
+        comboBoxSchedule.setEnabled(b);
+        comboBoxCalendar.setEnabled(b);
+        сheckBoxInputRequired.setEnabled(b);
+        сheckBoxResultRequired.setEnabled(b);
+        checkBoxBackoffice.setEnabled(b);
+        spinnerPunktReg.setEnabled(b);
+    }
+
+    public static void changeServiceLang(Frame parent, boolean modal, QServiceLang serviceLng) {
+        QLog.l().logger().info("Редактирование многоязычности услуги \"" + serviceLng + "\"");
+        if (serviceChangeDialod == null) {
+            serviceChangeDialod = new FServiceChangeDialod(parent, modal);
+
+        }
+        serviceChangeDialod.setTitle(serviceLng.toString());
+        serviceChangeDialod.loadServiceLang(serviceLng);
+        Uses.setLocation(serviceChangeDialod);
+        serviceChangeDialod.setVisible(true);
+    }
+    QServiceLang serviceLng;
+
+    private void loadServiceLang(QServiceLang serviceLng) {
+        this.serviceLng = serviceLng;
+        this.service = null;
+        textFieldServiceName.setText(serviceLng.getName());
+        textFieldServiceDescript.setText(serviceLng.getDescription());
+        textAreaButtonCaption.setText(serviceLng.getButtonText());
+        textAreaInfoHtml.setText(serviceLng.getPreInfoHtml());
+        textAreaTextPrint.setText(serviceLng.getPreInfoPrintText());
+        textFieldInputCaption.setText(serviceLng.getInput_caption());
+        textFieldTicketText.setText(serviceLng.getTicketText());
+
+        setHide(false);
+        textFieldInputCaption.setEnabled(true);
+        textFieldServiceName.setEnabled(true);
+        textFieldServiceName.setEditable(true);
+
+        textAreaButtonCaptionKeyPressed(null);
+        textAreaInfoHtmlKeyReleased(null);
+    }
+
+    private void saveServiceLang() {
+        if ("".equals(textAreaButtonCaption.getText())) {
+            throw new ClientException(getLocaleMessage("dialog.message1"));
+        }
+        if (textAreaButtonCaption.getText().length() > 2500) {
+            throw new ClientException(getLocaleMessage("dialog.message2"));
+        }
+        if (textAreaInfoHtml.getText().length() > 100000) {
+            throw new ClientException(getLocaleMessage("dialog.message3"));
+        }
+        if (textAreaTextPrint.getText().length() > 100000) {
+            throw new ClientException(getLocaleMessage("dialog.message4"));
+        }
+        if (textAreaButtonCaption.getText().length() < 2500 && !"".equals(textAreaButtonCaption.getText())) {
+            serviceLng.setButtonText(textAreaButtonCaption.getText());
+        }
+
+
+        serviceLng.setName(textFieldServiceName.getText());
+        serviceLng.setDescription(textFieldServiceDescript.getText());
+        serviceLng.setInput_caption(textFieldInputCaption.getText());
+        serviceLng.setPreInfoHtml(textAreaInfoHtml.getText());
+        serviceLng.setPreInfoPrintText(textAreaTextPrint.getText());
+        serviceLng.setTicketText(textFieldTicketText.getText());
     }
 
     @SuppressWarnings("unchecked")
@@ -252,7 +331,6 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         jLabel22.setText(resourceMap.getString("jLabel22.text")); // NOI18N
         jLabel22.setName("jLabel22"); // NOI18N
 
-        textFieldServiceName.setEditable(false);
         textFieldServiceName.setText(resourceMap.getString("textFieldServiceName.text")); // NOI18N
         textFieldServiceName.setName("textFieldServiceName"); // NOI18N
 
@@ -727,7 +805,12 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveActionPerformed
-        saveService();
+        if (service != null)  {
+            saveService();
+        }
+        if (serviceLng != null)  {
+            saveServiceLang();
+        }
         setVisible(false);
     }//GEN-LAST:event_buttonSaveActionPerformed
 

@@ -14,5 +14,5 @@
 	<str id="kindCP" txt="Choise kind of check-point:"/>
 	<str id="tach" txt="Select Services on the touch terminal"/>
 	<str id="buttons" txt="Select Services on the buttons device"/>
-	<str id="super" txt="Supersite (for check-point)"/>
+	<str id="multylng" txt="Multylangual (for check-point)"/>
 </langpack>

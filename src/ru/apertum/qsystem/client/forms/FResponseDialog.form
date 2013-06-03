@@ -170,6 +170,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="jButton2" noResource="true"/>
               </Properties>
               <Events>

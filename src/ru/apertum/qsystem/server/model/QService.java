@@ -27,22 +27,29 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.Id;
 import java.util.PriorityQueue;
 import java.util.ServiceLoader;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
+import org.hibernate.annotations.Cascade;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.Uses;
@@ -239,8 +246,6 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     public void setSeqId(Integer seqId) {
         this.seqId = seqId;
     }
-
-    
     /**
      * Требовать или нет от пользователя после окончания работы с клиентом по этой услуге
      * обозначить результат этой работы выбрав пункт из словаря результатов
@@ -757,6 +762,88 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     public void setCalendar(QCalendar calendar) {
         this.calendar = calendar;
+    }
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "services_id")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    @Expose
+    @SerializedName("langs")
+    private Set<QServiceLang> langs = new HashSet<>();
+
+    public Set<QServiceLang> getLangs() {
+        return langs;
+    }
+
+    public void setLangs(Set<QServiceLang> langs) {
+        this.langs = langs;
+    }
+    @Transient
+    private HashMap<String, QServiceLang> qslangs = null;
+
+    public QServiceLang getServiceLang(String nameLocale) {
+        if (qslangs == null) {
+            qslangs = new HashMap<>();
+            for (QServiceLang sl : getLangs()) {
+                qslangs.put(sl.getLang(), sl);
+            }
+        }
+        return qslangs.get(nameLocale);
+    }
+
+    public static enum Field {
+
+        /** Надпись на кнопке */
+        BUTTON_TEXT,
+        /** заголовок ввода клиентом */
+        INPUT_CAPTION,
+        /** читаем перед тем как встать в очередь  */
+        PRE_INFO_HTML,
+        /** печатаем подсказку перед тем как встать в очередь  */
+        PRE_INFO_PRINT_TEXT,
+        /** текст на талоте персонально услуги */
+        TICKET_TEXT,
+        /** описание услуги */
+        DESCRIPTION,
+        /** имя услуги */
+        NAME
+    };
+
+    public String getTextToLocale(Field field) {
+        final String nl = Locales.getInstance().getNameOfPresentLocale();
+        final QServiceLang sl = getServiceLang(nl);
+        switch (field) {
+            case BUTTON_TEXT:
+                return !Locales.getInstance().isWelcomeMultylangs() || sl == null || sl.getButtonText() == null || sl.getButtonText().isEmpty() ? getButtonText() : sl.getButtonText();
+            case INPUT_CAPTION:
+                return !Locales.getInstance().isWelcomeMultylangs() || sl == null || sl.getInput_caption() == null || sl.getInput_caption().isEmpty() ? getInput_caption() : sl.getInput_caption();
+            case PRE_INFO_HTML:
+                return !Locales.getInstance().isWelcomeMultylangs() || sl == null || sl.getPreInfoHtml() == null || sl.getPreInfoHtml().isEmpty() ? getPreInfoHtml() : sl.getPreInfoHtml();
+            case PRE_INFO_PRINT_TEXT:
+                return !Locales.getInstance().isWelcomeMultylangs() || sl == null || sl.getPreInfoPrintText() == null || sl.getPreInfoPrintText().isEmpty() ? getPreInfoPrintText() : sl.getPreInfoPrintText();
+            case TICKET_TEXT:
+                return !Locales.getInstance().isWelcomeMultylangs() || sl == null || sl.getTicketText() == null || sl.getTicketText().isEmpty() ? getTicketText() : sl.getTicketText();
+            case DESCRIPTION:
+                return !Locales.getInstance().isWelcomeMultylangs() || sl == null || sl.getDescription() == null || sl.getDescription().isEmpty() ? getDescription() : sl.getDescription();
+            case NAME:
+                return !Locales.getInstance().isWelcomeMultylangs() || sl == null || sl.getName() == null || sl.getName().isEmpty() ? getName() : sl.getName();
+            default:
+                throw new AssertionError();
+        }
+
+    }
+    
+    /**
+     * Если не NULL и не пустая, то эта услуга недоступна и сервер обламает постановку в очередь выкинув причину из этого поля на пункт регистрации
+     */
+    @Transient
+    private String tempReasonUnavailable;
+
+    public String getTempReasonUnavailable() {
+        return tempReasonUnavailable;
+    }
+
+    public void setTempReasonUnavailable(String tempReasonUnavailable) {
+        this.tempReasonUnavailable = tempReasonUnavailable;
     }
     //*******************************************************************************************************************
     //*******************************************************************************************************************

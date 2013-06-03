@@ -50,6 +50,7 @@
         <dependency org="com.lowagie" name="itext" rev="2.1.7" conf="runtime->*" transitive="false"/>
         <dependency org="net.java.dev.beansbinding" name="beansbinding" rev="1.2.1" conf="compile->*" transitive="false"/>
         <dependency org="net.sourceforge.barbecue" name="barbecue" rev="1.5-beta1" conf="compile->*" transitive="false"/>
+        <dependency org="com.google.zxing" name="core" rev="2.2"  conf="compile->*" transitive="false"/>
 
         <dependency org="commons-collections" name="commons-collections" rev="3.2.1" conf="compile->*" transitive="false"/>
         <dependency org="commons-logging" name="commons-logging" rev="1.1.1" conf="compile->*" transitive="false"/>

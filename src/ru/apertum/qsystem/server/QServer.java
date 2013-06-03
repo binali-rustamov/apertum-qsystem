@@ -122,7 +122,9 @@ public class QServer extends Thread {
         QLog.initial(args, true);
 
         // Загрузка плагинов из папки plugins
-        Uses.loadPlugins("./plugins/");
+        if (QLog.l().isPlaginable()) {
+            Uses.loadPlugins("./plugins/");
+        }
 
         // Отчетный сервер, выступающий в роли вэбсервера, обрабатывающего запросы на выдачу отчетов
         WebServer.getInstance().startWebServer(ServerProps.getInstance().getProps().getWebServerPort());

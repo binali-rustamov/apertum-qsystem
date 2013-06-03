@@ -52,6 +52,10 @@ public final class QTray {
      * Это эконка в трее.
      */
     private TrayIcon trayIcon;
+
+    public TrayIcon getTrayIcon() {
+        return trayIcon;
+    }
     /**
      * Системный трей.
      */

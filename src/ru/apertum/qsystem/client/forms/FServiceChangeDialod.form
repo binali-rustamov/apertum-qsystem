@@ -147,7 +147,6 @@
         </Component>
         <Component class="javax.swing.JTextField" name="textFieldServiceName">
           <Properties>
-            <Property name="editable" type="boolean" value="false"/>
             <Property name="text" type="java.lang.String" resourceKey="textFieldServiceName.text"/>
             <Property name="name" type="java.lang.String" value="textFieldServiceName" noResource="true"/>
           </Properties>

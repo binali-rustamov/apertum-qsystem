@@ -19,7 +19,6 @@ package ru.apertum.qsystem.client;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -60,13 +59,18 @@ public class Locales {
 
         for (Iterator<String> itr = config.getKeys(); itr.hasNext();) {
             String s = itr.next();
-            s = s.substring(s.indexOf(".") + 1);
-            if (s.indexOf(".") != -1) {
-                s = s.substring(0, s.indexOf("."));
-                if (locales.get(s) == null) {
-                    locales.put(s, new Locale(config.getString("locale." + s + ".lng"), config.getString("locale." + s + ".country")));
-                    lngs.put(config.getString("locale." + s + ".name"), s);
-                    lngs_names.put(s, config.getString("locale." + s + ".name"));
+            if (s.startsWith("locale")) {
+                s = s.substring(s.indexOf(".") + 1);
+                if (s.indexOf(".") != -1) {
+                    s = s.substring(0, s.indexOf("."));
+                    if (locales.get(s) == null) {
+                        final Locale locale = new Locale(config.getString("locale." + s + ".lng"), config.getString("locale." + s + ".country"));
+                        locales.put(s, locale);
+                        locales_name.put(locale, s);
+                        lngs.put(config.getString("locale." + s + ".name"), s);
+                        lngs_names.put(s, config.getString("locale." + s + ".name"));
+                        lngs_buttontext.put(s, config.getString("locale." + s + ".buttontext"));
+                    }
                 }
             }
         }
@@ -78,6 +82,10 @@ public class Locales {
      */
     private final HashMap<String, Locale> locales = new HashMap<>();
     /**
+     *  Locale(eng)-> eng 
+     */
+    private final HashMap<Locale, String> locales_name = new HashMap<>();
+    /**
      * English -> eng
      */
     private final HashMap<String, String> lngs = new HashMap<>();
@@ -85,6 +93,10 @@ public class Locales {
      * eng -> English 
      */
     private final HashMap<String, String> lngs_names = new HashMap<>();
+    /**
+     * eng -> buttontext 
+     */
+    private final HashMap<String, String> lngs_buttontext = new HashMap<>();
 
     public static Locales getInstance() {
         return LocalesHolder.INSTANCE;
@@ -95,13 +107,45 @@ public class Locales {
         private static final Locales INSTANCE = new Locales();
     }
     private final String LANG_CURRENT = "locale.current";
+    private final String WELCOME_LNG = "welcome.multylangs";
+    private final String WELCOME_LNG_POS = "welcome.multylangs.position";
+    private final String WELCOME_LNG_BTN_FILL = "welcome.multylangs.areafilled";
+    private final String WELCOME_LNG_BTN_BORDER = "welcome.multylangs.border";
+
+    public boolean isWelcomeMultylangs() {
+        return config.getString(WELCOME_LNG) == null ? false : "1".equals(config.getString(WELCOME_LNG)) || config.getString(WELCOME_LNG).startsWith("$");
+    }
+
+    public boolean isWelcomeMultylangsButtonsFilled() {
+        return config.getString(WELCOME_LNG_BTN_FILL) == null ? true : "1".equals(config.getString(WELCOME_LNG_BTN_FILL));
+    }
+
+    public boolean isWelcomeMultylangsButtonsBorder() {
+        return config.getString(WELCOME_LNG_BTN_BORDER) == null ? true : "1".equals(config.getString(WELCOME_LNG_BTN_BORDER));
+    }
+
+    public int getMultylangsPosition() {
+        return config.getString(WELCOME_LNG_POS) == null ? 1 : Integer.parseInt(config.getString(WELCOME_LNG_POS));
+    }
 
     public Locale getLangCurrent() {
         return locales.get(config.getString(LANG_CURRENT)) == null ? Locale.getDefault() : locales.get(config.getString(LANG_CURRENT));
     }
+    
+    public Locale getLocaleByName(String name) {
+        return locales.get(name) == null ? Locale.getDefault() : locales.get(name);
+    }
 
     public String getLangCurrName() {
         return "".equals(config.getString(LANG_CURRENT)) ? lngs_names.get("eng") : lngs_names.get(config.getString(LANG_CURRENT));
+    }
+
+    public String getLangButtonText(String lng) {
+        return lngs_buttontext.get(lng);
+    }
+    
+    public String getNameOfPresentLocale() {
+        return locales_name.get(Locale.getDefault());
     }
 
     /**
@@ -114,6 +158,11 @@ public class Locales {
 
     public ArrayList<String> getAvailableLocales() {
         final ArrayList<String> res = new ArrayList<>(lngs.keySet());
+        return res;
+    }
+
+    public ArrayList<String> getAvailableLangs() {
+        final ArrayList<String> res = new ArrayList<>(lngs_names.keySet());
         return res;
     }
 }

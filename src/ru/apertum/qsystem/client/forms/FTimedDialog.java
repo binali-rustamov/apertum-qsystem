@@ -14,14 +14,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ru.apertum.qsystem.client.forms;
 
 import java.awt.Frame;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
 /**
@@ -40,7 +39,6 @@ public class FTimedDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
     }
-
     private static ResourceMap localeMap = null;
 
     private static String getLocaleMessage(String key) {
@@ -63,6 +61,7 @@ public class FTimedDialog extends javax.swing.JDialog {
             dialog.setTitle("Сообщение.");
         }
         dialog.setBounds(10, 10, 1024, 400);
+        dialog.changeTextToLocale();
         dialog.labelMess.setText(message);
         Uses.setLocation(dialog);
         dialog.clockClose = new ATalkingClock(timeout, 1) {
@@ -168,6 +167,10 @@ public class FTimedDialog extends javax.swing.JDialog {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void changeTextToLocale() {
+        final org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FTimedDialog.class);
+        buttonClose.setText(resourceMap.getString("buttonClose.text")); // NOI18N
+    }
     private void buttonCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCloseActionPerformed
         if (clockClose.isActive()) {
             clockClose.stop();

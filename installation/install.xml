@@ -178,6 +178,7 @@
             <file os="unix" src="resource/txt/welcome.sh" targetdir="$INSTALL_PATH"/>
             <parsable os="windows" targetfile="$INSTALL_PATH/Welcome.bat"/>
             <parsable os="unix" targetfile="$INSTALL_PATH/welcome.sh"/>
+			<parsable targetfile="$INSTALL_PATH/config/langs.properties"/>
         </pack>
         <pack id="docs" name="Documentation" required="no">
             <description>Документация</description>

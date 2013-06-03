@@ -91,6 +91,7 @@ import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QPlanService;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 import ru.apertum.qsystem.server.model.QService;
+import ru.apertum.qsystem.server.model.QServiceLang;
 import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.QUserList;
@@ -647,7 +648,12 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     private void showServiceInfo(QService service) {
-        labelServiceInfo.setText("<html><body text=\"#336699\"> " + (service.getEnable() == 1 ? "" : "<font color=\"#FF0000\">!*** </font>") + getLocaleMessage("service.service") + service.getSeqId() + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>"
+        String s = "";
+        for (QServiceLang sl : service.getLangs()) {
+            s = s + ", " + sl.getLang();
+        }
+        s = s.length() > 1 ? "[" + s.substring(2) + "]" : "";
+        labelServiceInfo.setText("<html><body text=\"#336699\"> " + (service.getEnable() == 1 ? "" : "<font color=\"#FF0000\">!*** </font>") + s + " " + getLocaleMessage("service.service") + service.getSeqId() + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>"
                 + "<font color=\"#"
                 + (service.getStatus() == 1
                 ? "00AA00\">" + getLocaleMessage("service.kind.active")
@@ -884,13 +890,26 @@ public class FAdmin extends javax.swing.JFrame {
         for (ServiceInfo inf : srvs) {
             col = +inf.getCountWait();
             html = html
-                    + "<tr><td>" + (inf.getServiceName().length() > 80 ? inf.getServiceName().substring(0, 80) + "..." : inf.getServiceName()) + "</span></td>"
-                    + (0 == inf.getCountWait() ? green : red) + inf.getCountWait() + "</span></td>"
-                    + "<td align=\"center\">" + inf.getFirstNumber() + "</span></td></tr>";
+                    + "<tr>"
+                    + "" + (0 == inf.getCountWait() ? green : red) + inf.getCountWait() + "</span></td>"
+                    + "<td align=\"center\">" + inf.getFirstNumber() + "</td>"
+                    + "<td>" + (inf.getServiceName().length() > 80 ? inf.getServiceName().substring(0, 80) + "..." : inf.getServiceName()) + "</td>"
+                    + "</tr>";
         }
         final String first = "<html>" + getLocaleMessage("admin.info.total_clients") + ": " + (0 == col ? "<span style='font-size:12.0pt;color:green;'>" : "<span style='font-size:12.0pt;color:red;'>") + col + "</span>";
         labelServerState.setText(first
-                + "<table border=\"1\"><tr>  <td align=\"center\"<span style='font-size:16.0pt;color:red;'>" + getLocaleMessage("service.service") + "</span></td>  <td align=\"center\"><span style='font-size:16.0pt;color:red;'>" + getLocaleMessage("admin.info.total_wait") + "</span></td>  <td align=\"center\"><span style='font-size:16.0pt;color:red;'>" + getLocaleMessage("admin.info.next_number") + "</span></td></tr>"
+                + "<table border=\"1\">"
+                + "<tr>"
+                + " <td align=\"center\"<span style='font-size:16.0pt;color:red;'>"
+                + getLocaleMessage("admin.info.total_wait")
+                + "</span></td> "
+                + "<td align=\"center\"><span style='font-size:16.0pt;color:red;'>"
+                + getLocaleMessage("admin.info.next_number")
+                + "</span></td>"
+                + " <td align=\"center\"><span style='font-size:16.0pt;color:red;'>"
+                + getLocaleMessage("service.service")
+                + "</span></td>"
+                + "</tr>"
                 + html
                 + "</table></html>");
     }
@@ -1450,10 +1469,12 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem11 = new javax.swing.JMenuItem();
         jMenuItem21 = new javax.swing.JMenuItem();
         jMenuItem22 = new javax.swing.JMenuItem();
+        jMenuItem42 = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JSeparator();
         jMenuItem12 = new javax.swing.JMenuItem();
         jMenuItem16 = new javax.swing.JMenuItem();
         jMenuItem24 = new javax.swing.JMenuItem();
+        jMenuItem44 = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
         jMenuItem13 = new javax.swing.JMenuItem();
         popupServiceUser = new javax.swing.JPopupMenu();
@@ -1682,6 +1703,7 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator14 = new javax.swing.JPopupMenu.Separator();
         jMenuItem37 = new javax.swing.JMenuItem();
+        jMenuItem43 = new javax.swing.JMenuItem();
         menuServices = new javax.swing.JMenu();
         jMenuItem7 = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JSeparator();
@@ -1726,6 +1748,10 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem22.setName("jMenuItem22"); // NOI18N
         popupServices.add(jMenuItem22);
 
+        jMenuItem42.setAction(actionMap.get("editLangs")); // NOI18N
+        jMenuItem42.setName("jMenuItem42"); // NOI18N
+        popupServices.add(jMenuItem42);
+
         jSeparator8.setName("jSeparator8"); // NOI18N
         popupServices.add(jSeparator8);
 
@@ -1740,6 +1766,10 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem24.setAction(actionMap.get("standAdvance")); // NOI18N
         jMenuItem24.setName("jMenuItem24"); // NOI18N
         popupServices.add(jMenuItem24);
+
+        jMenuItem44.setAction(actionMap.get("setDisableService")); // NOI18N
+        jMenuItem44.setName("jMenuItem44"); // NOI18N
+        popupServices.add(jMenuItem44);
 
         jSeparator5.setName("jSeparator5"); // NOI18N
         popupServices.add(jSeparator5);
@@ -2233,11 +2263,11 @@ public class FAdmin extends javax.swing.JFrame {
             jPanel25Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel25Layout.createSequentialGroup()
                 .addComponent(jButton5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton3))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
         );
         jPanel25Layout.setVerticalGroup(
             jPanel25Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2278,7 +2308,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jButton6)
                 .addGap(10, 10, 10))
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
         );
         jPanel26Layout.setVerticalGroup(
             jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3635,6 +3665,10 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem37.setName("jMenuItem37"); // NOI18N
         menuUsers.add(jMenuItem37);
 
+        jMenuItem43.setAction(actionMap.get("checkClient")); // NOI18N
+        jMenuItem43.setName("jMenuItem43"); // NOI18N
+        menuUsers.add(jMenuItem43);
+
         jMenuBar1.add(menuUsers);
 
         menuServices.setText(resourceMap.getString("menuServices.text")); // NOI18N
@@ -4177,7 +4211,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
 
                 @Override
                 public void run() {
-                    FWelcome.printTicketAdvance(res, ((QService) treeServices.getModel().getRoot()).getName());
+                    FWelcome.printTicketAdvance(res, ((QService) treeServices.getModel().getRoot()).getTextToLocale(QService.Field.NAME));
                 }
             }).start();
 
@@ -4505,8 +4539,6 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     public void changePriority() {
         final String num = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.action.change_priority.num.message"), getLocaleMessage("admin.action.change_priority.num.title"), 3, null, null, "");
         if (num != null) {
-
-
             final String name = (String) JOptionPane.showInputDialog(this,
                     getLocaleMessage("admin.action.change_priority.get.message"),
                     getLocaleMessage("admin.action.change_priority.get.title"),
@@ -4523,9 +4555,15 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                     }
                 }
             }
-
         }
+    }
 
+    @Action
+    public void checkClient() {
+        final String num = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.action.change_priority.num.message"), getLocaleMessage("admin.action.change_priority.num.title"), 3, null, null, "");
+        if (num != null) {
+            JOptionPane.showMessageDialog(this, NetCommander.checkCustomerNumber(new ServerNetProperty(), num), getLocaleMessage("admin.action.change_priority.num.title"), JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     @Action
@@ -4647,6 +4685,55 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
             scheduleListChange();
         }
     }
+
+    @Action
+    public void editLangs() {
+        final TreePath selectedPath = treeServices.getSelectionPath();
+        if (selectedPath == null) {
+            return;
+        } else {
+            final QService service = (QService) selectedPath.getLastPathComponent();
+            FServiceLangList.changeServiceLangList(this, true, service);
+            showServiceInfo(service);
+        }
+    }
+
+    @Action
+    public void setDisableService() {
+        final TreePath selectedPath = treeServices.getSelectionPath();
+        if (selectedPath == null) {
+            return;
+        } else {
+            final QService service = (QService) selectedPath.getLastPathComponent();
+            final String name = (String) JOptionPane.showInputDialog(this,
+                    getLocaleMessage("admin.select_ability.message")+ " \"" + service.getName() + "\"",
+                    getLocaleMessage("admin.select_ability.title"),
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    new String[]{getLocaleMessage("admin.service_ability.yes"), getLocaleMessage("admin.service_ability.no")},
+                    null);
+            //Если не выбрали, то выходим
+            if (name != null) {
+                if (name.equalsIgnoreCase(getLocaleMessage("admin.service_ability.yes"))) {
+                    NetCommander.changeTempAvailableService(new ServerNetProperty(), service.getId(), "");
+                } else {
+                    final String mess = (String) JOptionPane.showInputDialog(this,
+                            getLocaleMessage("admin.ability.enter_reason"),
+                            getLocaleMessage("admin.select_ability.title"),
+                            JOptionPane.QUESTION_MESSAGE);
+                    if (mess != null) {
+                        NetCommander.changeTempAvailableService(new ServerNetProperty(), service.getId(), mess);
+                    } else {
+                        return;
+                    }
+                }
+                JOptionPane.showMessageDialog(this,
+                            getLocaleMessage("admin.select_ability.message") + " " + service.getName() + " \"" + name + "\"",
+                            getLocaleMessage("admin.select_ability.title"),
+                            JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAddCalendar;
     private javax.swing.JButton buttonCheckZoneBoardServ;
@@ -4755,6 +4842,9 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem40;
     private javax.swing.JMenuItem jMenuItem41;
+    private javax.swing.JMenuItem jMenuItem42;
+    private javax.swing.JMenuItem jMenuItem43;
+    private javax.swing.JMenuItem jMenuItem44;
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JMenuItem jMenuItem7;

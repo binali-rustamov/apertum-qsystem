@@ -1,2 +1,2 @@
 #!/bin/sh
-java -cp dist/QSystem.jar ru.apertum.qsystem.client.forms.FWelcome -sport $serverPort -cport $clientPort -s $serverAdress $super $tach
+java -cp dist/QSystem.jar ru.apertum.qsystem.client.forms.FWelcome -sport 3128 -cport 3129 -s 127.0.0.1 $super $tach

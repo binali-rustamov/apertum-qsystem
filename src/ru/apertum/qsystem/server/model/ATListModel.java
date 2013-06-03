@@ -80,7 +80,6 @@ public abstract class ATListModel<T extends IidGetter> extends AbstractListModel
         }
         return false;
     }
-
     protected final LinkedList<T> deleted = new LinkedList<>();
 
     public boolean removeElement(T obj) {

@@ -19,6 +19,7 @@ package ru.apertum.qsystem.client.forms;
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -551,7 +552,9 @@ public final class FClient extends javax.swing.JFrame {
         }
         // покажим сообщение в трее если очередь была пуста и кто-то приперся
         if (count == 0 && inCount != 0) {
+            Toolkit.getDefaultToolkit().beep();
             tray.showMessageTray(getLocaleMessage("messages.tray.messCaption"), temp1.replaceAll("<br>", "\n"), MessageType.INFO);
+            tray.getTrayIcon().getActionListeners()[0].actionPerformed(null);
         }
         // посмотрим, не приехал ли кастомер, который уже вызванный
         // если приехал, то его надо учесть

@@ -17,6 +17,7 @@
 package ru.apertum.qsystem.server.model;
 
 import java.util.LinkedList;
+import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Property;
 import ru.apertum.qsystem.server.Spring;
@@ -37,6 +38,7 @@ public class QServiceTree extends ATreeModel<QService> {
     @Override
     protected LinkedList<QService> load() {
         return new LinkedList<>(Spring.getInstance().getHt().findByCriteria(DetachedCriteria.forClass(QService.class).
+                setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY).
                 addOrder(Property.forName("seqId").asc()).
                 addOrder(Property.forName("id").asc())));
     }

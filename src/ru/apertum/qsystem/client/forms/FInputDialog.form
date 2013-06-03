@@ -131,11 +131,11 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButton2" min="-2" pref="215" max="-2" attributes="0"/>
-                      <EmptySpace pref="679" max="32767" attributes="0"/>
-                      <Component id="jButton1" min="-2" pref="224" max="-2" attributes="0"/>
+                      <Component id="jButton2" min="-2" pref="294" max="-2" attributes="0"/>
+                      <EmptySpace pref="533" max="32767" attributes="0"/>
+                      <Component id="jButton1" min="-2" pref="291" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -171,6 +171,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="jButton1" noResource="true"/>
               </Properties>
               <Events>
@@ -194,6 +195,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="jButton2" noResource="true"/>
               </Properties>
               <Events>
@@ -321,6 +323,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton3" noResource="true"/>
                   </Properties>
                   <Events>
@@ -344,6 +347,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton4" noResource="true"/>
                   </Properties>
                   <Events>
@@ -367,6 +371,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton5" noResource="true"/>
                   </Properties>
                   <Events>
@@ -390,6 +395,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton6" noResource="true"/>
                   </Properties>
                   <Events>
@@ -413,6 +419,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton7" noResource="true"/>
                   </Properties>
                   <Events>
@@ -436,6 +443,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton8" noResource="true"/>
                   </Properties>
                   <Events>
@@ -459,6 +467,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton9" noResource="true"/>
                   </Properties>
                   <Events>
@@ -482,6 +491,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton10" noResource="true"/>
                   </Properties>
                   <Events>
@@ -505,6 +515,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton11" noResource="true"/>
                   </Properties>
                   <Events>
@@ -528,6 +539,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton12" noResource="true"/>
                   </Properties>
                   <Events>
@@ -552,6 +564,7 @@
                         </CompoundBorder>
                       </Border>
                     </Property>
+                    <Property name="focusPainted" type="boolean" value="false"/>
                     <Property name="name" type="java.lang.String" value="jButton13" noResource="true"/>
                   </Properties>
                   <Events>
@@ -664,6 +677,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton14" noResource="true"/>
                       </Properties>
                       <Events>
@@ -686,6 +700,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton15" noResource="true"/>
                       </Properties>
                       <Events>
@@ -708,6 +723,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton16" noResource="true"/>
                       </Properties>
                       <Events>
@@ -730,6 +746,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton17" noResource="true"/>
                       </Properties>
                       <Events>
@@ -752,6 +769,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton18" noResource="true"/>
                       </Properties>
                       <Events>
@@ -774,6 +792,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton19" noResource="true"/>
                       </Properties>
                       <Events>
@@ -796,6 +815,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton20" noResource="true"/>
                       </Properties>
                       <Events>
@@ -818,6 +838,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton21" noResource="true"/>
                       </Properties>
                       <Events>
@@ -840,6 +861,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton22" noResource="true"/>
                       </Properties>
                       <Events>
@@ -862,6 +884,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton23" noResource="true"/>
                       </Properties>
                       <Events>
@@ -884,6 +907,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton24" noResource="true"/>
                       </Properties>
                       <Events>
@@ -906,6 +930,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton25" noResource="true"/>
                       </Properties>
                       <Events>
@@ -990,6 +1015,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton26" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1012,6 +1038,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton27" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1034,6 +1061,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton28" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1056,6 +1084,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton29" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1078,6 +1107,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton30" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1100,6 +1130,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton31" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1122,6 +1153,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton32" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1144,6 +1176,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton33" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1166,6 +1199,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton34" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1188,6 +1222,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton35" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1210,6 +1245,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton36" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1294,6 +1330,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton37" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1316,6 +1353,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton38" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1338,6 +1376,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton39" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1360,6 +1399,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton40" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1382,6 +1422,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton41" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1404,6 +1445,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton42" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1426,6 +1468,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton43" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1448,6 +1491,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton44" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1470,6 +1514,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton45" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1478,6 +1523,7 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="jButton46">
                       <Properties>
+                        <Property name="font" type="java.awt.Font" resourceKey="jButton46.font"/>
                         <Property name="icon" type="javax.swing.Icon" resourceKey="jButton46.icon"/>
                         <Property name="text" type="java.lang.String" resourceKey="jButton46.text"/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -1492,6 +1538,7 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
+                        <Property name="focusPainted" type="boolean" value="false"/>
                         <Property name="name" type="java.lang.String" value="jButton46" noResource="true"/>
                       </Properties>
                       <Events>
@@ -1559,10 +1606,10 @@
                     <Property name="rows" type="int" value="1"/>
                   </Layout>
                   <SubComponents>
-                    <Component class="javax.swing.JButton" name="jButton47">
+                    <Component class="javax.swing.JButton" name="buttonSpace">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" resourceKey="jButton47.font"/>
-                        <Property name="text" type="java.lang.String" resourceKey="jButton47.text"/>
+                        <Property name="font" type="java.awt.Font" resourceKey="buttonSpace.font"/>
+                        <Property name="text" type="java.lang.String" resourceKey="buttonSpace.text"/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
                             <CompoundBorder>
@@ -1575,7 +1622,8 @@
                             </CompoundBorder>
                           </Border>
                         </Property>
-                        <Property name="name" type="java.lang.String" value="jButton47" noResource="true"/>
+                        <Property name="focusPainted" type="boolean" value="false"/>
+                        <Property name="name" type="java.lang.String" value="buttonSpace" noResource="true"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonClickNumeric"/>

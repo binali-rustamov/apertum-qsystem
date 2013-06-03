@@ -331,6 +331,11 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
         return prefix;
     }
 
+    @Transient()
+    public String getFullNumber() {
+        return getPrefix() + getNumber();
+    }
+
     public void setPrefix(String prefix) {
         this.prefix = prefix == null ? "" : prefix;
     }

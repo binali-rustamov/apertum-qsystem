@@ -88,6 +88,7 @@ public class FResponseDialog extends javax.swing.JDialog {
         }
         result = null;
         Uses.setLocation(respDialog);
+        respDialog.changeTextToLocale();
         if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {
             Uses.setFullSize(respDialog);
             int[] pixels = new int[16 * 16];
@@ -198,6 +199,7 @@ public class FResponseDialog extends javax.swing.JDialog {
         jButton2.setIcon(resourceMap.getIcon("jButton2.icon")); // NOI18N
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
         jButton2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton2.setFocusPainted(false);
         jButton2.setName("jButton2"); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -273,6 +275,12 @@ public class FResponseDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
+    private void changeTextToLocale() {
+        final org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FResponseDialog.class);
+        LabelCaption.setText(resourceMap.getString("LabelCaption.text")); // NOI18N
+        jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
+    }
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         result = null;
         if (clockBack.isActive()) {

@@ -27,7 +27,8 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.common.WelcomeParams;
 import ru.apertum.qsystem.client.model.QPanel;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.INetProperty;
@@ -57,7 +58,6 @@ public class FStandAdvance extends javax.swing.JDialog {
     private static String siteMark;
     private static RpcStandInService result = null;
     private static int delay = 10000;
-
     private static ResourceMap localeMap = null;
 
     private static String getLocaleMessage(String key) {
@@ -96,7 +96,7 @@ public class FStandAdvance extends javax.swing.JDialog {
             standAdvance.setCursor(transparentCursor);
 
         }
-        standAdvance.labelKod.setText(DEFAULT_KOD);
+        standAdvance.changeTextToLocale();
         if (standAdvance.clockBack.isActive()) {
             standAdvance.clockBack.stop();
         }
@@ -104,7 +104,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         standAdvance.setVisible(true);
         return result;
     }
-    private static final String DEFAULT_KOD = getLocaleMessage("dialog.default_code");
+    private static String DEFAULT_KOD = getLocaleMessage("dialog.default_code");
     /**
      * Таймер, по которому будем выходить в корень меню.
      */
@@ -198,6 +198,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton1.setIcon(resourceMap.getIcon("jButton1.icon")); // NOI18N
         jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
         jButton1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton1.setFocusPainted(false);
         jButton1.setName("jButton1"); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -209,6 +210,7 @@ public class FStandAdvance extends javax.swing.JDialog {
         jButton2.setIcon(resourceMap.getIcon("jButton2.icon")); // NOI18N
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
         jButton2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton2.setFocusPainted(false);
         jButton2.setName("jButton2"); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -220,11 +222,11 @@ public class FStandAdvance extends javax.swing.JDialog {
         panelBottom.setLayout(panelBottomLayout);
         panelBottomLayout.setHorizontalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
+            .addGroup(panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 397, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 276, Short.MAX_VALUE)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         panelBottomLayout.setVerticalGroup(
@@ -270,7 +272,7 @@ public class FStandAdvance extends javax.swing.JDialog {
             panelAdvKodLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelAdvKodLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelKod, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE)
+                .addComponent(labelKod, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -429,7 +431,7 @@ public class FStandAdvance extends javax.swing.JDialog {
                 .addComponent(panelAdvKod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelButtonsNumeric, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(31, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout panelAllLayout = new javax.swing.GroupLayout(panelAll);
@@ -464,6 +466,15 @@ public class FStandAdvance extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void changeTextToLocale() {
+        final org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FStandAdvance.class);
+        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
+        DEFAULT_KOD = getLocaleMessage("dialog.default_code");
+        labelKod.setText(DEFAULT_KOD);
+        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
+    }
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         result = null;
         if (clockBack.isActive()) {
@@ -493,8 +504,8 @@ public class FStandAdvance extends javax.swing.JDialog {
         clockBack.start();
         if ("".equals(evt.getActionCommand())) {
             // удаление
-            if (DEFAULT_KOD.equals(labelKod.getText()) || "".equals(labelKod.getText())) {
-                labelKod.setText("");
+            if (DEFAULT_KOD.equals(labelKod.getText()) || "".equals(labelKod.getText()) || labelKod.getText().length() == 1) {
+                labelKod.setText(DEFAULT_KOD);
             } else {
                 labelKod.setText(labelKod.getText().substring(0, labelKod.getText().length() - 1));
             }
@@ -504,8 +515,9 @@ public class FStandAdvance extends javax.swing.JDialog {
             if (DEFAULT_KOD.equals(labelKod.getText())) {
                 labelKod.setText("");
             }
-
-            labelKod.setText(labelKod.getText() + evt.getActionCommand());
+            if (labelKod.getText().length() < 18) {
+                labelKod.setText(labelKod.getText() + evt.getActionCommand());
+            }
         }
     }//GEN-LAST:event_buttonClickNumeric
     // Variables declaration - do not modify//GEN-BEGIN:variables

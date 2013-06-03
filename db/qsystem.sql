@@ -568,6 +568,33 @@ COMMENT = 'Перерывы в работе для предвариловки' ;
 
 CREATE INDEX `idx_break_breaks1` ON `qsystem`.`break` (`breaks_id` ASC) ;
 
+
+-- -----------------------------------------------------
+-- Table `qsystem`.`services_langs`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `qsystem`.`services_langs` ;
+
+CREATE  TABLE IF NOT EXISTS `qsystem`.`services_langs` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT ,
+  `services_id` BIGINT NULL ,
+  `lang` VARCHAR(45) NOT NULL ,
+  `name` VARCHAR(2000) NOT NULL DEFAULT '' ,
+  `description` VARCHAR(20) NULL ,
+  `button_text` VARCHAR(2500) NOT NULL DEFAULT '' ,
+  `input_caption` VARCHAR(200) NOT NULL DEFAULT '' ,
+  `ticket_text` VARCHAR(1500) NULL ,
+  `pre_info_html` TEXT NOT NULL ,
+  `pre_info_print_text` TEXT NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  CONSTRAINT `fk_services_langs_services1`
+    FOREIGN KEY (`services_id` )
+    REFERENCES `qsystem`.`services` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+CREATE INDEX `fk_services_langs_services1` ON `qsystem`.`services_langs` (`services_id` ASC) ;
+
 USE `qsystem`;
 
 DELIMITER $$
@@ -687,7 +714,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '1.9', 1, 999, 0, 0, 2, -1, '', '127.0.0.1', 27007, 0, 0);
+INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '1.10', 1, 999, 0, 0, 2, -1, '', '127.0.0.1', 27007, 0, 0);
 
 COMMIT;
 

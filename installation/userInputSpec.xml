@@ -39,6 +39,11 @@
         <field type="rule" variable="clientPoint">
             <spec txt="RMI point:" id="clnPoint" layout="N:4:4" set=""/>
         </field>
+		
+		<!--field type="divider" /-->
+        <field type="check" variable="multylangs">
+            <spec txt="Multylangual registration point" id="multylng" true="1" false="0" set="false"/>
+        </field>
 
     </panel>
 </userInput>

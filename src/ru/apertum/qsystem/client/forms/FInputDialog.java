@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
+import javax.swing.JButton;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
@@ -102,6 +103,7 @@ public class FInputDialog extends javax.swing.JDialog {
         FInputDialog.serviceName = serviceName;
         FInputDialog.siteMark = siteMark;
         inputDialog.jLabel2.setText(caption);
+        inputDialog.changeTextToLocale();
         if (!(QLog.l().isDebug() || QLog.l().isDemo() && !fullscreen)) {
             Uses.setFullSize(inputDialog);
             int[] pixels = new int[16 * 16];
@@ -110,7 +112,7 @@ public class FInputDialog extends javax.swing.JDialog {
             inputDialog.setCursor(transparentCursor);
 
         }
-        inputDialog.labelKod.setText(DEFAULT_KOD);
+        inputDialog.labelKod.setText(inputDialog.resourceMap.getString("labelKod.text"));
         if (inputDialog.clockBack.isActive()) {
             inputDialog.clockBack.stop();
         }
@@ -118,7 +120,6 @@ public class FInputDialog extends javax.swing.JDialog {
         inputDialog.setVisible(true);
         return result;
     }
-    private static final String DEFAULT_KOD = getLocaleMessage("dialog.default");
     /**
      * Таймер, по которому будем выходить в корень меню.
      */
@@ -205,7 +206,7 @@ public class FInputDialog extends javax.swing.JDialog {
         panelSpaseLeft = new javax.swing.JPanel();
         panelSpaseRight = new javax.swing.JPanel();
         panelSpase = new javax.swing.JPanel();
-        jButton47 = new javax.swing.JButton();
+        buttonSpace = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -251,6 +252,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton1.setIcon(resourceMap.getIcon("jButton1.icon")); // NOI18N
         jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
         jButton1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton1.setFocusPainted(false);
         jButton1.setName("jButton1"); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -262,6 +264,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton2.setIcon(resourceMap.getIcon("jButton2.icon")); // NOI18N
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
         jButton2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton2.setFocusPainted(false);
         jButton2.setName("jButton2"); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -273,11 +276,11 @@ public class FInputDialog extends javax.swing.JDialog {
         panelBottom.setLayout(panelBottomLayout);
         panelBottomLayout.setHorizontalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
+            .addGroup(panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 679, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 533, Short.MAX_VALUE)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         panelBottomLayout.setVerticalGroup(
@@ -331,6 +334,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton3.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton3.setText(resourceMap.getString("jButton3.text")); // NOI18N
         jButton3.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton3.setFocusPainted(false);
         jButton3.setName("jButton3"); // NOI18N
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -343,6 +347,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton4.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton4.setText(resourceMap.getString("jButton4.text")); // NOI18N
         jButton4.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton4.setFocusPainted(false);
         jButton4.setName("jButton4"); // NOI18N
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -355,6 +360,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton5.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton5.setText(resourceMap.getString("jButton5.text")); // NOI18N
         jButton5.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton5.setFocusPainted(false);
         jButton5.setName("jButton5"); // NOI18N
         jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -367,6 +373,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton6.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton6.setText(resourceMap.getString("jButton6.text")); // NOI18N
         jButton6.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton6.setFocusPainted(false);
         jButton6.setName("jButton6"); // NOI18N
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -379,6 +386,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton7.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton7.setText(resourceMap.getString("jButton7.text")); // NOI18N
         jButton7.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton7.setFocusPainted(false);
         jButton7.setName("jButton7"); // NOI18N
         jButton7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -391,6 +399,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton8.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton8.setText(resourceMap.getString("jButton8.text")); // NOI18N
         jButton8.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton8.setFocusPainted(false);
         jButton8.setName("jButton8"); // NOI18N
         jButton8.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -403,6 +412,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton9.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton9.setText(resourceMap.getString("jButton9.text")); // NOI18N
         jButton9.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton9.setFocusPainted(false);
         jButton9.setName("jButton9"); // NOI18N
         jButton9.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -415,6 +425,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton10.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton10.setText(resourceMap.getString("jButton10.text")); // NOI18N
         jButton10.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton10.setFocusPainted(false);
         jButton10.setName("jButton10"); // NOI18N
         jButton10.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -427,6 +438,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton11.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton11.setText(resourceMap.getString("jButton11.text")); // NOI18N
         jButton11.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton11.setFocusPainted(false);
         jButton11.setName("jButton11"); // NOI18N
         jButton11.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -439,6 +451,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton12.setForeground(resourceMap.getColor("jButton7.foreground")); // NOI18N
         jButton12.setText(resourceMap.getString("jButton12.text")); // NOI18N
         jButton12.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton12.setFocusPainted(false);
         jButton12.setName("jButton12"); // NOI18N
         jButton12.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -452,6 +465,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton13.setIcon(resourceMap.getIcon("jButton13.icon")); // NOI18N
         jButton13.setText(resourceMap.getString("jButton13.text")); // NOI18N
         jButton13.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton13.setFocusPainted(false);
         jButton13.setName("jButton13"); // NOI18N
         jButton13.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -471,6 +485,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton14.setFont(resourceMap.getFont("jButton14.font")); // NOI18N
         jButton14.setText(resourceMap.getString("jButton14.text")); // NOI18N
         jButton14.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton14.setFocusPainted(false);
         jButton14.setName("jButton14"); // NOI18N
         jButton14.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -482,6 +497,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton15.setFont(resourceMap.getFont("jButton15.font")); // NOI18N
         jButton15.setText(resourceMap.getString("jButton15.text")); // NOI18N
         jButton15.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton15.setFocusPainted(false);
         jButton15.setName("jButton15"); // NOI18N
         jButton15.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -493,6 +509,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton16.setFont(resourceMap.getFont("jButton16.font")); // NOI18N
         jButton16.setText(resourceMap.getString("jButton16.text")); // NOI18N
         jButton16.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton16.setFocusPainted(false);
         jButton16.setName("jButton16"); // NOI18N
         jButton16.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -504,6 +521,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton17.setFont(resourceMap.getFont("jButton22.font")); // NOI18N
         jButton17.setText(resourceMap.getString("jButton17.text")); // NOI18N
         jButton17.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton17.setFocusPainted(false);
         jButton17.setName("jButton17"); // NOI18N
         jButton17.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -515,6 +533,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton18.setFont(resourceMap.getFont("jButton22.font")); // NOI18N
         jButton18.setText(resourceMap.getString("jButton18.text")); // NOI18N
         jButton18.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton18.setFocusPainted(false);
         jButton18.setName("jButton18"); // NOI18N
         jButton18.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -526,6 +545,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton19.setFont(resourceMap.getFont("jButton22.font")); // NOI18N
         jButton19.setText(resourceMap.getString("jButton19.text")); // NOI18N
         jButton19.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton19.setFocusPainted(false);
         jButton19.setName("jButton19"); // NOI18N
         jButton19.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -537,6 +557,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton20.setFont(resourceMap.getFont("jButton22.font")); // NOI18N
         jButton20.setText(resourceMap.getString("jButton20.text")); // NOI18N
         jButton20.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton20.setFocusPainted(false);
         jButton20.setName("jButton20"); // NOI18N
         jButton20.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -548,6 +569,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton21.setFont(resourceMap.getFont("jButton22.font")); // NOI18N
         jButton21.setText(resourceMap.getString("jButton21.text")); // NOI18N
         jButton21.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton21.setFocusPainted(false);
         jButton21.setName("jButton21"); // NOI18N
         jButton21.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -559,6 +581,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton22.setFont(resourceMap.getFont("jButton22.font")); // NOI18N
         jButton22.setText(resourceMap.getString("jButton22.text")); // NOI18N
         jButton22.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton22.setFocusPainted(false);
         jButton22.setName("jButton22"); // NOI18N
         jButton22.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -570,6 +593,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton23.setFont(resourceMap.getFont("jButton22.font")); // NOI18N
         jButton23.setText(resourceMap.getString("jButton23.text")); // NOI18N
         jButton23.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton23.setFocusPainted(false);
         jButton23.setName("jButton23"); // NOI18N
         jButton23.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -581,6 +605,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton24.setFont(resourceMap.getFont("jButton22.font")); // NOI18N
         jButton24.setText(resourceMap.getString("jButton24.text")); // NOI18N
         jButton24.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton24.setFocusPainted(false);
         jButton24.setName("jButton24"); // NOI18N
         jButton24.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -592,6 +617,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton25.setFont(resourceMap.getFont("jButton22.font")); // NOI18N
         jButton25.setText(resourceMap.getString("jButton25.text")); // NOI18N
         jButton25.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton25.setFocusPainted(false);
         jButton25.setName("jButton25"); // NOI18N
         jButton25.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -637,6 +663,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton26.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton26.setText(resourceMap.getString("jButton26.text")); // NOI18N
         jButton26.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton26.setFocusPainted(false);
         jButton26.setName("jButton26"); // NOI18N
         jButton26.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -648,6 +675,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton27.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton27.setText(resourceMap.getString("jButton27.text")); // NOI18N
         jButton27.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton27.setFocusPainted(false);
         jButton27.setName("jButton27"); // NOI18N
         jButton27.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -659,6 +687,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton28.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton28.setText(resourceMap.getString("jButton28.text")); // NOI18N
         jButton28.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton28.setFocusPainted(false);
         jButton28.setName("jButton28"); // NOI18N
         jButton28.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -670,6 +699,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton29.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton29.setText(resourceMap.getString("jButton29.text")); // NOI18N
         jButton29.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton29.setFocusPainted(false);
         jButton29.setName("jButton29"); // NOI18N
         jButton29.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -681,6 +711,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton30.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton30.setText(resourceMap.getString("jButton30.text")); // NOI18N
         jButton30.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton30.setFocusPainted(false);
         jButton30.setName("jButton30"); // NOI18N
         jButton30.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -692,6 +723,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton31.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton31.setText(resourceMap.getString("jButton31.text")); // NOI18N
         jButton31.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton31.setFocusPainted(false);
         jButton31.setName("jButton31"); // NOI18N
         jButton31.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -703,6 +735,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton32.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton32.setText(resourceMap.getString("jButton32.text")); // NOI18N
         jButton32.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton32.setFocusPainted(false);
         jButton32.setName("jButton32"); // NOI18N
         jButton32.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -714,6 +747,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton33.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton33.setText(resourceMap.getString("jButton33.text")); // NOI18N
         jButton33.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton33.setFocusPainted(false);
         jButton33.setName("jButton33"); // NOI18N
         jButton33.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -725,6 +759,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton34.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton34.setText(resourceMap.getString("jButton34.text")); // NOI18N
         jButton34.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton34.setFocusPainted(false);
         jButton34.setName("jButton34"); // NOI18N
         jButton34.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -736,6 +771,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton35.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton35.setText(resourceMap.getString("jButton35.text")); // NOI18N
         jButton35.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton35.setFocusPainted(false);
         jButton35.setName("jButton35"); // NOI18N
         jButton35.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -747,6 +783,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton36.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton36.setText(resourceMap.getString("jButton36.text")); // NOI18N
         jButton36.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton36.setFocusPainted(false);
         jButton36.setName("jButton36"); // NOI18N
         jButton36.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -792,6 +829,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton37.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton37.setText(resourceMap.getString("jButton37.text")); // NOI18N
         jButton37.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton37.setFocusPainted(false);
         jButton37.setName("jButton37"); // NOI18N
         jButton37.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -803,6 +841,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton38.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton38.setText(resourceMap.getString("jButton38.text")); // NOI18N
         jButton38.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton38.setFocusPainted(false);
         jButton38.setName("jButton38"); // NOI18N
         jButton38.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -814,6 +853,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton39.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton39.setText(resourceMap.getString("jButton39.text")); // NOI18N
         jButton39.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton39.setFocusPainted(false);
         jButton39.setName("jButton39"); // NOI18N
         jButton39.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -825,6 +865,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton40.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton40.setText(resourceMap.getString("jButton40.text")); // NOI18N
         jButton40.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton40.setFocusPainted(false);
         jButton40.setName("jButton40"); // NOI18N
         jButton40.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -836,6 +877,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton41.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton41.setText(resourceMap.getString("jButton41.text")); // NOI18N
         jButton41.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton41.setFocusPainted(false);
         jButton41.setName("jButton41"); // NOI18N
         jButton41.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -847,6 +889,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton42.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton42.setText(resourceMap.getString("jButton42.text")); // NOI18N
         jButton42.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton42.setFocusPainted(false);
         jButton42.setName("jButton42"); // NOI18N
         jButton42.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -858,6 +901,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton43.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton43.setText(resourceMap.getString("jButton43.text")); // NOI18N
         jButton43.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton43.setFocusPainted(false);
         jButton43.setName("jButton43"); // NOI18N
         jButton43.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -869,6 +913,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton44.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton44.setText(resourceMap.getString("jButton44.text")); // NOI18N
         jButton44.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton44.setFocusPainted(false);
         jButton44.setName("jButton44"); // NOI18N
         jButton44.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -880,6 +925,7 @@ public class FInputDialog extends javax.swing.JDialog {
         jButton45.setFont(resourceMap.getFont("jButton41.font")); // NOI18N
         jButton45.setText(resourceMap.getString("jButton45.text")); // NOI18N
         jButton45.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton45.setFocusPainted(false);
         jButton45.setName("jButton45"); // NOI18N
         jButton45.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -888,9 +934,11 @@ public class FInputDialog extends javax.swing.JDialog {
         });
         panelLettersBottom.add(jButton45);
 
+        jButton46.setFont(resourceMap.getFont("jButton46.font")); // NOI18N
         jButton46.setIcon(resourceMap.getIcon("jButton46.icon")); // NOI18N
         jButton46.setText(resourceMap.getString("jButton46.text")); // NOI18N
         jButton46.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton46.setFocusPainted(false);
         jButton46.setName("jButton46"); // NOI18N
         jButton46.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -933,16 +981,17 @@ public class FInputDialog extends javax.swing.JDialog {
         panelSpase.setOpaque(false);
         panelSpase.setLayout(new java.awt.GridLayout(1, 0));
 
-        jButton47.setFont(resourceMap.getFont("jButton47.font")); // NOI18N
-        jButton47.setText(resourceMap.getString("jButton47.text")); // NOI18N
-        jButton47.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
-        jButton47.setName("jButton47"); // NOI18N
-        jButton47.addActionListener(new java.awt.event.ActionListener() {
+        buttonSpace.setFont(resourceMap.getFont("buttonSpace.font")); // NOI18N
+        buttonSpace.setText(resourceMap.getString("buttonSpace.text")); // NOI18N
+        buttonSpace.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonSpace.setFocusPainted(false);
+        buttonSpace.setName("buttonSpace"); // NOI18N
+        buttonSpace.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonClickNumeric(evt);
             }
         });
-        panelSpase.add(jButton47);
+        panelSpase.add(buttonSpace);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -1052,6 +1101,49 @@ public class FInputDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
+    final private org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FInputDialog.class);
+        
+    private void changeTextToLocale() {
+        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
+        labelKod.setText(resourceMap.getString("labelKod.text")); // NOI18N
+        
+        buttonSpace.setText(resourceMap.getString("buttonSpace.text")); // NOI18N
+        jButton14.setText(resourceMap.getString("jButton14.text")); // NOI18N
+        jButton15.setText(resourceMap.getString("jButton15.text")); // NOI18N
+        jButton16.setText(resourceMap.getString("jButton16.text")); // NOI18N
+        jButton17.setText(resourceMap.getString("jButton17.text")); // NOI18N
+        jButton18.setText(resourceMap.getString("jButton18.text")); // NOI18N
+        jButton19.setText(resourceMap.getString("jButton19.text")); // NOI18N
+        jButton20.setText(resourceMap.getString("jButton20.text")); // NOI18N
+        jButton21.setText(resourceMap.getString("jButton21.text")); // NOI18N
+        jButton22.setText(resourceMap.getString("jButton22.text")); // NOI18N
+        jButton23.setText(resourceMap.getString("jButton23.text")); // NOI18N
+        jButton24.setText(resourceMap.getString("jButton24.text")); // NOI18N
+        jButton25.setText(resourceMap.getString("jButton25.text")); // NOI18N
+        jButton26.setText(resourceMap.getString("jButton26.text")); // NOI18N
+        jButton27.setText(resourceMap.getString("jButton27.text")); // NOI18N
+        jButton28.setText(resourceMap.getString("jButton28.text")); // NOI18N
+        jButton29.setText(resourceMap.getString("jButton29.text")); // NOI18N
+        jButton30.setText(resourceMap.getString("jButton30.text")); // NOI18N
+        jButton31.setText(resourceMap.getString("jButton31.text")); // NOI18N
+        jButton32.setText(resourceMap.getString("jButton32.text")); // NOI18N
+        jButton33.setText(resourceMap.getString("jButton33.text")); // NOI18N
+        jButton34.setText(resourceMap.getString("jButton34.text")); // NOI18N
+        jButton35.setText(resourceMap.getString("jButton35.text")); // NOI18N
+        jButton36.setText(resourceMap.getString("jButton36.text")); // NOI18N
+        jButton37.setText(resourceMap.getString("jButton37.text")); // NOI18N
+        jButton38.setText(resourceMap.getString("jButton38.text")); // NOI18N
+        jButton39.setText(resourceMap.getString("jButton39.text")); // NOI18N
+        jButton40.setText(resourceMap.getString("jButton40.text")); // NOI18N
+        jButton41.setText(resourceMap.getString("jButton41.text")); // NOI18N
+        jButton42.setText(resourceMap.getString("jButton42.text")); // NOI18N
+        jButton43.setText(resourceMap.getString("jButton43.text")); // NOI18N
+        jButton44.setText(resourceMap.getString("jButton44.text")); // NOI18N
+        jButton45.setText(resourceMap.getString("jButton45.text")); // NOI18N
+        jButton46.setText(resourceMap.getString("jButton46.text")); // NOI18N
+    }
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         result = null;
         if (clockBack.isActive()) {
@@ -1063,11 +1155,11 @@ public class FInputDialog extends javax.swing.JDialog {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // послать запрос на регистрацию предварительного
         // в ответ должен вернуться номерок в XML виде
-        if (labelKod.getText().length() != 0 && !DEFAULT_KOD.equals(labelKod.getText())) {
+        if (labelKod.getText().length() != 0 && !resourceMap.getString("labelKod.text").equals(labelKod.getText())) {
             if (clockBack.isActive()) {
                 clockBack.stop();
             }
-            result = labelKod.getText().replaceAll("_", " ");
+            result = labelKod.getText().replaceAll("_", " ").replace("<html>", "");
             setVisible(false);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -1081,7 +1173,7 @@ public class FInputDialog extends javax.swing.JDialog {
         clockBack.start();
         if ("".equals(evt.getActionCommand())) {
             // удаление
-            if (DEFAULT_KOD.equals(labelKod.getText()) || "".equals(labelKod.getText())) {
+            if (resourceMap.getString("labelKod.text").equals(labelKod.getText().replace("<html>", "")) || "".equals(labelKod.getText().replace("<html>", ""))) {
                 labelKod.setText("");
             } else {
                 labelKod.setText(labelKod.getText().substring(0, labelKod.getText().length() - 1));
@@ -1089,14 +1181,14 @@ public class FInputDialog extends javax.swing.JDialog {
 
         } else {
             // добавление цифры
-            if (DEFAULT_KOD.equals(labelKod.getText())) {
+            if (resourceMap.getString("labelKod.text").equals(labelKod.getText())) {
                 labelKod.setText("");
             }
-
-            labelKod.setText(labelKod.getText() + (evt.getActionCommand().equalsIgnoreCase("пробел") ? "_" : evt.getActionCommand()));
+            labelKod.setText("<html>" + labelKod.getText().replace("<html>", "").replaceAll("_", " ") + (((JButton)evt.getSource()).getName().equalsIgnoreCase("buttonSpace") ? "_" : evt.getActionCommand()));
         }
     }//GEN-LAST:event_buttonClickNumeric
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton buttonSpace;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton11;
@@ -1138,7 +1230,6 @@ public class FInputDialog extends javax.swing.JDialog {
     private javax.swing.JButton jButton44;
     private javax.swing.JButton jButton45;
     private javax.swing.JButton jButton46;
-    private javax.swing.JButton jButton47;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;

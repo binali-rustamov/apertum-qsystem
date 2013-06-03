@@ -16,10 +16,18 @@
  */
 package ru.apertum.qsystem.client.forms;
 
+import com.google.zxing.WriterException;
+import java.awt.event.ActionEvent;
 import ru.apertum.qsystem.client.common.WelcomeParams;
 import com.google.gson.Gson;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -42,6 +50,7 @@ import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Scanner;
@@ -50,7 +59,9 @@ import javax.imageio.ImageIO;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.*;
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -69,7 +80,7 @@ import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
-import ru.apertum.qsystem.common.cmd.AJsonRPC20;
+import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
 import ru.apertum.qsystem.common.cmd.RpcGetSrt;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
@@ -224,10 +235,10 @@ public class FWelcome extends javax.swing.JFrame {
                 }
                 QLog.l().logger().trace("Задание:\n" + data);
 
-                final AJsonRPC20 rpc;
+                final JsonRPC20 rpc;
                 final Gson gson = GsonPool.getInstance().borrowGson();
                 try {
-                    rpc = gson.fromJson(data, AJsonRPC20.class);
+                    rpc = gson.fromJson(data, JsonRPC20.class);
                 } finally {
                     GsonPool.getInstance().returnGson(gson);
                 }
@@ -415,6 +426,20 @@ public class FWelcome extends javax.swing.JFrame {
         buttonResponse.setVisible(WelcomeParams.getInstance().response);
         buttonAdvance.setVisible(WelcomeParams.getInstance().advance);
         buttonStandAdvance.setVisible(WelcomeParams.getInstance().advance);
+        panelLngs.setVisible(Locales.getInstance().isWelcomeMultylangs());
+        if (Locales.getInstance().isWelcomeMultylangs()) {
+            FlowLayout la = new FlowLayout(Locales.getInstance().getMultylangsPosition(), 50, 10);
+            panelLngs.setLayout(la);
+            for (final String lng : Locales.getInstance().getAvailableLangs()) {
+                final JButton btn = new JButton(Uses.prepareAbsolutPathForImg(Locales.getInstance().getLangButtonText(lng)));
+                btn.setContentAreaFilled(Locales.getInstance().isWelcomeMultylangsButtonsFilled());
+                btn.setFocusPainted(false);
+                btn.setBorderPainted(Locales.getInstance().isWelcomeMultylangsButtonsBorder());
+
+                btn.addActionListener(new LngBtnAction(Locales.getInstance().getLocaleByName(lng)));
+                panelLngs.add(btn);
+            }
+        }
         showMed();
         // Если режим инфокиоска, то не показываем кнопки предвариловки
         // Показали информацию и все
@@ -424,12 +449,33 @@ public class FWelcome extends javax.swing.JFrame {
         }
     }
 
+    private class LngBtnAction extends AbstractAction {
+
+        final private Locale locale;
+
+        public LngBtnAction(Locale locale) {
+            this.locale = locale;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Locale.setDefault(locale);
+            changeTextToLocale();
+            labelCaption.setText(Uses.prepareAbsolutPathForImg(root.getTextToLocale(QService.Field.BUTTON_TEXT)));
+            for (Component cmp : panelMain.getComponents()) {
+                if (cmp instanceof QButton) {
+                    ((QButton) cmp).refreshText();
+                }
+            }
+        }
+    }
+
     /**
      * Загрузка и инициализация неких параметров из корня дерева описания для старта или реинициализации.
      */
     private void loadRootParam() {
-        FWelcome.caption = root.getName();
-        labelCaption.setText(Uses.prepareAbsolutPathForImg(root.getButtonText()));
+        FWelcome.caption = root.getTextToLocale(QService.Field.NAME);
+        labelCaption.setText(Uses.prepareAbsolutPathForImg(root.getTextToLocale(QService.Field.BUTTON_TEXT)));
         setStateWindow(UNLOCK);
         showButtons(root, panelMain);
     }
@@ -663,7 +709,7 @@ public class FWelcome extends javax.swing.JFrame {
                 line = line + 3;
 
                 write(getLocaleMessage("ticket.service"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
-                String name = customer.getService().getName();
+                String name = customer.getService().getTextToLocale(QService.Field.NAME);
                 while (name.length() != 0) {
                     String prn;
                     if (name.length() > WelcomeParams.getInstance().lineLenght) {
@@ -690,12 +736,34 @@ public class FWelcome extends javax.swing.JFrame {
                 write(Uses.format_for_label.format(customer.getStandTime()), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (customer.getService().getInput_required()) {
-                    write(customer.getService().getInput_caption().replaceAll("<.*?>",""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                    write(customer.getService().getTextToLocale(QService.Field.INPUT_CAPTION).replaceAll("<.*?>", ""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                     write(customer.getInput_data(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                    // если требуется, то введеное напечатаем как qr-код для быстрого считывания сканером
+                    if (WelcomeParams.getInstance().input_data_qrcode) {
+                        try {
+                            final int matrixWidth = 130;
+                            final HashMap<EncodeHintType, String> hints = new HashMap();
+                            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+                            final BitMatrix matrix = new QRCodeWriter().encode(customer.getInput_data(), BarcodeFormat.QR_CODE, matrixWidth, matrixWidth, hints);
+                            //final BitMatrix matrix = new MultiFormatWriter().encode(customer.getInput_data(), BarcodeFormat.QR_CODE, matrixWidth, matrixWidth);
+                            //Write Bit Matrix as image
+                            final int y = (int) Math.round((WelcomeParams.getInstance().topMargin + line * WelcomeParams.getInstance().lineHeigth) / 1);
+                            for (int i = 0; i < matrixWidth; i++) {
+                                for (int j = 0; j < matrixWidth; j++) {
+                                    if (matrix.get(i, j)) {
+                                        g2.fillRect(WelcomeParams.getInstance().leftMargin * 2 + i, y + j - 10, 1, 1);
+                                    }
+                                }
+                            }
+                            line = line + 9;
+                        } catch (WriterException ex) {
+                            QLog.l().logger().error("Ошибка вывода штрихкода QR. " + ex);
+                        }
+                    }
                 }
                 // если в услуге есть что напечатать на талоне, то напечатаем это на его талоне
-                if (customer.getService().getTicketText() != null && !customer.getService().getTicketText().isEmpty()) {
-                    String tt = customer.getService().getTicketText();
+                if (customer.getService().getTextToLocale(QService.Field.TICKET_TEXT) != null && !customer.getService().getTextToLocale(QService.Field.TICKET_TEXT).isEmpty()) {
+                    String tt = customer.getService().getTextToLocale(QService.Field.TICKET_TEXT);
                     while (tt.length() != 0) {
                         String prn;
                         if (tt.length() > WelcomeParams.getInstance().lineLenght) {
@@ -720,26 +788,44 @@ public class FWelcome extends javax.swing.JFrame {
                 write(getLocaleMessage("ticket.wait"), ++line, WelcomeParams.getInstance().leftMargin, 1.8, 1);
                 write(WelcomeParams.getInstance().promoText, ++line, WelcomeParams.getInstance().leftMargin, 0.7, 0.4);
                 int y = write("", ++line, 0, 1, 1);
-                if (WelcomeParams.getInstance().barcode) {
-                    Barcode barcode = null;
-                    try {
+                if (WelcomeParams.getInstance().barcode != 0) {
 
-                        barcode = BarcodeFactory.createCode128B(customer.getId().toString());
-                    } catch (BarcodeException ex) {
-                        QLog.l().logger().error("Ошибка создания штрихкода. " + ex);
+                    if (WelcomeParams.getInstance().barcode == 2) {
+                        try {
+                            final int matrixWidth = 100;
+                            final HashMap<EncodeHintType, String> hints = new HashMap();
+                            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+                            final BitMatrix matrix = new QRCodeWriter().encode(customer.getInput_data(), BarcodeFormat.QR_CODE, matrixWidth, matrixWidth, hints);
+                            //Write Bit Matrix as image
+                            for (int i = 0; i < matrixWidth; i++) {
+                                for (int j = 0; j < matrixWidth; j++) {
+                                    if (matrix.get(i, j)) {
+                                        g2.fillRect(WelcomeParams.getInstance().leftMargin * 2 + i, y + j - 18, 1, 1);
+                                    }
+                                }
+                            }
+                            line = line + 6;
+                        } catch (WriterException ex) {
+                            QLog.l().logger().error("Ошибка вывода штрихкода QR. " + ex);
+                        }
                     }
-                    barcode.setBarHeight(5);
-                    barcode.setBarWidth(1);
-                    barcode.setDrawingText(false);
-                    barcode.setDrawingQuietSection(false);
-                    try {
-                        barcode.draw(g2, WelcomeParams.getInstance().leftMargin * 2, y - 7);
-                    } catch (OutputException ex) {
-                        QLog.l().logger().error("Ошибка вывода штрихкода. " + ex);
+
+                    if (WelcomeParams.getInstance().barcode == 1) {
+                        try {
+                            final Barcode barcode = BarcodeFactory.createCode128B(customer.getId().toString());
+                            barcode.setBarHeight(5);
+                            barcode.setBarWidth(1);
+                            barcode.setDrawingText(false);
+                            barcode.setDrawingQuietSection(false);
+                            barcode.draw(g2, WelcomeParams.getInstance().leftMargin * 2, y - 7);
+                            line = line + 2;
+                        } catch (BarcodeException | OutputException ex) {
+                            QLog.l().logger().error("Ошибка вывода штрихкода 128B. " + ex);
+                        }
                     }
                 }
+
                 //Напечатаем текст внизу билета
-                line = line + 2;
                 name = WelcomeParams.getInstance().bottomText;
                 while (name.length() != 0) {
                     String prn;
@@ -856,7 +942,7 @@ public class FWelcome extends javax.swing.JFrame {
                 line = line + 2;
 
                 write(getLocaleMessage("ticket.service"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
-                String name = advCustomer.getService().getName();
+                String name = advCustomer.getService().getTextToLocale(QService.Field.NAME);
                 while (name.length() != 0) {
                     String prn;
                     if (name.length() > WelcomeParams.getInstance().lineLenght) {
@@ -884,13 +970,35 @@ public class FWelcome extends javax.swing.JFrame {
 
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (advCustomer.getService().getInput_required()) {
-                    write(advCustomer.getService().getInput_caption().replaceAll("<.*?>",""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                    write(advCustomer.getService().getTextToLocale(QService.Field.INPUT_CAPTION).replaceAll("<.*?>", ""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                     write(advCustomer.getAuthorizationCustomer().getName(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1); // тут кривовато передали введеные дпнные
+                    // если требуется, то введеное напечатаем как qr-код для быстрого считывания сканером
+                    if (WelcomeParams.getInstance().input_data_qrcode) {
+                        try {
+                            final int matrixWidth = 130;
+                            final HashMap<EncodeHintType, String> hints = new HashMap();
+                            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+                            final BitMatrix matrix = new QRCodeWriter().encode(advCustomer.getAuthorizationCustomer().getName(), BarcodeFormat.QR_CODE, matrixWidth, matrixWidth, hints);
+                            //final BitMatrix matrix = new MultiFormatWriter().encode(customer.getInput_data(), BarcodeFormat.QR_CODE, matrixWidth, matrixWidth);
+                            //Write Bit Matrix as image
+                            final int y = (int) Math.round((WelcomeParams.getInstance().topMargin + line * WelcomeParams.getInstance().lineHeigth) / 1);
+                            for (int i = 0; i < matrixWidth; i++) {
+                                for (int j = 0; j < matrixWidth; j++) {
+                                    if (matrix.get(i, j)) {
+                                        g2.fillRect(WelcomeParams.getInstance().leftMargin * 2 + i, y + j - 10, 1, 1);
+                                    }
+                                }
+                            }
+                            line = line + 9;
+                        } catch (WriterException ex) {
+                            QLog.l().logger().error("Ошибка вывода штрихкода QR. " + ex);
+                        }
+                    }
                 }
 
                 // если в услуге есть что напечатать на талоне, то напечатаем это на его талоне
-                if (advCustomer.getService().getTicketText() != null && !advCustomer.getService().getTicketText().isEmpty()) {
-                    String tt = advCustomer.getService().getTicketText();
+                if (advCustomer.getService().getTextToLocale(QService.Field.TICKET_TEXT) != null && !advCustomer.getService().getTextToLocale(QService.Field.TICKET_TEXT).isEmpty()) {
+                    String tt = advCustomer.getService().getTextToLocale(QService.Field.TICKET_TEXT);
                     while (tt.length() != 0) {
                         String prn;
                         if (tt.length() > WelcomeParams.getInstance().lineLenght) {
@@ -915,24 +1023,42 @@ public class FWelcome extends javax.swing.JFrame {
 
                 write(getLocaleMessage("ticket.adv_code"), ++line, WelcomeParams.getInstance().leftMargin, 1.3, 1);
                 int y = write("", ++line, 0, 1, 1);
-                if (WelcomeParams.getInstance().barcode) {
-                    Barcode barcode = null;
-                    try {
+                if (WelcomeParams.getInstance().barcode != 0) {
 
-                        barcode = BarcodeFactory.createCode128B(advCustomer.getId().toString());
-                    } catch (BarcodeException ex) {
-                        QLog.l().logger().error("Ошибка создания штрихкода. " + ex);
+                    if (WelcomeParams.getInstance().barcode == 2) {
+                        try {
+                            final int matrixWidth = 100;
+                            final HashMap<EncodeHintType, String> hints = new HashMap();
+                            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+                            final BitMatrix matrix = new QRCodeWriter().encode(advCustomer.getId().toString(), BarcodeFormat.QR_CODE, matrixWidth, matrixWidth, hints);
+                            //Write Bit Matrix as image
+                            for (int i = 0; i < matrixWidth; i++) {
+                                for (int j = 0; j < matrixWidth; j++) {
+                                    if (matrix.get(i, j)) {
+                                        g2.fillRect(WelcomeParams.getInstance().leftMargin * 2 + i, y + j - 18, 1, 1);
+                                    }
+                                }
+                            }
+                            line = line + 6;
+                            write(advCustomer.getId().toString(), ++line, WelcomeParams.getInstance().leftMargin, 2.0, 1.7);
+                        } catch (WriterException ex) {
+                            QLog.l().logger().error("Ошибка вывода штрихкода QR. " + ex);
+                        }
                     }
-                    barcode.setBarHeight(5);
-                    barcode.setBarWidth(1);
-                    barcode.setDrawingText(true);
-                    barcode.setDrawingQuietSection(true);
-                    try {
-                        barcode.draw(g2, WelcomeParams.getInstance().leftMargin * 2, y - 7);
-                    } catch (OutputException ex) {
-                        QLog.l().logger().error("Ошибка вывода штрихкода. " + ex);
+
+                    if (WelcomeParams.getInstance().barcode == 1) {
+                        try {
+                            final Barcode barcode = BarcodeFactory.createCode128B(advCustomer.getId().toString());
+                            barcode.setBarHeight(5);
+                            barcode.setBarWidth(1);
+                            barcode.setDrawingText(true);
+                            barcode.setDrawingQuietSection(true);
+                            barcode.draw(g2, WelcomeParams.getInstance().leftMargin * 2, y - 7);
+                            line = line + 3;
+                        } catch (BarcodeException | OutputException ex) {
+                            QLog.l().logger().error("Ошибка вывода штрихкода 128B. " + ex);
+                        }
                     }
-                    line = line + 3;
                 } else {
                     write(advCustomer.getId().toString(), ++line, WelcomeParams.getInstance().leftMargin, 2.0, 1.7);
                 }
@@ -1099,7 +1225,7 @@ public class FWelcome extends javax.swing.JFrame {
 
         buttonInfo.setVisible(WelcomeParams.getInstance().info && visible);
         buttonResponse.setVisible(WelcomeParams.getInstance().response && visible);
-        
+
         int cols = 3;
         int rows = 5;
 
@@ -1131,6 +1257,12 @@ public class FWelcome extends javax.swing.JFrame {
             panelForPaging.setVisible(true);
         } else {
             panelForPaging.setVisible(false);
+        }
+
+        if (visible && Locales.getInstance().isWelcomeMultylangs()) {
+            panelLngs.setVisible(true);
+        } else {
+            panelLngs.setVisible(false);
         }
     }
     //==================================================================================================================
@@ -1249,11 +1381,12 @@ public class FWelcome extends javax.swing.JFrame {
         labelLock = new javax.swing.JLabel();
         buttonInfo = new javax.swing.JButton();
         buttonResponse = new javax.swing.JButton();
+        panelLngs = new javax.swing.JPanel();
         panelForPaging = new javax.swing.JPanel();
         buttonBackPage = new javax.swing.JButton();
         buttonForwardPage = new javax.swing.JButton();
-        labelBackPage = new javax.swing.JLabel();
         labelForwardPage = new javax.swing.JLabel();
+        labelBackPage = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FWelcome.class);
@@ -1278,7 +1411,7 @@ public class FWelcome extends javax.swing.JFrame {
         panelCaption.setLayout(panelCaptionLayout);
         panelCaptionLayout.setHorizontalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1058, Short.MAX_VALUE)
+            .addComponent(labelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1148, Short.MAX_VALUE)
         );
         panelCaptionLayout.setVerticalGroup(
             panelCaptionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1293,6 +1426,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonAdvance.setFont(resourceMap.getFont("buttonAdvance.font")); // NOI18N
         buttonAdvance.setText(resourceMap.getString("buttonAdvance.text")); // NOI18N
         buttonAdvance.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
+        buttonAdvance.setFocusPainted(false);
         buttonAdvance.setName("buttonAdvance"); // NOI18N
         buttonAdvance.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1304,6 +1438,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonStandAdvance.setFont(resourceMap.getFont("buttonStandAdvance.font")); // NOI18N
         buttonStandAdvance.setText(resourceMap.getString("buttonStandAdvance.text")); // NOI18N
         buttonStandAdvance.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
+        buttonStandAdvance.setFocusPainted(false);
         buttonStandAdvance.setName("buttonStandAdvance"); // NOI18N
         buttonStandAdvance.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1317,6 +1452,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonToBegin.setText(resourceMap.getString("buttonToBegin.text")); // NOI18N
         buttonToBegin.setActionCommand(resourceMap.getString("buttonToBegin.actionCommand")); // NOI18N
         buttonToBegin.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
+        buttonToBegin.setFocusPainted(false);
         buttonToBegin.setName("buttonToBegin"); // NOI18N
         buttonToBegin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1330,6 +1466,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonBack.setText(resourceMap.getString("buttonBack.text")); // NOI18N
         buttonBack.setActionCommand(resourceMap.getString("buttonBack.actionCommand")); // NOI18N
         buttonBack.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
+        buttonBack.setFocusPainted(false);
         buttonBack.setName("buttonBack"); // NOI18N
         buttonBack.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1351,11 +1488,11 @@ public class FWelcome extends javax.swing.JFrame {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 953, Short.MAX_VALUE)
+            .addGap(0, 1043, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 355, Short.MAX_VALUE)
+            .addGap(0, 448, Short.MAX_VALUE)
         );
 
         panelLock.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1372,14 +1509,14 @@ public class FWelcome extends javax.swing.JFrame {
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 953, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 1043, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelLockLayout.setVerticalGroup(
             panelLockLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelLockLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
+                .addComponent(labelLock, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1387,6 +1524,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonInfo.setText(resourceMap.getString("buttonInfo.text")); // NOI18N
         buttonInfo.setActionCommand(resourceMap.getString("buttonInfo.actionCommand")); // NOI18N
         buttonInfo.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonInfo.setFocusPainted(false);
         buttonInfo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         buttonInfo.setName("buttonInfo"); // NOI18N
         buttonInfo.addActionListener(new java.awt.event.ActionListener() {
@@ -1398,6 +1536,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonResponse.setFont(resourceMap.getFont("buttonResponse.font")); // NOI18N
         buttonResponse.setText(resourceMap.getString("buttonResponse.text")); // NOI18N
         buttonResponse.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonResponse.setFocusPainted(false);
         buttonResponse.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         buttonResponse.setName("buttonResponse"); // NOI18N
         buttonResponse.addActionListener(new java.awt.event.ActionListener() {
@@ -1406,32 +1545,50 @@ public class FWelcome extends javax.swing.JFrame {
             }
         });
 
+        panelLngs.setBorder(new javax.swing.border.MatteBorder(null));
+        panelLngs.setName("panelLngs"); // NOI18N
+        panelLngs.setOpaque(false);
+
+        javax.swing.GroupLayout panelLngsLayout = new javax.swing.GroupLayout(panelLngs);
+        panelLngs.setLayout(panelLngsLayout);
+        panelLngsLayout.setHorizontalGroup(
+            panelLngsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1063, Short.MAX_VALUE)
+        );
+        panelLngsLayout.setVerticalGroup(
+            panelLngsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 36, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout panelCentreLayout = new javax.swing.GroupLayout(panelCentre);
         panelCentre.setLayout(panelCentreLayout);
         panelCentreLayout.setHorizontalGroup(
             panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelCentreLayout.createSequentialGroup()
-                .addGroup(panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelCentreLayout.createSequentialGroup()
                         .addGap(20, 20, 20)
                         .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(panelLngs, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(panelLock, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(buttonInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(buttonResponse, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(buttonResponse, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(buttonInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         panelCentreLayout.setVerticalGroup(
             panelCentreLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelCentreLayout.createSequentialGroup()
+                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE))
+            .addGroup(panelCentreLayout.createSequentialGroup()
+                .addComponent(panelLngs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(panelLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(panelCentreLayout.createSequentialGroup()
-                .addComponent(buttonInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
         );
 
         panelForPaging.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1442,6 +1599,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonBackPage.setIcon(resourceMap.getIcon("buttonBackPage.icon")); // NOI18N
         buttonBackPage.setText(resourceMap.getString("buttonBackPage.text")); // NOI18N
         buttonBackPage.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
+        buttonBackPage.setFocusPainted(false);
         buttonBackPage.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
         buttonBackPage.setName("buttonBackPage"); // NOI18N
         buttonBackPage.addActionListener(new java.awt.event.ActionListener() {
@@ -1454,6 +1612,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonForwardPage.setIcon(resourceMap.getIcon("buttonForwardPage.icon")); // NOI18N
         buttonForwardPage.setText(resourceMap.getString("buttonForwardPage.text")); // NOI18N
         buttonForwardPage.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED))));
+        buttonForwardPage.setFocusPainted(false);
         buttonForwardPage.setName("buttonForwardPage"); // NOI18N
         buttonForwardPage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1461,14 +1620,14 @@ public class FWelcome extends javax.swing.JFrame {
             }
         });
 
+        labelForwardPage.setFont(resourceMap.getFont("labelForwardPage.font")); // NOI18N
+        labelForwardPage.setText(resourceMap.getString("labelForwardPage.text")); // NOI18N
+        labelForwardPage.setName("labelForwardPage"); // NOI18N
+
         labelBackPage.setFont(resourceMap.getFont("labelBackPage.font")); // NOI18N
         labelBackPage.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         labelBackPage.setText(resourceMap.getString("labelBackPage.text")); // NOI18N
         labelBackPage.setName("labelBackPage"); // NOI18N
-
-        labelForwardPage.setFont(resourceMap.getFont("labelForwardPage.font")); // NOI18N
-        labelForwardPage.setText(resourceMap.getString("labelForwardPage.text")); // NOI18N
-        labelForwardPage.setName("labelForwardPage"); // NOI18N
 
         javax.swing.GroupLayout panelForPagingLayout = new javax.swing.GroupLayout(panelForPaging);
         panelForPaging.setLayout(panelForPagingLayout);
@@ -1478,22 +1637,22 @@ public class FWelcome extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(labelBackPage, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
-                .addComponent(buttonBackPage)
+                .addComponent(buttonBackPage, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(buttonForwardPage)
+                .addComponent(buttonForwardPage, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(labelForwardPage, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                .addComponent(labelForwardPage, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelForPagingLayout.setVerticalGroup(
             panelForPagingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelForPagingLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelForPagingLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelForPagingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(buttonBackPage, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
-                    .addComponent(labelForwardPage, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
-                    .addComponent(labelBackPage, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
-                    .addComponent(buttonForwardPage, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE))
+                .addGroup(panelForPagingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(labelForwardPage, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+                    .addComponent(labelBackPage, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+                    .addComponent(buttonBackPage, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+                    .addComponent(buttonForwardPage, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -1501,10 +1660,10 @@ public class FWelcome extends javax.swing.JFrame {
         panelBackground.setLayout(panelBackgroundLayout);
         panelBackgroundLayout.setHorizontalGroup(
             panelBackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1060, Short.MAX_VALUE)
+            .addComponent(panelCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 1150, Short.MAX_VALUE)
             .addGroup(panelBackgroundLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 1040, Short.MAX_VALUE)
+                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 1130, Short.MAX_VALUE)
                 .addContainerGap())
             .addComponent(panelForPaging, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(panelCentre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1535,6 +1694,23 @@ public class FWelcome extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void changeTextToLocale() {
+        final org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FWelcome.class);
+        setTitle(resourceMap.getString("Form.title")); // NOI18N
+        labelCaption.setText(resourceMap.getString("labelCaption.text")); // NOI18N
+        buttonAdvance.setText("<html><p align=center>" + resourceMap.getString(advanceRegim ? "lable.reg_calcel" : "lable.adv_reg")); // NOI18N
+        buttonStandAdvance.setText(resourceMap.getString("buttonStandAdvance.text")); // NOI18N
+        buttonToBegin.setText(resourceMap.getString("buttonToBegin.text")); // NOI18N
+        buttonBack.setText(resourceMap.getString("buttonBack.text")); // NOI18N
+        labelLock.setText(resourceMap.getString("labelLock.text")); // NOI18N
+        buttonInfo.setText(resourceMap.getString("buttonInfo.text")); // NOI18N 
+        buttonResponse.setText(resourceMap.getString("buttonResponse.text")); // NOI18N
+        buttonBackPage.setText(resourceMap.getString("buttonBackPage.text")); // NOI18N
+        buttonForwardPage.setText(resourceMap.getString("buttonForwardPage.text")); // NOI18N
+        labelBackPage.setText(resourceMap.getString("labelBackPage.text")); // NOI18N
+        labelForwardPage.setText(resourceMap.getString("labelForwardPage.text")); // NOI18N
+    }
 
 private void buttonBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBackActionPerformed
     if (!current.equals(root)) {
@@ -1693,6 +1869,7 @@ private void buttonInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JPanel panelCaption;
     private javax.swing.JPanel panelCentre;
     private javax.swing.JPanel panelForPaging;
+    private javax.swing.JPanel panelLngs;
     private javax.swing.JPanel panelLock;
     private javax.swing.JPanel panelMain;
     // End of variables declaration//GEN-END:variables

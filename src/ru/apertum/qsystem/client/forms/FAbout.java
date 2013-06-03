@@ -64,7 +64,7 @@ public class FAbout extends javax.swing.JDialog {
         loadVersionSt();
         if (!"0".equals(CMRC_)) {
             JOptionPane.showMessageDialog(parent, getLocaleMessage("about.version") + " : " + VERSION_ + "\n"
-                    + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2012", "QSystem", JOptionPane.INFORMATION_MESSAGE);
+                    + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2013", "QSystem", JOptionPane.INFORMATION_MESSAGE);
         } else {
             getForm(parent, modal, "");
             aboutForm.setVisible(true);
@@ -82,7 +82,7 @@ public class FAbout extends javax.swing.JDialog {
         if (!"0".equals(CMRC_)) {
             JOptionPane.showMessageDialog(parent, getLocaleMessage("about.version") + " : " + VERSION_ + "\n"
                     + ("".equals(verDB) ? "" : (getLocaleMessage("about.db_version") + " : " + verDB))
-                    + "\n" + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2012", "QSystem", JOptionPane.INFORMATION_MESSAGE);
+                    + "\n" + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2013", "QSystem", JOptionPane.INFORMATION_MESSAGE);
         } else {
             getForm(parent, modal, verDB);
             aboutForm.setVisible(true);

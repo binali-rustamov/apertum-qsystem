@@ -44,6 +44,7 @@ import ru.apertum.qsystem.client.forms.FPreInfoDialog;
 import ru.apertum.qsystem.client.forms.FWelcome;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.cmd.RpcGetServiceState.ServiceState;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
@@ -87,6 +88,7 @@ public class QButton extends JButton {
     public QButton(final QService service, FWelcome frm, JPanel prt, String resourceName) {
         super();
 
+        setFocusPainted(false);
         this.form = frm;
         this.service = service;
         this.parent = prt;
@@ -127,7 +129,7 @@ public class QButton extends JButton {
             setVisible(false);
             return;
         }
-        setText(Uses.prepareAbsolutPathForImg(service.getButtonText()));
+        refreshText();
         setSize(1, 1);
         if (WelcomeParams.getInstance().buttonImg) {
             if (service.isLeaf()) {
@@ -175,7 +177,7 @@ public class QButton extends JButton {
                                 // нет ввода данных, только номера регистрации.
                                 String inputData = null;
                                 if (service.getInput_required()) {
-                                    inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getInput_caption());
+                                    inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION));
                                     if (inputData == null) {
                                         return;
                                     }
@@ -226,7 +228,7 @@ public class QButton extends JButton {
                             // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
                             // если есть текст, то показываем диалог
                             if (service.getPreInfoHtml() != null && !"".equals(service.getPreInfoHtml())) {
-                                if (!FPreInfoDialog.showPreInfoDialog(form, service.getPreInfoHtml(), service.getPreInfoPrintText(), true, true, WelcomeParams.getInstance().delayBack * 2)) {
+                                if (!FPreInfoDialog.showPreInfoDialog(form, service.getTextToLocale(QService.Field.PRE_INFO_HTML), service.getTextToLocale(QService.Field.PRE_INFO_PRINT_TEXT), true, true, WelcomeParams.getInstance().delayBack * 2)) {
                                     // выходим т.к. кастомер отказался продолжать
                                     return;
                                 }
@@ -240,35 +242,41 @@ public class QButton extends JButton {
 
                             // узнать статистику по предлагаемой услуги и спросить потенциального кастомера
                             // будет ли он стоять или нет
-                            final int count;
+                            final ServiceState servState;
                             try {
-                                count = NetCommander.aboutService(FWelcome.netProperty, service.getId());
+                                servState = NetCommander.aboutService(FWelcome.netProperty, service.getId());
                             } catch (Exception ex) {
                                 // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
                                 QLog.l().logger().error("Гасим жестоко. Невозможно отправить команду на сервер. ", ex);
                                 form.lock(FWelcome.LOCK_MESSAGE);
                                 return;
                             }
+                            // Если приехал текст причины, то покажем ее и не дадим встать в очередь
+                            if (servState.getMessage() != null && !"".equals(servState.getMessage())) {
+                                form.lock("<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + servState.getMessage() + "</span></b></p>");
+                                form.clockUnlockBack.start();
+                                return;
+                            }
                             // Если услуга не обрабатывается ни одним пользователем то в count вернется Uses.LOCK_INT
                             // вот трех еще потерплю, а больше низачто!
-                            if (count == Uses.LOCK_INT) {
+                            if (servState.getCode() == Uses.LOCK_INT) {
                                 form.lock("<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.service_not_available") + "</span></b></p>");
                                 form.clockUnlockBack.start();
                                 return;
                             }
-                            if (count == Uses.LOCK_FREE_INT) {
+                            if (servState.getCode() == Uses.LOCK_FREE_INT) {
                                 form.lock("<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.service_not_available_by_schedule") + "</span></b></p>");
                                 form.clockUnlockBack.start();
                                 return;
                             }
-                            if (count == Uses.LOCK_PER_DAY_INT) {
+                            if (servState.getCode() == Uses.LOCK_PER_DAY_INT) {
                                 form.lock("<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.clients_enough") + "</span></b></p>");
                                 form.clockUnlockBack.start();
                                 return;
                             }
-                            if (count >= WelcomeParams.getInstance().askLimit) {
+                            if (servState.getCode() >= WelcomeParams.getInstance().askLimit) {
                                 // Выведем диалог о том будет чел сотять или пошлет нахер всю контору.
-                                if (!FConfirmationStart.getMayContinue(form, count)) {
+                                if (!FConfirmationStart.getMayContinue(form, servState.getCode())) {
                                     return;
                                 }
                             }
@@ -286,7 +294,7 @@ public class QButton extends JButton {
                         } else {
                             //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
                             if (service.getInput_required()) {
-                                inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getInput_caption());
+                                inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION));
                                 if (inputData == null) {
                                     return;
                                 }
@@ -376,5 +384,9 @@ public class QButton extends JButton {
         g.dispose();
 
         return resizedImage;
+    }
+
+    public final void refreshText() {
+        setText(Uses.prepareAbsolutPathForImg(service.getTextToLocale(QService.Field.BUTTON_TEXT)));
     }
 }

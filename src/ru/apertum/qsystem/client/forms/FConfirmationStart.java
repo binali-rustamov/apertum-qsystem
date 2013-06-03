@@ -18,14 +18,17 @@ package ru.apertum.qsystem.client.forms;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Locale;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.common.WelcomeParams;
 import ru.apertum.qsystem.client.model.QPanel;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
 /**
@@ -86,7 +89,6 @@ public class FConfirmationStart extends JDialog {
             }
         });
     }
-
     private static ResourceMap localeMap = null;
 
     private static String getLocaleMessage(String key) {
@@ -102,9 +104,10 @@ public class FConfirmationStart extends JDialog {
         if (confirmationForm == null) {
             confirmationForm = new FConfirmationStart(owner, count);
         }
-        confirmationForm.labelInfo.setText("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + getLocaleMessage("dialod.text_before") + "</span><br>" +
-                "<span style='font-size:100.0pt;color:red'>" + count + "</span><br><span style='font-size:60.0pt;color:red'>" + getLocaleMessage("dialod.text_before_people") +
-                ((((count % 10) >= 2) && ((count % 10) <= 4)) ? "a" : "") + "</span></p></b>");
+        confirmationForm.changeTextToLocale();
+        confirmationForm.labelInfo.setText("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + getLocaleMessage("dialod.text_before") + "</span><br>"
+                + "<span style='font-size:100.0pt;color:red'>" + count + "</span><br><span style='font-size:60.0pt;color:red'>" + getLocaleMessage("dialod.text_before_people")
+                + (((!Locale.getDefault().getLanguage().startsWith("en"))&&((count % 10) >= 2) && ((count % 10) <= 4)) ? "a" : "") + "</span></p></b>");
         confirmationForm.setBounds(owner.getLocation().x, owner.getLocation().y, owner.getWidth(), owner.getHeight());
         // если кастомер провафлил и ушел, то надо закрыть диалог
         clock.start();
@@ -139,12 +142,14 @@ public class FConfirmationStart extends JDialog {
         buttonOk.setIcon(resourceMap.getIcon("buttonOk.icon")); // NOI18N
         buttonOk.setText(resourceMap.getString("buttonOk.text")); // NOI18N
         buttonOk.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonOk.setFocusPainted(false);
         buttonOk.setName("buttonOk"); // NOI18N
 
         buttonCancel.setFont(resourceMap.getFont("buttonCancel.font")); // NOI18N
         buttonCancel.setIcon(resourceMap.getIcon("buttonCancel.icon")); // NOI18N
         buttonCancel.setText(resourceMap.getString("buttonCancel.text")); // NOI18N
         buttonCancel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonCancel.setFocusPainted(false);
         buttonCancel.setName("buttonCancel"); // NOI18N
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -172,10 +177,10 @@ public class FConfirmationStart extends JDialog {
                     .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
                     .addComponent(labelInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 801, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(buttonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 233, Short.MAX_VALUE)
-                        .addComponent(buttonOk, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(buttonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 73, Short.MAX_VALUE)
+                        .addComponent(buttonOk, javax.swing.GroupLayout.PREFERRED_SIZE, 367, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -184,13 +189,13 @@ public class FConfirmationStart extends JDialog {
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(labelInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                .addComponent(labelInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonCancel, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                    .addComponent(buttonOk, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(buttonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(buttonOk, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -214,6 +219,14 @@ public class FConfirmationStart extends JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void changeTextToLocale() {
+        final org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FConfirmationStart.class);
+        buttonOk.setText(resourceMap.getString("buttonOk.text")); // NOI18N
+        buttonCancel.setText(resourceMap.getString("buttonCancel.text")); // NOI18N
+        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
+        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
+        labelInfo.setText(resourceMap.getString("labelInfo.text")); // NOI18N
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonOk;

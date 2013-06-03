@@ -46,7 +46,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="panelUp" alignment="0" pref="886" max="32767" attributes="0"/>
+              <Component id="panelUp" alignment="0" pref="1115" max="32767" attributes="0"/>
               <Component id="panelBottom" alignment="0" max="32767" attributes="0"/>
               <Component id="panelMain" alignment="0" max="32767" attributes="0"/>
           </Group>
@@ -93,7 +93,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="LabelCaption2" alignment="0" pref="884" max="32767" attributes="0"/>
+                  <Component id="LabelCaption2" alignment="0" pref="1113" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -133,11 +133,11 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButton2" min="-2" pref="215" max="-2" attributes="0"/>
-                      <EmptySpace pref="75" max="32767" attributes="0"/>
-                      <Component id="buttonInRoot" min="-2" pref="341" max="-2" attributes="0"/>
+                      <Component id="jButton2" min="-2" pref="279" max="-2" attributes="0"/>
+                      <EmptySpace pref="84" max="32767" attributes="0"/>
+                      <Component id="buttonInRoot" min="-2" pref="437" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="buttonBack" min="-2" pref="215" max="-2" attributes="0"/>
+                      <Component id="buttonBack" min="-2" pref="275" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -177,6 +177,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="jButton2" noResource="true"/>
               </Properties>
             </Component>
@@ -200,6 +201,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="buttonInRoot" noResource="true"/>
               </Properties>
             </Component>
@@ -223,6 +225,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="buttonBack" noResource="true"/>
               </Properties>
             </Component>
@@ -245,7 +248,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="864" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="1093" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>

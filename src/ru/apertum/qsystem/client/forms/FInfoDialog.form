@@ -138,10 +138,10 @@
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jButton2" min="-2" pref="215" max="-2" attributes="0"/>
-                      <EmptySpace pref="114" max="32767" attributes="0"/>
-                      <Component id="buttonPrint" min="-2" pref="215" max="-2" attributes="0"/>
+                      <EmptySpace pref="186" max="32767" attributes="0"/>
+                      <Component id="buttonPrint" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="buttonInRoot" min="-2" pref="215" max="-2" attributes="0"/>
+                      <Component id="buttonInRoot" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="buttonBack" min="-2" pref="215" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -150,15 +150,13 @@
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="buttonBack" alignment="3" pref="71" max="32767" attributes="0"/>
-                              <Component id="jButton2" alignment="3" pref="71" max="32767" attributes="0"/>
-                              <Component id="buttonInRoot" alignment="3" pref="71" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="buttonPrint" alignment="0" pref="71" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="buttonBack" alignment="3" pref="71" max="32767" attributes="0"/>
+                          <Component id="jButton2" alignment="3" pref="71" max="32767" attributes="0"/>
+                          <Component id="buttonInRoot" alignment="3" pref="71" max="32767" attributes="0"/>
+                          <Component id="buttonPrint" alignment="3" pref="71" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -186,6 +184,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="jButton2" noResource="true"/>
               </Properties>
               <Events>
@@ -209,6 +208,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="buttonInRoot" noResource="true"/>
               </Properties>
               <Events>
@@ -232,6 +232,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="buttonBack" noResource="true"/>
               </Properties>
               <Events>
@@ -258,6 +259,7 @@
                     </CompoundBorder>
                   </Border>
                 </Property>
+                <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="buttonPrint" noResource="true"/>
               </Properties>
             </Component>

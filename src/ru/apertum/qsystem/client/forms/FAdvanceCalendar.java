@@ -104,6 +104,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
             advanceCalendar = new FAdvanceCalendar(parent, modal);
             advanceCalendar.setTitle("Выбор времени предварительной записи.");
         }
+        advanceCalendar.changeTextToLocale();
         result = null;
         Uses.setLocation(advanceCalendar);
         FAdvanceCalendar.netProperty = netProperty;
@@ -185,7 +186,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelNavigation.setLayout(panelNavigationLayout);
         panelNavigationLayout.setHorizontalGroup(
             panelNavigationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1153, Short.MAX_VALUE)
+            .addGap(0, 1255, Short.MAX_VALUE)
         );
         panelNavigationLayout.setVerticalGroup(
             panelNavigationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -214,7 +215,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         qPanel2.setLayout(qPanel2Layout);
         qPanel2Layout.setHorizontalGroup(
             qPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelMonday, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(labelMonday, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
         qPanel2Layout.setVerticalGroup(
             qPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -239,7 +240,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         qPanel3.setLayout(qPanel3Layout);
         qPanel3Layout.setHorizontalGroup(
             qPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelTuesday, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(labelTuesday, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
         qPanel3Layout.setVerticalGroup(
             qPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -265,7 +266,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         qPanel4.setLayout(qPanel4Layout);
         qPanel4Layout.setHorizontalGroup(
             qPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelWednesday, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(labelWednesday, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
         qPanel4Layout.setVerticalGroup(
             qPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -291,7 +292,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         qPanel5.setLayout(qPanel5Layout);
         qPanel5Layout.setHorizontalGroup(
             qPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelThursday, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(labelThursday, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
         qPanel5Layout.setVerticalGroup(
             qPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -317,7 +318,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         qPanel6.setLayout(qPanel6Layout);
         qPanel6Layout.setHorizontalGroup(
             qPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelFriday, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(labelFriday, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
         qPanel6Layout.setVerticalGroup(
             qPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -342,7 +343,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         qPanel7.setLayout(qPanel7Layout);
         qPanel7Layout.setHorizontalGroup(
             qPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelSaturday, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(labelSaturday, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
         qPanel7Layout.setVerticalGroup(
             qPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -367,7 +368,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         qPanel8.setLayout(qPanel8Layout);
         qPanel8Layout.setHorizontalGroup(
             qPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelSunday, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(labelSunday, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
         qPanel8Layout.setVerticalGroup(
             qPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -379,7 +380,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelButtons.setBorder(new javax.swing.border.MatteBorder(null));
         panelButtons.setName("panelButtons"); // NOI18N
         panelButtons.setOpaque(false);
-        panelButtons.setLayout(new java.awt.GridLayout());
+        panelButtons.setLayout(new java.awt.GridLayout(1, 0));
 
         panelMon.setBorder(new javax.swing.border.MatteBorder(null));
         panelMon.setName("panelMon"); // NOI18N
@@ -389,11 +390,11 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelMon.setLayout(panelMonLayout);
         panelMonLayout.setHorizontalGroup(
             panelMonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 162, Short.MAX_VALUE)
+            .addGap(0, 177, Short.MAX_VALUE)
         );
         panelMonLayout.setVerticalGroup(
             panelMonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 521, Short.MAX_VALUE)
+            .addGap(0, 592, Short.MAX_VALUE)
         );
 
         panelButtons.add(panelMon);
@@ -406,11 +407,11 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelTus.setLayout(panelTusLayout);
         panelTusLayout.setHorizontalGroup(
             panelTusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 162, Short.MAX_VALUE)
+            .addGap(0, 177, Short.MAX_VALUE)
         );
         panelTusLayout.setVerticalGroup(
             panelTusLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 521, Short.MAX_VALUE)
+            .addGap(0, 592, Short.MAX_VALUE)
         );
 
         panelButtons.add(panelTus);
@@ -423,11 +424,11 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelWed.setLayout(panelWedLayout);
         panelWedLayout.setHorizontalGroup(
             panelWedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 162, Short.MAX_VALUE)
+            .addGap(0, 177, Short.MAX_VALUE)
         );
         panelWedLayout.setVerticalGroup(
             panelWedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 521, Short.MAX_VALUE)
+            .addGap(0, 592, Short.MAX_VALUE)
         );
 
         panelButtons.add(panelWed);
@@ -440,11 +441,11 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelThu.setLayout(panelThuLayout);
         panelThuLayout.setHorizontalGroup(
             panelThuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 162, Short.MAX_VALUE)
+            .addGap(0, 177, Short.MAX_VALUE)
         );
         panelThuLayout.setVerticalGroup(
             panelThuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 521, Short.MAX_VALUE)
+            .addGap(0, 592, Short.MAX_VALUE)
         );
 
         panelButtons.add(panelThu);
@@ -457,11 +458,11 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelFri.setLayout(panelFriLayout);
         panelFriLayout.setHorizontalGroup(
             panelFriLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 162, Short.MAX_VALUE)
+            .addGap(0, 177, Short.MAX_VALUE)
         );
         panelFriLayout.setVerticalGroup(
             panelFriLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 521, Short.MAX_VALUE)
+            .addGap(0, 592, Short.MAX_VALUE)
         );
 
         panelButtons.add(panelFri);
@@ -474,11 +475,11 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelSut.setLayout(panelSutLayout);
         panelSutLayout.setHorizontalGroup(
             panelSutLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 162, Short.MAX_VALUE)
+            .addGap(0, 177, Short.MAX_VALUE)
         );
         panelSutLayout.setVerticalGroup(
             panelSutLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 521, Short.MAX_VALUE)
+            .addGap(0, 592, Short.MAX_VALUE)
         );
 
         panelButtons.add(panelSut);
@@ -491,11 +492,11 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelSun.setLayout(panelSunLayout);
         panelSunLayout.setHorizontalGroup(
             panelSunLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 162, Short.MAX_VALUE)
+            .addGap(0, 177, Short.MAX_VALUE)
         );
         panelSunLayout.setVerticalGroup(
             panelSunLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 521, Short.MAX_VALUE)
+            .addGap(0, 592, Short.MAX_VALUE)
         );
 
         panelButtons.add(panelSun);
@@ -509,6 +510,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         buttonClose.setIcon(resourceMap.getIcon("buttonClose.icon")); // NOI18N
         buttonClose.setText(resourceMap.getString("buttonClose.text")); // NOI18N
         buttonClose.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonClose.setFocusPainted(false);
         buttonClose.setName("buttonClose"); // NOI18N
 
         jButton1.setAction(actionMap.get("showBefore")); // NOI18N
@@ -516,6 +518,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
         jButton1.setActionCommand(resourceMap.getString("jButton1.actionCommand")); // NOI18N
         jButton1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton1.setFocusPainted(false);
         jButton1.setName("jButton1"); // NOI18N
 
         jButton2.setAction(actionMap.get("setNow")); // NOI18N
@@ -523,38 +526,41 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
         jButton2.setActionCommand(resourceMap.getString("jButton2.actionCommand")); // NOI18N
         jButton2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton2.setFocusPainted(false);
         jButton2.setName("jButton2"); // NOI18N
 
         jButton3.setAction(actionMap.get("showArter")); // NOI18N
         jButton3.setIcon(resourceMap.getIcon("jButton3.icon")); // NOI18N
         jButton3.setText(resourceMap.getString("jButton3.text")); // NOI18N
         jButton3.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton3.setFocusPainted(false);
         jButton3.setName("jButton3"); // NOI18N
 
         javax.swing.GroupLayout panelBottomLayout = new javax.swing.GroupLayout(panelBottom);
         panelBottom.setLayout(panelBottomLayout);
         panelBottomLayout.setHorizontalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelBottomLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE)
                 .addComponent(buttonClose, javax.swing.GroupLayout.PREFERRED_SIZE, 322, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 101, Short.MAX_VALUE)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         panelBottomLayout.setVerticalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonClose, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE))
+                .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(buttonClose, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 50, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -563,8 +569,8 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         qPanel1Layout.setHorizontalGroup(
             qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelBottom, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(panelHeader, javax.swing.GroupLayout.DEFAULT_SIZE, 1155, Short.MAX_VALUE)
-            .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 1155, Short.MAX_VALUE)
+            .addComponent(panelHeader, javax.swing.GroupLayout.DEFAULT_SIZE, 1257, Short.MAX_VALUE)
+            .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 1257, Short.MAX_VALUE)
             .addComponent(panelNavigation, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         qPanel1Layout.setVerticalGroup(
@@ -574,7 +580,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelHeader, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
+                .addComponent(panelButtons, javax.swing.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelBottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -592,6 +598,14 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void changeTextToLocale() {
+        final org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FAdvanceCalendar.class);
+        buttonClose.setText(resourceMap.getString("buttonClose.text")); // NOI18N
+        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
+        jButton3.setText(resourceMap.getString("jButton3.text")); // NOI18N
+    }
 
     @Action
     public void closeAdvaseForm() {
@@ -738,7 +752,7 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
     }
 
     private void printCaptionWeek(JLabel label, int day, GregorianCalendar gc) {
-        ((JPanel)(label.getParent())).setBorder(new LineBorder(Color.DARK_GRAY, 5));
+        ((JPanel) (label.getParent())).setBorder(new LineBorder(Color.DARK_GRAY, 5));
         gc.set(GregorianCalendar.DAY_OF_WEEK, day);
         final GregorianCalendar now = new GregorianCalendar();
         if (now.get(GregorianCalendar.DAY_OF_MONTH) == gc.get(GregorianCalendar.DAY_OF_MONTH)
@@ -781,7 +795,6 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         }
         return s;
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonClose;
     private javax.swing.JButton jButton1;

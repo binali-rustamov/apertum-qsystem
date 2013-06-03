@@ -89,6 +89,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             preInfoDialog.setTitle(getLocaleMessage("dialog.title"));
             preInfoDialog.LabelCaption2.setText(getLocaleMessage("LabelCaption2.text"));
         }
+        preInfoDialog.changeTextToLocale();
         FPreInfoDialog.htmlText = Uses.prepareAbsolutPathForImg(htmlText);
         FPreInfoDialog.printText = printText;
         preInfoDialog.labelHtml.setText(FPreInfoDialog.htmlText);
@@ -166,7 +167,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         panelUp.setLayout(panelUpLayout);
         panelUpLayout.setHorizontalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE)
+            .addComponent(LabelCaption2, javax.swing.GroupLayout.DEFAULT_SIZE, 1113, Short.MAX_VALUE)
         );
         panelUpLayout.setVerticalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -185,6 +186,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         jButton2.setIcon(resourceMap.getIcon("jButton2.icon")); // NOI18N
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
         jButton2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton2.setFocusPainted(false);
         jButton2.setName("jButton2"); // NOI18N
 
         buttonInRoot.setAction(actionMap.get("printHint")); // NOI18N
@@ -192,6 +194,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         buttonInRoot.setIcon(resourceMap.getIcon("buttonInRoot.icon")); // NOI18N
         buttonInRoot.setText(resourceMap.getString("buttonInRoot.text")); // NOI18N
         buttonInRoot.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonInRoot.setFocusPainted(false);
         buttonInRoot.setName("buttonInRoot"); // NOI18N
 
         buttonBack.setAction(actionMap.get("proceed")); // NOI18N
@@ -199,6 +202,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         buttonBack.setIcon(resourceMap.getIcon("buttonBack.icon")); // NOI18N
         buttonBack.setText(resourceMap.getString("buttonBack.text")); // NOI18N
         buttonBack.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonBack.setFocusPainted(false);
         buttonBack.setName("buttonBack"); // NOI18N
 
         javax.swing.GroupLayout panelBottomLayout = new javax.swing.GroupLayout(panelBottom);
@@ -207,11 +211,11 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
-                .addComponent(buttonInRoot, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 84, Short.MAX_VALUE)
+                .addComponent(buttonInRoot, javax.swing.GroupLayout.PREFERRED_SIZE, 437, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(buttonBack, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(buttonBack, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         panelBottomLayout.setVerticalGroup(
@@ -250,7 +254,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 864, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1093, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelMainLayout.setVerticalGroup(
@@ -265,7 +269,7 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         panelAll.setLayout(panelAllLayout);
         panelAllLayout.setHorizontalGroup(
             panelAllLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, 886, Short.MAX_VALUE)
+            .addComponent(panelUp, javax.swing.GroupLayout.DEFAULT_SIZE, 1115, Short.MAX_VALUE)
             .addComponent(panelBottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -292,6 +296,14 @@ public class FPreInfoDialog extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void changeTextToLocale() {
+        final org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FPreInfoDialog.class);
+        LabelCaption2.setText(resourceMap.getString("LabelCaption2.text")); // NOI18N
+        jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
+        buttonInRoot.setText(resourceMap.getString("buttonInRoot.text")); // NOI18N
+        buttonBack.setText(resourceMap.getString("buttonBack.text")); // NOI18N
+    }
 
     @Action
     public void refuse() {

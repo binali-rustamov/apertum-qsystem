@@ -62,6 +62,7 @@ import ru.apertum.qsystem.common.cmd.RpcInviteCustomer;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.cmd.RpcBanList;
+import ru.apertum.qsystem.common.cmd.RpcGetServiceState;
 import ru.apertum.qsystem.server.MainBoard;
 import ru.apertum.qsystem.server.QServer;
 import ru.apertum.qsystem.server.ServerProps;
@@ -444,16 +445,19 @@ public final class Executer {
         }
 
         @Override
-        public RpcGetInt process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+        public RpcGetServiceState process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             // Проверим оказывается ли сейчас эта услуга
             int min = Uses.LOCK_INT;
             final Date day = new Date();
             final QService srv = QServiceTree.getInstance().getById(cmdParams.serviceId);
+            if (srv.getTempReasonUnavailable() != null && !"".equals(srv.getTempReasonUnavailable())) {
+                return new RpcGetServiceState(0, srv.getTempReasonUnavailable());
+            }
             // Если не лимит количества возможных обработанных в день достигнут
             if (srv.isLimitPerDayOver(getAdvancedCountToday(srv))) {
                 QLog.l().logger().warn("Услуга \"" + cmdParams.serviceId + "\" не обрабатывается исходя из достижения лимита возможной обработки кастомеров в день.");
-                return new RpcGetInt(Uses.LOCK_PER_DAY_INT);
+                return new RpcGetServiceState(Uses.LOCK_PER_DAY_INT, "");
             }
             // Если нет расписания, календаря или выходной то отказ по расписанию
             if (srv.getSchedule() == null || checkFreeDay(day, new Long(1)) || (srv.getCalendar() != null && checkFreeDay(day, srv.getCalendar().getId()))) {
@@ -527,7 +531,7 @@ public final class Executer {
             // Если не работаем, то отправим ответ и прекратим выполнение
             if (min == Uses.LOCK_FREE_INT) {
                 QLog.l().logger().warn("Услуга \"" + cmdParams.serviceId + "\" не обрабатывается исходя из рабочего расписания.");
-                return new RpcGetInt(min);
+                return new RpcGetServiceState(min, "");
             }
             // бежим по юзерам и смотрим обрабатывают ли они услугу
             // если да, то возьмем все услуги юзера и  сложим всех кастомеров в очередях
@@ -548,7 +552,7 @@ public final class Executer {
             if (min == Uses.LOCK_INT) {
                 QLog.l().logger().warn("Услуга \"" + cmdParams.serviceId + "\" не обрабатывается ни одним пользователем.");
             }
-            return new RpcGetInt(min);
+            return new RpcGetServiceState(min, "");
         }
     };
     /**
@@ -576,7 +580,7 @@ public final class Executer {
             for (QService service : QServiceTree.getInstance().getNodes()) {
                 if (service.isLeaf()) {
                     final QCustomer customer = service.peekCustomer();
-                    srvs.add(new RpcGetServerState.ServiceInfo(service, service.getCountCustomers(), customer != null ? customer.getPrefix() + customer.getNumber() : "Ожидающих нет"));
+                    srvs.add(new RpcGetServerState.ServiceInfo(service, service.getCountCustomers(), customer != null ? customer.getPrefix() + customer.getNumber() : "-"));
                 }
             }
             return new RpcGetServerState(srvs);
@@ -842,6 +846,7 @@ public final class Executer {
             }
 
             // кастомер переходит в состояние "умерщвленности"
+            killedCustomers.put(user.getCustomer().getFullNumber().toUpperCase(), new Date());
             user.getCustomer().setState(CustomerState.STATE_DEAD);
             try {
                 user.setCustomer(null);//бобик сдох и медальки не осталось
@@ -855,6 +860,7 @@ public final class Executer {
             }
         }
     };
+    private static final HashMap<String, Date> killedCustomers = new HashMap<>();
     /**
      * Начать работу с вызванноым кастомером.
      */
@@ -1122,6 +1128,22 @@ public final class Executer {
             //рассылаем широковещетельно по UDP на определенный порт
             Uses.sendUDPBroadcast(String.valueOf(cmdParams.userId), ServerProps.getInstance().getProps().getClientPort());
             return new RpcGetSrt("Услуга \"" + cmdParams.serviceId + "\" удалена у пользователя \"" + cmdParams.userId + "\" успешно.");
+        }
+    };
+    /**
+     * Изменить временную доступность услуги для оказания
+     */
+    final Task changeTempAvailableService = new Task(Uses.TASK_CHANGE_TEMP_AVAILABLE_SERVICE) {
+
+        @Override
+        synchronized public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            if (!QServiceTree.getInstance().hasById(cmdParams.serviceId)) {
+                return new JsonRPC20Error();
+            }
+            final QService service = QServiceTree.getInstance().getById(cmdParams.serviceId);
+            service.setTempReasonUnavailable(cmdParams.textData);
+            return new JsonRPC20OK();
         }
     };
     /**
@@ -1598,6 +1620,31 @@ public final class Executer {
                 }
             }
             return new RpcGetSrt("".equals(s) ? "Клиент по введенному номеру \"" + num + "\" не найден." : s);
+        }
+    };
+    /**
+     * Изменение приоритета кастомеру
+     */
+    final Task checkCustomerNumber = new Task(Uses.TASK_CHECK_CUSTOMER_NUMBER) {
+
+        @Override
+        public RpcGetSrt process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final String num = cmdParams.clientAuthId.trim().toUpperCase();
+            String s = "";
+            if (killedCustomers.get(num) != null) {
+                s = "Клиент с номером \"" + num + "\" удален по неявке в " + Uses.format_for_label.format(killedCustomers.get(num));
+            } else {
+                for (QService service : QServiceTree.getInstance().getNodes()) {
+                    for (QCustomer customer : service.getClients()) {
+                        if (num.equalsIgnoreCase(customer.getFullNumber())) {
+                            s = "Клиент с номером \"" + num + "\" стоит в очереди для получения услуги \"" + service.getName() + "\".";
+                            break;
+                        }
+                    }
+                }
+            }
+            return new RpcGetSrt("".equals(s) ? "Клиент по введенному номеру \"" + num + "\" не найден в списке удаленных по неявке или стоящих в очереди." : s);
         }
     };
     /**

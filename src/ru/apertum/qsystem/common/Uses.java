@@ -46,7 +46,6 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.UnknownHostException;
-import java.nio.charset.MalformedInputException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -230,8 +229,10 @@ public final class Uses {
     public static final String REPORT_CURRENT_SERVICES = "current_services";
     public static final String TASK_GET_CLIENT_AUTHORIZATION = "Идентифицировать клиента";
     public static final String TASK_SET_CUSTOMER_PRIORITY = "Изменить приоритет";
+    public static final String TASK_CHECK_CUSTOMER_NUMBER = "Проверить номер";
     public static final String TASK_CHANGE_FLEX_PRIORITY = "Изменить гибкий приоритет";
     public static final String TASK_CHANGE_RUNNING_TEXT_ON_BOARD = "Изменить бегущий текст на табло";
+    public static final String TASK_CHANGE_TEMP_AVAILABLE_SERVICE = "Изменить временную доступность";
     // Формат отчетов
     public static final String REPORT_FORMAT_HTML = "html";
     public static final String REPORT_FORMAT_RTF = "rtf";
@@ -752,7 +753,7 @@ public final class Uses {
         String res = html;
         while (matcher.find()) {
             String img = matcher.group();
-            img = img.substring(img.indexOf("'") + 1, img.lastIndexOf("'"));
+            img = img.substring(img.indexOf("'") + 1, img.indexOf("'", img.indexOf("'") + 1));
             if (img.startsWith("file:///")) {
                 continue;
             }

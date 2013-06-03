@@ -47,6 +47,8 @@ import ru.apertum.qsystem.common.cmd.RpcGetResultsList;
 import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation;
 import ru.apertum.qsystem.common.cmd.RpcGetServerState;
 import ru.apertum.qsystem.common.cmd.RpcGetServerState.ServiceInfo;
+import ru.apertum.qsystem.common.cmd.RpcGetServiceState;
+import ru.apertum.qsystem.common.cmd.RpcGetServiceState.ServiceState;
 import ru.apertum.qsystem.common.cmd.RpcGetSrt;
 import ru.apertum.qsystem.common.cmd.RpcGetUsersList;
 import ru.apertum.qsystem.common.cmd.RpcInviteCustomer;
@@ -198,6 +200,26 @@ public class NetCommander {
         }
         return rpc.getResult();
     }
+    
+    /**
+     * Сделать услугу временно неактивной или разблокировать временную неактивность
+     * @param netProperty netProperty параметры соединения с сервером.
+     * @param serviceId услуга, которую пытаемся править
+     * @param reason 
+     * @return 
+     */
+    public static void changeTempAvailableService(INetProperty netProperty, long serviceId, String reason) {
+        QLog.l().logger().info("Сделать услугу временно неактивной/активной.");
+        // загрузим ответ
+        final CmdParams params = new CmdParams();
+        params.serviceId = serviceId;
+        params.textData = reason;
+        try {
+            send(netProperty, Uses.TASK_CHANGE_TEMP_AVAILABLE_SERVICE, params);
+        } catch (QException ex) {// вывод исключений
+            throw new ClientException("Проблема с командой. ", ex);
+        }
+    }
 
     /**
      * Узнать сколько народу стоит к услуге и т.д.
@@ -206,7 +228,7 @@ public class NetCommander {
      * @return количество предшествующих.
      * @throws QException
      */
-    public static int aboutService(INetProperty netProperty, long serviceId) throws QException {
+    public static ServiceState aboutService(INetProperty netProperty, long serviceId) throws QException {
         QLog.l().logger().info("Встать в очередь.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
@@ -218,9 +240,9 @@ public class NetCommander {
             throw new QException("Проблема с командой. ", ex);
         }
         final Gson gson = GsonPool.getInstance().borrowGson();
-        final RpcGetInt rpc;
+        final RpcGetServiceState rpc;
         try {
-            rpc = gson.fromJson(res, RpcGetInt.class);
+            rpc = gson.fromJson(res, RpcGetServiceState.class);
         } catch (JsonParseException ex) {
             throw new QException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
@@ -955,6 +977,36 @@ public class NetCommander {
         final String res;
         try {
             res = send(netProperty, Uses.TASK_SET_CUSTOMER_PRIORITY, params);
+        } catch (QException ex) {// вывод исключений
+            throw new ClientException("Проблема с командой. ", ex);
+        }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final RpcGetSrt rpc;
+        try {
+            rpc = gson.fromJson(res, RpcGetSrt.class);
+        } catch (JsonParseException ex) {
+            throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return rpc.getResult();
+    }
+    
+    /**
+     * Пробить номер клиента. Стоит в очереди или отложен или вообще не найден.
+     * @param netProperty параметры соединения с сервером
+     * @param prioritet
+     * @param customer
+     * @return Текстовый ответ о результате
+     */
+    public static String checkCustomerNumber(INetProperty netProperty, String customerNumber) {
+        QLog.l().logger().info("Команда проверки номера кастомера.");
+        // загрузим ответ
+        final CmdParams params = new CmdParams();
+        params.clientAuthId = customerNumber;
+        final String res;
+        try {
+            res = send(netProperty, Uses.TASK_CHECK_CUSTOMER_NUMBER, params);
         } catch (QException ex) {// вывод исключений
             throw new ClientException("Проблема с командой. ", ex);
         }

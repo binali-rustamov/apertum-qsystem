@@ -34,6 +34,7 @@ public class QLog {
     private static final String KEY_DEBUG = "DEBUG";
     private static final String KEY_LOG_INFO = "LOGINFO";
     private static final String KEY_DEMO = "DEMO";
+    private static final String KEY_NOPLUGINS = "-noplugins";
 
     private Logger logger = Logger.getLogger("server.file");//**.file.info.trace
 
@@ -64,11 +65,18 @@ public class QLog {
     public boolean isDemo() {
         return isDemo;
     }
+    
+    private final boolean plaginable;
+
+    public boolean isPlaginable() {
+        return plaginable;
+    }
 
     private QLog() {
 
         boolean isDebugin = false;
         boolean isDem = false;
+        boolean isPlug = true;
         logger = isServer1 ? Logger.getLogger("server.file") : Logger.getLogger("client.file");
 
         //бежим по параметрам, смотрим, выполняем что надо
@@ -87,6 +95,10 @@ public class QLog {
             if (KEY_DEMO.equalsIgnoreCase(args1[i])) {
                 isDem = true;
             }
+            // ключ, отвечающий за возможность загрузки плагинов. 
+            if (KEY_NOPLUGINS.equalsIgnoreCase(args1[i])) {
+                isPlug = false;
+            }
         }
         if (!isDebugin) {
             final Properties settings = new Properties();
@@ -99,6 +111,7 @@ public class QLog {
         }
         isDebug = isDebugin;
         isDemo = isDem;
+        plaginable = isPlug;
 
 
         if ("server.file.info.trace".equalsIgnoreCase(logger.getName())) {
@@ -123,6 +136,7 @@ public class QLog {
         QLog.l().logger.info("СТАРТ ЛОГИРОВАНИЯ. Логгер: " + QLog.l().logger().getName());
         QLog.l().logRep.info("СТАРТ ЛОГИРОВАНИЯ для отчетов. Логгер: " + QLog.l().logRep().getName());
         QLog.l().logger.info("Mode: " + (QLog.l().isDebug() ? KEY_DEBUG : (QLog.l().isDemo() ? KEY_DEMO : "FULL")) );
+        QLog.l().logger.info("Plugins: " + (QLog.l().isPlaginable() ? "YES" : "NO") );
 
         return log;
     }
