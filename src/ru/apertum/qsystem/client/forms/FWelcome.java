@@ -324,7 +324,7 @@ public class FWelcome extends javax.swing.JFrame {
      * @throws Exception 
      */
     public static void main(final String args[]) throws Exception {
-        QLog.initial(args, false);
+        QLog.initial(args, 4);
         // Загрузка плагинов из папки plugins
         Uses.loadPlugins("./plugins/");
         Locale.setDefault(Locales.getInstance().getLangCurrent());
@@ -971,7 +971,7 @@ public class FWelcome extends javax.swing.JFrame {
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (advCustomer.getService().getInput_required()) {
                     write(advCustomer.getService().getTextToLocale(QService.Field.INPUT_CAPTION).replaceAll("<.*?>", ""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
-                    write(advCustomer.getAuthorizationCustomer().getName(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1); // тут кривовато передали введеные дпнные
+                    write(advCustomer.getInputData(), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                     // если требуется, то введеное напечатаем как qr-код для быстрого считывания сканером
                     if (WelcomeParams.getInstance().input_data_qrcode) {
                         try {
@@ -1829,7 +1829,7 @@ private void buttonStandAdvanceActionPerformed(java.awt.event.ActionEvent evt) {
 private void buttonResponseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonResponseActionPerformed
     final Long res = FResponseDialog.showResponseDialog(this, getResponse(), true, true, WelcomeParams.getInstance().delayBack * 2);
     if (res != null) {
-        NetCommander.setResponseAnswer(netProperty, res);
+        NetCommander.setResponseAnswer(netProperty, res, null, null, null, "");
     }
 }//GEN-LAST:event_buttonResponseActionPerformed
 

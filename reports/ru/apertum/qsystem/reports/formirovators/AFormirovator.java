@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import net.sf.jasperreports.engine.JRDataSource;
 import org.apache.http.HttpRequest;
+import ru.apertum.qsystem.client.forms.FAbout;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.exceptions.ReportException;
 import ru.apertum.qsystem.reports.common.Response;
@@ -95,7 +96,11 @@ abstract public class AFormirovator implements IFormirovator {
         }
         Response res = null;
         try {
-            res = new Response(new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, NetUtil.getUrl(request)).replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, errorMessage).getBytes("UTF-8"));
+            res = new Response(new String(result, "UTF-8").
+                    replaceFirst(Uses.ANCHOR_DATA_FOR_REPORT, NetUtil.getUrl(request)).
+                    replaceFirst(Uses.ANCHOR_ERROR_INPUT_DATA, errorMessage).
+                    replaceFirst(Uses.ANCHOR_PROJECT_NAME_FOR_REPORT, Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF())).
+                    getBytes("UTF-8"));
         } catch (UnsupportedEncodingException ex) {
         }
         return res;

@@ -29,13 +29,13 @@ import ru.apertum.qsystem.common.exceptions.ClientException;
  */
 public class QLog {
 
-        // Ключи выполнения программы
-
+    // Ключи выполнения программы
     private static final String KEY_DEBUG = "DEBUG";
     private static final String KEY_LOG_INFO = "LOGINFO";
     private static final String KEY_DEMO = "DEMO";
     private static final String KEY_NOPLUGINS = "-noplugins";
-
+    private static final String KEY_PAUSE = "-pause";
+    private static final String KEY_TERMINAL = "-terminal";
     private Logger logger = Logger.getLogger("server.file");//**.file.info.trace
 
     public Logger logger() {
@@ -65,31 +65,91 @@ public class QLog {
     public boolean isDemo() {
         return isDemo;
     }
-    
     private final boolean plaginable;
 
     public boolean isPlaginable() {
         return plaginable;
     }
+    private final boolean terminal;
+
+    public boolean isTerminal() {
+        return terminal;
+    }
+    
 
     private QLog() {
 
         boolean isDebugin = false;
         boolean isDem = false;
         boolean isPlug = true;
-        logger = isServer1 ? Logger.getLogger("server.file") : Logger.getLogger("client.file");
+        boolean isTerminal = false;
+        switch (loggerType) {
+            case 0://сервер
+                logger = Logger.getLogger("server.file");
+                break;
+            case 1://клиент
+                logger = Logger.getLogger("client.file");
+                break;
+            case 2://приемная
+                logger = Logger.getLogger("reception.file");
+                break;
+            case 3://админка
+                logger = Logger.getLogger("admin.file");
+                break;
+            case 4://админка
+                logger = Logger.getLogger("welcome.file");
+                break;
+            default:
+                throw new AssertionError();
+        }
 
         //бежим по параметрам, смотрим, выполняем что надо
         for (int i = 0; i < args1.length; i++) {
             // ключ, отвечающий за логирование
             if (KEY_DEBUG.equalsIgnoreCase(args1[i])) {
-                logger = isServer1 ? Logger.getLogger("server.file.info.trace") : Logger.getLogger("client.file.info.trace");
+                switch (loggerType) {
+                    case 0://сервер
+                        logger = Logger.getLogger("server.file.info.trace");
+                        break;
+                    case 1://клиент
+                        logger = Logger.getLogger("client.file.info.trace");
+                        break;
+                    case 2://приемная
+                        logger = Logger.getLogger("reception.file.info.trace");
+                        break;
+                    case 3://админка
+                        logger = Logger.getLogger("admin.file.info.trace");
+                        break;
+                    case 4://админка
+                        logger = Logger.getLogger("welcome.file.info.trace");
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
                 isDebugin = true;
             }
             // ключ, отвечающий за логирование
             if (KEY_LOG_INFO.equalsIgnoreCase(args1[i])) {
                 isDebugin = true;
-                logger = isServer1 ? Logger.getLogger("server.file.info") : Logger.getLogger("client.file.info");
+                switch (loggerType) {
+                    case 0://сервер
+                        logger = Logger.getLogger("server.file.info");
+                        break;
+                    case 1://клиент
+                        logger = Logger.getLogger("client.file.info");
+                        break;
+                    case 2://приемная
+                        logger = Logger.getLogger("reception.file.info");
+                        break;
+                    case 3://админка
+                        logger = Logger.getLogger("admin.file.info");
+                        break;
+                    case 4://админка
+                        logger = Logger.getLogger("welcome.file.info");
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
             }
             // ключ, отвечающий за режим демонстрации. При нем не надо прятать мышку и убирать шапку формы
             if (KEY_DEMO.equalsIgnoreCase(args1[i])) {
@@ -98,6 +158,19 @@ public class QLog {
             // ключ, отвечающий за возможность загрузки плагинов. 
             if (KEY_NOPLUGINS.equalsIgnoreCase(args1[i])) {
                 isPlug = false;
+            }
+            // ключ, отвечающий за возможность работы клиента на терминальном сервере. 
+            if (KEY_TERMINAL.equalsIgnoreCase(args1[i])) {
+                isTerminal = true;
+            }
+            // ключ, отвечающий за паузу на старте. 
+            if (KEY_PAUSE.equalsIgnoreCase(args1[i])) {
+                if (i < args1.length - 1 && args1[i + 1].matches("^-?\\d+$")) {
+                    try {
+                        Thread.sleep(Integer.parseInt(args1[i + 1]) * 1000);
+                    } catch (InterruptedException ex) {
+                    }
+                }
             }
         }
         if (!isDebugin) {
@@ -112,6 +185,7 @@ public class QLog {
         isDebug = isDebugin;
         isDemo = isDem;
         plaginable = isPlug;
+        terminal = isTerminal;
 
 
         if ("server.file.info.trace".equalsIgnoreCase(logger.getName())) {
@@ -128,15 +202,25 @@ public class QLog {
     }
     private static String[] args1 = new String[0];
     public static boolean isServer1 = false;
+    public static int loggerType = 0; // 0-сервер,1-клиент,2-приемная,3-админка,4-киоск
 
-    public static QLog initial(String[] args, boolean isServer) {
+    /**
+     * 
+     * @param args
+     * @param loggerType  0-сервер,1-клиент,2-приемная,3-админка,4-киоск
+     * @return 
+     */
+    public static QLog initial(String[] args, int type) {
         args1 = args;
-        isServer1 = isServer;
+        loggerType = type;
+        isServer1 = type == 0;
         final QLog log = LogerHolder.INSTANCE;
         QLog.l().logger.info("СТАРТ ЛОГИРОВАНИЯ. Логгер: " + QLog.l().logger().getName());
-        QLog.l().logRep.info("СТАРТ ЛОГИРОВАНИЯ для отчетов. Логгер: " + QLog.l().logRep().getName());
-        QLog.l().logger.info("Mode: " + (QLog.l().isDebug() ? KEY_DEBUG : (QLog.l().isDemo() ? KEY_DEMO : "FULL")) );
-        QLog.l().logger.info("Plugins: " + (QLog.l().isPlaginable() ? "YES" : "NO") );
+        if (isServer1) {
+            QLog.l().logRep.info("СТАРТ ЛОГИРОВАНИЯ для отчетов. Логгер: " + QLog.l().logRep().getName());
+        }
+        QLog.l().logger.info("Mode: " + (QLog.l().isDebug() ? KEY_DEBUG : (QLog.l().isDemo() ? KEY_DEMO : "FULL")));
+        QLog.l().logger.info("Plugins: " + (QLog.l().isPlaginable() ? "YES" : "NO"));
 
         return log;
     }

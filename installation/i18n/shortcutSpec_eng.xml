@@ -38,6 +38,46 @@
     startup="no">
         <createForPack name="Registration point"/>
     </shortcut>
+	
+	
+	<shortcut
+		os="windows"
+		name="Reception"
+		target="$INSTALL_PATH/Reception.bat"
+		commandLine=""
+		workingDirectory="$INSTALL_PATH"
+		description="Reception"
+		iconFile="$INSTALL_PATH/icons/reception.ico"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Reception"/>
+    </shortcut>
+    <shortcut
+		os="unix"
+		name="Reception"
+		target="sh"
+		commandLine="$INSTALL_PATH/reception.sh"
+		workingDirectory="$INSTALL_PATH"
+		description="Reception"
+		type="Application"
+		encoding="UTF-8"
+		iconFile="$INSTALL_PATH/icons/reception.png"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Reception"/>
+    </shortcut>
+	
+	
     <shortcut
     os="windows"
     name="The system of automation of work with clients"

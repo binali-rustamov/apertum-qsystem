@@ -33,6 +33,7 @@ import org.apache.http.entity.ContentProducer;
 import org.apache.http.entity.EntityTemplate;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
+import ru.apertum.qsystem.client.forms.FAbout;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.reports.common.Response;
@@ -65,7 +66,7 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
             if ("htm".equals(ext) || "html".equals(ext)) {
                 contentType = "text/" + ext + contentType;
             } else {
-                if ("pdf".equals(ext) || "rtf".equals(ext) || "doc".equals(ext)) {
+                if ("pdf".equals(ext) || "rtf".equals(ext) || "doc".equals(ext) || "xlsx".equals(ext)) {
                     contentType = "application/" + ext + contentType;
                 } else {
                     if ("gif".equals(ext) || "jpeg".equals(ext) || "jpg".equals(ext) || "ico".equals(ext) || "xpm".equals(ext)) {
@@ -139,7 +140,7 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
                 try {
                     result = new Response(Uses.readInputStream(inStream));
                     if ("/login.html".equals(subject)) {
-                        result.setData(new String(result.getData(), "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, QReportsList.getInstance().getHtmlUsersList()).getBytes("UTF-8")); //"Cp1251"
+                        result.setData(new String(result.getData(), "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, QReportsList.getInstance().getHtmlUsersList()).replaceFirst(Uses.ANCHOR_PROJECT_NAME_FOR_REPORT, Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF())).getBytes("UTF-8")); //"Cp1251"
                     }
                 } catch (IOException ex) {
                     QLog.l().logRep().error("Ошибка чтения ресурса. " + ex);

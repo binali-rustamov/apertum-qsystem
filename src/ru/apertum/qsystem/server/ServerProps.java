@@ -18,6 +18,7 @@
 package ru.apertum.qsystem.server;
 
 import ru.apertum.qsystem.server.model.QNet;
+import ru.apertum.qsystem.server.model.QStandards;
 
 /**
  *
@@ -26,13 +27,19 @@ import ru.apertum.qsystem.server.model.QNet;
 public class ServerProps {
 
     private final QNet netProp = new QNet();
+    private final QStandards standards = new QStandards();
 
     public QNet getProps() {
         return netProp;
     }
 
+    public QStandards getStandards() {
+        return standards;
+    }
+
     private ServerProps() {
         Spring.getInstance().getHt().load(netProp, new Long(1));
+        Spring.getInstance().getHt().load(standards, new Long(1));
     }
 
     public static ServerProps getInstance() {

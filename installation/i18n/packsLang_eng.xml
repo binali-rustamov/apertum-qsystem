@@ -5,6 +5,7 @@
 	<str id="server.description" txt="Installing server components: configuration tools, configuration files, server resources."/>
 	<str id="admin.description" txt="Installation of an administrator workstation. Placing the configuration files and component management."/>
 	<str id="registrationPoint.description" txt="Installation of check-in point: the configuration tools, configuration files, server resources."/>
+	<str id="reception.description" txt="Installing the workplace in the reception room: configuration utilities, configuration files."/>
 	<str id="docs.description" txt="Documentation on the system: Administrator's Guide QSystem, User Guide QSystem, Guide system programmer reporting system"/>
 	<str id="forArmCP.txt" txt="For workstation and check-point:"/>
 	<str id="forArmCP.id" txt="For workstation and check-point:"/>

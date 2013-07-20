@@ -74,4 +74,56 @@ public class QRespEvent implements Serializable {
     public void setRespID(Long respID) {
         this.respID = respID;
     }
+    /**
+     * По какому оператору отзыв оставили
+     */
+    @Column(name = "users_id")
+    private Long userID;
+
+    public Long getUserID() {
+        return userID;
+    }
+
+    public void setUserID(Long userID) {
+        this.userID = userID;
+    }
+    /**
+     * По Какой услуге отзыв оставили
+     */
+    @Column(name = "services_id")
+    private Long serviceID;
+
+    public Long getServiceID() {
+        return serviceID;
+    }
+
+    public void setServiceID(Long serviceID) {
+        this.serviceID = serviceID;
+    }
+    /**
+     * По какому посетителю отзыв оставили
+     */
+    @Column(name = "clients_id")
+    private Long clientID;
+
+    public Long getClientID() {
+        return clientID;
+    }
+
+    public void setClientID(Long clientID) {
+        this.clientID = clientID;
+    }
+    /**
+     * Данные кастомера, который отзыв оставил
+     */
+    @Column(name = "client_data")
+    private String clientData = "";
+
+    public String getClientData() {
+        return clientData;
+    }
+
+    public void setClientData(String clientData) {
+        this.clientData = clientData;
+    }
 }

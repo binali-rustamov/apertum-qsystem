@@ -16,18 +16,31 @@
  */
 package ru.apertum.qsystem.client.forms;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.awt.image.MemoryImageSource;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
@@ -101,7 +114,7 @@ public class FInfoDialog extends javax.swing.JDialog {
     public static Long showResponseDialog(Frame parent, QInfoItem respList, boolean modal, boolean fullscreen, int delay) {
         FInfoDialog.delay = delay;
         QLog.l().logger().info("Чтение информации");
-        
+
         if (infoDialog == null) {
             infoDialog = new FInfoDialog(parent, modal);
             infoDialog.setTitle(getLocaleMessage("dialog.title"));
@@ -192,7 +205,7 @@ public class FInfoDialog extends javax.swing.JDialog {
             }
             panelMain.setLayout(new GridLayout(rows, cols, delta / 2, delta / 2));
             for (QInfoItem item : level.getChildren()) {
-                final InfoButton button = new InfoButton(item);
+                final InfoButton button = new InfoButton(item, WelcomeParams.getInstance().buttonType);
                 panelMain.add(button);
             }
             if (level != root) {
@@ -209,15 +222,20 @@ public class FInfoDialog extends javax.swing.JDialog {
         s = (-1) * s;
         return s;
     }
+    /**
+     * Эта ботва для кнпки. Картинка на кнопке рисуемая.
+     */
+    private Image background;
+    private final static HashMap<String, Image> imgs = new HashMap<>();
 
     /**
      * Кнопка для навигации по дереву информации и для вывода этой информации ей в капшен
      */
-    private static class InfoButton extends JButton {
+    private class InfoButton extends JButton {
 
         final QInfoItem el;
 
-        public InfoButton(final QInfoItem el) {
+        public InfoButton(final QInfoItem el, String resourceName) {
             this.el = el;
             setText(Uses.prepareAbsolutPathForImg(el.getHTMLText()));
             setBorder(new LineBorder(Color.GRAY, 10));
@@ -230,6 +248,74 @@ public class FInfoDialog extends javax.swing.JDialog {
                     }
                 }
             });
+
+            // Нарисуем картинку на кнопке если надо. Загрузить можно из файла или ресурса
+            if ("".equals(resourceName)) {
+                background = null;
+            } else {
+                background = imgs.get(resourceName);
+                if (background == null) {
+                    File file = new File(resourceName);
+                    if (file.exists()) {
+                        try {
+                            background = ImageIO.read(file);
+                            imgs.put(resourceName, background);
+                        } catch (IOException ex) {
+                            background = null;
+                            QLog.l().logger().error(ex);
+                        }
+                    } else {
+                        final DataInputStream inStream = new DataInputStream(getClass().getResourceAsStream(resourceName));
+                        byte[] b = null;
+                        try {
+                            b = new byte[inStream.available()];
+                            inStream.readFully(b);
+                        } catch (IOException ex) {
+                            background = null;
+                            QLog.l().logger().error(ex);
+                        }
+                        background = new ImageIcon(b).getImage();
+                        imgs.put(resourceName, background);
+                    }
+                }
+            }
+            //займемся внешним видом
+            // либо просто стандартная кнопка, либо картинка на кнопке если она есть
+            if (background == null) {
+                setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new BevelBorder(BevelBorder.RAISED)));
+            } else {
+                setOpaque(false);
+                setContentAreaFilled(false);
+                setBorderPainted(false);
+            }
+        }
+
+        @Override
+        public void paintComponent(Graphics g) {
+            if (background != null) {
+                //Image scaledImage = background.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH); // это медленный вариант
+                final Image scaledImage = resizeToBig(background, getWidth(), getHeight());
+                final Graphics2D g2 = (Graphics2D) g;
+                g2.drawImage(scaledImage, 0, 0, null, null);
+                super.paintComponent(g);
+            } else {
+                super.paintComponent(g);
+            }
+        }
+
+        private Image resizeToBig(Image originalImage, int biggerWidth, int biggerHeight) {
+            final BufferedImage resizedImage = new BufferedImage(biggerWidth, biggerHeight, BufferedImage.TYPE_INT_ARGB);
+            final Graphics2D g = resizedImage.createGraphics();
+
+            g.setComposite(AlphaComposite.Src);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g.drawImage(originalImage, 0, 0, biggerWidth, biggerHeight, this);
+            g.dispose();
+
+            return resizedImage;
         }
     }
     /**

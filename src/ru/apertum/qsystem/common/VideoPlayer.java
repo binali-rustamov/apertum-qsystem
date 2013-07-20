@@ -16,15 +16,23 @@
  */
 package ru.apertum.qsystem.common;
 
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import javax.media.ControllerEvent;
-import javax.media.ControllerListener;
-import javax.media.EndOfMediaEvent;
-import javax.media.Manager;
-import javax.media.NoPlayerException;
-import javax.media.bean.playerbean.MediaPlayer;
+import java.util.Timer;
+import java.util.TimerTask;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
+import javafx.scene.paint.Color;
+import javax.swing.JPanel;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
  * Может проигрывать фидеофайлы *.mpg, *.jpg.
@@ -32,64 +40,83 @@ import javax.media.bean.playerbean.MediaPlayer;
  * По умолчанию показ ролика бесконечно в цикле.
  * @author Evgeniy Egorov
  */
-public class VideoPlayer {
+public class VideoPlayer extends JPanel {
 
-    private final ControllerListener cntr = new ControllerListener() {
-
-        boolean mute = true;
-
-        @Override
-        public void controllerUpdate(ControllerEvent arg0) {
-            if (arg0 instanceof EndOfMediaEvent && videoFiles != null) {
-                if (mp != null && mp.getGainControl() != null) {
-                    mute = mp.getGainControl().getMute();
-                }
-                mp.close();
-                boolean flag = true;
-                while (flag) {
-                    flag = false;
-                    final String vf = getNextVideoFile();
-                    if (vf != null) {
-                        //setVideoFile(vf);
-                        if (setVideoFile(vf) == false || mp.getPlayer() == null) {
-                            controllerUpdate(arg0);
-                        } else {
-                            mp.setVisible(true);
-                            try {
-                                mp.start();
-                            } catch (Exception e) {
-                            }
-                        }
-                    }
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException ex) {
-                        System.out.println(ex);
-                    }
-                    flag = mp.getPlayer() == null;
-                    if (flag) {
-                    }
-
-                }
-                mp.getGainControl().setMute(mute);
-            }
-        }
-    };
+    private MediaView medView = null;
 
     public VideoPlayer() {
-        mp.addControllerListener(cntr);
-        mp.setPlaybackLoop(true);
-        mp.setControlPanelVisible(false);
-        mp.setPlayer(null);
+        javafxPanel = new JFXPanel();
+        GridLayout gl = new GridLayout(1, 1);
+        setLayout(gl);
+        add(javafxPanel, BorderLayout.CENTER);
+
+        Platform.runLater(new Runnable() {
+
+            public void run() {
+                Group root = new Group();
+                Scene scene = new Scene(root);
+                createJavaFXContent(root);
+                javafxPanel.setScene(scene);
+                scene.setFill(new Color(0, 0, 0, 1));
+            }
+
+            private void createJavaFXContent(Group root) {
+                final MediaView view = new MediaView();
+                medView = view;
+
+                javafxPanel.addComponentListener(new ComponentListener() {
+
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        if (view.getMediaPlayer() != null && view.getMediaPlayer().getMedia() != null) {
+                            double sx = (double) javafxPanel.getWidth() / (double) view.getMediaPlayer().getMedia().widthProperty().getValue();
+                            double dxy = sx;
+                            if (view.getMediaPlayer().getMedia().heightProperty().getValue() * sx > javafxPanel.getHeight()) {
+                                dxy = (double) javafxPanel.getHeight() / (double) view.getMediaPlayer().getMedia().heightProperty().getValue();
+                            }
+                            view.setScaleX(dxy);
+                            view.setScaleY(dxy);
+                            view.setX((javafxPanel.getWidth() - view.getMediaPlayer().getMedia().widthProperty().getValue()) / 2);
+                            view.setY((javafxPanel.getHeight() - view.getMediaPlayer().getMedia().heightProperty().getValue()) / 2);
+                        }
+                    }
+
+                    @Override
+                    public void componentMoved(ComponentEvent e) {
+                    }
+
+                    @Override
+                    public void componentShown(ComponentEvent e) {
+                    }
+
+                    @Override
+                    public void componentHidden(ComponentEvent e) {
+                    }
+                });
+                root.getChildren().add(view);
+            }
+        });
+
     }
-    private MediaPlayer mp = new MediaPlayer();
+    private static JFXPanel javafxPanel;
 
     /**
      * Доступ к медиаплееру для детельной настройки параметров.
      * @return медиаплеер
      */
-    public MediaPlayer getMediaPlayer() {
-        return mp;
+    public MediaView getMediaView() {
+        int k = 0;
+        while ((medView == null || medView.getMediaPlayer()==null) && k < 30) {
+            k++;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+            }
+        }
+        if (medView == null) {
+            throw new ClientException("MediaPlayer = NULL");
+        }
+        return medView;
     }
     private String[] videoFiles;
     private String videoResourcePath;
@@ -132,18 +159,16 @@ public class VideoPlayer {
         this.videoResourcePath = videoResourcePath;
         File f = new File(videoResourcePath);
         if (f.isDirectory()) {
-            mp.setPlaybackLoop(false);
             final String vf = getNextVideoFile();
             if (vf != null) {
-                if (!setVideoFile(vf)) {
-                    return setVideoFile(getNextVideoFile());
+                if (!setVideoFile(vf, 1)) {
+                    return setVideoFile(getNextVideoFile(), 1);
                 } else {
                     return true;
                 }
             }
         } else {
-            mp.setPlaybackLoop(true);
-            return setVideoFile(videoResourcePath);
+            return setVideoFile(videoResourcePath, 90000000);
         }
         return false;
     }
@@ -152,18 +177,44 @@ public class VideoPlayer {
      * Учтановить ресурс для проигрывания
      * @param videoFilePath полный путь к видеофайлу
      */
-    private boolean setVideoFile(String videoFilePath) {
+    private boolean setVideoFile(String videoFilePath, int cycles) {
         try {
-            //mp.setPlayer(Manager.createPlayer(new URL("file:///" + videoFilePath)));
-            mp.setPlayer(Manager.createPlayer(new URL("file:///" + new File(videoFilePath).getAbsolutePath())));
-            return true;
-        } catch (IOException ex) {
-            QLog.l().logger().error("Невозможно открыть видеофайл " + videoFilePath + ": " + ex);
-            return false;
-        } catch (NoPlayerException ex) {
-            QLog.l().logger().error("Проигрыватель не может воспроизвести файл " + videoFilePath + ": " + ex);
+            getMediaView().setMediaPlayer(new MediaPlayer(new Media(new File(videoFilePath).toURI().toString())));
+            getMediaView().getMediaPlayer().setCycleCount(cycles);
+            javafxPanel.getComponentListeners()[0].componentResized(null);
+
+            if (cycles == 1) {
+                getMediaView().getMediaPlayer().setOnEndOfMedia(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        boolean mute = getMediaView().getMediaPlayer().isMute();
+                        final String vf = getNextVideoFile();
+                        if (vf != null) {
+                            medView.setMediaPlayer(null);
+                            if (!setVideoFile(vf, 1)) {
+                                setVideoFile(getNextVideoFile(), 1);
+                            } 
+                            getMediaView().getMediaPlayer().setMute(mute);
+                            removeAll();
+                            setLayout(new GridLayout(1, 1));
+                            add(javafxPanel);
+                            final Timer t = new Timer(true);
+                            t.schedule(new TimerTask() {
+
+                                @Override
+                                public void run() {
+                                    start();
+                                }
+                            }, 500);
+                        }
+                    }
+                });
+            }
+        } catch (Throwable th) {
             return false;
         }
+        return true;
     }
     private int cnt = 0;
 
@@ -172,35 +223,22 @@ public class VideoPlayer {
      * @param nativePosition если false, то по всему контролу парента
      */
     public void setVideoSize(boolean nativePosition) {
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
+        if (javafxPanel.getComponentListeners().length > 0) {
+            javafxPanel.getComponentListeners()[0].componentResized(null);
         }
-        if (nativePosition && mp.getPreferredSize().width == 0 && cnt < 50) {
-            mp.start();
-            mp.close();
-            setVideoResource(videoResourcePath);
-            setVideoSize(nativePosition);
-        } else {
-            mp.setBounds(0, 0, (nativePosition ? mp.getPreferredSize().width : mp.getParent().getWidth()), (nativePosition ? mp.getPreferredSize().height : mp.getParent().getHeight()));
-        }
-        cnt = 0;
     }
 
     public void start() {
-        if (mp.getPlayer() == null) {
-            setVideoResource(videoResourcePath);
-        }
-        mp.setVisible(true);
-        mp.start();
+        getMediaView().getMediaPlayer().play();
+        javafxPanel.getComponentListeners()[0].componentResized(null);
     }
 
-    public void pouse() {
-        mp.stop();
+    public void pause() {
+        getMediaView().getMediaPlayer().pause();
     }
 
     public void close() {
-        mp.close();
+        getMediaView().getMediaPlayer().stop();
         videoFiles = null;
     }
 }

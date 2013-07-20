@@ -39,6 +39,43 @@
         <createForPack name="Registration point"/>
     </shortcut>
 	
+	<shortcut
+		os="windows"
+		name="Приймальня"
+		target="$INSTALL_PATH/Reception.bat"
+		commandLine=""
+		workingDirectory="$INSTALL_PATH"
+		description="Приймальня"
+		iconFile="$INSTALL_PATH/icons/reception.ico"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Reception"/>
+    </shortcut>
+    <shortcut
+		os="unix"
+		name="Приймальня"
+		target="sh"
+		commandLine="$INSTALL_PATH/reception.sh"
+		workingDirectory="$INSTALL_PATH"
+		description="Приймальня"
+		type="Application"
+		encoding="UTF-8"
+		iconFile="$INSTALL_PATH/icons/reception.png"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Reception"/>
+    </shortcut>
+	
     <shortcut
 		os="windows"
 		name="Система автоматизації роботи з клієнтами"

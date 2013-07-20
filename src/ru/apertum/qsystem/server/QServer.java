@@ -67,8 +67,9 @@ public class QServer extends Thread {
      * @throws Exception 
      */
     public static void main(String[] args) throws Exception {
+        QLog.initial(args, 0);
         Locale.setDefault(Locales.getInstance().getLangCurrent());
-
+        
         //Установка вывода консольных сообщений в нужной кодировке
         if ("\\".equals(File.separator)) {
             try {
@@ -85,7 +86,7 @@ public class QServer extends Thread {
         FAbout.loadVersionSt();
         if ("0".equals(FAbout.CMRC_)) {
             System.out.println("Server version: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
-            System.out.println("Database version: " + FAbout.VERSION_DB_ + " for MySQL 5.4-community Server (GPL)");
+            System.out.println("Database version: " + FAbout.VERSION_DB_ + " for MySQL 5.5-community Server (GPL)");
             System.out.println("Released : " + FAbout.DATE_);
 
             System.out.println("Copyright (c) 2010-2013, Apertum Projects and/or its affiliates. All rights reserved.");
@@ -98,9 +99,9 @@ public class QServer extends Thread {
         System.out.println();
 
         if ("0".equals(FAbout.CMRC_)) {
-            System.out.println("Добро пожаловать на сервер QSystem. Для работы необходим MySQL5.1 или выше.");
+            System.out.println("Добро пожаловать на сервер QSystem. Для работы необходим MySQL5.5 или выше.");
             System.out.println("Версия сервера: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
-            System.out.println("Версия базы данных: " + FAbout.VERSION_DB_ + " for MySQL 5.4-community Server (GPL)");
+            System.out.println("Версия базы данных: " + FAbout.VERSION_DB_ + " for MySQL 5.5-community Server (GPL)");
             System.out.println("Дата выпуска : " + FAbout.DATE_);
             System.out.println("Copyright (c) 2013, Apertum Projects. Все права защищены.");
             System.out.println("QSystem является свободным программным обеспечением, вы можете");
@@ -119,7 +120,6 @@ public class QServer extends Thread {
 
 
         final long start = System.currentTimeMillis();
-        QLog.initial(args, true);
 
         // Загрузка плагинов из папки plugins
         if (QLog.l().isPlaginable()) {
@@ -335,6 +335,9 @@ public class QServer extends Thread {
                 // полученное задание передаем в пул
                 final Object result = Executer.getInstance().doTask(rpc, socket.getInetAddress().getHostAddress(), socket.getInetAddress().getAddress());
                 answer = gson.toJson(result);
+            } catch (Exception ex){
+                QLog.l().logger().error("Поздно пойманная ошибка при выполнении команды. ", ex);
+                throw new ServerException("Поздно пойманная ошибка при выполнении команды: " + ex.getStackTrace());
             } finally {
                 GsonPool.getInstance().returnGson(gson);
             }
@@ -526,6 +529,7 @@ public class QServer extends Thread {
         QLog.l().logger().info("Очистка всех пользователей от привязанных кастомеров.");
         for (QUser user : QUserList.getInstance().getItems()) {
             user.setCustomer(null);
+            user.setShadow(null);
             for (QPlanService plan : user.getPlanServices()) {
                 plan.setAvg_wait(0);
                 plan.setAvg_work(0);

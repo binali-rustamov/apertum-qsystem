@@ -62,6 +62,8 @@ import ru.apertum.qsystem.common.cmd.RpcInviteCustomer;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.cmd.RpcBanList;
+import ru.apertum.qsystem.common.cmd.RpcGetGridOfDay;
+import ru.apertum.qsystem.common.cmd.RpcGetStandards;
 import ru.apertum.qsystem.common.cmd.RpcGetServiceState;
 import ru.apertum.qsystem.server.MainBoard;
 import ru.apertum.qsystem.server.QServer;
@@ -226,18 +228,25 @@ public final class Executer {
 
             // есть ли у юзера вызванный кастомер? Тогда поторный вызов
             if (isRecall) {
-                QLog.l().logger().debug("Повторный вызов кастомера №" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + " пользователем " + cmdParams.userId);
+                user.getCustomer().upRecallCount(); // еще один повторный вызов
+                QLog.l().logger().debug("Повторный вызов " + user.getCustomer().getRecallCount() + " кастомера №" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + " пользователем " + cmdParams.userId);
 
-                // кастомер переходит в состояние в котором был в такое и переходит.
-                user.getCustomer().setState(user.getCustomer().getState());
-                // просигналим звуком
-                SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), false);
+                if (ServerProps.getInstance().getProps().getLimitRecall() != 0 && user.getCustomer().getRecallCount() > ServerProps.getInstance().getProps().getLimitRecall()) {
+                    QLog.l().logger().debug("Превышение повторных вызовов для кастомера №" + user.getCustomer().getPrefix() + user.getCustomer().getNumber() + " пользователем " + cmdParams.userId);
+                    //Удалим по неявки
+                    killCustomerTask.process(cmdParams, ipAdress, IP);
+                } else {
+                    // кастомер переходит в состояние в котором был в такое и переходит.
+                    user.getCustomer().setState(user.getCustomer().getState());
+                    // просигналим звуком
+                    SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), false);
 
-                //разослать оповещение о том, что посетитель вызван повторно
-                //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
-                MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
+                    //разослать оповещение о том, что посетитель вызван повторно
+                    //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
+                    MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
 
-                return new RpcInviteCustomer(user.getCustomer());
+                    return new RpcInviteCustomer(user.getCustomer());
+                }
             }
 
             // бежим по очередям юзера и ищем первого из первых кастомера
@@ -411,6 +420,18 @@ public final class Executer {
             // Если лимит количества подобных введенных данных кастомерами в день достигнут
             final QService srv = QServiceTree.getInstance().getById(cmdParams.serviceId);
             return new RpcGetInt(srv.isLimitPersonPerDayOver(cmdParams.textData) ? 1 : 0);
+        }
+    };
+    /**
+     * Получить описание состояния услуги
+     */
+    final Task getServiceConsistemcy = new Task(Uses.TASK_GET_SERVICE_CONSISANCY) {
+
+        @Override
+        public RpcGetServiceState process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            final QService srv = QServiceTree.getInstance().getById(cmdParams.serviceId);
+            return new RpcGetServiceState(srv.getClients());
         }
     };
     /**
@@ -758,7 +779,11 @@ public final class Executer {
                 servs.add(new RpcGetSelfSituation.SelfService(service, service.getCountCustomers(), planService.getCoefficient(), planService.getFlexible_coef()));
             }
             // нужно сделать вставочку приглашенного юзера, если он есть
-            return new RpcGetSelfSituation(new RpcGetSelfSituation.SelfSituation(servs, user.getCustomer(), QPostponedList.getInstance().getPostponedCustomers()));
+            return new RpcGetSelfSituation(new RpcGetSelfSituation.SelfSituation(servs,
+                    user.getCustomer(),
+                    QPostponedList.getInstance().getPostponedCustomers(),
+                    ServerProps.getInstance().getProps().getLimitRecall(),
+                    user.getShadow()));
         }
     };
     /**
@@ -1027,6 +1052,15 @@ public final class Executer {
             // действия по завершению работы юзера над кастомером
             customer.setFinishTime(new Date());
             // кастомер переходит в состояние "перенаправленности", тут еще и в базу скинется, если надо.
+            // но сначала обозначим результат работы юзера с кастомером, если такой результат найдется в списке результатов
+            // может приехать -1 если результат не требовался
+            final QResult result;
+            if (cmdParams.resultId != -1) {
+                result = QResultList.getInstance().getById(cmdParams.resultId);
+            } else {
+                result = null;
+            }
+            customer.setResult(result);
             customer.setState(CustomerState.STATE_REDIRECT, cmdParams.serviceId);
             // надо кастомера инициализить др. услугой
             // юзер в другой очереди наверное другой
@@ -1176,6 +1210,209 @@ public final class Executer {
         }
     };
     /**
+     * Получение таблици записанных ранее клиентов на день.
+     */
+    final Task getGridOfDay = new Task(Uses.TASK_GET_GRID_OF_DAY) {
+
+        @Override
+        public RpcGetGridOfDay process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            //Определим услугу
+            final QService service = QServiceTree.getInstance().getById(cmdParams.serviceId);
+            final QSchedule sch = service.getSchedule();
+
+            final RpcGetGridOfDay.GridDayAndParams advCusts = new RpcGetGridOfDay.GridDayAndParams();
+            advCusts.setAdvanceLimit(service.getAdvanceLimit());
+            if (sch == null) {
+                return new RpcGetGridOfDay(advCusts);
+            }
+
+            Date startDay = new Date(cmdParams.date);
+            final GregorianCalendar gc = new GregorianCalendar();
+            gc.setTime(startDay);
+            gc.set(GregorianCalendar.HOUR_OF_DAY, 0);
+            gc.set(GregorianCalendar.MINUTE, 0);
+            startDay = gc.getTime();
+            gc.set(GregorianCalendar.HOUR_OF_DAY, 23);
+            gc.set(GregorianCalendar.MINUTE, 59);
+            final Date endDay = gc.getTime();
+
+            // Определим по календарю рабочий ли день.
+            // Календаря может быть два, общий с id=1 и персонально настроенный
+            // Если день определяется как выходной(присутствует в БД в таблице выходных дней), то переходим к следующему дню
+            if (!checkFreeDay(startDay, new Long(1)) && !(service.getCalendar() != null && checkFreeDay(startDay, service.getCalendar().getId()))) {
+
+                // Определим время начала и нонца работы на этот день
+                Date start = null;
+                Date end = null;
+                if (sch.getType() == 1) {
+                    if (0 == (gc.get(GregorianCalendar.DAY_OF_MONTH) % 2)) {
+                        start = sch.getTime_begin_1();
+                        end = sch.getTime_end_1();
+                    } else {
+                        start = sch.getTime_begin_2();
+                        end = sch.getTime_end_2();
+                    }
+                } else {
+                    switch (gc.get(GregorianCalendar.DAY_OF_WEEK)) {
+                        case 2:
+                            start = sch.getTime_begin_1();
+                            end = sch.getTime_end_1();
+                            break;
+                        case 3:
+                            start = sch.getTime_begin_2();
+                            end = sch.getTime_end_2();
+                            break;
+                        case 4:
+                            start = sch.getTime_begin_3();
+                            end = sch.getTime_end_3();
+                            break;
+                        case 5:
+                            start = sch.getTime_begin_4();
+                            end = sch.getTime_end_4();
+                            break;
+                        case 6:
+                            start = sch.getTime_begin_5();
+                            end = sch.getTime_end_5();
+                            break;
+                        case 7:
+                            start = sch.getTime_begin_6();
+                            end = sch.getTime_end_6();
+                            break;
+                        case 1:
+                            start = sch.getTime_begin_7();
+                            end = sch.getTime_end_7();
+                            break;
+                        default:
+                            ;
+                    }
+                }
+
+
+                // Если работаем в этот день то определим часы на которые еще можно записаться
+                if (!(start == null || end == null)) {
+                    // Сдвинем на интервал края дня т.к. это так же сдвинуто на пунктe регистрации
+                    // Такой сдвиг в трех местах. Тут при формировании свободных времен, при определении раскладки панелек на простыню выбора,
+                    // при проверки доступности когда всю неделю отрисовываем
+                    gc.setTime(start);
+                    gc.add(GregorianCalendar.MINUTE, service.getAdvanceTimePeriod());
+                    start = gc.getTime();
+                    gc.setTime(end);
+                    gc.add(GregorianCalendar.MINUTE, -service.getAdvanceTimePeriod());
+                    end = gc.getTime();
+
+                    QLog.l().logger().trace("Загрузим уже занятых позиций ранее записанными кастомерами от " + Uses.format_for_rep.format(startDay) + " до " + Uses.format_for_rep.format(endDay));
+                    // Загрузим уже занятых позиций ранее записанными кастомерами
+                    final List<QAdvanceCustomer> advCustomers = Spring.getInstance().getHt().find("FROM QAdvanceCustomer a WHERE advance_time >'" + Uses.format_for_rep.format(startDay) + "' and advance_time <= '" + Uses.format_for_rep.format(endDay) + "' and service_id = " + service.getId());
+
+
+
+                    // бежим по часам внутри дня
+                    while (start.before(end) || start.equals(end)) {
+                        // Проверка на перерыв. В перерывах нет возможности записываться, по этому это время не поедет в пункт регистрации
+                        gc.setTime(startDay);
+                        gc.add(GregorianCalendar.MINUTE, 3);
+                        int ii = gc.get(GregorianCalendar.DAY_OF_WEEK) - 1;
+                        if (ii < 1) {
+                            ii = 7;
+                        }
+                        final QBreaks qb;
+                        switch (ii) {
+                            case 1:
+                                qb = service.getSchedule().getBreaks_1();
+                                break;
+                            case 2:
+                                qb = service.getSchedule().getBreaks_2();
+                                break;
+                            case 3:
+                                qb = service.getSchedule().getBreaks_3();
+                                break;
+                            case 4:
+                                qb = service.getSchedule().getBreaks_4();
+                                break;
+                            case 5:
+                                qb = service.getSchedule().getBreaks_5();
+                                break;
+                            case 6:
+                                qb = service.getSchedule().getBreaks_6();
+                                break;
+                            case 7:
+                                qb = service.getSchedule().getBreaks_7();
+                                break;
+                            default:
+                                throw new AssertionError();
+                        }
+                        gc.setTime(start);
+                        gc.add(GregorianCalendar.MINUTE, service.getAdvanceTimePeriod() - 3);
+                        boolean f = false; // в перерыв или нет
+                        if (qb != null) {// может вообще перерывов нет
+                            for (QBreak br : qb.getBreaks()) {
+                                if ((br.getFrom_time().before(start) && br.getTo_time().after(start))
+                                        || (br.getFrom_time().before(gc.getTime()) && br.getTo_time().after(gc.getTime()))) {
+                                    f = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!f) { // время не попало в перерыв
+                            int cnt = 0;
+
+                            gc.setTime(start);
+                            final int s1 = gc.get(GregorianCalendar.HOUR_OF_DAY);
+                            final int s_m1 = gc.get(GregorianCalendar.MINUTE);
+                            gc.setTime(startDay);
+                            gc.set(GregorianCalendar.HOUR_OF_DAY, s1);
+                            gc.set(GregorianCalendar.MINUTE, s_m1);
+                            gc.set(GregorianCalendar.SECOND, 0);
+                            gc.set(GregorianCalendar.MILLISECOND, 0);
+                            RpcGetGridOfDay.AdvTime atime = new RpcGetGridOfDay.AdvTime(gc.getTime()); //оно уже есть, добавим записанных и дополним свободными местами
+
+                            // пробигаем по кастомерам записанным
+                            for (QAdvanceCustomer advCustomer : advCustomers) {
+                                gc.setTime(start);
+                                final int s = gc.get(GregorianCalendar.HOUR_OF_DAY);
+                                final int s_m = gc.get(GregorianCalendar.MINUTE);
+                                gc.setTime(advCustomer.getAdvanceTime());
+                                final int e = gc.get(GregorianCalendar.HOUR_OF_DAY);
+                                final int e_m = gc.get(GregorianCalendar.MINUTE);
+                                // Если совпал день и час и минуты, то увеличим счетчик записавшихся на этот час и минуты
+                                if (s == e && s_m == e_m) {
+                                    cnt++;
+                                    atime.addACustomer(advCustomer);
+                                    // Защита от того чтобы один и тодже клиент не записался предварительно в одну услугу на одну дату.
+                                    // данный предв.кастомер не должен быть таким же как и авторизовавшийся на этот час
+                                    if (cmdParams.customerId != null && cmdParams.customerId != -1
+                                            && advCustomer.getAuthorizationCustomer() != null
+                                            && advCustomer.getAuthorizationCustomer().getId() != null
+                                            && advCustomer.getAuthorizationCustomer().getId().equals(cmdParams.customerId)) {
+                                        cnt = 1999999999;
+                                        break;
+                                    }
+                                }
+                            }
+                            // если еще количество записавшихся не привысило ограничение по услуге, то добавил этот час как доступный для записи
+                            for (int i = cnt; i < service.getAdvanceLimit(); i++) {
+                                atime.addACustomer(new QAdvanceCustomer(0L));
+                            }
+                            advCusts.addTime(atime);
+                        } // не в перерыве и по этому пробивали сколько там уже стояло и не первалило ли через настройку ограничения
+
+                        // перейдем на следующий час
+                        gc.setTime(start);
+                        //gc.set(GregorianCalendar.HOUR_OF_DAY, gc.get(GregorianCalendar.HOUR_OF_DAY) + 1);
+                        gc.set(GregorianCalendar.MINUTE, gc.get(GregorianCalendar.MINUTE) + service.getAdvanceTimePeriod());
+                        start = gc.getTime();
+                    }
+
+
+                }
+
+
+            }
+            return new RpcGetGridOfDay(advCusts);
+        }
+    };
+    /**
      * Получение таблици записанных ранее клиентов на неделю.
      */
     final Task getGridOfWeek = new Task(Uses.TASK_GET_GRID_OF_WEEK) {
@@ -1198,7 +1435,7 @@ public final class Executer {
 
             QLog.l().logger().trace("Загрузим уже занятых позиций ранее записанными кастомерами от " + Uses.format_for_rep.format(startWeek) + " до " + Uses.format_for_rep.format(endWeek));
             // Загрузим уже занятых позиций ранее записанными кастомерами
-            List<QAdvanceCustomer> advCustomers = Spring.getInstance().getHt().find("FROM QAdvanceCustomer a WHERE advance_time >'" + Uses.format_for_rep.format(startWeek) + "' and advance_time <= '" + Uses.format_for_rep.format(endWeek) + "' and service_id = " + service.getId());
+            final List<QAdvanceCustomer> advCustomers = Spring.getInstance().getHt().find("FROM QAdvanceCustomer a WHERE advance_time >'" + Uses.format_for_rep.format(startWeek) + "' and advance_time <= '" + Uses.format_for_rep.format(endWeek) + "' and service_id = " + service.getId());
 
             final GridAndParams advCusts = new GridAndParams();
             advCusts.setStartTime(ServerProps.getInstance().getProps().getStartTime());
@@ -1431,6 +1668,7 @@ public final class Executer {
             //хорошо бы отсекать повторную запись к этому же специалиста на этот же день
             customer.setAdvanceTime(startTime);
             customer.setService(service);
+            customer.setComments(cmdParams.comments);
             // время постановки проставляется автоматом при создании кастомера.
             // Приоритет "как все"
             customer.setPriority(2);
@@ -1544,6 +1782,10 @@ public final class Executer {
             final QRespEvent event = new QRespEvent();
             event.setDate(new Date());
             event.setRespID(cmdParams.responseId);
+            event.setServiceID(cmdParams.serviceId);
+            event.setUserID(cmdParams.userId);
+            event.setClientID(cmdParams.customerId);
+            event.setClientData(cmdParams.textData);
             final JsonRPC20Error rpcErr = new JsonRPC20Error(0, null);
             Spring.getInstance().getTt().execute(new TransactionCallbackWithoutResult() {
 
@@ -1733,6 +1975,17 @@ public final class Executer {
                 }
             }
             return new JsonRPC20OK();
+        }
+    };
+    /**
+     * Получение нормативов.
+     */
+    final Task getStandards = new Task(Uses.TASK_GET_STANDARDS) {
+
+        @Override
+        public RpcGetStandards process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            return new RpcGetStandards(ServerProps.getInstance().getStandards());
         }
     };
 

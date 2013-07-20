@@ -38,6 +38,7 @@
                <fileset dir="installation/resource/txt" includes="install.bat"/>
                <fileset dir="installation/resource/txt" includes="install.sh"/>
           </zip>
+		  <delete  file="installation/install.jar"/>
 
 
           <!-- echo message="Copy system to server ..."/>

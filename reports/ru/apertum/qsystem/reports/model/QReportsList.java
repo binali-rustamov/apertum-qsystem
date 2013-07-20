@@ -27,6 +27,7 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
+import ru.apertum.qsystem.client.forms.FAbout;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.exceptions.ReportException;
@@ -76,7 +77,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
                     + "<a href=\"" + report.getHref() + ".html\" target=\"_blank\">" + report.getName() + "</a>\n"
                     + "<a href=\"" + report.getHref() + ".rtf\" target=\"_blank\">[RTF]</a>\n"
                     + "<a href=\"" + report.getHref() + ".pdf\" target=\"_blank\">[PDF]</a>\n"
-                    + "<a href=\"" + report.getHref() + ".ods\" target=\"_blank\">[ODS]</a>\n"
+                    + "<a href=\"" + report.getHref() + ".xlsx\" target=\"_blank\">[XLSX]</a>\n"
                     + "</td>\n"
                     + "</tr>\n");
         }
@@ -234,7 +235,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
         }
         Response res = null;
         try {
-            res = new Response(new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, getHtmlUsersList()).getBytes("UTF-8")); //"Cp1251"
+            res = new Response(new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, getHtmlUsersList()).replaceFirst(Uses.ANCHOR_PROJECT_NAME_FOR_REPORT, Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF())).getBytes("UTF-8")); //"Cp1251"
         } catch (UnsupportedEncodingException ex) {
         }
         return res;

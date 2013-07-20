@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <userInput>
-    <panel order="0" layout="left">
+    <panel order="0" layout="left" id="UserInputPanel">
         <!--field type="title" align="left" txt="Сетевые параметры" bold="true" size="1" id="Параметры соединения с сервером:"/>
 
         <field type="divider" /-->

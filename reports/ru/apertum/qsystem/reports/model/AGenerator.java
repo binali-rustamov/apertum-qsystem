@@ -36,7 +36,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRHtmlExporter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
-import net.sf.jasperreports.engine.export.oasis.JROdsExporter;
+import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -58,6 +58,7 @@ public abstract class AGenerator implements IGenerator {
      * только для hibernate.
      */
     public AGenerator() {
+        // javax.imageio.ImageIO.read(getClass().getResource("/ru/apertum/qsystem/reports/eximbank/resources/banner1.jpg"));
     }
     private String template;
 
@@ -244,14 +245,16 @@ public abstract class AGenerator implements IGenerator {
                 exporter.exportReport();
                 result = baos.toByteArray();
                 dataType = "application/rtf";
-            } else if (Uses.REPORT_FORMAT_ODS.equalsIgnoreCase(format)) {
-                final JROdsExporter exporter = new JROdsExporter(); 
+            } else if (Uses.REPORT_FORMAT_XLSX.equalsIgnoreCase(format)) {
+                //final JROdsExporter exporter = new JROdsExporter(); 
+                final JRXlsxExporter exporter = new JRXlsxExporter(); 
                 exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, baos);
                 exporter.exportReport();
                 result = baos.toByteArray();
-                dataType = "application/ods";    
+                //dataType = "application/ods";    
+                dataType = "application/xlsx";    
             } else if (Uses.REPORT_FORMAT_PDF.equalsIgnoreCase(format)) {
                 // создадим файл со шрифтами если его нет
                 final File f = new File("tahoma.ttf");

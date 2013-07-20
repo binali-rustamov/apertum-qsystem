@@ -187,9 +187,17 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
     @Override
     public void insertNodeInto(MutableTreeNode newChild, MutableTreeNode parent, int index) {
         super.insertNodeInto(newChild, parent, index);
-        updateSeqSibling((QService) parent);
+        if (parent instanceof QService) { // это подпорка, неожиданно возникла при реализации сортировки
+            updateSeqSibling((QService) parent);
+        }
     }
 
+    /**
+     * // это подпорка, неожиданно возникла при реализации сортировки
+     * @param moveChild
+     * @param parent
+     * @param index 
+     */
     public void moveNode(MutableTreeNode moveChild, MutableTreeNode parent, int index) {
         int pos = 0;
         for (int i = 0; i < parent.getChildCount(); i++) {
@@ -203,7 +211,11 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
         updateSeqSibling((QService) parent);
     }
 
-    public void updateSeqSibling(QService parent) {
+    /**
+     * // это подпорка, неожиданно возникла при реализации сортировки
+     * @param parent 
+     */
+    public void updateSeqSibling(QService parent) { // это подпорка, неожиданно возникла при реализации сортировки
         QService sib = (QService) ((QService) parent).getFirstChild();
         while (sib != null) {
             sib.setSeqId(parent.getIndex(sib));

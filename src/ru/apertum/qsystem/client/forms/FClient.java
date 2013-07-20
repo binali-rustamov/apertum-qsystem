@@ -25,8 +25,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -34,6 +39,7 @@ import java.net.SocketException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.ServiceLoader;
 import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
@@ -66,6 +72,7 @@ import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfSituation;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.model.IClientNetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.extra.IStartClient;
 import ru.apertum.qsystem.fx.OrangeClientboard;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.postponed.QPostponedList;
@@ -82,6 +89,10 @@ public final class FClient extends javax.swing.JFrame {
      * Формируется по данным из командной строки.
      */
     private final INetProperty netProperty;
+
+    public INetProperty getNetProperty() {
+        return netProperty;
+    }
     /**
      * Системный трей.
      */
@@ -211,9 +222,100 @@ public final class FClient extends javax.swing.JFrame {
         public UDPServer(int port) {
             super(port);
         }
+        int i = 0;
+        Timer t;
+        String pref = "";
+        
+
+        public void start2() {
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    start();
+                }
+            }).start();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+            }
+            if (!isActivate() && QLog.l().isTerminal()) { // порт не занялся, т.к. в терминальном режиме, то нужно подсасывать мессаги из файла
+                QLog.l().logger().trace("Старт PIPE.");
+                if (!new File(Uses.TEMP_FOLDER + File.separator + "pipe").exists()) {
+                    new File(Uses.TEMP_FOLDER + File.separator).mkdir();
+                    PrintWriter w = null;
+                    try {
+                        w = new PrintWriter(new BufferedWriter(new FileWriter(Uses.TEMP_FOLDER + File.separator + "pipe")), true);
+                    } catch (IOException ex) {
+                    }
+                    w.println("" + new Date().getTime() + "^");
+                }
+
+                i = 0;
+                if (t != null) {
+                    t.stop();
+                }
+                RandomAccessFile raf = null;
+                try {
+                    raf = new RandomAccessFile(Uses.TEMP_FOLDER + File.separator + "pipe", "r");
+                } catch (FileNotFoundException ex) {
+                    QLog.l().logger().error("Не открылся pipe. ", ex);
+                }
+                final RandomAccessFile raf2 = raf;
+                t = new Timer(1000, new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        i++;
+                        if (raf2 != null) {
+                            try {
+                                raf2.seek(0);
+                                final String s = raf2.readLine();
+                                final String[] ss = s.split("\\^");
+                                if (ss.length == 2 && !pref.equals(ss[0])) {
+                                    System.out.println(ss[1]);
+                                    pref = ss[0];
+                                    getData2(ss[1], null, 0);
+                                }
+                            } catch (IOException ex) {
+                                QLog.l().logger().error("Не прочитался pipe. ", ex);
+                            }
+                        }
+                        if (i > 180) {
+                            i = 0;
+                            checkPort();
+                        }
+                    }
+                });
+                t.start();
+            }
+        }
+
+        private void checkPort() {
+            if (t != null) {
+                t.stop();
+            }
+            start2();
+        }
 
         @Override
         synchronized protected void getData(String data, InetAddress clientAddress, int clientPort) {
+            if (QLog.l().isTerminal()) {
+                try {
+                    if (!new File(Uses.TEMP_FOLDER + File.separator + "pipe").exists()) {
+                        new File(Uses.TEMP_FOLDER + File.separator).mkdir();
+                        final PrintWriter w = new PrintWriter(new BufferedWriter(new FileWriter(Uses.TEMP_FOLDER + File.separator + "pipe")), true);
+                        w.println("" + new Date().getTime() + "^");
+                    }
+                    final PrintWriter w = new PrintWriter(new BufferedWriter(new FileWriter(Uses.TEMP_FOLDER + File.separator + "pipe")), true);
+                    w.println("" + new Date().getTime() + "^" + data);
+                } catch (IOException ex) {
+                    QLog.l().logger().error("Не записался пакет UDP в pipe. ", ex);
+                }
+            }
+            getData2(data, clientAddress, clientPort);
+        }
+        protected void getData2(String data, InetAddress clientAddress, int clientPort) {
             //Определяем, по нашей ли услуге пришел кастомер
             boolean my = false;
             for (SelfService srv : plan.getSelfservices()) {
@@ -265,6 +367,10 @@ public final class FClient extends javax.swing.JFrame {
      * Описание того, кто залогинелся.
      */
     private final QUser user;
+
+    public QUser getUser() {
+        return user;
+    }
     /**
      * Описание того, сколько народу стоит в очередях к этому юзеру, ну и прочее(потом)mess
      * Не использовать на прямую.
@@ -322,6 +428,7 @@ public final class FClient extends javax.swing.JFrame {
         this.user = user;
         this.netProperty = netProperty;
         initComponents();
+        setTitle(getTitle() + " " + Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF()));
 
         try {
             setIconImage(ImageIO.read(FAdmin.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
@@ -387,12 +494,12 @@ public final class FClient extends javax.swing.JFrame {
 
         // стартуем UDP сервер для обнаружения изменения состояния очередей
         udpServer = new UDPServer(netProperty.getClientPort());
+        udpServer.start2();
+
         //привязка помощи к форме.
         final Helper helper = Helper.getHelp("ru/apertum/qsystem/client/help/client.hs");
         helper.setHelpListener(menuItemHelp);
         helper.enableHelpKey(panelDown, "client");
-        Uses.closeSplash();
-
 
         Font f = new Font("Time New Roman", 0, 16);
         labelMotiv.setFont(f);
@@ -553,7 +660,7 @@ public final class FClient extends javax.swing.JFrame {
         // покажим сообщение в трее если очередь была пуста и кто-то приперся
         if (count == 0 && inCount != 0) {
             Toolkit.getDefaultToolkit().beep();
-            tray.showMessageTray(getLocaleMessage("messages.tray.messCaption"), temp1.replaceAll("<br>", "\n"), MessageType.INFO);
+            tray.showMessageTray(Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF()), temp1.replaceAll("<br>", "\n"), MessageType.INFO);
             tray.getTrayIcon().getActionListeners()[0].actionPerformed(null);
         }
         // посмотрим, не приехал ли кастомер, который уже вызванный
@@ -642,7 +749,7 @@ public final class FClient extends javax.swing.JFrame {
         final long start = go();
         // Вызываем кастомера
         final QCustomer cust = NetCommander.inviteNextCustomer(netProperty, user.getId());
-        if (cust.getPostponPeriod() > 0) {
+        if (cust != null && cust.getPostponPeriod() > 0) {
             JOptionPane.showMessageDialog(this,
                     getLocaleMessage("invite.posponed.mess.1") + " " + cust.getPostponPeriod() + " " + getLocaleMessage("invite.posponed.mess.2") + " \"" + cust.getPostponedStatus() + "\".",
                     getLocaleMessage("invite.posponed.title"),
@@ -729,6 +836,11 @@ public final class FClient extends javax.swing.JFrame {
     @Action
     public void redirectCustomer(ActionEvent evt) {
         final long start = go();
+        // Обозначим результат если надо
+        final Long res = setResult();
+        if (res == null) {
+            return;
+        }
         // Переводим кастомера в другую услугу
         // это должно выкинуть кастомера в другую очередь с приоритетом "переведенный"
         //Диалог выбора очереди для редиректа
@@ -738,7 +850,7 @@ public final class FClient extends javax.swing.JFrame {
             return;
         }
 
-        NetCommander.redirectCustomer(netProperty, user.getId(), dlg.getSelectedService().getId(), dlg.getRequestBack(), user.getName() + ": " + dlg.getTempComments());
+        NetCommander.redirectCustomer(netProperty, user.getId(), dlg.getSelectedService().getId(), dlg.getRequestBack(), user.getName() + ": " + dlg.getTempComments(), res);
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
         setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
@@ -1330,9 +1442,11 @@ public final class FClient extends javax.swing.JFrame {
      * @throws DocumentException
      */
     public static void main(String args[]) throws DocumentException {
+        QLog.initial(args, 1);
         Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.startSplashClient();
-        QLog.initial(args, false);
+        // Загрузка плагинов из папки plugins
+        Uses.loadPlugins("./plugins/");
         // тут нужно провести мегаинициализацию номера пункта окна работника
         for (Integer i = 0; i < args.length - 1; i++) {
             if ("-point".equals(args[i])) {
@@ -1351,16 +1465,18 @@ public final class FClient extends javax.swing.JFrame {
         } catch (IOException ex) {
         }
 
-        // Отсечем вторую копию.
-        DatagramSocket socket = null;
-        try {
-            socket = new DatagramSocket(netProperty.getClientPort());
-        } catch (SocketException ex) {
-            QLog.l().logger().error("Сервер UDP не запустился, вторая копия не позволяется.");
-            JOptionPane.showMessageDialog(null, getLocaleMessage("messages.restart.mess"), getLocaleMessage("messages.restart.caption"), JOptionPane.INFORMATION_MESSAGE);
-            System.exit(0);
+        if (!QLog.l().isTerminal()) {// в терминальном режиме запускаем много копий
+            // Отсечем вторую копию.
+            DatagramSocket socket = null;
+            try {
+                socket = new DatagramSocket(netProperty.getClientPort());
+            } catch (SocketException ex) {
+                QLog.l().logger().error("Сервер UDP не запустился, вторая копия не позволяется.");
+                JOptionPane.showMessageDialog(null, getLocaleMessage("messages.restart.mess"), getLocaleMessage("messages.restart.caption"), JOptionPane.INFORMATION_MESSAGE);
+                System.exit(0);
+            }
+            socket.close();
         }
-        socket.close();
         // Определим кто работает на данном месте.
         final QUser user = FLogin.logining(netProperty, null, true, 3, FLogin.LEVEL_USER);
         Uses.showSplash();
@@ -1391,6 +1507,22 @@ public final class FClient extends javax.swing.JFrame {
             }
             //Показываем форму и передаем в нее описание того кто залогинился
             fClient = new FClient(user, netProperty);
+            // подключения плагинов, которые стартуют в самом начале.
+            // поддержка расширяемости плагинами
+            for (final IStartClient event : ServiceLoader.load(IStartClient.class)) {
+                QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+                try {
+                    new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            event.start(fClient);
+                        }
+                    }).start();
+                } catch (Throwable tr) {
+                    QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+                }
+            }
             fClient.setVisible(true);
         } catch (AWTException ex) {
             QLog.l().logger().error("Ошибка работы с tray: ", ex);
@@ -1398,6 +1530,8 @@ public final class FClient extends javax.swing.JFrame {
         } catch (Exception ex) {
             QLog.l().logger().error("Ошибка при старте: ", ex);
             System.exit(0);
+        } finally {
+            Uses.closeSplash();
         }
         //     }
         //  });

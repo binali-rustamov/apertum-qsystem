@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
@@ -61,6 +62,9 @@ import javax.swing.JLayeredPane;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.dom4j.Element;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.forms.FServicePriority;
 
@@ -178,6 +182,7 @@ public final class Uses {
     public static final String TAG_BOARD_MAIN = "Main";
     public static final String TAG_BOARD_TOP = "Top";
     public static final String TAG_BOARD_BOTTOM = "Bottom";
+    public static final String TAG_BOARD_BOTTOM_2 = "Bottom2";
     public static final String TAG_BOARD_LEFT = "Left";
     public static final String TAG_BOARD_RIGHT = "Right";
     // Наименования параметров конфигурационных файлов главных табло
@@ -195,6 +200,7 @@ public final class Uses {
     public static final String TASK_REDIRECT_CUSTOMER = "Переадресовать клиента к другой услуге";
     public static final String TASK_GET_SERVICES = "Получить перечень услуг";
     public static final String TASK_ABOUT_SERVICE = "Получить описание услуги";
+    public static final String TASK_GET_SERVICE_CONSISANCY = "Получить очередь услуги";
     public static final String TASK_ABOUT_SERVICE_PERSON_LIMIT = "Получить возможность встать с этими данными";
     public static final String TASK_GET_SERVICE_PREINFO = "Получить информацию по услуге";
     public static final String TASK_GET_INFO_PRINT = "Получить информацию для печати";
@@ -221,6 +227,7 @@ public final class Uses {
     public static final String TASK_GET_BOARD_CONFIG = "Получить конфигурацию табло";
     public static final String TASK_SAVE_BOARD_CONFIG = "Сохранить конфигурацию табло";
     public static final String TASK_GET_GRID_OF_WEEK = "Получить недельную предварительную таблицу";
+    public static final String TASK_GET_GRID_OF_DAY = "Получить дневную предварительную таблицу";
     public static final String TASK_GET_INFO_TREE = "Получить информационное дерево";
     public static final String TASK_GET_RESULTS_LIST = "Получить получение списка возможных результатов";
     public static final String TASK_GET_RESPONSE_LIST = "Получить список отзывов";
@@ -233,16 +240,18 @@ public final class Uses {
     public static final String TASK_CHANGE_FLEX_PRIORITY = "Изменить гибкий приоритет";
     public static final String TASK_CHANGE_RUNNING_TEXT_ON_BOARD = "Изменить бегущий текст на табло";
     public static final String TASK_CHANGE_TEMP_AVAILABLE_SERVICE = "Изменить временную доступность";
+    public static final String TASK_GET_STANDARDS = "Получить нормативы";
     // Формат отчетов
     public static final String REPORT_FORMAT_HTML = "html";
     public static final String REPORT_FORMAT_RTF = "rtf";
     public static final String REPORT_FORMAT_PDF = "pdf";
-    public static final String REPORT_FORMAT_ODS = "ods";
+    public static final String REPORT_FORMAT_XLSX = "xlsx";
     // Якорь для списка аналитических отчетов
     public static final String ANCHOR_REPORT_LIST = "<tr><td><center>#REPORT_LIST_ANCHOR#</center></td></tr>";
     public static final String ANCHOR_DATA_FOR_REPORT = "#DATA_FOR_REPORT#";
     public static final String ANCHOR_ERROR_INPUT_DATA = "#ERROR_INPUT_DATA#";
     public static final String ANCHOR_USERS_FOR_REPORT = "#USERS_LIST_ANCHOR#";
+    public static final String ANCHOR_PROJECT_NAME_FOR_REPORT = "#PROJECT_NAME_ANCHOR#";
     public static final String ANCHOR_COOCIES = "#COOCIES_ANCHOR#";
     // Задания для пункта регистрации
     public static final String WELCOME_LOCK = "#WELCOME_LOCK#";
@@ -653,6 +662,11 @@ public final class Uses {
         final ImageIcon imageIcon2;
 
         public SplashScreen() {
+            try {
+                setIconImage(ImageIO.read(SplashScreen.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
+            } catch (IOException ex) {
+                System.err.println(ex);
+            }
             setTitle("Запуск QSystem");
             imageIcon = new ImageIcon(SplashScreen.class.getResource("/ru/apertum/qsystem/client/forms/resources/fon_login_bl.jpg"));
             imageIcon2 = new ImageIcon(SplashScreen.class.getResource("/ru/apertum/qsystem/client/forms/resources/loading.gif"));
@@ -700,11 +714,13 @@ public final class Uses {
      * Создание и показ сплэш-заставки  с блокировкой запуска второй копии
      */
     public static void startSplashClient() {
-        try {
-            stopStartSecond = new ServerSocket(43210);
-        } catch (Exception ex) {
-            System.err.println("QSystem: Application alredy started!!!");
-            System.exit(15685);
+        if (!QLog.l().isTerminal()) {
+            try {
+                stopStartSecond = new ServerSocket(43210);
+            } catch (Exception ex) {
+                System.err.println("QSystem: Application alredy started!!!");
+                System.exit(15685);
+            }
         }
         startSplash();
     }
@@ -765,5 +781,13 @@ public final class Uses {
             }
         }
         return res;
+    }
+    private static ResourceMap localeMap = null;
+
+    public static String getLocaleMessage(String key) {
+        if (localeMap == null) {
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(Uses.class);
+        }
+        return localeMap.getString(key);
     }
 }

@@ -70,4 +70,7 @@ public class CmdParams {
     @Expose
     @SerializedName("postponed_period")
     public int postponedPeriod;
+    @Expose
+    @SerializedName("comments")
+    public String comments;
 }

@@ -18,6 +18,8 @@ package ru.apertum.qsystem.common.cmd;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import java.util.LinkedList;
+import ru.apertum.qsystem.common.model.QCustomer;
 
 /**
  *
@@ -30,6 +32,9 @@ public class RpcGetServiceState extends JsonRPC20 {
 
     public RpcGetServiceState(int code, String message) {
         this.result = new ServiceState(code, message);
+    }
+    public RpcGetServiceState(LinkedList<QCustomer> line) {
+        this.result = new ServiceState(line);
     }
     @Expose
     @SerializedName("result")
@@ -52,6 +57,11 @@ public class RpcGetServiceState extends JsonRPC20 {
             this.code = code;
             this.message = message;
         }
+        public ServiceState(LinkedList<QCustomer> line) {
+            this.code = 1;
+            this.message = null;
+            this.clients = line;
+        }
         @Expose
         @SerializedName("code")
         private int code;
@@ -73,6 +83,18 @@ public class RpcGetServiceState extends JsonRPC20 {
 
         public void setMessage(String message) {
             this.message = message;
+        }
+        
+        @Expose
+        @SerializedName("clients")
+        private LinkedList<QCustomer> clients;
+
+        public LinkedList<QCustomer> getClients() {
+            return clients;
+        }
+
+        public void setClients(LinkedList<QCustomer> clients) {
+            this.clients = clients;
         }
     }
 }

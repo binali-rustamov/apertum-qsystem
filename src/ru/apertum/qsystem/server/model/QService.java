@@ -831,7 +831,6 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         }
 
     }
-    
     /**
      * Если не NULL и не пустая, то эта услуга недоступна и сервер обламает постановку в очередь выкинув причину из этого поля на пункт регистрации
      */
@@ -865,7 +864,9 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     @Override
     public void addChild(ITreeIdGetter child) {
-        childrenOfService.add((QService) child);
+        if (!childrenOfService.contains((QService)child)) { // бывает что добавляем повторно ужедобавленный
+            childrenOfService.add((QService) child);
+        }
     }
 
     @Override

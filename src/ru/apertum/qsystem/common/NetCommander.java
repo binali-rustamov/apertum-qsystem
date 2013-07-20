@@ -38,6 +38,7 @@ import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
 import ru.apertum.qsystem.common.cmd.RpcGetAuthorizCustomer;
 import ru.apertum.qsystem.common.cmd.RpcGetBool;
+import ru.apertum.qsystem.common.cmd.RpcGetGridOfDay;
 import ru.apertum.qsystem.common.cmd.RpcGetGridOfWeek;
 import ru.apertum.qsystem.common.cmd.RpcGetInfoTree;
 import ru.apertum.qsystem.common.cmd.RpcGetInt;
@@ -51,6 +52,7 @@ import ru.apertum.qsystem.common.cmd.RpcGetServiceState;
 import ru.apertum.qsystem.common.cmd.RpcGetServiceState.ServiceState;
 import ru.apertum.qsystem.common.cmd.RpcGetSrt;
 import ru.apertum.qsystem.common.cmd.RpcGetUsersList;
+import ru.apertum.qsystem.common.cmd.RpcGetStandards;
 import ru.apertum.qsystem.common.cmd.RpcInviteCustomer;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.exceptions.ClientException;
@@ -60,6 +62,7 @@ import ru.apertum.qsystem.common.model.INetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
+import ru.apertum.qsystem.server.model.QStandards;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.infosystem.QInfoItem;
 import ru.apertum.qsystem.server.model.response.QRespItem;
@@ -236,6 +239,36 @@ public class NetCommander {
         String res = null;
         try {
             res = send(netProperty, Uses.TASK_ABOUT_SERVICE, params);
+        } catch (QException ex) {// вывод исключений
+            throw new QException("Проблема с командой. ", ex);
+        }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final RpcGetServiceState rpc;
+        try {
+            rpc = gson.fromJson(res, RpcGetServiceState.class);
+        } catch (JsonParseException ex) {
+            throw new QException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return rpc.getResult();
+    }
+    
+    /**
+     * Получить всю очередь к услуге и т.д.
+     * @param netProperty параметры соединения с сервером.
+     * @param serviceId id услуги о которой получаем информацию
+     * @return количество предшествующих.
+     * @throws QException
+     */
+    public static ServiceState getServiceConsistency(INetProperty netProperty, long serviceId) throws QException {
+        QLog.l().logger().info("Встать в очередь.");
+        // загрузим ответ
+        final CmdParams params = new CmdParams();
+        params.serviceId = serviceId;
+        String res = null;
+        try {
+            res = send(netProperty, Uses.TASK_GET_SERVICE_CONSISANCY, params);
         } catch (QException ex) {// вывод исключений
             throw new QException("Проблема с командой. ", ex);
         }
@@ -511,15 +544,17 @@ public class NetCommander {
      * @param userId
      * @param serviceId 
      * @param requestBack
+     * @param resultId 
      * @param comments комментарии при редиректе
      */
-    public static void redirectCustomer(INetProperty netProperty, long userId, long serviceId, boolean requestBack, String comments) {
+    public static void redirectCustomer(INetProperty netProperty, long userId, long serviceId, boolean requestBack, String comments, Long resultId) {
         QLog.l().logger().info("Переадресовать клиента в другую очередь.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.userId = userId;
         params.serviceId = serviceId;
         params.requestBack = requestBack;
+        params.resultId = resultId;
         params.textData = comments;
         try {
             send(netProperty, Uses.TASK_REDIRECT_CUSTOMER, params);
@@ -718,6 +753,39 @@ public class NetCommander {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
         }
     }
+    
+    /**
+     * Получение дневной таблици с данными для предварительной записи включающими информацию по занятым временам и свободным.
+     * @param netProperty netProperty параметры соединения с сервером.
+     * @param serviceId услуга, в которую пытаемся встать.
+     * @param date день недели за который нужны данные.
+     * @param advancedCustomer ID авторизованного кастомера
+     * @return класс с параметрами и списком времен
+     */
+    public static RpcGetGridOfDay.GridDayAndParams getPreGridOfDay(INetProperty netProperty, long serviceId, Date date, long advancedCustomer) {
+        QLog.l().logger().info("Получить таблицу дня");
+        // загрузим ответ
+        final CmdParams params = new CmdParams();
+        params.serviceId = serviceId;
+        params.date = date.getTime();
+        params.customerId = advancedCustomer;
+        final String res;
+        try {
+            res = send(netProperty, Uses.TASK_GET_GRID_OF_DAY, params);
+        } catch (QException e) {// вывод исключений
+            throw new ClientException("Невозможно получить ответ от сервера. " + e.toString());
+        }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final RpcGetGridOfDay rpc;
+        try {
+            rpc = gson.fromJson(res, RpcGetGridOfDay.class);
+        } catch (JsonParseException ex) {
+            throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return rpc.getResult();
+    }
 
     /**
      * Получение недельной таблици с данными для предварительной записи.
@@ -757,11 +825,12 @@ public class NetCommander {
      * @param netProperty netProperty параметры соединения с сервером.
      * @param serviceId услуга, в которую пытаемся встать.
      * @param date
-     * @param advancedCustomer ID авторизованного кастомера
+     * @param advancedCustomer ID авторизованного кастомер. -1 если нет авторизации
      * @param inputData введеные по требованию услуги данные клиентом, может быть null если не вводили
+     * @param comments комментарий по предварительно ставящемуся клиенту если ставят из админки или приемной
      * @return предварительный кастомер
      */
-    public static QAdvanceCustomer standInServiceAdvance(INetProperty netProperty, long serviceId, Date date, long advancedCustomer, String inputData) {
+    public static QAdvanceCustomer standInServiceAdvance(INetProperty netProperty, long serviceId, Date date, long advancedCustomer, String inputData, String comments) {
         QLog.l().logger().info("Записать предварительно в очередь.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
@@ -769,6 +838,7 @@ public class NetCommander {
         params.date = date.getTime();
         params.customerId = advancedCustomer;
         params.textData = inputData;
+        params.comments = comments;
         final String res;
         try {
             res = send(netProperty, Uses.TASK_ADVANCE_STAND_IN, params);
@@ -862,13 +932,20 @@ public class NetCommander {
     /**
      * Оставить отзыв.
      * @param netProperty параметры соединения с сервером.
+     * @param serviceID услуга, может быть null
+     * @param userID оператор, может быть null
+     * @param clientData номер талона, не null
      * @param respID идентификатор выбранного отзыва
      */
-    public static void setResponseAnswer(INetProperty netProperty, Long respID) {
+    public static void setResponseAnswer(INetProperty netProperty, Long respID, Long userID, Long serviceID, Long customerID, String clientData) {
         QLog.l().logger().info("Отправка выбранного отзыва.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.responseId = respID;
+        params.serviceId = serviceID;
+        params.userId = userID;
+        params.customerId = customerID;
+        params.textData = clientData;
         try {
             send(netProperty, Uses.TASK_SET_RESPONSE_ANSWER, params);
         } catch (QException ex) {// вывод исключений
@@ -1140,5 +1217,31 @@ public class NetCommander {
         } catch (QException ex) {// вывод исключений
             throw new ClientException("Проблема с командой. ", ex);
         }
+    }
+    
+    /**
+     * Получить норрмативы
+     * @param netProperty
+     * @return класс нормативов
+     */
+    public static QStandards getStandards(INetProperty netProperty) {
+        QLog.l().logger().info("Команда получение нормативов.");
+        // загрузим ответ
+        final String res;
+        try {
+            res = send(netProperty, Uses.TASK_GET_STANDARDS, null);
+        } catch (QException ex) {// вывод исключений
+            throw new ClientException("Проблема с командой. ", ex);
+        }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final RpcGetStandards rpc;
+        try {
+            rpc = gson.fromJson(res, RpcGetStandards.class);
+        } catch (JsonParseException ex) {
+            throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return (QStandards) rpc.getResult();
     }
 }

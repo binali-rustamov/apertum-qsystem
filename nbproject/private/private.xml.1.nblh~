@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
+        <file>
+            <url>src/ru/apertum/qsystem/client/forms/FWelcome.java</url>
+            <line>615</line>
+            <line>849</line>
+            <line>1082</line>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/client/model/QButton.java</url>
+            <line>190</line>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/server/controller/Executer.java</url>
+            <line>418</line>
+            <line>458</line>
+            <line>1180</line>
+        </file>
+    </editor-bookmarks>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0">
+        <file>
+            <url>src/ru/apertum/qsystem/server/controller/Executer.java</url>
+            <bookmark id="0">
+                <name/>
+                <line>1302</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
+            <bookmark id="0">
+                <name/>
+                <line>3679</line>
+                <key/>
+            </bookmark>
+        </file>
+    </editor-bookmarks>
+</project-private>

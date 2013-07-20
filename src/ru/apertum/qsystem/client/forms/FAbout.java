@@ -31,6 +31,7 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
@@ -64,7 +65,7 @@ public class FAbout extends javax.swing.JDialog {
         loadVersionSt();
         if (!"0".equals(CMRC_)) {
             JOptionPane.showMessageDialog(parent, getLocaleMessage("about.version") + " : " + VERSION_ + "\n"
-                    + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2013", "QSystem", JOptionPane.INFORMATION_MESSAGE);
+                    + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2013", Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF()), JOptionPane.INFORMATION_MESSAGE);
         } else {
             getForm(parent, modal, "");
             aboutForm.setVisible(true);
@@ -82,7 +83,7 @@ public class FAbout extends javax.swing.JDialog {
         if (!"0".equals(CMRC_)) {
             JOptionPane.showMessageDialog(parent, getLocaleMessage("about.version") + " : " + VERSION_ + "\n"
                     + ("".equals(verDB) ? "" : (getLocaleMessage("about.db_version") + " : " + verDB))
-                    + "\n" + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2013", "QSystem", JOptionPane.INFORMATION_MESSAGE);
+                    + "\n" + getLocaleMessage("about.data") + " : " + DATE_ + "\n\nApertum Projects © 2009-2013", Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF()), JOptionPane.INFORMATION_MESSAGE);
         } else {
             getForm(parent, modal, verDB);
             aboutForm.setVisible(true);
@@ -133,6 +134,7 @@ public class FAbout extends javax.swing.JDialog {
         VERSION_ = settings.getProperty(VERSION);
         VERSION_DB_ = settings.getProperty(VERSION_DB);
         CMRC_ = settings.getProperty(CMRC);
+        CMRC_SUFF = "0".equals(CMRC_) || CMRC_.isEmpty() ? "" : (CMRC_.startsWith(".") ? CMRC_ : "." + CMRC_);
     }
     public final static String DATE = "date";
     public final static String VERSION = "version";
@@ -142,6 +144,14 @@ public class FAbout extends javax.swing.JDialog {
     public static String VERSION_ = "";
     public static String VERSION_DB_ = "";
     public static String CMRC_ = "";
+    public static String CMRC_SUFF = "";
+
+    public static String getCMRC_SUFF() {
+        if (CMRC_.isEmpty()) {
+            loadVersionSt();
+        }
+        return CMRC_SUFF;
+    }
 
     private void loadVersion() {
         loadVersionSt();

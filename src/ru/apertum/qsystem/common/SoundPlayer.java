@@ -22,6 +22,8 @@ import java.io.*;
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.lang.Thread.*;
+import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.LinkedList;
 import ru.apertum.qsystem.server.ServerProps;
 
@@ -282,9 +284,9 @@ public class SoundPlayer implements Runnable {
             }
             if (!isZero(elem)) {
                 String fileName = elem;
-                if (isRus(elem)) {
-                    fileName = reRus(elem.toLowerCase());
-                }
+                //if (isRus(elem)) {
+                fileName = reRus(elem.toLowerCase());
+                //}
                 final String file = path + fileName.toLowerCase() + ".wav";
                 //System.out.println(elem + " - " + file);
                 res.add(file);
@@ -293,17 +295,43 @@ public class SoundPlayer implements Runnable {
         }
         return res;
     }
-
-    private static boolean isRus(String elem) {
-        return "йцукенгшщзхъфывапролджэячсмитьбю".indexOf(elem.toLowerCase()) != -1;
-    }
+    // private static boolean isRus(String elem) {
+    //     return "йцукенгшщзхъфывапролджэячсмитьбю".indexOf(elem.toLowerCase()) != -1;
+    // }
+    private static HashMap<String, String> latters = null;
+    private static String preffix = "";
 
     private static String reRus(String elem) {
-        final String is__ru = "й ц у к е н г ш щ з х ъ ф ы в а п р о л д ж э я ч с м и т ь б ю ё ";
-        final String not_ru = "iic u k e n g shghz x zzf yyv a p r o l d jzeeiachs m i t ccb iuio";
-        int pos = is__ru.indexOf(elem.toLowerCase());
-        String ns = not_ru.substring(pos, pos + 2).trim().toLowerCase();
-        return "_rus_" + ns;
+        if (latters == null) {
+            latters = new HashMap<>();
+            try {
+                final InputStream ris = elem.getClass().getResourceAsStream("/ru/apertum/qsystem/server/sound/latters.properties");
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(ris, Charset.forName("utf8")))) {
+                    String line;
+                    boolean f = true;
+                    while ((line = br.readLine()) != null) {
+                        line = (f ? line.substring(1) : line);
+                        f = false;
+                        System.out.println(line);
+                        String[] ss = line.split("=");
+                        if (ss[0].startsWith("pref")) {
+                            preffix = ss[1];
+                        } else {
+                            latters.put(ss[0], ss[1]);
+                        }
+
+                    }
+                }
+            } catch (IOException ex) {
+            }
+        }
+
+
+        //final String is__ru = "й ц у к е н г ш щ з х ъ ф ы в а п р о л д ж э я ч с м и т ь б ю ё ";
+        //final String not_ru = "iic u k e n g shghz x zzf yyv a p r o l d jzeeiachs m i t ccb iuio";
+        //int pos = is__ru.indexOf(elem.toLowerCase());
+        final String ns = latters.get(elem) == null ? elem : preffix + latters.get(elem); //not_ru.substring(pos, pos + 2).trim().toLowerCase();
+        return ns;
     }
 
     private static boolean isNum(char elem) {
@@ -345,6 +373,7 @@ public class SoundPlayer implements Runnable {
         }
         final LinkedList<String> res = new LinkedList<>();
         // путь к звуковым файлам
+        /*
         final String voice;
         switch (voc) {
             case 1:
@@ -361,6 +390,9 @@ public class SoundPlayer implements Runnable {
         }
 
         final String path = "/ru/apertum/qsystem/server/sound/" + voice;
+         * 
+         */
+        final String path = "/ru/apertum/qsystem/server/sound/";
         if ((isFirst && ivt == 2) || ivt == 1 || ivt == 3) {
             res.add(path + "ding.wav");
         }

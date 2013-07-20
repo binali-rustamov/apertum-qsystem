@@ -72,19 +72,20 @@
         <dependency org="org.apache.httpcomponents" name="httpcore" rev="4.1" conf="compile->*" transitive="false"/>
         <dependency org="org.apache.httpcomponents" name="httpcore-nio" rev="4.1" conf="compile->*" transitive="false"/>
 
-        <dependency org="net.sf.jasperreports" name="jasperreports" rev="3.7.6" conf="compile->*" transitive="false"/>
+        <dependency org="net.sf.jasperreports" name="jasperreports" rev="5.2.0" conf="compile->*" transitive="false"/>
         <dependency org="net.sf.jasperreports" name="jasperreports-fonts" rev="4.0.0" conf="runtime->*" transitive="false"/>
 
         <dependency org="com.google.code.gson" name="gson" rev="1.4" conf="compile->*" transitive="false"/>
         
-        <dependency org="org.eclipse.jetty" name="jetty-server" rev="8.0.4.v20111024" conf="compile->*" transitive="false"/>
-        <dependency org="org.eclipse.jetty" name="jetty-util" rev="8.0.4.v20111024" conf="compile->*" transitive="false"/>
-        <dependency org="org.eclipse.jetty" name="jetty-continuation" rev="8.0.4.v20111024" conf="compile->*" transitive="false"/>
-        <dependency org="org.eclipse.jetty" name="jetty-http" rev="8.0.4.v20111024" conf="compile->*" transitive="false"/>
-        <dependency org="org.eclipse.jetty" name="jetty-io" rev="8.0.4.v20111024" conf="compile->*" transitive="false"/>
-        <dependency org="org.eclipse.jetty" name="jetty-websocket" rev="8.0.4.v20111024" conf="compile->*" transitive="false"/>
-        <dependency org="org.eclipse.jetty" name="jetty-servlet" rev="8.0.4.v20111024" conf="runtime->*" transitive="false"/>
-        <dependency org="org.eclipse.jetty" name="jetty-annotations" rev="8.0.4.v20111024" conf="runtime->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-server" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-util" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-continuation" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-http" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-io" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-servlet" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-annotations" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+       
+        
         <!--dependency org="org.mortbay.jetty" name="servlet-api-3.0" rev="7.0.0pre2" conf="runtime->*" transitive="false"/-->
         <!--dependency org="org.apache.tomcat" name="servlet-api" rev="6.0.33" conf="runtime->*" transitive="false"/-->
         <dependency org="org.glassfish" name="javax.servlet" rev="3.0" conf="compile->*" transitive="false"/>

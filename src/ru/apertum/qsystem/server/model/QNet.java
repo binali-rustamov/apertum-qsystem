@@ -296,4 +296,18 @@ public class QNet implements Serializable {
     public void setZoneBoardServPort(Integer zoneBoardServPort) {
         this.zoneBoardServPort = zoneBoardServPort;
     }
+    
+    /**
+     * Это количество повторных вызовов посетителя перед тем как при очередном повторном вызове клиент будет удален
+     */
+    @Column(name = "limit_recall")
+    private Integer limitRecall;
+
+    public Integer getLimitRecall() {
+        return limitRecall;
+    }
+
+    public void setLimitRecall(Integer limitRecall) {
+        this.limitRecall = limitRecall;
+    }
 }

@@ -44,6 +44,7 @@ import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.extra.IChangeCustomerStateEvent;
 import ru.apertum.qsystem.server.Spring;
+import ru.apertum.qsystem.server.model.IidGetter;
 
 /**
  * @author Evgeniy Egorov
@@ -56,7 +57,7 @@ import ru.apertum.qsystem.server.Spring;
  */
 @Entity
 @Table(name = "clients")
-public final class QCustomer implements Comparable<QCustomer>, Serializable {
+public final class QCustomer implements Comparable<QCustomer>, Serializable, IidGetter {
 
     public QCustomer() {
         id = new Date().getTime();
@@ -80,6 +81,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
 
     @Id
     @Column(name = "id")
+    @Override
     //@GeneratedValue(strategy = GenerationType.AUTO) простаяляем уникальный номер времени создания.
     public Long getId() {
         return id;
@@ -477,6 +479,25 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
     public int getPostponPeriod() {
         return postponPeriod;
     }
+    /**
+     * Количество повторных вызовов этого клиента
+     */
+    @Expose
+    @SerializedName("recall_cnt")
+    private Integer recallCount = 0;
+
+    @Transient
+    public Integer getRecallCount() {
+        return recallCount;
+    }
+
+    public void setRecallCount(Integer recallCount) {
+        this.recallCount = recallCount;
+    }
+
+    public void upRecallCount() {
+        this.recallCount++;
+    }
 
     public void setPostponPeriod(int postponPeriod) {
         this.postponPeriod = postponPeriod;
@@ -496,6 +517,14 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable {
      */
     @Override
     public String toString() {
-        return prefix + getNumber() + (postponedStatus.isEmpty() ? "" : " " + postponedStatus + (postponPeriod > 0 ? " (" + postponPeriod + "min.)" : ""));
+        return prefix + getNumber()
+                + (getInput_data().isEmpty() ? "" : " " + getInput_data())
+                + (postponedStatus.isEmpty() ? "" : " " + postponedStatus + (postponPeriod > 0 ? " (" + postponPeriod + "min.)" : ""));
+    }
+
+    @Transient
+    @Override
+    public String getName() {
+        return prefix + getNumber() + " " + getInput_data();
     }
 }

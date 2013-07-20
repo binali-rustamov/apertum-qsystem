@@ -26,8 +26,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.Date;
+import java.util.LinkedList;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
@@ -137,14 +146,19 @@ public class RunningLabel extends JLabel implements Serializable {
      * Бегущий текст, это не тот же что статический
      */
     private String runningText = "runningText";
-    private int[] sizes;
+    private int[] sizes = new int[0];
+    private int totalSize = 0;
 
     private void setSizes(String text) {
         // подсчитаем длины
         sizes = new int[text.length()];
+        totalSize = getFontMetrics(getFont()).stringWidth(text);
         for (int i = 0; i < text.length(); i++) {
-            sizes[i] = getFontMetrics(getFont()).stringWidth(text.substring(0, i));
+            sizes[i] = getFontMetrics(getFont()).stringWidth(text.substring(i, i + 1));
+            //System.out.print(" " + sizes[i]);
         }
+        //System.out.println();
+        //System.out.println(getFont().getName() + " " + totalSize + " " + text);
     }
 
     /**
@@ -153,21 +167,78 @@ public class RunningLabel extends JLabel implements Serializable {
      * @param text устанавливаемый бегущий текст
      */
     public void setRunningText(String text) {
+        if (new File(text).exists()) {
+            prepareStrings(text);
+            currentLine = 0;
+        } else {
+            currentLine = -1;
+            lines.clear();
+        }
         final String oldValue = runningText;
         this.runningText = text;
         propertySupport.firePropertyChange(PROP_RUNNING_TEXT, oldValue, runningText);
-        setSizes(text);
+        //setSizes(getRunningText());
         needRepaint();
     }
     private String oldTxt = "";
 
     public String getRunningText() {
-        final String txt = getShowTime() ? getDate() : runningText;
+        final String txt = getShowTime() ? getDate() : (currentLine >= 0 && !lines.isEmpty() ? getNextStringFromLines() : runningText);
         if (sizes == null || oldTxt.length() != txt.length()) {
             setSizes(txt);
         }
         oldTxt = txt;
         return txt;
+    }
+    private final LinkedList<String> lines = new LinkedList<>();
+    private String fileWithStrings;
+    private boolean needNextLine = false;
+    private int currentLine = -1;//то что надо выводить
+
+    private void prepareStrings(String filePath) {
+        fileWithStrings = filePath;
+        InputStream fis = null;
+        try {
+            fis = new FileInputStream(filePath);
+        } catch (FileNotFoundException ex) {
+        }
+        try {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("utf8")))) {
+                String line;
+                lines.clear();
+                boolean f = true;
+                while ((line = br.readLine()) != null) {
+                    lines.add(f ? line.substring(1) : line);
+                    f = false;
+                    //System.out.println(line);
+                }
+            }
+        } catch (IOException ex) {
+        }
+    }
+
+    private String getNextStringFromLines() {
+        String res = "Не определидось";
+        if (needNextLine) {
+            prepareStrings(fileWithStrings);
+            if (lines.size() == 0) {
+                res = runningText;// файл пустой подсунули
+            } else {
+                if (currentLine < lines.size()) {
+                    res = lines.get(currentLine);
+                    currentLine = currentLine == lines.size() - 1 ? 0 : currentLine + 1;
+                } else {
+                    res = lines.get(0);
+                    currentLine = 1;
+                }
+            }
+            sizes = null;// переразбить длины
+        } else {
+            currentLine = currentLine > lines.size() - 1 ? 0 : currentLine;
+            res = lines.get(currentLine);
+        }
+        needNextLine = false;
+        return res;
     }
 
     private String getDate() {
@@ -188,12 +259,12 @@ public class RunningLabel extends JLabel implements Serializable {
 
     private void needRepaint() {
         needRepaint = true;
-        repaint();
+        //repaint();
     }
 
     @Override
     public void paint(Graphics g) {
-        if (backgroundImg != null || !"".equals(runningText) || getShowTime()) {
+        if (backgroundImg != null || !"".equals(getRunningText()) || getShowTime()) {
             // Тут условия на изменение картинки с текстом
             if (((run || isBlink()) && need) || ((run == false && isBlink() == false) && need) || needRepaint) {
 
@@ -211,10 +282,10 @@ public class RunningLabel extends JLabel implements Serializable {
         }
         super.paint(g);
     }
-    
+
     @Override
     public void update(Graphics g) {
-      // не знаю зачем, попытка улучшить прорисовку, но не проверено как повлияло  paint(getGraphics());
+        // не знаю зачем, попытка улучшить прорисовку, но не проверено как повлияло  paint(getGraphics());
     }
 
     /**
@@ -226,9 +297,9 @@ public class RunningLabel extends JLabel implements Serializable {
         int wndWidth = dm.width;
         int wndHeight = dm.height;
 
-        if ((dmImg == null) ||
-                (dmImg.width != wndWidth) ||
-                (dmImg.height != wndHeight)) {
+        if ((dmImg == null)
+                || (dmImg.width != wndWidth)
+                || (dmImg.height != wndHeight)) {
             dmImg = new Dimension(wndWidth, wndHeight);
             mImg = createImage(wndWidth, wndHeight);
             gImg = mImg.getGraphics();
@@ -265,9 +336,8 @@ public class RunningLabel extends JLabel implements Serializable {
         BOTTOM  = 3;
         RIGHT   = 4;
          */
-        String forDrow = getRunningText();
         // отцентрируем по горизонтале
-        final int len = sizes.length == 0 ? 0 : sizes[sizes.length - 1];
+        final int len = sizes.length == 0 ? 0 : totalSize;
         if (!run) {
             switch (getHorizontalAlignment()) {
                 case SwingConstants.CENTER:
@@ -283,29 +353,33 @@ public class RunningLabel extends JLabel implements Serializable {
         //Затем рисуем строку в контексте изображения:
         gImg.setFont(getFont());
 
+        String forDrow = null;
         nPosition = nPosition - (run ? getSpeedRunningText() : 0);
-        if (nPosition < - len) {
+        if (nPosition < -len) { // проверка, если уехало целиков за левый край, то перекинем все за правый край
+            needNextLine = true; // повторный пробег
+            forDrow = getRunningText(); // подсосалась и обработалась следующая строка
             nPosition = getSize().width;
         }
-        if (isVisibleRunningText) {
+        if (forDrow == null) {// уже подучили в предыдущем IF
+            forDrow = getRunningText();
+        }
+        if (isVisibleRunningText && !forDrow.isEmpty()) {
             int lenHead = 0;
             int pos = -1;// позиция последней отрубаемой буквы
             while (-nPosition - delta > lenHead) {
-                //pos = pos + 3;
-                lenHead = sizes[++pos];
-            }
-            if (pos > -1) {
-                pos--;
+                lenHead = lenHead + sizes[++pos];
             }
 
 
-            forDrow = forDrow.substring(pos == -1 ? 0 : pos + 1, forDrow.length());
-            int i = 0;
-            while (i < forDrow.length() && getWidth() + delta > sizes[i++]) {
+            int posLast = pos == -1 ? 0 : pos;
+            int lenTail = 0;
+            while (++posLast < forDrow.length() && getWidth() + delta > lenTail) {
+                lenTail = lenTail + sizes[posLast];
             }
-            forDrow = forDrow.substring(0, i);
+            forDrow = forDrow.substring(pos == -1 ? 0 : pos + 1, posLast);
+            //System.out.println("st=" + pos + " fin=" + posLast + "     x=" + (nPosition + lenHead) + " y=" + (y + nTitleHeight + (int) (getFont().getSize() * 0.75)) + " : " + forDrow);
             gImg.drawString(forDrow,
-                    nPosition + (pos == -1 ? 0 : sizes[pos + 1]),
+                    nPosition + lenHead,
                     y + nTitleHeight + (int) (getFont().getSize() * 0.75));
         }
     }

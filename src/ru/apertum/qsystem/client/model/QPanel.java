@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.MouseListener;
@@ -152,14 +153,16 @@ public class QPanel extends JPanel implements Serializable {
         if (player == null) {
             player = new VideoPlayer();
             for (MouseListener ml : getMouseListeners()) {
-                player.getMediaPlayer().addMouseListener(ml);
+              //  player.getMediaView().addMouseListener(ml);
             }
             for (MouseMotionListener mml : getMouseMotionListeners()) {
-                player.getMediaPlayer().addMouseMotionListener(mml);
+             //   player.getMediaView().addMouseMotionListener(mml);
             }
-            add(player.getMediaPlayer());
+            removeAll();
+            setLayout(new GridLayout(1, 1));
+            add(player);
         }
-        player.setVideoResource(getVideoFileName());
+       player.setVideoResource(getVideoFileName());
     }
 
     public void refreshVideoSize() {
@@ -180,7 +183,7 @@ public class QPanel extends JPanel implements Serializable {
      * Пауза в видеоизображении
      */
     public void pouseVideo() {
-        player.pouse();
+        player.pause();
     }
 
     /**
@@ -254,7 +257,7 @@ public class QPanel extends JPanel implements Serializable {
 
         try {
             if (player != null) {
-                player.getMediaPlayer().getGainControl().setMute(mute);
+                player.getMediaView().getMediaPlayer().setMute(mute);
             }
         } catch (Exception e) {
             //System.err.println("Ошибка mute: " + e);

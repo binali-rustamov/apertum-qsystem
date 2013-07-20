@@ -20,8 +20,10 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -121,6 +123,11 @@ public class FLogin extends javax.swing.JDialog {
     public FLogin(INetProperty netProperty, JFrame parent, boolean modal, int level) {
         super(parent, modal);
         initComponents();
+        try {
+            setIconImage(ImageIO.read(FLogin.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
         setSize(500, 375);
         setAlwaysOnTop(true);
         this.netProperty = netProperty;
@@ -180,6 +187,11 @@ public class FLogin extends javax.swing.JDialog {
     public FLogin(QUserList userList, JFrame parent, boolean modal, int level) {
         super(parent, modal);
         initComponents();
+        try {
+            setIconImage(ImageIO.read(FLogin.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
         setSize(500, 375);
         setAlwaysOnTop(true);
         this.userList = userList;

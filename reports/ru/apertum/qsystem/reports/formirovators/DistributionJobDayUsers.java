@@ -22,6 +22,7 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class DistributionJobDayUsers extends AFormirovator {
     /**
      * Для параметров
      */
-    final private HashMap<String, Object> paramMap = new HashMap<String, Object>();
+    final private HashMap<String, Object> paramMap = new HashMap<>();
 
     /**
      * Метод получения коннекта к базе если отчет строится через коннект.
@@ -62,9 +63,7 @@ public class DistributionJobDayUsers extends AFormirovator {
         try {
             Class.forName(driverClassName);
             connection = DriverManager.getConnection(url + (url.indexOf("?") == -1 ? "" : "&") + "user=" + username + "&password=" + password);
-        } catch (SQLException ex) {
-            throw new ReportException(StatisticServices.class.getName() + " " + ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (SQLException | ClassNotFoundException ex) {
             throw new ReportException(StatisticServices.class.getName() + " " + ex);
         }
         return connection;
@@ -206,7 +205,7 @@ public class DistributionJobDayUsers extends AFormirovator {
                 sdate = (new java.text.SimpleDateFormat("yyyy-MM-dd")).format(date);
                 user_id = Long.parseLong(params.get("user_id"));
                 user = params.get("user");
-            } catch (Exception ex) {
+            } catch (ParseException | NumberFormatException ex) {
                 return "<br>Ошибка ввода параметров! Не все параметры введены корректно (дд.мм.гггг).";
             }
             paramMap.put("sdate", sdate);

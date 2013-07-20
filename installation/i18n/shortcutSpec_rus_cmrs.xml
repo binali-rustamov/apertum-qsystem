@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shortcuts>
+    <skipIfNotSupported/>
+    <programGroup defaultName="QMS Apertum" location="startMenu"/>
+    <shortcut
+		os="windows"
+		name="Пункт регистрации"
+		target="$INSTALL_PATH/Welcome.bat"
+		commandLine=""
+		workingDirectory="$INSTALL_PATH"
+		description="Пункт регистрации"
+		iconFile="$INSTALL_PATH/icons/welcome.ico"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Registration point"/>
+    </shortcut>
+    <shortcut
+		os="unix"
+		name="Пункт регистрации"
+		target="sh"
+		commandLine="$INSTALL_PATH/welcome.sh"
+		workingDirectory="$INSTALL_PATH"
+		description="Пункт регистрации"
+		type="Application"
+		encoding="UTF-8"
+		iconFile="$INSTALL_PATH/icons/welcome.png"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Registration point"/>
+    </shortcut>
+	
+	<shortcut
+		os="windows"
+		name="Приемная"
+		target="$INSTALL_PATH/Reception.bat"
+		commandLine=""
+		workingDirectory="$INSTALL_PATH"
+		description="Приемная"
+		iconFile="$INSTALL_PATH/icons/reception.ico"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Reception"/>
+    </shortcut>
+    <shortcut
+		os="unix"
+		name="Приемная"
+		target="sh"
+		commandLine="$INSTALL_PATH/reception.sh"
+		workingDirectory="$INSTALL_PATH"
+		description="Приемная"
+		type="Application"
+		encoding="UTF-8"
+		iconFile="$INSTALL_PATH/icons/reception.png"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Reception"/>
+    </shortcut>
+	
+    <shortcut
+		os="windows"
+		name="Система автоматизации работы с клиентами"
+		target="$INSTALL_PATH/StartClient.bat"
+		commandLine=""
+		workingDirectory="$INSTALL_PATH"
+		description="Система автоматизации работы с клиентами"
+		iconFile="$INSTALL_PATH/icons/client.ico"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Work place"/>
+    </shortcut>
+    <shortcut
+		os="unix"
+		name="Система автоматизации работы с клиентами"
+		target="sh"
+		commandLine="$INSTALL_PATH/client.sh"
+		workingDirectory="$INSTALL_PATH"
+		description="Система автоматизации работы с клиентами"
+		type="Application"
+		encoding="UTF-8"
+		iconFile="$INSTALL_PATH/icons/client.png"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Work place"/>
+    </shortcut>
+	
+    <shortcut
+		os="windows"
+		name="Сервер QMS Apertum"
+		target="$INSTALL_PATH/StartServer.bat"
+		commandLine=""
+		workingDirectory="$INSTALL_PATH"
+		description="Сервер QMS Apertum"
+		iconFile="$INSTALL_PATH/icons/server.ico"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="yes"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Server"/>
+    </shortcut>
+    <shortcut
+		os="unix"
+		name="Сервер"
+		target="sh"
+		commandLine="$INSTALL_PATH/server.sh"
+		workingDirectory="$INSTALL_PATH"
+		description="Сервер"
+		type="Application"
+		encoding="UTF-8"
+		iconFile="$INSTALL_PATH/icons/server.png"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Server"/>
+    </shortcut>
+	
+    <shortcut
+		os="windows"
+		name="Администрирование QMS Apertum"
+		target="$INSTALL_PATH/StartAdmin.bat"
+		commandLine=""
+		workingDirectory="$INSTALL_PATH"
+		description="Администрирование QMS Apertum"
+		iconFile="$INSTALL_PATH/icons/admin.ico"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Administrator"/>
+    </shortcut>
+    <shortcut
+		os="unix"
+		name="Администрирование QMS Apertum"
+		target="sh"
+		commandLine="$INSTALL_PATH/admin.sh"
+		workingDirectory="$INSTALL_PATH"
+		description="Администрирование QMS Apertum"
+		type="Application"
+		encoding="UTF-8"
+		iconFile="$INSTALL_PATH/icons/admin.png"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Administrator"/>
+    </shortcut>
+    <shortcut
+		os="windows"
+		name="Удаление QMS Apertum"
+		target="$INSTALL_PATH/Uninstaller/uninstaller.jar"
+		commandLine=""
+		workingDirectory="$USER_HOME"
+		description="Удаление QMS Apertum"
+		iconFile="$INSTALL_PATH/icons/uninstall.ico"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="no"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Main files"/>
+    </shortcut>
+    <shortcut
+		os="unix"
+		name="Удаление QMS Apertum"
+		target="java"
+		commandLine="-cp $INSTALL_PATH/Uninstaller/uninstaller.jar com.izforge.izpack.uninstaller.Uninstaller"
+		workingDirectory="$INSTALL_PATH"
+		description="Удаление QMS Apertum"
+		type="Application"
+		encoding="UTF-8"
+		iconFile="$INSTALL_PATH/icons/uninstall.png"
+		iconIndex="0"
+		initialState="normal"
+		programGroup="yes"
+		desktop="yes"
+		applications="no"
+		startMenu="no"
+		startup="no">
+        <createForPack name="Main files"/>
+    </shortcut>
+</shortcuts>

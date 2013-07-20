@@ -42,6 +42,10 @@ public class QAdvanceCustomer implements Serializable {
 
     public QAdvanceCustomer() {
     }
+    
+    public QAdvanceCustomer(Long id) {
+        this.id = id;
+    }
 
     public QAdvanceCustomer(String inputData) {
         this.inputData = inputData;
@@ -125,5 +129,17 @@ public class QAdvanceCustomer implements Serializable {
 
     public void setInputData(String inputData) {
         this.inputData = inputData;
+    }
+    @Column(name = "comments")
+    @Expose
+    @SerializedName("comments")
+    private String comments;
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 }

@@ -17,6 +17,7 @@
 package ru.apertum.qsystem.client.forms;
 
 import java.awt.AWTException;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -32,6 +33,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -43,6 +46,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.model.QPanel;
+import ru.apertum.qsystem.common.BrowserFX;
 import ru.apertum.qsystem.common.RunningLabel;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -64,6 +68,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     public static Image background;
     private final Element topElement;
     private final Element bottomElement;
+    private final Element bottomElement2;
     private final Element leftElement;
     private final Element rightElement;
     private final Element mainElement;
@@ -135,6 +140,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         topElement = rootParams.element(Uses.TAG_BOARD_TOP);
         bottomElement = rootParams.element(Uses.TAG_BOARD_BOTTOM);
+        bottomElement2 = rootParams.element(Uses.TAG_BOARD_BOTTOM_2);
         leftElement = rootParams.element(Uses.TAG_BOARD_LEFT);
         rightElement = rootParams.element(Uses.TAG_BOARD_RIGHT);
         mainElement = rootParams.element(Uses.TAG_BOARD_MAIN);
@@ -201,6 +207,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     private void loadDividerLocation() {
         double up = 0;
         double down = 1;
+        double down2 = 1;
         double left = 0;
         double right = 1;
         if ("1".equals(topElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
@@ -210,12 +217,49 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         } else {
             panelUp.setVisible(false);
         }
-        if ("1".equals(bottomElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
-            down = Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
-            spDown.setDividerLocation(down);
-            panelDown.refreshVideoSize();
-        } else {
+
+        if ("0".equals(bottomElement2.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL)) && "0".equals(bottomElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
             panelDown.setVisible(false);
+            panelDown2.setVisible(false);
+            spDown.setDividerLocation(down);
+
+        } else {
+            if ("1".equals(bottomElement2.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL)) && "1".equals(bottomElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
+                if ("1".equals(bottomElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
+                    down = Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
+                    spDown.setDividerLocation(down);
+                    panelDown.refreshVideoSize();
+                } else {
+                    panelDown.setVisible(false);
+                }
+                if ("1".equals(bottomElement2.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
+                    down2 = Double.parseDouble(bottomElement2.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
+                    spDown2.setDividerLocation(down2);
+                    panelDown2.refreshVideoSize();
+                } else {
+                    panelDown2.setVisible(false);
+                }
+            } else {
+                if ("1".equals(bottomElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
+                    down = Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE))
+                            + (1 - Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)))
+                            - (1 - Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)))
+                            * Double.parseDouble(bottomElement2.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
+                    spDown.setDividerLocation(down);
+                    spDown2.setDividerLocation(1);
+                    panelDown2.setVisible(false);
+                    panelDown.refreshVideoSize();
+                } else {
+                    down = Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE))
+                            + (1 - Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)))
+                            - (1 - Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)))
+                            * (1 - Double.parseDouble(bottomElement2.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)));
+                    spDown.setDividerLocation(down);
+                    spDown2.setDividerLocation(0);
+                    panelDown.setVisible(false);
+                    panelDown2.refreshVideoSize();
+                }
+            }
         }
         if ("1".equals(leftElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
             left = Double.parseDouble(leftElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
@@ -249,6 +293,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         el_nexts.clear();
         loadPanel(topElement, rlTop, panelUp);
         loadPanel(bottomElement, rlDown, panelDown);
+        loadPanel(bottomElement2, rlDown2, panelDown2);
         loadPanel(leftElement, rlLeft, panelLeft);
         loadPanel(rightElement, rlRight, panelRight);
         showLines();
@@ -261,55 +306,79 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         // цвет панельки
         label.setBackground(bgColor);
         //загрузим размер и цвет шрифта
-        Font font = new Font(label.getFont().getName(), label.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+        final Font font = new Font(label.getFont().getName(), label.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
         label.setForeground(Color.decode("#" + (Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE))));
         label.setFont(font);
 
-        // загрузим текст
-        if ("1".equals(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE))) {
-            // таблица ближайших
-            label.setVerticalAlignment(1);
-            label.setText("<HTML>"
-                    + "<table  cellpadding='5' align='center' border='"
-                    + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_FRAME_BORDER).get(0).attributeValue(Uses.TAG_BOARD_VALUE)
-                    + "' bordercolor='0'>"
-                    + "<tr><td>"
-                    + "<p align=center>"
-                    + "<span style='font-size:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ".0pt;color:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ";'>"
-                    + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)
-                    + "</span></p>"
-                    + "</td></tr>"
-                    + "<tr>"
-                    + "</table>");
-            nexts.add(label);
-            el_nexts.put(label, params);
-        } else {
-            // просто хтмл-текст
-            label.setText(Uses.prepareAbsolutPathForImg(params.getTextTrim()));
-        }
-        label.setRunningText(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RUNNING_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
-        if (!"".equals(label.getRunningText())) {
-            label.setSpeedRunningText(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SPEED_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
-            label.start();
-        }
-        if ("1".equals(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SIMPLE_DATE).get(0).attributeValue(Uses.TAG_BOARD_VALUE))) {
-            label.setShowTime(true);
-        }
         //загрузим фоновый рисунок
-        String filePath = Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FON_IMG).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        final String filePath = Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FON_IMG).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
         File fp = new File(filePath);
         if (fp.exists()) {
             label.setBackgroundImage(filePath);
         }
+
         //загрузим видео
-        filePath = Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_VIDEO_FILE).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
-        File fv = new File(filePath);
+        final String filePathVid = Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_VIDEO_FILE).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        File fv = new File(filePathVid);
         if (fv.exists()) {
             label.setVisible(false);
-            panel.setVideoFileName(filePath);
+            panel.setVideoFileName(filePathVid);
             panel.startVideo();
-        }
+        } else {
+            // если не видео, то простая дата или таблица ближайших
+            if ("1".equals(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SIMPLE_DATE).get(0).attributeValue(Uses.TAG_BOARD_VALUE))) {
+                label.setRunningText("");
+                label.setText("");
+                label.setShowTime(true);
+            } else {
+                // загрузим текст
+                if ("1".equals(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE))) {
+                    // таблица ближайших
+                    label.setVerticalAlignment(1);
+                    label.setRunningText("");
+                    label.setText("<HTML>"
+                            + "<table  cellpadding='5' align='center' border='"
+                            + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_FRAME_BORDER).get(0).attributeValue(Uses.TAG_BOARD_VALUE)
+                            + "' bordercolor='0'>"
+                            + "<tr><td>"
+                            + "<p align=center>"
+                            + "<span style='font-size:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ".0pt;color:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ";'>"
+                            + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)
+                            + "</span></p>"
+                            + "</td></tr>"
+                            + "<tr>"
+                            + "</table>");
+                    nexts.add(label);
+                    el_nexts.put(label, params);
+                } else {
+                    final String rt = Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RUNNING_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE).trim();
+                    if (!"".equals(rt)) {
+                        label.setRunningText(rt);
+                        label.setText("");
+                        label.setSpeedRunningText(Integer.parseInt(Uses.elementsByAttr(params, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_SPEED_TEXT).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+                        label.start();
+                    } else {
+                        // просто хтмл-текст или URL
+                        final String txt = params.getTextTrim();
+                        Pattern replace = Pattern.compile(pattern);
+                        Matcher matcher = replace.matcher(txt);
+                        if (matcher.matches() || txt.contains("localhost") || txt.contains("127.0.0.1")) {
+                            panel.removeAll();
+                            GridLayout gl = new GridLayout(1, 1);
+                            panel.setLayout(gl);
+                            BrowserFX bfx = new BrowserFX();
+                            panel.add(bfx, BorderLayout.CENTER);
+                            bfx.load(txt);
+                        } else {
+                            label.setText(Uses.prepareAbsolutPathForImg(txt));
+                            label.setRunningText("");
+                        }
+                    }//бегущий
+                }//ближайшие
+            }//время
+        }//видео
     }
+    private final static String pattern = "(http|ftp|https):\\/\\/[\\w\\-_]+(\\.[\\w\\-_]+)+([\\w\\-\\.,@?^=%&amp;:/~\\+#]*[\\w\\-\\@?^=%&amp;/~\\+#])?";
     /**
      * это лейблы, в которых будут таблицы ближайших клиентосов
      */
@@ -662,8 +731,6 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelUp = new ru.apertum.qsystem.client.model.QPanel();
         rlTop = new ru.apertum.qsystem.common.RunningLabel();
         spDown = new javax.swing.JSplitPane();
-        panelDown = new ru.apertum.qsystem.client.model.QPanel();
-        rlDown = new ru.apertum.qsystem.common.RunningLabel();
         spLeft = new javax.swing.JSplitPane();
         panelLeft = new ru.apertum.qsystem.client.model.QPanel();
         rlLeft = new ru.apertum.qsystem.common.RunningLabel();
@@ -671,6 +738,11 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelRight = new ru.apertum.qsystem.client.model.QPanel();
         rlRight = new ru.apertum.qsystem.common.RunningLabel();
         panelMain = new ru.apertum.qsystem.client.model.QPanel();
+        spDown2 = new javax.swing.JSplitPane();
+        panelDown = new ru.apertum.qsystem.client.model.QPanel();
+        rlDown = new ru.apertum.qsystem.common.RunningLabel();
+        panelDown2 = new ru.apertum.qsystem.client.model.QPanel();
+        rlDown2 = new ru.apertum.qsystem.common.RunningLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FIndicatorBoard.class);
@@ -710,6 +782,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         rlTop.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         rlTop.setText(resourceMap.getString("rlTop.text")); // NOI18N
+        rlTop.setFont(resourceMap.getFont("rlTop.font")); // NOI18N
         rlTop.setName("rlTop"); // NOI18N
         rlTop.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -729,7 +802,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelUp.setLayout(panelUpLayout);
         panelUpLayout.setHorizontalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlTop, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
+            .addComponent(rlTop, javax.swing.GroupLayout.DEFAULT_SIZE, 911, Short.MAX_VALUE)
         );
         panelUpLayout.setVerticalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -744,46 +817,6 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         spDown.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         spDown.setName("spDown"); // NOI18N
         spDown.setOpaque(false);
-
-        panelDown.setBorder(new javax.swing.border.MatteBorder(null));
-        panelDown.setName("panelDown"); // NOI18N
-        panelDown.setNativePosition(java.lang.Boolean.FALSE);
-        panelDown.setOpaque(false);
-        panelDown.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                panelDownComponentResized(evt);
-            }
-        });
-
-        rlDown.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        rlDown.setText(resourceMap.getString("rlDown.text")); // NOI18N
-        rlDown.setName("rlDown"); // NOI18N
-        rlDown.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                FIndicatorBoard.this.mouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                FIndicatorBoard.this.mouseExited(evt);
-            }
-        });
-        rlDown.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseMoved(java.awt.event.MouseEvent evt) {
-                FIndicatorBoard.this.mouseMoved(evt);
-            }
-        });
-
-        javax.swing.GroupLayout panelDownLayout = new javax.swing.GroupLayout(panelDown);
-        panelDown.setLayout(panelDownLayout);
-        panelDownLayout.setHorizontalGroup(
-            panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
-        );
-        panelDownLayout.setVerticalGroup(
-            panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
-        );
-
-        spDown.setBottomComponent(panelDown);
 
         spLeft.setBorder(new javax.swing.border.MatteBorder(null));
         spLeft.setDividerLocation(150);
@@ -816,6 +849,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         rlLeft.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         rlLeft.setText(resourceMap.getString("rlLeft.text")); // NOI18N
+        rlLeft.setFont(resourceMap.getFont("rlLeft.font")); // NOI18N
         rlLeft.setName("rlLeft"); // NOI18N
         rlLeft.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -866,6 +900,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         rlRight.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         rlRight.setText(resourceMap.getString("rlRight.text")); // NOI18N
+        rlRight.setFont(resourceMap.getFont("rlRight.font")); // NOI18N
         rlRight.setName("rlRight"); // NOI18N
         rlRight.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -887,7 +922,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             panelRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelRightLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(rlRight, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+                .addComponent(rlRight, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
         panelRightLayout.setVerticalGroup(
@@ -898,16 +933,17 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         spRight.setRightComponent(panelRight);
 
         panelMain.setBorder(new javax.swing.border.MatteBorder(null));
+        panelMain.setFont(resourceMap.getFont("rlLeft.font")); // NOI18N
         panelMain.setName("panelMain"); // NOI18N
         panelMain.setOpaque(false);
-        panelMain.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                panelMainComponentResized(evt);
-            }
-        });
         panelMain.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
                 FIndicatorBoard.this.mouseMoved(evt);
+            }
+        });
+        panelMain.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                panelMainComponentResized(evt);
             }
         });
 
@@ -928,17 +964,87 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         spDown.setLeftComponent(spLeft);
 
+        spDown2.setDividerSize(0);
+        spDown2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        spDown2.setName("spDown2"); // NOI18N
+
+        panelDown.setName("panelDown"); // NOI18N
+        panelDown.setNativePosition(java.lang.Boolean.FALSE);
+        panelDown.setOpaque(false);
+        panelDown.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                panelDownComponentResized(evt);
+            }
+        });
+
+        rlDown.setBorder(new javax.swing.border.MatteBorder(null));
+        rlDown.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        rlDown.setText(resourceMap.getString("rlDown.text")); // NOI18N
+        rlDown.setFont(resourceMap.getFont("rlDown.font")); // NOI18N
+        rlDown.setName("rlDown"); // NOI18N
+        rlDown.setRunningText(resourceMap.getString("rlDown.runningText")); // NOI18N
+        rlDown.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                FIndicatorBoard.this.mouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                FIndicatorBoard.this.mouseExited(evt);
+            }
+        });
+        rlDown.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                FIndicatorBoard.this.mouseMoved(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelDownLayout = new javax.swing.GroupLayout(panelDown);
+        panelDown.setLayout(panelDownLayout);
+        panelDownLayout.setHorizontalGroup(
+            panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
+        );
+        panelDownLayout.setVerticalGroup(
+            panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+        );
+
+        spDown2.setTopComponent(panelDown);
+
+        panelDown2.setName("panelDown2"); // NOI18N
+
+        rlDown2.setBorder(new javax.swing.border.MatteBorder(null));
+        rlDown2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        rlDown2.setText(resourceMap.getString("rlDown2.text")); // NOI18N
+        rlDown2.setFont(resourceMap.getFont("rlDown2.font")); // NOI18N
+        rlDown2.setName("rlDown2"); // NOI18N
+        rlDown2.setRunningText(resourceMap.getString("rlDown2.runningText")); // NOI18N
+
+        javax.swing.GroupLayout panelDown2Layout = new javax.swing.GroupLayout(panelDown2);
+        panelDown2.setLayout(panelDown2Layout);
+        panelDown2Layout.setHorizontalGroup(
+            panelDown2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(rlDown2, javax.swing.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
+        );
+        panelDown2Layout.setVerticalGroup(
+            panelDown2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(rlDown2, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+        );
+
+        spDown2.setRightComponent(panelDown2);
+
+        spDown.setRightComponent(spDown2);
+
         spUp.setRightComponent(spDown);
 
         javax.swing.GroupLayout panelCommonLayout = new javax.swing.GroupLayout(panelCommon);
         panelCommon.setLayout(panelCommonLayout);
         panelCommonLayout.setHorizontalGroup(
             panelCommonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+            .addComponent(spUp)
         );
         panelCommonLayout.setVerticalGroup(
             panelCommonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 607, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -1013,15 +1119,18 @@ private void mouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mous
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private ru.apertum.qsystem.client.model.QPanel panelCommon;
     private ru.apertum.qsystem.client.model.QPanel panelDown;
+    private ru.apertum.qsystem.client.model.QPanel panelDown2;
     private ru.apertum.qsystem.client.model.QPanel panelLeft;
     private ru.apertum.qsystem.client.model.QPanel panelMain;
     private ru.apertum.qsystem.client.model.QPanel panelRight;
     private ru.apertum.qsystem.client.model.QPanel panelUp;
     private ru.apertum.qsystem.common.RunningLabel rlDown;
+    private ru.apertum.qsystem.common.RunningLabel rlDown2;
     private ru.apertum.qsystem.common.RunningLabel rlLeft;
     private ru.apertum.qsystem.common.RunningLabel rlRight;
     private ru.apertum.qsystem.common.RunningLabel rlTop;
     private javax.swing.JSplitPane spDown;
+    private javax.swing.JSplitPane spDown2;
     private javax.swing.JSplitPane spLeft;
     private javax.swing.JSplitPane spRight;
     private javax.swing.JSplitPane spUp;

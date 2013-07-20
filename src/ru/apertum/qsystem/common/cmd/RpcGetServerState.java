@@ -18,7 +18,9 @@ package ru.apertum.qsystem.common.cmd;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import java.util.Date;
 import java.util.LinkedList;
+import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QService;
 
 /**
@@ -36,6 +38,11 @@ public class RpcGetServerState extends JsonRPC20 {
 
     public static class ServiceInfo {
 
+        @Override
+        public String toString() {
+            return serviceName;
+        }
+
         public ServiceInfo() {
         }
 
@@ -49,6 +56,15 @@ public class RpcGetServerState extends JsonRPC20 {
             this.serviceName = service.getName();
             this.countWait = countWait;
             this.firstNumber = firstNumber;
+            this.id = service.getId();
+            final long nn = new Date().getTime();
+            long max = 0;
+            for (QCustomer customer : service.getClients()) {
+                if (nn - customer.getStandTime().getTime() > max) {
+                    max = nn - customer.getStandTime().getTime();
+                }
+            }
+            waitMax = (int) (max / 1000 / 60);
         }
         @Expose
         @SerializedName("service_name")
@@ -83,6 +99,28 @@ public class RpcGetServerState extends JsonRPC20 {
         @Expose
         @SerializedName("first")
         private String firstNumber;
+        @Expose
+        @SerializedName("id")
+        private Long id;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+        @Expose
+        @SerializedName("wait_max")
+        private Integer waitMax;
+
+        public Integer getWaitMax() {
+            return waitMax;
+        }
+
+        public void setWaitMax(Integer waitMax) {
+            this.waitMax = waitMax;
+        }
     }
     @Expose
     @SerializedName("result")

@@ -16,9 +16,9 @@
  */
 package ru.apertum.qsystem.client.forms;
 
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Toolkit;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
@@ -28,15 +28,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
-import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.MediaSizeName;
@@ -45,6 +41,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import ru.apertum.qsystem.common.AUDPServer;
 import ru.apertum.qsystem.common.SoundPlayer;
@@ -747,10 +744,10 @@ private void jButton15ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private void jButton16ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton16ActionPerformed
 
-        
+
         System.out.print("\7"); //Вот это вот издает звук
-        
-        
+
+
         Clip clip = null;
         try {
             clip = AudioSystem.getClip();
@@ -801,10 +798,26 @@ private void jButton15ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return true;
     }
 
+     final static String tt = "This is a text sample В 1962 году американцы запустили первый космический аппарат для изучения Венеры Маринер-1, потерпевший аварию через несколько минут после старта. Сначала на аппарате отказала антенна, которая получала сигнал от наводящей системы с Земли, после чего управление взял на себя бортовой компьютер. Он тоже не смог исправить отклонение от курса, так как загруженная в него программа содержала единственную ошибку — при переносе инструкций в код для перфокарт в одном из уравнений была пропущена чёрточка над буквой, отсутствие которой коренным образом поменяло математический смысл уравнения. Журналисты вскоре окрестили эту чёрточку «самым дорогим дефисом в истории» (в пересчёте на сегодняшний день стоимость утерянного аппарата составляет 135 000 000 $).";
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        String text = "Привет волк!";
+        Font ff = new Font("Arial", 0, 150);
+        int len = 0;
+
+        System.out.println("total=" + new JLabel().getFontMetrics(ff).stringWidth(text));
+        for (int i = 0; i < text.length(); i++) {
+            int l =new JLabel().getFontMetrics(ff).stringWidth(text.substring(i, i + 1));
+            len = len + l;
+            System.out.println(text.substring(i, i + 1) + "=" + l);
+        }
+        System.out.println("Сумма="+len);
+        
+
+
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             @Override

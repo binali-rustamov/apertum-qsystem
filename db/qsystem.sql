@@ -318,6 +318,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`net` (
   `zone_board_serv_port` BIGINT NOT NULL DEFAULT 0 ,
   `voice` INT NOT NULL DEFAULT 0 COMMENT '0 - по умолчанию, ну и т.д. по набору звуков' ,
   `black_time` INT NOT NULL DEFAULT 0 COMMENT 'Время нахождения в блеклисте в минутах. 0 - попавшие в блекслист не блокируются' ,
+  `limit_recall` INT NOT NULL DEFAULT 0 COMMENT 'Количество повторных вызовов перед отклонением неявившегося посетителя, 0-бесконечно' ,
   PRIMARY KEY (`id`) )
 ENGINE = InnoDB, 
 COMMENT = 'Сетевые настройки сервера.' ;
@@ -363,6 +364,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`statistic` (
   `user_id` BIGINT NOT NULL ,
   `client_id` BIGINT NOT NULL ,
   `service_id` BIGINT NOT NULL ,
+  `results_id` BIGINT NULL ,
   `user_start_time` DATETIME NOT NULL COMMENT 'Время начала обработки кастомера юзером.' ,
   `user_finish_time` DATETIME NOT NULL COMMENT 'Время завершения обработки кастомера юзером.' ,
   `client_stand_time` DATETIME NOT NULL COMMENT 'Время постановки кастомера в очередь' ,
@@ -383,7 +385,12 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`statistic` (
     FOREIGN KEY (`service_id` )
     REFERENCES `qsystem`.`services` (`id` )
     ON DELETE CASCADE
-    ON UPDATE CASCADE)
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_statistic_results`
+    FOREIGN KEY (`results_id` )
+    REFERENCES `qsystem`.`results` (`id` )
+    ON DELETE SET NULL
+    ON UPDATE SET NULL)
 ENGINE = InnoDB, 
 COMMENT = 'События работы пользователя с клиентом.Формируется триггером' ;
 
@@ -392,6 +399,8 @@ CREATE INDEX `idx_work_user_id_users_id` ON `qsystem`.`statistic` (`user_id` ASC
 CREATE INDEX `idx_work_сlient_id_сlients_id` ON `qsystem`.`statistic` (`client_id` ASC) ;
 
 CREATE INDEX `idx_work_service_id_services_id` ON `qsystem`.`statistic` (`service_id` ASC) ;
+
+CREATE INDEX `idx_statistic_results` ON `qsystem`.`statistic` (`results_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -422,6 +431,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`advance` (
   `priority` INT NOT NULL DEFAULT 2 COMMENT 'Приоритет заранее записавшегося клиента.' ,
   `clients_authorization_id` BIGINT NULL DEFAULT NULL COMMENT 'Определено если клиент авторизовался' ,
   `input_data` VARCHAR(150) NULL COMMENT 'Введеные при предвариловке данные клиента если услуга этого требует' ,
+  `comments` VARCHAR(345) NULL DEFAULT '' COMMENT 'Коментарии при записи предварительно оператором удаленно' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_scenario_services`
     FOREIGN KEY (`service_id` )
@@ -487,16 +497,41 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`response_event` (
   `id` BIGINT NOT NULL AUTO_INCREMENT ,
   `resp_date` DATETIME NOT NULL COMMENT 'Дата отклика' ,
   `response_id` BIGINT NOT NULL ,
+  `services_id` BIGINT NULL ,
+  `users_id` BIGINT NULL ,
+  `clients_id` BIGINT NULL COMMENT 'Клиент оставивший отзыв' ,
+  `client_data` VARCHAR(245) NOT NULL DEFAULT '' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_response_date_responses`
     FOREIGN KEY (`response_id` )
     REFERENCES `qsystem`.`responses` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_response_event_services`
+    FOREIGN KEY (`services_id` )
+    REFERENCES `qsystem`.`services` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_response_event_users`
+    FOREIGN KEY (`users_id` )
+    REFERENCES `qsystem`.`users` (`id` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_response_event_clients`
+    FOREIGN KEY (`clients_id` )
+    REFERENCES `qsystem`.`clients` (`id` )
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB, 
 COMMENT = 'Даты оставленных отзывов.' ;
 
 CREATE INDEX `idx_response_date_responses` ON `qsystem`.`response_event` (`response_id` ASC) ;
+
+CREATE INDEX `idx_response_event_services` ON `qsystem`.`response_event` (`services_id` ASC) ;
+
+CREATE INDEX `idx_response_event_users` ON `qsystem`.`response_event` (`users_id` ASC) ;
+
+CREATE INDEX `idx_response_event_clients` ON `qsystem`.`response_event` (`clients_id` ASC) ;
 
 
 -- -----------------------------------------------------
@@ -593,7 +628,23 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`services_langs` (
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
-CREATE INDEX `fk_services_langs_services1` ON `qsystem`.`services_langs` (`services_id` ASC) ;
+CREATE INDEX `fk_services_langs_services` ON `qsystem`.`services_langs` (`services_id` ASC) ;
+
+
+-- -----------------------------------------------------
+-- Table `qsystem`.`standards`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `qsystem`.`standards` ;
+
+CREATE  TABLE IF NOT EXISTS `qsystem`.`standards` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT ,
+  `wait_max` INT NOT NULL DEFAULT 0 COMMENT 'Максимальное время ожидания, в минутах' ,
+  `work_max` INT NOT NULL DEFAULT 0 COMMENT 'Максимальное время работы с одним клиентом, в минутах' ,
+  `downtime_max` INT NOT NULL DEFAULT 0 COMMENT 'Максимальное время простоя при наличии очереди, в минутах' ,
+  `line_service_max` INT NOT NULL DEFAULT 0 COMMENT 'Максимальная длинна очереди к одной услуге' ,
+  `line_total_max` INT NOT NULL DEFAULT 0 COMMENT 'Максимальное количество клиентов ко всем услугам' ,
+  PRIMARY KEY (`id`) )
+ENGINE = InnoDB;
 
 USE `qsystem`;
 
@@ -611,9 +662,9 @@ BEGIN
     SET @finish_start= TIMEDIFF(NEW.finish_time, NEW.start_time);
     SET @start_starnd = TIMEDIFF(NEW.start_time, NEW.stand_time);
     INSERT
-        INTO statistic(user_id, client_id, service_id, user_start_time, user_finish_time, client_stand_time, user_work_period, client_wait_period) 
+        INTO statistic(results_id, user_id, client_id, service_id, user_start_time, user_finish_time, client_stand_time, user_work_period, client_wait_period) 
     VALUES
-        (NEW.user_id, NEW.id, NEW.service_id, NEW.start_time, NEW.finish_time, NEW.stand_time, 
+        (NEW.result_id, NEW.user_id, NEW.id, NEW.service_id, NEW.start_time, NEW.finish_time, NEW.stand_time, 
         round(
                 (HOUR(@finish_start) * 60 * 60 +
                  MINUTE(@finish_start) * 60 +
@@ -638,9 +689,9 @@ BEGIN
     SET @finish_start= TIMEDIFF(NEW.finish_time, NEW.start_time);
     SET @start_starnd = TIMEDIFF(NEW.start_time, NEW.stand_time);
     INSERT
-        INTO statistic(user_id, client_id, service_id, user_start_time, user_finish_time, client_stand_time, user_work_period, client_wait_period) 
+        INTO statistic(results_id, user_id, client_id, service_id, user_start_time, user_finish_time, client_stand_time, user_work_period, client_wait_period) 
     VALUES
-        (NEW.user_id, NEW.id, NEW.service_id, NEW.start_time, NEW.finish_time, NEW.stand_time, 
+        (NEW.result_id, NEW.user_id, NEW.id, NEW.service_id, NEW.start_time, NEW.finish_time, NEW.stand_time, 
         round(
                 (HOUR(@finish_start) * 60 * 60 +
                  MINUTE(@finish_start) * 60 +
@@ -714,7 +765,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '1.10', 1, 999, 0, 0, 2, -1, '', '127.0.0.1', 27007, 0, 0);
+INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`, `limit_recall`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '2.1', 1, 999, 0, 0, 1, -1, '', '127.0.0.1', 27007, 0, 0, 0);
 
 COMMIT;
 
@@ -786,5 +837,14 @@ COMMIT;
 START TRANSACTION;
 USE `qsystem`;
 INSERT INTO `qsystem`.`users_services_users` (`planServices_id`, `users_id`) VALUES (1, 2);
+
+COMMIT;
+
+-- -----------------------------------------------------
+-- Data for table `qsystem`.`standards`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `qsystem`;
+INSERT INTO `qsystem`.`standards` (`id`, `wait_max`, `work_max`, `downtime_max`, `line_service_max`, `line_total_max`) VALUES (1, 0, 0, 0, 0, 0);
 
 COMMIT;

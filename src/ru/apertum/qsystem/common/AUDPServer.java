@@ -34,7 +34,7 @@ abstract public class AUDPServer implements Runnable {
      * порт, который слушает сервер
      */
     private final int port;
-    private final Thread thread;
+    private Thread thread;
     private DatagramSocket socket;
     private boolean isActive = true;
 
@@ -44,6 +44,9 @@ abstract public class AUDPServer implements Runnable {
 
     public AUDPServer(int port) {
         this.port = port;
+    }
+    
+    public void start(){
         thread = new Thread(this);
         thread.start();
     }
@@ -61,11 +64,13 @@ abstract public class AUDPServer implements Runnable {
             throw new ServerException("Невозможно создать UDP-сокет на порту " + port + ". " + ex.getMessage());
         }
         while (true) {
+            isActive = true;
             //Receive request from client
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             try {
                 socket.receive(packet);
             } catch (IOException ex) {
+                isActive = false;
                 if (!Thread.interrupted()) {
                     throw new ServerException("Невозможно принять UDP-сообщение. " + ex.getMessage());
                 }

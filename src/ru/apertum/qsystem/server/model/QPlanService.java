@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -48,6 +50,8 @@ public class QPlanService implements Serializable {
         this.user = user;
     }
     //@Id
+    @Expose
+    @SerializedName("id")
     private Long id;
 
     @Id
@@ -64,6 +68,8 @@ public class QPlanService implements Serializable {
      * Коэфф. степени участия. По умолчанию основной.
      * низкий/основной/VIP
      */
+    @Expose
+    @SerializedName("coeff")
     protected Integer coefficient = 1;
 
     @Column(name = "coefficient", insertable = true, updatable = true)
@@ -80,6 +86,8 @@ public class QPlanService implements Serializable {
             this.coefficient = 1;
         }
     }
+    @Expose
+    @SerializedName("flex")
     private Boolean flexible_coef = false;
 
     @Column(name = "flexible_coef", insertable = true, updatable = true)
@@ -94,6 +102,8 @@ public class QPlanService implements Serializable {
     /**
      * Соответствие услуги.
      */
+    @Expose
+    @SerializedName("service")
     private QService service;
 
     @OneToOne(targetEntity = QService.class)

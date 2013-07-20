@@ -183,7 +183,7 @@ public class QButton extends JButton {
                                     }
                                 }
 
-                                final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service, true, WelcomeParams.getInstance().delayBack * 2, form.advancedCustomer, inputData);
+                                final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service, true, WelcomeParams.getInstance().delayBack * 2, form.advancedCustomer, inputData, "");
                                 //Если res == null значит отказались от выбора
                                 if (res == null) {
                                     form.showMed();

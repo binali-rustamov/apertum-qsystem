@@ -19,6 +19,7 @@ package ru.apertum.qsystem.server.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.LinkedList;
 import javax.persistence.Id;
 import java.util.List;
@@ -201,6 +202,8 @@ public class QUser implements IidGetter, Serializable {
      * Имя услуги -> IProperty
      */
     //private QPlanServiceList serviceList = new QPlanServiceList();
+    @Expose
+    @SerializedName("plan")
     private List<QPlanService> planServices;
 
     public void setPlanServices(List<QPlanService> planServices) {
@@ -352,6 +355,7 @@ public class QUser implements IidGetter, Serializable {
         // был кастомер у юзера и убираем его
         if (customer == null && getCustomer() != null) {
             // если убирается кастомер, то надо убрать признак юзера, который работает с кастомером
+            finalizeCustomer();
             if (getCustomer().getUser() != null) {
                 getCustomer().setUser(null);
             }
@@ -362,6 +366,7 @@ public class QUser implements IidGetter, Serializable {
         } else {
             // иначе кастомеру, определившимуся к юзеру, надо поставить признак работы с опред. юзером.
             customer.setUser(this);
+            initCustomer(customer);
         }
         this.customer = customer;
     }
@@ -369,5 +374,142 @@ public class QUser implements IidGetter, Serializable {
     @Transient
     public QCustomer getCustomer() {
         return customer;
+    }
+
+    /**
+     * Это чтоб осталась инфа после завершения работ с кастомером. Нужно для нормативов и статистики сиюминутной
+     */
+    public void finalizeCustomer() {
+        shadow = new Shadow(customer);
+        shadow.setStartTime(null);
+    }
+    /**
+     * Это чтоб осталась инфа сразу после вызова кастомера. Нужно для нормативов и статистики сиюминутной
+     */
+    public void initCustomer(QCustomer cust) {
+        shadow = new Shadow(cust);
+        shadow.setFinTime(null);
+    }
+    @Expose
+    @SerializedName("shadow")
+    private Shadow shadow = null;
+
+    @Transient
+    public Shadow getShadow() {
+        return shadow;
+    }
+
+    public void setShadow(Shadow shadow) {
+        this.shadow = shadow;
+    }
+
+    public static class Shadow {
+
+        public Shadow() {
+        }
+
+        public Shadow(QCustomer oldCostomer) {
+            this.oldCustomer = oldCostomer;
+            this.idOldCustomer = oldCostomer.getId();
+            this.idOldService = oldCostomer.getService().getId();
+            this.oldService = oldCostomer.getService();
+            this.oldNom = oldCostomer.getNumber();
+            this.oldPref = oldCostomer.getPrefix();
+            this.finTime = new Date();
+            this.startTime = new Date();
+        }
+        private QService oldService;
+        private QCustomer oldCustomer;
+        @Expose
+        @SerializedName("id_old_service")
+        private Long idOldService;
+        @Expose
+        @SerializedName("id_old_customer")
+        private Long idOldCustomer;
+        @Expose
+        @SerializedName("old_nom")
+        private int oldNom;
+        @Expose
+        @SerializedName("old_pref")
+        private String oldPref;
+        @Expose
+        @SerializedName("old_fin_time")
+        private Date finTime;
+        @Expose
+        @SerializedName("old_start_time")
+        private Date startTime;
+
+        public Date getStartTime() {
+            return startTime;
+        }
+
+        public void setStartTime(Date startTime) {
+            this.startTime = startTime;
+        }
+        
+
+        public Long getIdOldCustomer() {
+            return idOldCustomer;
+        }
+
+        public void setIdOldCustomer(Long idOldCustomer) {
+            this.idOldCustomer = idOldCustomer;
+        }
+
+        public Long getIdOldService() {
+            return idOldService;
+        }
+
+        public void setIdOldService(Long idOldService) {
+            this.idOldService = idOldService;
+        }
+
+        public QCustomer getOldCustomer() {
+            return oldCustomer;
+        }
+
+        public void setOldCustomer(QCustomer oldCustomer) {
+            this.oldCustomer = oldCustomer;
+        }
+
+        public Date getFinTime() {
+            return finTime;
+        }
+
+        public void setFinTime(Date finTime) {
+            this.finTime = finTime;
+        }
+
+        public QCustomer getOldCostomer() {
+            return oldCustomer;
+        }
+
+        public void setOldCostomer(QCustomer oldCostomer) {
+            this.oldCustomer = oldCostomer;
+        }
+
+        public int getOldNom() {
+            return oldNom;
+        }
+
+        public void setOldNom(int oldNom) {
+            this.oldNom = oldNom;
+        }
+
+        public String getOldPref() {
+            return oldPref;
+        }
+
+        public void setOldPref(String oldPref) {
+            this.oldPref = oldPref;
+        }
+
+        public QService getOldService() {
+            return oldService;
+        }
+
+        public void setOldService(QService oldService) {
+            this.oldService = oldService;
+        }
     }
 }

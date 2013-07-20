@@ -36,6 +36,7 @@ public class FBoardConfig extends AFBoardRedactor {
 
     private Element topElement;
     private Element bottomElement;
+    private Element bottomElement2;
     private Element leftElement;
     private Element rightElement;
     private Element mainElement;
@@ -82,6 +83,7 @@ public class FBoardConfig extends AFBoardRedactor {
     protected void refresh() {
         topElement = getParams().element(Uses.TAG_BOARD_TOP);
         bottomElement = getParams().element(Uses.TAG_BOARD_BOTTOM);
+        bottomElement2 = getParams().element(Uses.TAG_BOARD_BOTTOM_2);
         leftElement = getParams().element(Uses.TAG_BOARD_LEFT);
         rightElement = getParams().element(Uses.TAG_BOARD_RIGHT);
         mainElement = getParams().element(Uses.TAG_BOARD_MAIN);
@@ -90,6 +92,7 @@ public class FBoardConfig extends AFBoardRedactor {
         checkBoxLeft.setSelected("1".equals(leftElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL)));
         checkBoxRight.setSelected("1".equals(rightElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL)));
         checkBoxDown.setSelected("1".equals(bottomElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL)));
+        checkBoxDown2.setSelected("1".equals(bottomElement2.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL)));
 
         setDividerLocation();
 
@@ -100,6 +103,7 @@ public class FBoardConfig extends AFBoardRedactor {
         spDown.setDividerLocation(Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)));
         spLeft.setDividerLocation(Double.parseDouble(leftElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)));
         spRight.setDividerLocation(Double.parseDouble(rightElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)));
+        spDown2.setDividerLocation(Double.parseDouble(bottomElement2.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)) - 0.08d); // вычитаемое это подгон адекватного открытия, видно пикселки на что-то еще жрутся.
     }
 
     @Override
@@ -117,11 +121,13 @@ public class FBoardConfig extends AFBoardRedactor {
         leftElement.addAttribute(Uses.TAG_BOARD_VISIBLE_PANEL, checkBoxLeft.isSelected() ? "1" : "0");
         rightElement.addAttribute(Uses.TAG_BOARD_VISIBLE_PANEL, checkBoxRight.isSelected() ? "1" : "0");
         bottomElement.addAttribute(Uses.TAG_BOARD_VISIBLE_PANEL, checkBoxDown.isSelected() ? "1" : "0");
+        bottomElement2.addAttribute(Uses.TAG_BOARD_VISIBLE_PANEL, checkBoxDown2.isSelected() ? "1" : "0");
 
         topElement.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spUp.getDividerLocation()) / (spUp.getHeight() + 0.009), 2)));
         leftElement.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spLeft.getDividerLocation()) / (spLeft.getWidth() + 0.009), 2)));
         rightElement.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spRight.getDividerLocation()) / spRight.getWidth() + 0.009, 2)));
         bottomElement.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spDown.getDividerLocation()) / spDown.getHeight() + 0.009, 2)));
+        bottomElement2.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spDown2.getDividerLocation()) / spDown2.getHeight() + 0.009, 2)));
     }
 
     /** This method is called from within the constructor to
@@ -139,10 +145,6 @@ public class FBoardConfig extends AFBoardRedactor {
         labelUp = new javax.swing.JLabel();
         buttonTop = new javax.swing.JButton();
         spDown = new javax.swing.JSplitPane();
-        panelDown = new javax.swing.JPanel();
-        checkBoxDown = new javax.swing.JCheckBox();
-        labelDown = new javax.swing.JLabel();
-        buttonDown = new javax.swing.JButton();
         spLeft = new javax.swing.JSplitPane();
         panelLeft = new javax.swing.JPanel();
         checkBoxLeft = new javax.swing.JCheckBox();
@@ -155,6 +157,15 @@ public class FBoardConfig extends AFBoardRedactor {
         buttonRight = new javax.swing.JButton();
         panelMain = new javax.swing.JPanel();
         buttonMain = new javax.swing.JButton();
+        spDown2 = new javax.swing.JSplitPane();
+        panelDown1 = new javax.swing.JPanel();
+        checkBoxDown = new javax.swing.JCheckBox();
+        labelDown = new javax.swing.JLabel();
+        buttonDown = new javax.swing.JButton();
+        panelDown2 = new javax.swing.JPanel();
+        checkBoxDown2 = new javax.swing.JCheckBox();
+        labelDown2 = new javax.swing.JLabel();
+        buttonDown2 = new javax.swing.JButton();
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FBoardConfig.class);
         setTitle(resourceMap.getString("Form.title")); // NOI18N
@@ -200,7 +211,7 @@ public class FBoardConfig extends AFBoardRedactor {
                 .addComponent(labelUp)
                 .addGap(18, 18, 18)
                 .addComponent(buttonTop)
-                .addContainerGap(546, Short.MAX_VALUE))
+                .addContainerGap(581, Short.MAX_VALUE))
         );
         panelUpLayout.setVerticalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -212,7 +223,7 @@ public class FBoardConfig extends AFBoardRedactor {
                             .addComponent(buttonTop, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(labelUp)))
                     .addComponent(checkBoxUp))
-                .addContainerGap(119, Short.MAX_VALUE))
+                .addContainerGap(120, Short.MAX_VALUE))
         );
 
         spUp.setTopComponent(panelUp);
@@ -221,58 +232,6 @@ public class FBoardConfig extends AFBoardRedactor {
         spDown.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         spDown.setContinuousLayout(true);
         spDown.setName("spDown"); // NOI18N
-
-        panelDown.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        panelDown.setName("panelDown"); // NOI18N
-        panelDown.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                panelDownComponentResized(evt);
-            }
-        });
-
-        checkBoxDown.setText(resourceMap.getString("checkBoxDown.text")); // NOI18N
-        checkBoxDown.setToolTipText(resourceMap.getString("checkBoxDown.toolTipText")); // NOI18N
-        checkBoxDown.setName("checkBoxDown"); // NOI18N
-
-        labelDown.setText(resourceMap.getString("labelDown.text")); // NOI18N
-        labelDown.setName("labelDown"); // NOI18N
-
-        buttonDown.setText(resourceMap.getString("buttonDown.text")); // NOI18N
-        buttonDown.setToolTipText(resourceMap.getString("buttonDown.toolTipText")); // NOI18N
-        buttonDown.setName("buttonDown"); // NOI18N
-        buttonDown.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonDownActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout panelDownLayout = new javax.swing.GroupLayout(panelDown);
-        panelDown.setLayout(panelDownLayout);
-        panelDownLayout.setHorizontalGroup(
-            panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelDownLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(checkBoxDown)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(labelDown)
-                .addGap(18, 18, 18)
-                .addComponent(buttonDown)
-                .addContainerGap(544, Short.MAX_VALUE))
-        );
-        panelDownLayout.setVerticalGroup(
-            panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelDownLayout.createSequentialGroup()
-                .addGroup(panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelDownLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(labelDown)
-                            .addComponent(buttonDown, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(checkBoxDown))
-                .addContainerGap(122, Short.MAX_VALUE))
-        );
-
-        spDown.setBottomComponent(panelDown);
 
         spLeft.setDividerLocation(150);
         spLeft.setContinuousLayout(true);
@@ -312,7 +271,7 @@ public class FBoardConfig extends AFBoardRedactor {
                     .addComponent(buttonLeft)
                     .addComponent(labelLeft)
                     .addComponent(checkBoxLeft))
-                .addContainerGap(88, Short.MAX_VALUE))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
         panelLeftLayout.setVerticalGroup(
             panelLeftLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -365,7 +324,7 @@ public class FBoardConfig extends AFBoardRedactor {
                     .addComponent(buttonRight)
                     .addComponent(labelRight)
                     .addComponent(checkBoxRight))
-                .addContainerGap(137, Short.MAX_VALUE))
+                .addContainerGap(172, Short.MAX_VALUE))
         );
         panelRightLayout.setVerticalGroup(
             panelRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -399,7 +358,7 @@ public class FBoardConfig extends AFBoardRedactor {
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(buttonMain)
-                .addContainerGap(258, Short.MAX_VALUE))
+                .addContainerGap(260, Short.MAX_VALUE))
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -415,17 +374,123 @@ public class FBoardConfig extends AFBoardRedactor {
 
         spDown.setLeftComponent(spLeft);
 
+        spDown2.setDividerLocation(100);
+        spDown2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        spDown2.setAutoscrolls(true);
+        spDown2.setContinuousLayout(true);
+        spDown2.setName("spDown2"); // NOI18N
+
+        panelDown1.setName("panelDown1"); // NOI18N
+        panelDown1.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                panelDown1ComponentResized(evt);
+            }
+        });
+
+        checkBoxDown.setText(resourceMap.getString("checkBoxDown.text")); // NOI18N
+        checkBoxDown.setToolTipText(resourceMap.getString("checkBoxDown.toolTipText")); // NOI18N
+        checkBoxDown.setName("checkBoxDown"); // NOI18N
+
+        labelDown.setText(resourceMap.getString("labelDown.text")); // NOI18N
+        labelDown.setName("labelDown"); // NOI18N
+
+        buttonDown.setText(resourceMap.getString("buttonDown.text")); // NOI18N
+        buttonDown.setToolTipText(resourceMap.getString("buttonDown.toolTipText")); // NOI18N
+        buttonDown.setName("buttonDown"); // NOI18N
+        buttonDown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonDownActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelDown1Layout = new javax.swing.GroupLayout(panelDown1);
+        panelDown1.setLayout(panelDown1Layout);
+        panelDown1Layout.setHorizontalGroup(
+            panelDown1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelDown1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(checkBoxDown)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(labelDown, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(buttonDown)
+                .addContainerGap(576, Short.MAX_VALUE))
+        );
+        panelDown1Layout.setVerticalGroup(
+            panelDown1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelDown1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelDown1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelDown1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(labelDown)
+                        .addComponent(buttonDown, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(checkBoxDown))
+                .addContainerGap(67, Short.MAX_VALUE))
+        );
+
+        spDown2.setTopComponent(panelDown1);
+
+        panelDown2.setName("panelDown2"); // NOI18N
+        panelDown2.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                panelDown2ComponentResized(evt);
+            }
+        });
+
+        checkBoxDown2.setText(resourceMap.getString("checkBoxDown2.text")); // NOI18N
+        checkBoxDown2.setName("checkBoxDown2"); // NOI18N
+
+        labelDown2.setText(resourceMap.getString("labelDown2.text")); // NOI18N
+        labelDown2.setName("labelDown2"); // NOI18N
+
+        buttonDown2.setText(resourceMap.getString("buttonDown2.text")); // NOI18N
+        buttonDown2.setName("buttonDown2"); // NOI18N
+        buttonDown2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonDown2ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelDown2Layout = new javax.swing.GroupLayout(panelDown2);
+        panelDown2.setLayout(panelDown2Layout);
+        panelDown2Layout.setHorizontalGroup(
+            panelDown2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelDown2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(checkBoxDown2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(labelDown2, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(buttonDown2)
+                .addContainerGap(577, Short.MAX_VALUE))
+        );
+        panelDown2Layout.setVerticalGroup(
+            panelDown2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelDown2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelDown2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(checkBoxDown2)
+                    .addGroup(panelDown2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(labelDown2)
+                        .addComponent(buttonDown2, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(54, Short.MAX_VALUE))
+        );
+
+        spDown2.setRightComponent(panelDown2);
+
+        spDown.setRightComponent(spDown2);
+
         spUp.setRightComponent(spDown);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
+            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 717, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
+            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE)
         );
 
         pack();
@@ -442,10 +507,6 @@ private void panelLeftComponentResized(java.awt.event.ComponentEvent evt) {//GEN
 private void panelRightComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_panelRightComponentResized
     labelRight.setText(String.valueOf(Math.round(new Double(panelRight.getWidth()) / (panelUp.getWidth()) * 100)) + "%");
 }//GEN-LAST:event_panelRightComponentResized
-
-private void panelDownComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_panelDownComponentResized
-    labelDown.setText(String.valueOf(Math.round(new Double(panelDown.getHeight()) / (spUp.getHeight()) * 100)) + "%");
-}//GEN-LAST:event_panelDownComponentResized
 
 private void buttonMainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonMainActionPerformed
     FParamsEditor.changeParams(this.parent, true, mainElement, getLocaleMessage("cfg.params.main"));
@@ -466,26 +527,43 @@ private void buttonLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void buttonTopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonTopActionPerformed
     FBoardParams.changeParams(this.parent, topElement, getLocaleMessage("cfg.params.top"), netProperty);
 }//GEN-LAST:event_buttonTopActionPerformed
+
+    private void buttonDown2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonDown2ActionPerformed
+        FBoardParams.changeParams(this.parent, bottomElement2, getLocaleMessage("cfg.params.bottom2"), netProperty);
+    }//GEN-LAST:event_buttonDown2ActionPerformed
+
+    private void panelDown1ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_panelDown1ComponentResized
+        labelDown.setText(String.valueOf(Math.round(new Double(panelDown1.getHeight()) / (spUp.getHeight() + panelDown2.getHeight()) * 100)) + "%");
+    }//GEN-LAST:event_panelDown1ComponentResized
+
+    private void panelDown2ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_panelDown2ComponentResized
+        labelDown2.setText(String.valueOf(Math.round(new Double(panelDown2.getHeight()) / (spUp.getHeight() + panelDown1.getHeight()) * 100)) + "%");
+    }//GEN-LAST:event_panelDown2ComponentResized
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonDown;
+    private javax.swing.JButton buttonDown2;
     private javax.swing.JButton buttonLeft;
     private javax.swing.JButton buttonMain;
     private javax.swing.JButton buttonRight;
     private javax.swing.JButton buttonTop;
     private javax.swing.JCheckBox checkBoxDown;
+    private javax.swing.JCheckBox checkBoxDown2;
     private javax.swing.JCheckBox checkBoxLeft;
     private javax.swing.JCheckBox checkBoxRight;
     private javax.swing.JCheckBox checkBoxUp;
     private javax.swing.JLabel labelDown;
+    private javax.swing.JLabel labelDown2;
     private javax.swing.JLabel labelLeft;
     private javax.swing.JLabel labelRight;
     private javax.swing.JLabel labelUp;
-    private javax.swing.JPanel panelDown;
+    private javax.swing.JPanel panelDown1;
+    private javax.swing.JPanel panelDown2;
     private javax.swing.JPanel panelLeft;
     private javax.swing.JPanel panelMain;
     private javax.swing.JPanel panelRight;
     private javax.swing.JPanel panelUp;
     private javax.swing.JSplitPane spDown;
+    private javax.swing.JSplitPane spDown2;
     private javax.swing.JSplitPane spLeft;
     private javax.swing.JSplitPane spRight;
     private javax.swing.JSplitPane spUp;

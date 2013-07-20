@@ -21,6 +21,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.LinkedList;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QService;
+import ru.apertum.qsystem.server.model.QUser.Shadow;
 
 /**
  *
@@ -40,10 +41,12 @@ public class RpcGetSelfSituation extends JsonRPC20 {
         public SelfSituation() {
         }
 
-        public SelfSituation(LinkedList<SelfService> selfservices, QCustomer customer, LinkedList<QCustomer> postponedList) {
+        public SelfSituation(LinkedList<SelfService> selfservices, QCustomer customer, LinkedList<QCustomer> postponedList, int limitRecall, Shadow shadow) {
             this.selfservices = selfservices;
             this.customer = customer;
             this.postponedList = postponedList;
+            this.limitRecall = limitRecall;
+            this.shadow = shadow;
         }
         @Expose
         @SerializedName("self_services")
@@ -78,6 +81,31 @@ public class RpcGetSelfSituation extends JsonRPC20 {
         public void setPostponedList(LinkedList<QCustomer> postponedList) {
             this.postponedList = postponedList;
         }
+        
+        @Expose
+        @SerializedName("limit_remove")
+        private Integer limitRecall;
+
+        public Integer getLimitRemove() {
+            return limitRecall;
+        }
+
+        public void setLimitRemove(Integer limitRemove) {
+            this.limitRecall = limitRemove;
+        }
+        
+        @Expose
+        @SerializedName("shadow")
+        private Shadow shadow;
+
+        public Shadow getShadow() {
+            return shadow;
+        }
+
+        public void setShadow(Shadow shadow) {
+            this.shadow = shadow;
+        }
+        
     }
 
     public static class SelfService {
