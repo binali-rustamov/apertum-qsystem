@@ -68,6 +68,7 @@ public class WelcomeParams {
     private static final String ADVANCE_BUTTON = "advance_button";// - кнопка предварительной записи на пункте регистрации
     private static final String NUMERIC_KEYBOARD = "numeric_keyboard";// - цифровая клавиатура при вводе юзерской инфы
     private static final String ALPHABETIC_KEYBOARD = "alphabetic_keyboard";// - буквенная клавиатура при вводе юзерской инфы
+    private static final String SPEC_KEYBOARD = "spec_keyboard";// - буквенная клавиатура при вводе юзерской инфы
     private static final String INPUT_FONT_SIZE = "input_font_size";// - размер шрифта вводимого текста клиентом
     private static final String LINES_BUTTON_COUNT = "lines_button_count";// - количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
     private static final String BUTTON_TYPE = "button_type";// - это внешний вид кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
@@ -119,6 +120,7 @@ public class WelcomeParams {
     public int buttons_stopbits = 1;
     public boolean numeric_keyboard = true; // - цифровая клавиатура при вводе юзерской инфы
     public boolean alphabetic_keyboard = true; // - буквенная клавиатура при вводе юзерской инфы
+    public String spec_keyboard = ""; // - специальная клавиатура при вводе юзерской инфы
     public int input_font_size = 64; // - размер шрифта при вводе юзерской инфы
 
     /**
@@ -177,6 +179,7 @@ public class WelcomeParams {
 
         numeric_keyboard = !settings.containsKey(NUMERIC_KEYBOARD) || "1".equals(settings.getProperty(NUMERIC_KEYBOARD)) || "true".equals(settings.getProperty(NUMERIC_KEYBOARD)); // - цифровая клавиатура при вводе юзерской инфы
         alphabetic_keyboard = !settings.containsKey(ALPHABETIC_KEYBOARD) || "1".equals(settings.getProperty(ALPHABETIC_KEYBOARD)) || "true".equals(settings.getProperty(ALPHABETIC_KEYBOARD));// - буквенная клавиатура при вводе юзерской инфы
+        spec_keyboard = settings.containsKey(SPEC_KEYBOARD) ? settings.getProperty(SPEC_KEYBOARD).trim() : "";// - специальная при вводе юзерской инфы
         input_font_size = settings.containsKey(INPUT_FONT_SIZE) ? Integer.parseInt(settings.getProperty(INPUT_FONT_SIZE)) : 64; // - размер шрифта при вводе юзерской инфы
         if (settings.containsKey(BUTTON_TYPE)) {
             switch (settings.getProperty(BUTTON_TYPE)) {

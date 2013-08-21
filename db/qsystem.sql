@@ -185,6 +185,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`users` (
   `enable` INT NOT NULL DEFAULT 1 COMMENT 'Дейсткующий пользователь или удаленный.' ,
   `admin_access` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Доступ к администрирования системы.' ,
   `report_access` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Доступ к получению отчетов.' ,
+  `point_ext` VARCHAR(1045) NOT NULL DEFAULT '' COMMENT 'Вывод в третью колонку на главном табло. html + клиент ###  окно @@@' ,
   PRIMARY KEY (`id`) )
 ENGINE = InnoDB, 
 COMMENT = 'Пользователи системы.' ;
@@ -745,8 +746,8 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`users` (`id`, `name`, `password`, `point`, `adress_rs`, `enable`, `admin_access`, `report_access`) VALUES (1, 'Администратор', '', '1', 32, 1, 1, 1);
-INSERT INTO `qsystem`.`users` (`id`, `name`, `password`, `point`, `adress_rs`, `enable`, `admin_access`, `report_access`) VALUES (2, 'Пользователь', '', '2', 33, 1, 0, 0);
+INSERT INTO `qsystem`.`users` (`id`, `name`, `password`, `point`, `adress_rs`, `enable`, `admin_access`, `report_access`, `point_ext`) VALUES (1, 'Администратор', '', '1', 32, 1, 1, 1, '\'\'');
+INSERT INTO `qsystem`.`users` (`id`, `name`, `password`, `point`, `adress_rs`, `enable`, `admin_access`, `report_access`, `point_ext`) VALUES (2, 'Пользователь', '', '2', 33, 1, 0, 0, '<html><span style=\'font-size:26.0pt;color:blue\'>Этаж 1<br>Кабинет 1');
 
 COMMIT;
 
@@ -845,6 +846,6 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`standards` (`id`, `wait_max`, `work_max`, `downtime_max`, `line_service_max`, `line_total_max`) VALUES (1, 0, 0, 0, 0, 0);
+INSERT INTO `qsystem`.`standards` (`id`, `wait_max`, `work_max`, `downtime_max`, `line_service_max`, `line_total_max`) VALUES (1, 10, 20, 10, 10, 20);
 
 COMMIT;

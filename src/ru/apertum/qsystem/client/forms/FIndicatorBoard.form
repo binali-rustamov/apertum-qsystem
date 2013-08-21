@@ -54,7 +54,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="spUp" alignment="0" max="32767" attributes="0"/>
+              <Component id="spUp" alignment="0" pref="915" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -115,6 +115,11 @@
               <SubComponents>
                 <Component class="ru.apertum.qsystem.common.RunningLabel" name="rlTop">
                   <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
+                        <MatteColorBorder/>
+                      </Border>
+                    </Property>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="rlTop.text"/>
                     <Property name="font" type="java.awt.Font" resourceKey="rlTop.font"/>
@@ -211,6 +216,11 @@
                       <SubComponents>
                         <Component class="ru.apertum.qsystem.common.RunningLabel" name="rlLeft">
                           <Properties>
+                            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                              <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
+                                <MatteColorBorder/>
+                              </Border>
+                            </Property>
                             <Property name="horizontalAlignment" type="int" value="0"/>
                             <Property name="text" type="java.lang.String" resourceKey="rlLeft.text"/>
                             <Property name="font" type="java.awt.Font" resourceKey="rlLeft.font"/>
@@ -268,11 +278,7 @@
                           <Layout>
                             <DimensionLayout dim="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                      <Component id="rlRight" pref="507" max="32767" attributes="0"/>
-                                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="rlRight" alignment="1" pref="507" max="32767" attributes="0"/>
                               </Group>
                             </DimensionLayout>
                             <DimensionLayout dim="1">
@@ -284,6 +290,11 @@
                           <SubComponents>
                             <Component class="ru.apertum.qsystem.common.RunningLabel" name="rlRight">
                               <Properties>
+                                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                                  <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
+                                    <MatteColorBorder/>
+                                  </Border>
+                                </Property>
                                 <Property name="horizontalAlignment" type="int" value="0"/>
                                 <Property name="text" type="java.lang.String" resourceKey="rlRight.text"/>
                                 <Property name="font" type="java.awt.Font" resourceKey="rlRight.font"/>
@@ -337,6 +348,11 @@
                 </Container>
                 <Container class="javax.swing.JSplitPane" name="spDown2">
                   <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
+                        <MatteColorBorder/>
+                      </Border>
+                    </Property>
                     <Property name="dividerSize" type="int" value="0"/>
                     <Property name="orientation" type="int" value="0"/>
                     <Property name="name" type="java.lang.String" value="spDown2" noResource="true"/>
@@ -351,6 +367,11 @@
                   <SubComponents>
                     <Container class="ru.apertum.qsystem.client.model.QPanel" name="panelDown">
                       <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
+                            <MatteColorBorder/>
+                          </Border>
+                        </Property>
                         <Property name="name" type="java.lang.String" value="panelDown" noResource="true"/>
                         <Property name="nativePosition" type="java.lang.Boolean" value="false"/>
                         <Property name="opaque" type="boolean" value="false"/>
@@ -367,12 +388,12 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="rlDown" alignment="0" pref="909" max="32767" attributes="0"/>
+                              <Component id="rlDown" alignment="0" pref="907" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="rlDown" alignment="0" pref="120" max="32767" attributes="0"/>
+                              <Component id="rlDown" alignment="0" pref="118" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                       </Layout>
@@ -400,6 +421,11 @@
                     </Container>
                     <Container class="ru.apertum.qsystem.client.model.QPanel" name="panelDown2">
                       <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
+                            <MatteColorBorder/>
+                          </Border>
+                        </Property>
                         <Property name="name" type="java.lang.String" value="panelDown2" noResource="true"/>
                       </Properties>
                       <Constraints>
@@ -411,12 +437,12 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="rlDown2" alignment="0" pref="909" max="32767" attributes="0"/>
+                              <Component id="rlDown2" alignment="0" pref="907" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="rlDown2" alignment="0" pref="133" max="32767" attributes="0"/>
+                              <Component id="rlDown2" alignment="0" pref="131" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                       </Layout>

@@ -125,6 +125,23 @@ public class QServer extends Thread {
         if (QLog.l().isPlaginable()) {
             Uses.loadPlugins("./plugins/");
         }
+        
+        // посмотрим не нужно ли стартануть jetty
+        // для этого нужно запускать с ключом http
+        // если етсь ключ http, то запускаем сервер и принимаем на нем команды серверу суо
+        for (int i = 0; i < args.length; i++) {
+            if (KEY_HTML.equalsIgnoreCase(args[i]) && i != args.length - 1) {
+                QLog.l().logger().info("Запустим Jetty.");
+                try {
+                    int port = Integer.parseInt(args[i + 1]);
+                    JettyRunner.start(port);
+                } catch (NumberFormatException ex) {
+                    QLog.l().logger().error("Номер порта для Jetty в параметрах запуска не является числом. Формат параметра для порта 8081 '-http 8081'.", ex);
+                }
+                break;
+            }
+        }
+
 
         // Отчетный сервер, выступающий в роли вэбсервера, обрабатывающего запросы на выдачу отчетов
         WebServer.getInstance().startWebServer(ServerProps.getInstance().getProps().getWebServerPort());
@@ -177,22 +194,7 @@ public class QServer extends Thread {
             };
             clearServices.start();
         }
-        // посмотрим не нужно ли стартануть jetty
-        // для этого нужно запускать с ключом http
-        // если етсь ключ http, то запускаем сервер и принимаем на нем команды серверу суо
-        for (int i = 0; i < args.length; i++) {
-            if (KEY_HTML.equalsIgnoreCase(args[i]) && i != args.length - 1) {
-                QLog.l().logger().info("Запустим Jetty.");
-                try {
-                    int port = Integer.parseInt(args[i + 1]);
-                    JettyRunner.start(port);
-                } catch (NumberFormatException ex) {
-                    QLog.l().logger().error("Номер порта для Jetty в параметрах запуска не является числом. Формат параметра для порта 8081 '-http 8081'.", ex);
-                }
-                break;
-            }
-        }
-
+        
         // привинтить сокет на локалхост, порт 3128
         final ServerSocket server;
         try {

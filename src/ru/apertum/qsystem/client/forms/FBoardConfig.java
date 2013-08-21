@@ -103,7 +103,7 @@ public class FBoardConfig extends AFBoardRedactor {
         spDown.setDividerLocation(Double.parseDouble(bottomElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)));
         spLeft.setDividerLocation(Double.parseDouble(leftElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)));
         spRight.setDividerLocation(Double.parseDouble(rightElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)));
-        spDown2.setDividerLocation(Double.parseDouble(bottomElement2.attributeValue(Uses.TAG_BOARD_PANEL_SIZE)) - 0.08d); // вычитаемое это подгон адекватного открытия, видно пикселки на что-то еще жрутся.
+        spDown2.setDividerLocation(Double.parseDouble(bottomElement2.attributeValue(Uses.TAG_BOARD_PANEL_SIZE))); // вычитаемое это подгон адекватного открытия, видно пикселки на что-то еще жрутся.
     }
 
     @Override
@@ -127,7 +127,7 @@ public class FBoardConfig extends AFBoardRedactor {
         leftElement.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spLeft.getDividerLocation()) / (spLeft.getWidth() + 0.009), 2)));
         rightElement.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spRight.getDividerLocation()) / spRight.getWidth() + 0.009, 2)));
         bottomElement.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spDown.getDividerLocation()) / spDown.getHeight() + 0.009, 2)));
-        bottomElement2.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spDown2.getDividerLocation()) / spDown2.getHeight() + 0.009, 2)));
+        bottomElement2.addAttribute(Uses.TAG_BOARD_PANEL_SIZE, String.valueOf(Uses.roundAs(new Double(spDown2.getDividerLocation()) / spDown2.getHeight() - 0.03, 2)));
     }
 
     /** This method is called from within the constructor to

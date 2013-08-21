@@ -19,11 +19,15 @@ package ru.apertum.qsystem.client.forms;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.image.MemoryImageSource;
 import javax.swing.JButton;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.CompoundBorder;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
@@ -72,6 +76,30 @@ public class FInputDialog extends javax.swing.JDialog {
         panelSpaseLeft.setVisible(WelcomeParams.getInstance().alphabetic_keyboard);
         panelSpaseRight.setVisible(WelcomeParams.getInstance().alphabetic_keyboard);
         labelKod.setFont(new Font("arial", 0, WelcomeParams.getInstance().input_font_size));
+        
+        panelSpecButtons.setVisible(!"".equals(WelcomeParams.getInstance().spec_keyboard));
+        if (!"".equals(WelcomeParams.getInstance().spec_keyboard)) {
+            final String[] ss = WelcomeParams.getInstance().spec_keyboard.split(";");
+            final GridLayout gl = new GridLayout(1, ss.length);
+            gl.setHgap(20);
+            panelSpecButtons.setLayout(gl);
+
+            for (final String s : ss) {
+                final JButton b = new JButton(s.trim());
+                b.setFont(new Font("Tahoma", 0, 36));
+                b.setName("but_spec_" + s);
+                b.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        java.awt.event.ActionEvent se = new ActionEvent(b, evt.getID(), s);
+                        buttonClickNumeric(se);
+                    }
+                });
+                b.setBorder(new CompoundBorder(new BevelBorder(0), new BevelBorder(0)));
+                panelSpecButtons.add(b);
+            }
+
+        }
     }
     private static INetProperty netProperty;
     private static String serviceName;
@@ -207,6 +235,7 @@ public class FInputDialog extends javax.swing.JDialog {
         panelSpaseRight = new javax.swing.JPanel();
         panelSpase = new javax.swing.JPanel();
         buttonSpace = new javax.swing.JButton();
+        panelSpecButtons = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -235,7 +264,9 @@ public class FInputDialog extends javax.swing.JDialog {
         panelUp.setLayout(panelUpLayout);
         panelUpLayout.setHorizontalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1138, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelUpLayout.createSequentialGroup()
+                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
+                .addGap(114, 114, 114))
         );
         panelUpLayout.setVerticalGroup(
             panelUpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -321,7 +352,7 @@ public class FInputDialog extends javax.swing.JDialog {
         );
         panelAdvKodLayout.setVerticalGroup(
             panelAdvKodLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelKod, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+            .addComponent(labelKod, javax.swing.GroupLayout.PREFERRED_SIZE, 40, Short.MAX_VALUE)
         );
 
         panelButtonsNumeric.setBackground(resourceMap.getColor("panelButtonsNumeric.background")); // NOI18N
@@ -1046,6 +1077,22 @@ public class FInputDialog extends javax.swing.JDialog {
                 .addContainerGap(33, Short.MAX_VALUE))
         );
 
+        panelSpecButtons.setBorder(new javax.swing.border.MatteBorder(null));
+        panelSpecButtons.setName("panelSpecButtons"); // NOI18N
+        panelSpecButtons.setOpaque(false);
+        panelSpecButtons.setPreferredSize(new java.awt.Dimension(1118, 52));
+
+        javax.swing.GroupLayout panelSpecButtonsLayout = new javax.swing.GroupLayout(panelSpecButtons);
+        panelSpecButtons.setLayout(panelSpecButtonsLayout);
+        panelSpecButtonsLayout.setHorizontalGroup(
+            panelSpecButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1116, Short.MAX_VALUE)
+        );
+        panelSpecButtonsLayout.setVerticalGroup(
+            panelSpecButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 50, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
@@ -1053,18 +1100,21 @@ public class FInputDialog extends javax.swing.JDialog {
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(panelAdvKod, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(panelButtonsNumeric, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1118, Short.MAX_VALUE))
+                    .addComponent(panelSpecButtons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(panelButtonsNumeric, javax.swing.GroupLayout.DEFAULT_SIZE, 1118, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
                 .addComponent(panelAdvKod, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(panelButtonsNumeric, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelSpecButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -1252,6 +1302,7 @@ public class FInputDialog extends javax.swing.JDialog {
     private javax.swing.JPanel panelSpase;
     private javax.swing.JPanel panelSpaseLeft;
     private javax.swing.JPanel panelSpaseRight;
+    private javax.swing.JPanel panelSpecButtons;
     private ru.apertum.qsystem.client.model.QPanel panelUp;
     private javax.swing.JPanel panellLettersBottomRight;
     // End of variables declaration//GEN-END:variables

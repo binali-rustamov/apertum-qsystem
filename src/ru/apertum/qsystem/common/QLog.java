@@ -18,7 +18,11 @@ package ru.apertum.qsystem.common;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Properties;
+import org.apache.commons.lang.SystemUtils;
+import org.apache.log4j.Appender;
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
@@ -33,6 +37,7 @@ public class QLog {
     private static final String KEY_DEBUG = "DEBUG";
     private static final String KEY_LOG_INFO = "LOGINFO";
     private static final String KEY_DEMO = "DEMO";
+    private static final String KEY_IDE = "ide";
     private static final String KEY_NOPLUGINS = "-noplugins";
     private static final String KEY_PAUSE = "-pause";
     private static final String KEY_TERMINAL = "-terminal";
@@ -75,7 +80,6 @@ public class QLog {
     public boolean isTerminal() {
         return terminal;
     }
-    
 
     private QLog() {
 
@@ -151,6 +155,21 @@ public class QLog {
                         throw new AssertionError();
                 }
             }
+            if (!isIDE && SystemUtils.IS_OS_WINDOWS) { // Операционка и бинс
+                final Enumeration<Logger> lgs = logger.getLoggerRepository().getCurrentLoggers();
+                while (lgs.hasMoreElements()) {
+                    final Logger lg = lgs.nextElement();
+                    final Enumeration<Appender> aps = lg.getAllAppenders();
+                    while (aps.hasMoreElements()) {
+                        final Appender ap = aps.nextElement();
+                        if (ap instanceof ConsoleAppender) {
+                            ((ConsoleAppender) ap).setEncoding("cp866");
+                            ((ConsoleAppender) ap).activateOptions();
+                        }
+                    }
+                }
+            }
+
             // ключ, отвечающий за режим демонстрации. При нем не надо прятать мышку и убирать шапку формы
             if (KEY_DEMO.equalsIgnoreCase(args1[i])) {
                 isDem = true;
@@ -202,6 +221,7 @@ public class QLog {
     }
     private static String[] args1 = new String[0];
     public static boolean isServer1 = false;
+    public static boolean isIDE = false;
     public static int loggerType = 0; // 0-сервер,1-клиент,2-приемная,3-админка,4-киоск
 
     /**
@@ -212,6 +232,12 @@ public class QLog {
      */
     public static QLog initial(String[] args, int type) {
         args1 = args;
+        for (String string : args) {
+            if (KEY_IDE.equalsIgnoreCase(string)) {
+                isIDE = true;
+                break;
+            }
+        }
         loggerType = type;
         isServer1 = type == 0;
         final QLog log = LogerHolder.INSTANCE;

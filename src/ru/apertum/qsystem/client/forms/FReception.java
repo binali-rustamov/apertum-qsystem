@@ -1056,6 +1056,7 @@ public class FReception extends javax.swing.JFrame {
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setName("jSplitPane2"); // NOI18N
 
+        jPanel9.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel9.border.title"))); // NOI18N
         jPanel9.setName("jPanel9"); // NOI18N
 
         buttonRefreshPostponed.setText(resourceMap.getString("buttonRefreshPostponed.text")); // NOI18N
@@ -1077,7 +1078,7 @@ public class FReception extends javax.swing.JFrame {
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 794, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonRefreshPostponed)
                 .addContainerGap())
@@ -1085,14 +1086,15 @@ public class FReception extends javax.swing.JFrame {
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                .addContainerGap(216, Short.MAX_VALUE)
+                .addContainerGap(193, Short.MAX_VALUE)
                 .addComponent(buttonRefreshPostponed)
                 .addContainerGap())
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
         );
 
         jSplitPane2.setTopComponent(jPanel9);
 
+        jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel10.border.title"))); // NOI18N
         jPanel10.setName("jPanel10"); // NOI18N
 
         buttonRefreshBlack.setText(resourceMap.getString("buttonRefreshBlack.text")); // NOI18N
@@ -1113,7 +1115,7 @@ public class FReception extends javax.swing.JFrame {
         jPanel10Layout.setHorizontalGroup(
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 794, Short.MAX_VALUE)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonRefreshBlack)
                 .addContainerGap())
@@ -1121,10 +1123,10 @@ public class FReception extends javax.swing.JFrame {
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
-                .addContainerGap(247, Short.MAX_VALUE)
+                .addContainerGap(224, Short.MAX_VALUE)
                 .addComponent(buttonRefreshBlack)
                 .addContainerGap())
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
         );
 
         jSplitPane2.setRightComponent(jPanel10);
@@ -1253,7 +1255,6 @@ public class FReception extends javax.swing.JFrame {
         jSplitPane5.setRightComponent(jPanel5);
 
         buttonRefreshMainData.setAction(actionMap.get("refreshMainData")); // NOI18N
-        
         buttonRefreshMainData.setName("buttonRefreshMainData"); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -1286,17 +1287,14 @@ public class FReception extends javax.swing.JFrame {
         menuFile.setName("menuFile"); // NOI18N
 
         menuRefreshMainData.setAction(actionMap.get("refreshMainData")); // NOI18N
-        
         menuRefreshMainData.setName("menuRefreshMainData"); // NOI18N
         menuFile.add(menuRefreshMainData);
 
         menuSendMessage.setAction(actionMap.get("sendMessage")); // NOI18N
-        
-        menuSendMessage.setName("menuSendMessage"); // NOI18N
+       menuSendMessage.setName("menuSendMessage"); // NOI18N
         menuFile.add(menuSendMessage);
 
         menuLangs.setAction(actionMap.get("setCurrentLang")); // NOI18N
-        
         menuLangs.setName("menuLangs"); // NOI18N
         menuFile.add(menuLangs);
 
@@ -1304,7 +1302,6 @@ public class FReception extends javax.swing.JFrame {
         menuFile.add(jSeparator1);
 
         menuItemExit.setAction(actionMap.get("quit")); // NOI18N
-        
         menuItemExit.setName("menuItemExit"); // NOI18N
         menuFile.add(menuItemExit);
 
@@ -1314,7 +1311,6 @@ public class FReception extends javax.swing.JFrame {
         menuCustomers.setName("menuCustomers"); // NOI18N
 
         menuItemChangePriority.setAction(actionMap.get("setAnyPriority")); // NOI18N
-        
         menuItemChangePriority.setName("menuItemChangePriority"); // NOI18N
         menuCustomers.add(menuItemChangePriority);
 
@@ -1322,7 +1318,6 @@ public class FReception extends javax.swing.JFrame {
         menuCustomers.add(jSeparator3);
 
         menuItemCheckTicket.setAction(actionMap.get("checkAnyTicket")); // NOI18N
-        
         menuItemCheckTicket.setName("menuItemCheckTicket"); // NOI18N
         menuCustomers.add(menuItemCheckTicket);
 
@@ -1332,7 +1327,6 @@ public class FReception extends javax.swing.JFrame {
         menuAbout.setName("menuAbout"); // NOI18N
 
         menuItemAbout.setAction(actionMap.get("getAbout")); // NOI18N
-        
         menuItemAbout.setName("menuItemAbout"); // NOI18N
         menuAbout.add(menuItemAbout);
 
@@ -1673,6 +1667,8 @@ public class FReception extends javax.swing.JFrame {
         QLog.initial(args, 2);
         Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.showSplash();
+        // Загрузка плагинов из папки plugins
+        Uses.loadPlugins("./plugins/");
 
         try {
             config = new PropertiesConfiguration("config/reception.properties");

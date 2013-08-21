@@ -107,14 +107,48 @@ public abstract class ATListModel<T extends IidGetter> extends AbstractListModel
         }
     }
 
+    public interface Filtering {
+
+        public boolean filter(Object item);
+    }
+    private Filtering filter = null;
+
+    public void setFilter(Filtering filter) {
+        this.filter = filter;
+    }
+
     @Override
     public T getElementAt(int index) {
-        return items.get(index);
+        if (filter == null) {
+            return items.get(index);
+        } else {
+            int i = -1;
+            int f = 0;
+            while (i != index) {
+                if (filter.filter(items.get(f))) {
+                    i++;
+                }
+                f++;
+            }
+            return items.get(f - 1);
+        }
+
     }
 
     @Override
     public int getSize() {
-        return items.size();
+        if (filter == null) {
+            return items.size();
+        } else {
+            int i = 0;
+            for (T t : items) {
+                if (filter.filter(t)) {
+                    i++;
+                }
+            }
+            return i;
+        }
+
     }
 
     public void save() {

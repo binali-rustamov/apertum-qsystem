@@ -161,7 +161,15 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         this.colorRow = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.rowCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
         this.leftColCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LEFT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
-        this.rightColCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RIGHT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        ArrayList<Element> li = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RIGHT_CAPTION);
+        this.rightColCaption = li.isEmpty() ? "" : li.get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        li = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_EXT_CAPTION);
+        this.extColCaption = li.isEmpty() ? "" : li.get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        li = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_EXT_POSITION);
+        int t = Integer.parseInt(li.isEmpty() ? "0" : li.get(0).attributeValue(Uses.TAG_BOARD_VALUE));
+        t = t < 0 ? 0 : t;
+        t = t > 3 ? 3 : t;
+        this.extColPosition = t;
         this.border = new TitledBorder(new LineBorder(colorRow), "".equals(rowCaption) ? getLocaleMessage("board.cell") : rowCaption);//  MatteBorder(1, 3, 1, 2, Color.LIGHT_GRAY);
         border.setTitleColor(colorTextLine);
 
@@ -430,6 +438,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         private final JLabel left;
         private final JLabel right;
+        private JLabel ext;
 
         public Line() {
             super();
@@ -437,11 +446,32 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             if (borderLine) {
                 setBorder(border);
             }
-            setLayout(new GridLayout(1, isMain ? 2 : 1, 0, 0));
-
-            setBounds(0, 0, 100, 100);
             left = new JLabel();
             final Font font = new Font(left.getFont().getName(), left.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_LINE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+
+
+            if (isMain && extColPosition > 0) {
+                ext = new JLabel();
+                ext.setFont(font);
+                ext.setBackground(bgColor);
+                ext.setForeground(fgColorRight);
+                ext.setHorizontalAlignment(JLabel.CENTER);
+                ext.setVerticalAlignment(JLabel.CENTER);
+                //lab.setOpaque(true);
+                ext.setBounds(0, 0, 100, 100);
+                ext.setText("");
+                ext.setVisible(true);
+            }
+
+            setLayout(new GridLayout(1, isMain ? (extColPosition > 0 ? 3 : 2) : 1, 0, 0));
+            setBounds(0, 0, 100, 100);
+
+
+            if (isMain && extColPosition == 1) {
+                add(ext);
+            }
+
+
             left.setFont(font);
             left.setBackground(bgColor);
             left.setForeground(fgColorLeft);
@@ -454,6 +484,9 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             left.setVisible(true);
 
             if (isMain) {
+                if (extColPosition == 2) {
+                    add(ext);
+                }
                 right = new JLabel();
                 right.setFont(font);
                 right.setBackground(bgColor);
@@ -465,24 +498,36 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                 right.setBounds(0, 0, 100, 100);
                 right.setText("");
                 right.setVisible(true);
+                if (extColPosition == 3) {
+                    add(ext);
+                }
             } else {
                 right = null;
             }
         }
 
-        public void setLineData(String text) {
+        public void setLineData(String text, String ext_data) {
             if (isMain) {
                 final String[] ss = text.split(delimiter);
                 if (ss.length == 2) {
                     left.setText(ss[0]);
                     right.setText(ss[1]);
+                    if (ext != null) {
+                        ext.setText(ext_data);
+                    }
                 } else {
                     if (ss.length == 1) {
                         left.setText(ss[0]);
                         right.setText("");
+                        if (ext != null) {
+                            ext.setText("");
+                        }
                     } else {
                         left.setText("");
                         right.setText("");
+                        if (ext != null) {
+                            ext.setText("");
+                        }
                     }
                 }
             } else {
@@ -503,6 +548,9 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                 if (right != null) {
                     right.setVisible(true);
                 }
+                if (ext != null) {
+                    ext.setVisible(true);
+                }
             }
 
         }
@@ -518,6 +566,9 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                 if (right != null) {
                     right.setVisible(true);
                 }
+                if (ext != null) {
+                    ext.setVisible(true);
+                }
                 return;
             }
             vis = true;
@@ -528,6 +579,9 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                     left.setVisible(vis);
                     if (right != null) {
                         right.setVisible(vis);
+                    }
+                    if (ext != null) {
+                        ext.setVisible(vis);
                     }
                     vis = !vis;
                 }
@@ -588,6 +642,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Заголовок правого столбца
      */
     private final String rightColCaption;
+    private final String extColCaption;
+    private final int extColPosition;
     /**
      * Цвет надписи строки табло
      */
@@ -624,11 +680,29 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                     panel_cap.setBorder(new LineBorder(colorRow, 0));
                 }
                 panel_cap.setOpaque(false);
-                panel_cap.setLayout(new GridLayout(1, 2, 0, 0));
+                panel_cap.setLayout(new GridLayout(1, extColPosition > 0 ? 3 : 2, 0, 0));
                 //panelMain.add(panel_cap);
                 panel_cap.setBounds(0, 0, 100, 100);
                 JLabel lab_cap_l = new JLabel();
                 final Font font_cap = new Font(lab_cap_l.getFont().getName(), lab_cap_l.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
+
+
+                JLabel lab_cap_ext = new JLabel();
+                if (extColPosition > 0) {
+                    lab_cap_ext = new JLabel();
+                    lab_cap_ext.setFont(font_cap);
+                    lab_cap_ext.setBackground(bgColor);
+                    lab_cap_ext.setForeground(fgColorCaprion);
+                    lab_cap_ext.setHorizontalAlignment(JLabel.CENTER);
+                    lab_cap_ext.setVerticalAlignment(JLabel.CENTER);
+                    //lab.setOpaque(true);
+                    lab_cap_ext.setBounds(0, 0, 100, 100);
+                    lab_cap_ext.setText(!"".equals(extColCaption) ? extColCaption : getLocaleMessage("board.point.ext"));
+                }
+                if (extColPosition == 1) {
+                    panel_cap.add(lab_cap_ext);
+                }
+
                 lab_cap_l.setFont(font_cap);
                 lab_cap_l.setBackground(bgColor);
                 lab_cap_l.setForeground(fgColorCaprion);
@@ -638,6 +712,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                 panel_cap.add(lab_cap_l);
                 lab_cap_l.setBounds(0, 0, 100, 100);
                 lab_cap_l.setText(!"".equals(leftColCaption) ? leftColCaption : getLocaleMessage("board.client"));
+
+                if (extColPosition == 2) {
+                    panel_cap.add(lab_cap_ext);
+                }
 
                 lab_cap_l = new JLabel();
                 lab_cap_l.setFont(font_cap);
@@ -649,6 +727,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                 panel_cap.add(lab_cap_l);
                 lab_cap_l.setBounds(0, 0, 100, 100);
                 lab_cap_l.setText(!"".equals(rightColCaption) ? rightColCaption : getLocaleMessage("board.point"));
+
+                if (extColPosition == 3) {
+                    panel_cap.add(lab_cap_ext);
+                }
             }
         }
         if (!caps.isEmpty()) {
@@ -677,11 +759,12 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * @param index номер строки.
      * @param number номер клиента - часть выводимого текста
      * @param point пункт куда позвали клиента - часть выводимого текста
+     * @param ext_data Третья колонка
      * @param blinkCount 0 - постоянное мигание, -1 не мигает. число - количество миганий
      */
-    public void printRecord(int index, String number, String point, int blinkCount) {
+    public void printRecord(int index, String number, String point, String ext_data, int blinkCount) {
         if (index < getLinesCount()) {
-            labels.get(index).setLineData(number + (isMain ? delimiter + point : ""));
+            labels.get(index).setLineData(number + (isMain ? delimiter + point : ""), ext_data);
             labels.get(index).setBlinkCount(blinkCount == -1 ? -1 : blinkCount * 2);
             if (blinkCount != -1) {
                 labels.get(index).startBlink();
@@ -780,6 +863,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             }
         });
 
+        rlTop.setBorder(new javax.swing.border.MatteBorder(null));
         rlTop.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         rlTop.setText(resourceMap.getString("rlTop.text")); // NOI18N
         rlTop.setFont(resourceMap.getFont("rlTop.font")); // NOI18N
@@ -847,6 +931,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             }
         });
 
+        rlLeft.setBorder(new javax.swing.border.MatteBorder(null));
         rlLeft.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         rlLeft.setText(resourceMap.getString("rlLeft.text")); // NOI18N
         rlLeft.setFont(resourceMap.getFont("rlLeft.font")); // NOI18N
@@ -898,6 +983,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             }
         });
 
+        rlRight.setBorder(new javax.swing.border.MatteBorder(null));
         rlRight.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         rlRight.setText(resourceMap.getString("rlRight.text")); // NOI18N
         rlRight.setFont(resourceMap.getFont("rlRight.font")); // NOI18N
@@ -920,10 +1006,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelRight.setLayout(panelRightLayout);
         panelRightLayout.setHorizontalGroup(
             panelRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelRightLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(rlRight, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
-                .addGap(0, 0, 0))
+            .addComponent(rlRight, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
         );
         panelRightLayout.setVerticalGroup(
             panelRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -951,7 +1034,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 247, Short.MAX_VALUE)
+            .addGap(0, 241, Short.MAX_VALUE)
         );
         panelMainLayout.setVerticalGroup(
             panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -964,10 +1047,12 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         spDown.setLeftComponent(spLeft);
 
+        spDown2.setBorder(new javax.swing.border.MatteBorder(null));
         spDown2.setDividerSize(0);
         spDown2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         spDown2.setName("spDown2"); // NOI18N
 
+        panelDown.setBorder(new javax.swing.border.MatteBorder(null));
         panelDown.setName("panelDown"); // NOI18N
         panelDown.setNativePosition(java.lang.Boolean.FALSE);
         panelDown.setOpaque(false);
@@ -1001,15 +1086,16 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelDown.setLayout(panelDownLayout);
         panelDownLayout.setHorizontalGroup(
             panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
+            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 907, Short.MAX_VALUE)
         );
         panelDownLayout.setVerticalGroup(
             panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+            .addComponent(rlDown, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
         );
 
         spDown2.setTopComponent(panelDown);
 
+        panelDown2.setBorder(new javax.swing.border.MatteBorder(null));
         panelDown2.setName("panelDown2"); // NOI18N
 
         rlDown2.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1023,11 +1109,11 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelDown2.setLayout(panelDown2Layout);
         panelDown2Layout.setHorizontalGroup(
             panelDown2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlDown2, javax.swing.GroupLayout.DEFAULT_SIZE, 909, Short.MAX_VALUE)
+            .addComponent(rlDown2, javax.swing.GroupLayout.DEFAULT_SIZE, 907, Short.MAX_VALUE)
         );
         panelDown2Layout.setVerticalGroup(
             panelDown2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rlDown2, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+            .addComponent(rlDown2, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
         );
 
         spDown2.setRightComponent(panelDown2);
@@ -1040,7 +1126,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelCommon.setLayout(panelCommonLayout);
         panelCommonLayout.setHorizontalGroup(
             panelCommonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spUp)
+            .addComponent(spUp, javax.swing.GroupLayout.DEFAULT_SIZE, 915, Short.MAX_VALUE)
         );
         panelCommonLayout.setVerticalGroup(
             panelCommonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

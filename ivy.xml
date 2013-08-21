@@ -60,6 +60,7 @@
         <dependency org="commons-digester" name="commons-digester" rev="2.1" conf="runtime->*" transitive="false"/>
         <dependency org="commons-dbcp" name="commons-dbcp" rev="1.4" conf="compile->*" transitive="false"/>
         <dependency org="commons-configuration" name="commons-configuration" rev="1.6" conf="compile->*" transitive="false"/>
+        <dependency org="commons-codec" name="commons-codec" rev="1.8" conf="compile->*" transitive="false"/>
 
         <dependency org="jfree" name="jcommon" rev="1.0.15" conf="runtime->*" transitive="false"/>
         <dependency org="jfree" name="jfreechart" rev="1.0.13" conf="runtime->*" transitive="false"/>

@@ -1,6 +1,7 @@
 ﻿<html lang="en">
     <head>
         <meta charset="utf-8" />
+		<meta http-equiv="refresh" content="600">
         <title>QSystem board</title>
         <link rel="stylesheet" href="jquery-ui.css" />
         <script src="jquery-1.9.1.js"></script>
@@ -129,9 +130,15 @@
                     <div class="toggler">
                         <div id="effect" class="ui-widget-content ui-corner-all">
                             <h3 class="ui-widget-header ui-corner-all">Валюты</h3>
-                            <p>
+                            <!--p>
                                 <span style='font-size:20.0pt;color:GREEN'>USD : 32.4 / 32.5<br>EUR : 42.5 / 42.7</span>
-                            </p>
+                            </p-->
+							<!-- Информер курса валют -->
+                            <span style='font-size:17.0pt;color:GREEN'><p>
+                            <div id="informer_1"></div>
+                            <script src="http://monavista.ru/informer_valuta.js"></script></p></span>
+
+
                         </div>
                     </div>
                 </td>
@@ -140,7 +147,15 @@
                     <div class="toggler">
                         <div id="effect2" class="ui-widget-content ui-corner-all">
                             <h3 class="ui-widget-header ui-corner-all">Котировки</h3>
-                            <p>
+							
+							
+							
+							<table width="240" border="1" style="border-collapse: collapse; text-align:left; font-size:11px; color:#000000; "><tr bgcolor="" align="center"><td></td><td>LAST</td><td>CHANGE</td><td>%</td></tr><tr bgcolor=""><td><a href="http://www.forexpf.ru/chart/sp500i/" title="S&P 500" target="_blank">S&P 500</a></td><td id="isp500b">0.00</td><td id="isp500a">0.00</td><td id="isp500c">0.00</td></tr><tr bgcolor=""><td><a href="http://www.forexpf.ru/chart/nasdcomp/" title="nasdaq comp" target="_blank">Nasdaq Comp</a></td><td id="inasdb">0.00</td><td id="inasda">0.00</td><td id="inasdc">0.00</td></tr><tr bgcolor=""><td><a href="http://www.forexpf.ru/chart/dax/" title="dax" target="_blank">DAX</a></td><td id="idaxb">0.00</td><td id="idaxa">0.00</td><td id="idaxc">0.00</td></tr><tr bgcolor=""><td><a href="http://www.forexpf.ru/chart/rts/" title="rts" target="_blank">RTS</a></td><td id="irtsb">0.00</td><td id="irtsa">0.00</td><td id="irtsc">0.00</td></tr></table><script src="http://www.forexpf.ru/_informer_/indices.php?id=1259"></script>
+							
+							
+							
+							
+                            <!--p>
 							    <table>
 								<tr>
 								<td>
@@ -152,7 +167,7 @@
 								</td>
 								</tr>
 								</table>
-                            </p>
+                            </p-->
                         </div>
                     </div>
                 </td>
@@ -161,20 +176,44 @@
                     <div class="toggler">
                         <div id="effect3" class="ui-widget-content ui-corner-all">
                             <h3 class="ui-widget-header ui-corner-all">Новости</h3>
-                            <p>
+							
+							
+							<style type='text/css'>
+							#iinews20 {width:240px;font-family:Arial;border:0px #FFFFFF solid;padding:0px;background:#FFFFFF}
+							#iinews20 p {padding:0;margin:0}
+							#iinews20 a {color:#0000FF;text-decoration:none}
+							#iinews20 a:hover {color:#CC0000;text-decoration:none}
+							#iinews20 img {margin:3px 10px 0 0;display:none;width:100px !important;height:68px !important;border:0px #FFFFFF solid}
+							#iinews20 .feedTitle {font-size:12px;display:undefined}
+							#iinews20 ul {padding:0;margin:0;}
+							#iinews20 li {list-style-type:none;clear:both;float:none;padding-top:8px}
+							#iinews20 .headline {font-size:16px;font-weight:bold}
+							#iinews20 div {font-size:12px;color:#000000;}
+							#iinews20 .date {padding:0;margin:0;color:#000000;font-size:12px;}
+							#creditfooter {clear:both;display:undefined;padding-top:8px !important;font-size:12px;text-align:right}
+							</style>
+							<script type="text/javascript">var nItemsa = "1";var nItems = "1";var showImg = 0;var showTxt = 0;var fName = 0;var credit = 0;var links = 0;</script>
+							<script src="http://monavista.ru/informer1.js" type="text/javascript" charset="utf-8"></script><div style="padding-top:5px;font-size:11px;"></div>
+
+							
+							
+							
+                            <!--p>
                                 Сечин сообщил, что в текущем году инвестиции «Роснефти» в регион составят 52 млрд рублей.
-                            </p>
+                            </p-->
                         </div>
                     </div>
                 </td>
 
                 <td>
                     <div class="toggler">
-                        <div id="effect4" class="ui-widget-content ui-corner-all">
+                        <div id="effect4" class="ui-widget-content ui-corner-all" align="center">
                             <h3 class="ui-widget-header ui-corner-all">Погода</h3>
-                            <p>
+							
+							<div style="margin: 5 auto;"><img border="0" src="http://informer.gismeteo.ru/27786-10.GIF" /></div>
+                            <!--p>
                                 <span style='font-size:20.0pt;color:red'>Москва +20<br>ветер 1м/с СЗ</span>
-                            </p>
+                            </p-->
                         </div>
                     </div>
                 </td>

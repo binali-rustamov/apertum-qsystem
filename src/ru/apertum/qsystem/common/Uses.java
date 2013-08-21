@@ -47,8 +47,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -165,6 +167,8 @@ public final class Uses {
     public static final String TAG_BOARD_LINE_DELIMITER = "Разделитель столбцов";
     public static final String TAG_BOARD_LEFT_CAPTION = "Заголовок левого столбца";
     public static final String TAG_BOARD_RIGHT_CAPTION = "Заголовок правого столбца";
+    public static final String TAG_BOARD_EXT_CAPTION = "Заголовок дополнительного столбца";
+    public static final String TAG_BOARD_EXT_POSITION = "Порядок дополнительного столбца";
     public static final String TAG_BOARD_GRID_NEXT_CAPTION = "Заголовок таблицы следующих";
     public static final String TAG_BOARD_GRID_NEXT_FRAME_BORDER = "Рамка таблицы следующих";
     public static final String TAG_BOARD_LINE_COLOR = "Цвет рамки строки табло";
@@ -258,6 +262,24 @@ public final class Uses {
     public static final String WELCOME_UNLOCK = "#WELCOME_UNLOCK#";
     public static final String WELCOME_OFF = "#WELCOME_OFF#";
     public static final String WELCOME_REINIT = "#WELCOME_REINIT#";
+    public final static String[] RUSSIAN_MONAT = {
+        "Января",
+        "Февраля",
+        "Марта",
+        "Апреля",
+        "Мая",
+        "Июня",
+        "Июля",
+        "Августа",
+        "Сентября",
+        "Октября",
+        "Ноября",
+        "Декабря"
+    };
+
+    public static String getRusDate(Date date, String format) {
+        return new SimpleDateFormat(format, Locales.getInstance().getRussSymbolDateFormat()).format(date);
+    }
     /**
      * Формат даты
      */
@@ -306,6 +328,7 @@ public final class Uses {
      * Формат даты./2009 январь 26 16:10:41
      */
     public final static DateFormat format_for_label = new SimpleDateFormat("dd MMMM HH.mm.ss");
+    public final static DateFormat format_for_print = new SimpleDateFormat("dd MMMM HH:mm");
     /**
      * Временная папка для файлов сохранения состояния для помехоустойчивости
      */

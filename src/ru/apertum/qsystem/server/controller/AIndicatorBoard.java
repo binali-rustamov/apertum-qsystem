@@ -133,6 +133,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
          * При мониторе это норядковый номер вывода
          */
         final public Integer adressRS;
+        final public String ext_data;
         /**
          * Отвесела на табло или нет.
          */
@@ -164,10 +165,12 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
          * @param userName 
          * @param point номер кабинета куда вызвали кастомера.
          * @param customerNumber номер кастомера о ком запись.
+         * @param ext_data третья колонка
          * @param adressRS адрес клиентского табло.
          * @param interval обязательное время висения строки на табло в секундах
          */
-        public Record(String userName, String point, String customerNumber, Integer adressRS, Integer interval) {
+        public Record(String userName, String point, String customerNumber, String ext_data, Integer adressRS, Integer interval) {
+            this.ext_data = ext_data;
             this.adressRS = adressRS;
             this.customerNumber = customerNumber;
             this.userName = userName;
@@ -184,7 +187,8 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
             };
         }
 
-        public Record(CustomerState state, String point, String customerNumber, Integer adressRS) {
+        public Record(CustomerState state, String point, String customerNumber, String ext_data, Integer adressRS) {
+            this.ext_data = ext_data;
             this.customerNumber = customerNumber;
             this.point = point;
             this.state = state;
@@ -219,7 +223,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
     public synchronized void inviteCustomer(QUser user, QCustomer customer) {
         Record rec = records.get(user.getName());
         if (rec == null) {
-            rec = new Record(user.getName(), user.getPoint(), customer.getPrefix() + customer.getNumber(), user.getAdressRS(), getPause());
+            rec = new Record(user.getName(), user.getPoint(), customer.getPrefix() + customer.getNumber(), user.getPointExt().replace("###", customer.getFullNumber()).replace("@@@", user.getPoint()), user.getAdressRS(), getPause());
         } else {
             addItem(rec);
         }
@@ -236,7 +240,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
         Record rec = records.get(user.getName());
         //запись может быть не найдена после рестарта сервера, список номеров на табло не бакапится
         if (rec == null) {
-            rec = new Record(user.getName(), user.getPoint(), ((QUser) user).getCustomer().getPrefix() + ((QUser) user).getCustomer().getNumber(), user.getAdressRS(), getPause());
+            rec = new Record(user.getName(), user.getPoint(), ((QUser) user).getCustomer().getPrefix() + ((QUser) user).getCustomer().getNumber(), user.getPointExt().replace("###", ((QUser) user).getCustomer().getFullNumber()).replace("@@@", user.getPoint()), user.getAdressRS(), getPause());
         }
         rec.setState(CustomerState.STATE_WORK);
         show(rec);
@@ -295,13 +299,13 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
         if (!compareList(newList)) {
             oldList = new LinkedHashSet<>();
             for (Record rec : newList) {
-                oldList.add(new Record(rec.state, rec.point, rec.customerNumber, rec.adressRS));
+                oldList.add(new Record(rec.state, rec.point, rec.customerNumber, rec.ext_data, rec.adressRS));
             }
             showOnBoard(newList);
         }
         if (record != null) {
             if (record.compareTo(oldRec) != 0) {
-                oldRec = new Record(record.state, record.point, record.customerNumber, record.adressRS);
+                oldRec = new Record(record.state, record.point, record.customerNumber, record.ext_data, record.adressRS);
                 showToUser(record);
             }
         }

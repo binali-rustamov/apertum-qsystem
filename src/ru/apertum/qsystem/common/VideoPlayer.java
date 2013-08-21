@@ -106,7 +106,7 @@ public class VideoPlayer extends JPanel {
      */
     public MediaView getMediaView() {
         int k = 0;
-        while ((medView == null || medView.getMediaPlayer()==null) && k < 30) {
+        while ((medView == null || medView.getMediaPlayer() == null) && k < 30) {
             k++;
             try {
                 Thread.sleep(100);
@@ -194,7 +194,7 @@ public class VideoPlayer extends JPanel {
                             medView.setMediaPlayer(null);
                             if (!setVideoFile(vf, 1)) {
                                 setVideoFile(getNextVideoFile(), 1);
-                            } 
+                            }
                             getMediaView().getMediaPlayer().setMute(mute);
                             removeAll();
                             setLayout(new GridLayout(1, 1));
@@ -229,8 +229,12 @@ public class VideoPlayer extends JPanel {
     }
 
     public void start() {
-        getMediaView().getMediaPlayer().play();
-        javafxPanel.getComponentListeners()[0].componentResized(null);
+        try {
+            getMediaView().getMediaPlayer().play();
+            javafxPanel.getComponentListeners()[0].componentResized(null);
+        } catch (NullPointerException npe) {
+            QLog.l().logger().error("Кодак не поддерживается. Codak not supported. Видео должно быть в формате H.264.", npe);
+        }
     }
 
     public void pause() {

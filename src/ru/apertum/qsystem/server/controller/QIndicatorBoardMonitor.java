@@ -132,10 +132,10 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
         if (indicatorBoard != null) {
             int i = 0;
             for (Record rec : records) {
-                indicatorBoard.printRecord(i++, rec.customerNumber, rec.point, rec.getState() == CustomerState.STATE_INVITED ? 0 : -1);
+                indicatorBoard.printRecord(i++, rec.customerNumber, rec.point, rec.ext_data, rec.getState() == CustomerState.STATE_INVITED ? 0 : -1);
             }
             for (int t = i; t < getLinesCount(); t++) {
-                indicatorBoard.printRecord(t, "", "", -1);
+                indicatorBoard.printRecord(t, "", "", "", -1);
             }
             markShowed(records);
 

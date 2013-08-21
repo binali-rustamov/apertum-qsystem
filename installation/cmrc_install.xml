@@ -116,6 +116,7 @@
 			<fileset dir="../config/board" includes="*.jpg,*.gif,*.png,*.mpg,*.txt" targetdir="$INSTALL_PATH/config/board/"/>
             <fileset os="windows" dir="resource/img" includes="*.ico" targetdir="$INSTALL_PATH/icons/"/>
             <fileset os="unix" dir="resource/img" includes="*.png" targetdir="$INSTALL_PATH/icons/"/>
+			<file src="../plugins/" targetdir="$INSTALL_PATH/"/>
         </pack>
         <!-- 
         Для сервера кроме самих исполняемых библиотек еще нужно 
@@ -142,7 +143,6 @@
             <file os="unix" src="resource/bin/libjli.so" targetdir="$INSTALL_PATH/dist"/>
             <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH/dist"/>
             <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH/dist"/>
-            <file src="../plugins/" targetdir="$INSTALL_PATH/"/>
             <file src="../db/qsystem.sql" targetdir="$INSTALL_PATH/DB/"/>
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
@@ -156,7 +156,6 @@
             <description>Администрирование</description>
             <file src="../config/welcome.properties" targetdir="$INSTALL_PATH/config/"/>
             <file src="../config/admin.properties" targetdir="$INSTALL_PATH/config/"/>
-			<file src="../plugins/" targetdir="$INSTALL_PATH/"/>
             <file os="windows" src="resource/txt/StartAdmin.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/admin.sh" targetdir="$INSTALL_PATH"/>
             <parsable targetfile="$INSTALL_PATH/config/admin.properties"/>

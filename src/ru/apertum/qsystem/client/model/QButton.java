@@ -37,6 +37,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.forms.FAdvanceCalendar;
 import ru.apertum.qsystem.client.forms.FConfirmationStart;
 import ru.apertum.qsystem.client.forms.FInputDialog;
@@ -206,7 +207,7 @@ public class QButton extends JButton {
                                     gc_time.add(GregorianCalendar.HOUR_OF_DAY, -1);
                                 }
                                 form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + "<br><br><br></span>"
-                                        + "<span style='font-size:80.0pt;color:blue'>" + Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()) + "<br></span>"
+                                        + "<span style='font-size:80.0pt;color:blue'>" + (Locales.getInstance().isRuss ? Uses.getRusDate(gc_time.getTime(), Uses.DATE_FORMAT_FULL) : Uses.format_dd_MMMM_yyyy.format(gc_time.getTime())) + "<br></span>"
                                         // + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + t + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00" + "</span></p>",
                                         + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_come_to") + " " + t + ":" + t_m + " " + "</span></p>",
                                         "/ru/apertum/qsystem/client/forms/resources/getTicket.png");

@@ -179,7 +179,7 @@ public final class FClient extends javax.swing.JFrame {
      */
     private void setBlinkBoard(boolean blinked) {
         if (indicatorBoard != null) {
-            indicatorBoard.printRecord(0, customer.getPrefix() + customer.getNumber(), "", blinked ? 0 : -1);
+            indicatorBoard.printRecord(0, customer.getPrefix() + customer.getNumber(), "", "", blinked ? 0 : -1);
         }
         if (clientboardFX) {
             //todo   board.showData(customer.getPrefix() + customer.getNumber(), blinked);
@@ -1430,7 +1430,7 @@ public final class FClient extends javax.swing.JFrame {
      */
     private void printCustomerNumber(String text, int blinkCount) {
         if (indicatorBoard != null) {
-            indicatorBoard.printRecord(0, text, "", blinkCount);
+            indicatorBoard.printRecord(0, text, "", "", blinkCount);
         }
         if (clientboardFX) {
             //todo   board.showData("", false);

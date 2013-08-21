@@ -26,4 +26,6 @@ import ru.apertum.qsystem.common.model.QCustomer;
 public interface IChangeCustomerStateEvent extends IExtra {
 
     public void change(QCustomer customer, CustomerState newState, Long newServiceId);
+
+    public void change(String userPoint, String customerPrefix, int customerNumber, CustomerState cs);
 }

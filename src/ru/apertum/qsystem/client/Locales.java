@@ -18,6 +18,7 @@ package ru.apertum.qsystem.client;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,12 +26,13 @@ import java.util.Locale;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
 
 /**
  *
  * @author Evgeniy Egorov
  */
-public class Locales {
+public final class Locales {
 
     private Locales() {
         config = new PropertiesConfiguration();
@@ -74,9 +76,19 @@ public class Locales {
                 }
             }
         }
+        isRuss = getNameOfPresentLocale().toLowerCase().startsWith("ru");
+
+        russSymbolDateFormat = new DateFormatSymbols(getLocaleByName("RU"));
+        russSymbolDateFormat.setMonths(Uses.RUSSIAN_MONAT);
     }
     private String configFileName = "config/langs.properties";
     private final PropertiesConfiguration config;
+    public final boolean isRuss;
+    private final DateFormatSymbols russSymbolDateFormat;
+
+    public DateFormatSymbols getRussSymbolDateFormat() {
+        return russSymbolDateFormat;
+    }
     /**
      * eng -> Locale(eng)
      */
@@ -131,7 +143,7 @@ public class Locales {
     public Locale getLangCurrent() {
         return locales.get(config.getString(LANG_CURRENT)) == null ? Locale.getDefault() : locales.get(config.getString(LANG_CURRENT));
     }
-    
+
     public Locale getLocaleByName(String name) {
         return locales.get(name) == null ? Locale.getDefault() : locales.get(name);
     }
@@ -143,7 +155,7 @@ public class Locales {
     public String getLangButtonText(String lng) {
         return lngs_buttontext.get(lng);
     }
-    
+
     public String getNameOfPresentLocale() {
         return locales_name.get(Locale.getDefault());
     }

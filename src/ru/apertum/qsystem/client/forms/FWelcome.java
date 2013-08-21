@@ -733,7 +733,7 @@ public class FWelcome extends javax.swing.JFrame {
 
                 write(getLocaleMessage("ticket.time"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
 
-                write(Uses.format_for_label.format(customer.getStandTime()), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                write(Locales.getInstance().isRuss ? Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm") : Uses.format_for_label.format(customer.getStandTime()), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (customer.getService().getInput_required()) {
                     write(customer.getService().getTextToLocale(QService.Field.INPUT_CAPTION).replaceAll("<.*?>", ""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
@@ -934,7 +934,7 @@ public class FWelcome extends javax.swing.JFrame {
                     t = 24;
                     gc_time.add(GregorianCalendar.HOUR_OF_DAY, -1);
                 }
-                write(Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()), ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
+                write(Locales.getInstance().isRuss ? Uses.getRusDate(gc_time.getTime(), Uses.DATE_FORMAT_FULL) : Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()), ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
                 //write(FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + (t) + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00", ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
                 write(FWelcome.getLocaleMessage("qbutton.take_adv_ticket_come_to") + " " + (t) + ":" + t_m, ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
 
@@ -966,7 +966,7 @@ public class FWelcome extends javax.swing.JFrame {
 
                 write(getLocaleMessage("ticket.reg_time"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
 
-                write(Uses.format_for_label.format(new Date()), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                write(Locales.getInstance().isRuss ? Uses.getRusDate(new Date(), "dd MMMM HH:mm") : Uses.format_for_label.format(new Date()), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
 
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (advCustomer.getService().getInput_required()) {

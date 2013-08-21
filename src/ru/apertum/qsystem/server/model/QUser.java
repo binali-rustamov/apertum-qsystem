@@ -193,6 +193,20 @@ public class QUser implements IidGetter, Serializable {
     public Integer getAdressRS() {
         return adressRS;
     }
+    
+    @Expose
+    @SerializedName("point_ext")
+    private String pointExt;
+
+    @Column(name = "point_ext")
+    public String getPointExt() {
+        return pointExt;
+    }
+
+    public void setPointExt(String pointExt) {
+        this.pointExt = pointExt;
+    }
+    
     //******************************************************************************************************************
     //******************************************************************************************************************
     //************************************** Услуги юзера **************************************************************

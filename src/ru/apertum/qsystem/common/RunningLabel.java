@@ -35,11 +35,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
 /**
@@ -127,7 +130,7 @@ public class RunningLabel extends JLabel implements Serializable {
     private Dimension dmImg = null;
     public static final String PROP_SPEED = "speedRunningText";
     /**
-     * Скорость двидения текста. На сколько пикселей сместится кадр относительно предыдущего при 24 кадра в секкунду.
+     * Скорость движения текста. На сколько пикселей сместится кадр относительно предыдущего при 24 кадра в секкунду.
      * По умолчанию 10 пикселей, т.е. 240 пикселей с секунку будет скорость движения текста.
      */
     private int speedRunningText = 10;
@@ -183,7 +186,7 @@ public class RunningLabel extends JLabel implements Serializable {
     private String oldTxt = "";
 
     public String getRunningText() {
-        final String txt = getShowTime() ? getDate() : (currentLine >= 0 && !lines.isEmpty() ? getNextStringFromLines() : runningText);
+        final String txt = isShowTime() ? getDate() : (currentLine >= 0 && !lines.isEmpty() ? getNextStringFromLines() : runningText);
         if (sizes == null || oldTxt.length() != txt.length()) {
             setSizes(txt);
         }
@@ -240,9 +243,19 @@ public class RunningLabel extends JLabel implements Serializable {
         needNextLine = false;
         return res;
     }
+    private SimpleDateFormat sdf;
 
     private String getDate() {
-        return Uses.format_for_label.format(new Date());
+        if (Locales.getInstance().isRuss) {
+            if (sdf == null) {
+                DateFormatSymbols russSymbol = new DateFormatSymbols(Locales.getInstance().getLangCurrent());
+                russSymbol.setMonths(Uses.RUSSIAN_MONAT);
+                sdf = new SimpleDateFormat("dd MMMM  HH.mm:ss", russSymbol);
+            }
+            return sdf.format(new Date());
+        } else {
+            return Uses.format_for_label.format(new Date());
+        }
     }
 
     @Override
@@ -264,7 +277,7 @@ public class RunningLabel extends JLabel implements Serializable {
 
     @Override
     public void paint(Graphics g) {
-        if (backgroundImg != null || !"".equals(getRunningText()) || getShowTime()) {
+        if (backgroundImg != null || !"".equals(getRunningText()) || isShowTime()) {
             // Тут условия на изменение картинки с текстом
             if (((run || isBlink()) && need) || ((run == false && isBlink() == false) && need) || needRepaint) {
 
@@ -555,7 +568,7 @@ public class RunningLabel extends JLabel implements Serializable {
      */
     private Boolean showTime = false;
 
-    public Boolean getShowTime() {
+    public Boolean isShowTime() {
         return showTime;
     }
 

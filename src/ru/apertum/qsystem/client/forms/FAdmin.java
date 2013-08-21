@@ -16,6 +16,9 @@
  */
 package ru.apertum.qsystem.client.forms;
 
+import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -24,14 +27,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -42,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -59,6 +68,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.TreePath;
+import org.apache.commons.codec.EncoderException;
 import org.dom4j.DocumentException;
 import org.jdesktop.application.Action;
 import ru.apertum.qsystem.common.NetCommander;
@@ -78,6 +88,9 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
+import org.apache.commons.codec.net.BCodec;
+import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.lang.ArrayUtils;
 import org.hibernate.jdbc.Work;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -86,6 +99,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.help.Helper;
+import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.cmd.RpcGetServerState.ServiceInfo;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.exceptions.ClientWarning;
@@ -246,7 +260,6 @@ public class FAdmin extends javax.swing.JFrame {
         initComponents();
 
         setTitle(getTitle() + " " + Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF()));
-
 
         try {
             setIconImage(ImageIO.read(FAdmin.class.getResource("/ru/apertum/qsystem/client/forms/resources/admin.png")));
@@ -529,6 +542,7 @@ public class FAdmin extends javax.swing.JFrame {
             textFieldUserName.setText("");
             textFieldUserIdent.setText("");
             passwordFieldUser.setText("");
+            textFieldExtPoint.setText("");
             return;
         }
         final QUser user = (QUser) listUsers.getSelectedValue();
@@ -541,6 +555,7 @@ public class FAdmin extends javax.swing.JFrame {
             textFieldUserIdent.setText(user.getPoint());
             passwordFieldUser.setText(user.getPassword());
             spinnerUserRS.setValue(user.getAdressRS());
+            textFieldExtPoint.setText(user.getPointExt());
             checkBoxAdmin.setSelected(user.getAdminAccess());
             checkBoxReport.setSelected(user.getReportAccess());
             listUserService.setModel(user.getPlanServiceList());
@@ -956,6 +971,7 @@ public class FAdmin extends javax.swing.JFrame {
             user.setPoint(textFieldUserIdent.getText());
             user.setPassword(new String(passwordFieldUser.getPassword()));
             user.setAdressRS((Integer) spinnerUserRS.getValue());
+            user.setPointExt(textFieldExtPoint.getText());
             user.setAdminAccess(checkBoxAdmin.isSelected());
             user.setReportAccess(checkBoxReport.isSelected());
         }
@@ -1007,6 +1023,51 @@ public class FAdmin extends javax.swing.JFrame {
     public static void main(String args[]) throws Exception {
         QLog.initial(args, 3);
         Locale.setDefault(Locales.getInstance().getLangCurrent());
+
+        //запустим поток обновления пейджера, пусть поработает
+        final Thread tPager = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                FAbout.loadVersionSt();
+                String result = "";
+                try {
+                    final URL url = new URL(PAGER_URL + "/qskyapi/getpagerdata?qsysver=" + FAbout.VERSION_);
+                    final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("User-Agent", "Java bot");
+                    conn.connect();
+                    final int code = conn.getResponseCode();
+                    if (code == 200) {
+                        try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf8"))) {
+                            String inputLine;
+                            while ((inputLine = in.readLine()) != null) {
+                                result += inputLine;
+                            }
+                        }
+                    }
+                    conn.disconnect();
+                } catch (Exception e) {
+                    System.err.println("Pager not enabled.");
+                    return;
+                }
+                final Gson gson = GsonPool.getInstance().borrowGson();
+                try {
+                    final Answer answer = gson.fromJson(result, Answer.class);
+                    forPager = answer;
+                    if (answer.getData().size() > 0) {
+                        forPager.start();
+                    }
+                } catch (Exception e) {
+                    System.err.println("Pager not enabled but working.");
+                    return;
+                } finally {
+                    GsonPool.getInstance().returnGson(gson);
+                }
+            }
+        });
+        tPager.setDaemon(true);
+        tPager.start();
+
         Uses.startSplash();
         // Загрузка плагинов из папки plugins
         Uses.loadPlugins("./plugins/");
@@ -1018,7 +1079,13 @@ public class FAdmin extends javax.swing.JFrame {
             @Override
             public void run() {
                 try {
-                    new FAdmin().setVisible(true);
+                    form = new FAdmin();
+                    if (forPager != null) {
+                        forPager.showData(false);
+                    } else {
+                        form.panelPager.setVisible(false);
+                    }
+                    form.setVisible(true);
                 } catch (Exception ex) {
                     QLog.l().logger().error("Проблемы с ссозданием формы админки. ", ex);
                 } finally {
@@ -1027,6 +1094,10 @@ public class FAdmin extends javax.swing.JFrame {
             }
         });
     }
+    private static FAdmin form = null;
+    private static Answer forPager = null;
+    //private static final String PAGER_URL = "http://localhost:8080";
+    private static final String PAGER_URL = "http://dev.apertum.ru:8080";
 
     @Action
     public void hideWindow() {
@@ -1524,6 +1595,7 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem40 = new javax.swing.JMenuItem();
         jSeparator16 = new javax.swing.JPopupMenu.Separator();
         jMenuItem41 = new javax.swing.JMenuItem();
+        bgPager = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
         tabbedPaneMain = new javax.swing.JTabbedPane();
         jPanel3 = new javax.swing.JPanel();
@@ -1581,6 +1653,8 @@ public class FAdmin extends javax.swing.JFrame {
         passwordFieldUser = new javax.swing.JPasswordField();
         checkBoxReport = new javax.swing.JCheckBox();
         checkBoxAdmin = new javax.swing.JCheckBox();
+        jLabel34 = new javax.swing.JLabel();
+        textFieldExtPoint = new javax.swing.JTextField();
         jPanel27 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         listUsers = new javax.swing.JList();
@@ -1645,8 +1719,6 @@ public class FAdmin extends javax.swing.JFrame {
         jLabel16 = new javax.swing.JLabel();
         textFieldResponse = new javax.swing.JTextField();
         jPanel18 = new javax.swing.JPanel();
-        jScrollPane13 = new javax.swing.JScrollPane();
-        listResults = new javax.swing.JList();
         jButton11 = new javax.swing.JButton();
         jButton12 = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
@@ -1660,16 +1732,21 @@ public class FAdmin extends javax.swing.JFrame {
         spinnerLineServiceMax = new javax.swing.JSpinner();
         jLabel30 = new javax.swing.JLabel();
         spinnerLineTotalMax = new javax.swing.JSpinner();
-        jLabel25 = new javax.swing.JLabel();
         spinnerRemoveRecall = new javax.swing.JSpinner();
+        jSplitPane4 = new javax.swing.JSplitPane();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        listReposts = new javax.swing.JList();
+        jScrollPane13 = new javax.swing.JScrollPane();
+        listResults = new javax.swing.JList();
         jPanel12 = new javax.swing.JPanel();
         dateChooserStartCsv = new com.toedter.calendar.JDateChooser();
         jLabel31 = new javax.swing.JLabel();
         jLabel32 = new javax.swing.JLabel();
         dateChooserFinishCsv = new com.toedter.calendar.JDateChooser();
-        buttonExportToCSV = new javax.swing.JButton();
         jLabel33 = new javax.swing.JLabel();
         cbSeparateCSV = new javax.swing.JComboBox();
+        buttonExportToCSV = new javax.swing.JButton();
+        jLabel25 = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
@@ -1703,8 +1780,6 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel22 = new javax.swing.JPanel();
         rbKindPersonal = new javax.swing.JRadioButton();
         rbKindCommon = new javax.swing.JRadioButton();
-        jScrollPane7 = new javax.swing.JScrollPane();
-        listReposts = new javax.swing.JList();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel23 = new javax.swing.JPanel();
         textFieldURLWebService = new javax.swing.JTextField();
@@ -1719,6 +1794,19 @@ public class FAdmin extends javax.swing.JFrame {
         textFieldZonBoadrServAddr = new javax.swing.JTextField();
         spinnerZonBoadrServPort = new javax.swing.JSpinner();
         buttonCheckZoneBoardServ = new javax.swing.JButton();
+        panelPager = new javax.swing.JPanel();
+        labelPager = new javax.swing.JLabel();
+        panelPagerRadio = new javax.swing.JPanel();
+        rbPager1 = new javax.swing.JRadioButton();
+        rbPager2 = new javax.swing.JRadioButton();
+        rbPager3 = new javax.swing.JRadioButton();
+        panelPagerCombo = new javax.swing.JPanel();
+        labelPagerCaptionCombo = new javax.swing.JLabel();
+        comboBoxPager = new javax.swing.JComboBox();
+        panelEditPager = new javax.swing.JPanel();
+        labelPagerCaptionEdit = new javax.swing.JLabel();
+        textFieldPager = new javax.swing.JTextField();
+        buttonPagerEdit = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
         menuLangs = new javax.swing.JMenu();
@@ -1926,7 +2014,6 @@ public class FAdmin extends javax.swing.JFrame {
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FAdmin.class);
         setTitle(resourceMap.getString("Form.title")); // NOI18N
         setName("Form"); // NOI18N
-        getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
 
         jPanel1.setBackground(resourceMap.getColor("jPanel1.background")); // NOI18N
         jPanel1.setBorder(new javax.swing.border.MatteBorder(null));
@@ -2051,8 +2138,8 @@ public class FAdmin extends javax.swing.JFrame {
                             .addComponent(buttonRestart, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(buttonShutDown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(buttonLock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(labelWelcomeState, javax.swing.GroupLayout.DEFAULT_SIZE, 1004, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addComponent(labelWelcomeState, javax.swing.GroupLayout.DEFAULT_SIZE, 892, Short.MAX_VALUE))
+                .addGap(119, 119, 119))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2197,7 +2284,7 @@ public class FAdmin extends javax.swing.JFrame {
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(buttonRefreshBan)
@@ -2219,12 +2306,12 @@ public class FAdmin extends javax.swing.JFrame {
                     .addComponent(buttonResetMainTablo))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                        .addComponent(jScrollPane20, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                        .addComponent(jScrollPane20, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buttonRefreshBan))
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -2310,19 +2397,19 @@ public class FAdmin extends javax.swing.JFrame {
             jPanel25Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel25Layout.createSequentialGroup()
                 .addComponent(jButton5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 105, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 102, Short.MAX_VALUE)
                 .addComponent(jButton4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton3))
-            .addComponent(textFieldSearchService, javax.swing.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
+            .addComponent(textFieldSearchService, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
         );
         jPanel25Layout.setVerticalGroup(
             jPanel25Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel25Layout.createSequentialGroup()
                 .addComponent(textFieldSearchService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel25Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton5)
@@ -2363,7 +2450,7 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel26Layout.setVerticalGroup(
             jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel26Layout.createSequentialGroup()
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton6))
         );
@@ -2432,6 +2519,17 @@ public class FAdmin extends javax.swing.JFrame {
             }
         });
 
+        jLabel34.setText(resourceMap.getString("jLabel34.text")); // NOI18N
+        jLabel34.setName("jLabel34"); // NOI18N
+
+        textFieldExtPoint.setText(resourceMap.getString("textFieldExtPoint.text")); // NOI18N
+        textFieldExtPoint.setName("textFieldExtPoint"); // NOI18N
+        textFieldExtPoint.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                textFieldExtPointKeyReleased(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
         jPanel11.setLayout(jPanel11Layout);
         jPanel11Layout.setHorizontalGroup(
@@ -2463,6 +2561,12 @@ public class FAdmin extends javax.swing.JFrame {
                             .addComponent(passwordFieldUser, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE)
                             .addComponent(textFieldUserName, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
                         .addContainerGap())))
+            .addGroup(jPanel11Layout.createSequentialGroup()
+                .addComponent(textFieldExtPoint, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(jPanel11Layout.createSequentialGroup()
+                .addComponent(jLabel34)
+                .addContainerGap())
         );
         jPanel11Layout.setVerticalGroup(
             jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2486,7 +2590,11 @@ public class FAdmin extends javax.swing.JFrame {
                 .addComponent(jLabel19)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(spinnerUserRS, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(180, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel34)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(textFieldExtPoint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(13, Short.MAX_VALUE))
         );
 
         jSplitPane3.setLeftComponent(jPanel11);
@@ -2520,7 +2628,7 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel27Layout.setVerticalGroup(
             jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel27Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
@@ -2563,15 +2671,15 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1036, Short.MAX_VALUE)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1036, Short.MAX_VALUE))
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1033, Short.MAX_VALUE)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1033, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -2666,9 +2774,9 @@ public class FAdmin extends javax.swing.JFrame {
                     .addComponent(buttonSchedulleDelete))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE)
+                    .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
                     .addComponent(jLabel21)
-                    .addComponent(textFieldScheduleName, javax.swing.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE))
+                    .addComponent(textFieldScheduleName, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton20, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -2685,13 +2793,13 @@ public class FAdmin extends javax.swing.JFrame {
                     .addGroup(jPanel17Layout.createSequentialGroup()
                         .addGroup(jPanel17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel17Layout.createSequentialGroup()
-                                .addComponent(jScrollPane21, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                                .addComponent(jScrollPane21, javax.swing.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jButton14)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jButton20))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel17Layout.createSequentialGroup()
-                                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                                .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(buttonScheduleAdd)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2705,7 +2813,7 @@ public class FAdmin extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(textFieldScheduleName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)))
+                        .addComponent(labelSchedule, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -2828,11 +2936,11 @@ public class FAdmin extends javax.swing.JFrame {
                                 .addComponent(jButton17)
                                 .addGap(18, 18, 18)
                                 .addComponent(jButton15))
-                            .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 817, Short.MAX_VALUE)
+                            .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 814, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel19Layout.createSequentialGroup()
                                 .addComponent(jLabel23)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)))))
+                                .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         jPanel19Layout.setVerticalGroup(
@@ -2845,14 +2953,14 @@ public class FAdmin extends javax.swing.JFrame {
                             .addComponent(jLabel23)
                             .addComponent(textFieldCalendarName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
+                        .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton18)
                             .addComponent(jButton16)
                             .addComponent(jButton17)
                             .addComponent(jButton15)))
-                    .addComponent(jScrollPane14, javax.swing.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE))
+                    .addComponent(jScrollPane14, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buttonAddCalendar)
@@ -2902,12 +3010,12 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel14.setLayout(jPanel14Layout);
         jPanel14Layout.setHorizontalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane17, javax.swing.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
+            .addComponent(jScrollPane17, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel14Layout.createSequentialGroup()
-                .addComponent(jScrollPane17, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
+                .addComponent(jScrollPane17, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -2951,14 +3059,14 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(jButton9)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton10))
-                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE))
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane16, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
+                    .addComponent(jScrollPane16, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
                     .addComponent(jPanel14, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
                     .addComponent(jLabel22, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(textFieldInfoItemName, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE))
+                    .addComponent(textFieldInfoItemName, javax.swing.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -2971,13 +3079,13 @@ public class FAdmin extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(textFieldInfoItemName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                        .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane16, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE))
+                        .addComponent(jScrollPane16, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
+                        .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton9)
@@ -3027,13 +3135,13 @@ public class FAdmin extends javax.swing.JFrame {
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel15Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelRespinse, javax.swing.GroupLayout.DEFAULT_SIZE, 741, Short.MAX_VALUE)
+                .addComponent(labelRespinse, javax.swing.GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel15Layout.setVerticalGroup(
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel15Layout.createSequentialGroup()
-                .addComponent(labelRespinse, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                .addComponent(labelRespinse, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -3068,10 +3176,10 @@ public class FAdmin extends javax.swing.JFrame {
                     .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 773, Short.MAX_VALUE)
+                    .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 770, Short.MAX_VALUE)
                     .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel16)
-                    .addComponent(textFieldResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 773, Short.MAX_VALUE))
+                    .addComponent(textFieldResponse, javax.swing.GroupLayout.DEFAULT_SIZE, 770, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel13Layout.setVerticalGroup(
@@ -3080,7 +3188,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel13Layout.createSequentialGroup()
-                        .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
+                        .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton8)
@@ -3090,7 +3198,7 @@ public class FAdmin extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(textFieldResponse, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
+                        .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
@@ -3100,19 +3208,6 @@ public class FAdmin extends javax.swing.JFrame {
 
         jPanel18.setAutoscrolls(true);
         jPanel18.setName("jPanel18"); // NOI18N
-
-        jScrollPane13.setName("jScrollPane13"); // NOI18N
-
-        listResults.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("listResults.border.title"))); // NOI18N
-        listResults.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        listResults.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        listResults.setComponentPopupMenu(popupResults);
-        listResults.setName("listResults"); // NOI18N
-        jScrollPane13.setViewportView(listResults);
 
         jButton11.setAction(actionMap.get("addResult")); // NOI18N
         jButton11.setText(resourceMap.getString("jButton11.text")); // NOI18N
@@ -3181,7 +3276,7 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(jLabel30)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spinnerLineTotalMax, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3206,15 +3301,45 @@ public class FAdmin extends javax.swing.JFrame {
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel30)
                     .addComponent(spinnerLineTotalMax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(220, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        jLabel25.setText(resourceMap.getString("jLabel25.text")); // NOI18N
-        jLabel25.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        jLabel25.setName("jLabel25"); // NOI18N
 
         spinnerRemoveRecall.setModel(new javax.swing.SpinnerNumberModel(0, 0, 5, 1));
         spinnerRemoveRecall.setName("spinnerRemoveRecall"); // NOI18N
+
+        jSplitPane4.setDividerLocation(300);
+        jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane4.setAutoscrolls(true);
+        jSplitPane4.setContinuousLayout(true);
+        jSplitPane4.setName("jSplitPane4"); // NOI18N
+
+        jScrollPane7.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jScrollPane7.border.title"))); // NOI18N
+        jScrollPane7.setName("jScrollPane7"); // NOI18N
+
+        listReposts.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        listReposts.setName("listReposts"); // NOI18N
+        jScrollPane7.setViewportView(listReposts);
+
+        jSplitPane4.setTopComponent(jScrollPane7);
+
+        jScrollPane13.setName("jScrollPane13"); // NOI18N
+
+        listResults.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("listResults.border.title"))); // NOI18N
+        listResults.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        listResults.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        listResults.setComponentPopupMenu(popupResults);
+        listResults.setName("listResults"); // NOI18N
+        jScrollPane13.setViewportView(listResults);
+
+        jSplitPane4.setBottomComponent(jScrollPane13);
 
         jPanel12.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel12.border.title"))); // NOI18N
         jPanel12.setName("jPanel12"); // NOI18N
@@ -3231,6 +3356,13 @@ public class FAdmin extends javax.swing.JFrame {
         dateChooserFinishCsv.setDate(new Date());
         dateChooserFinishCsv.setName("dateChooserFinishCsv"); // NOI18N
 
+        jLabel33.setText(resourceMap.getString("jLabel33.text")); // NOI18N
+        jLabel33.setName("jLabel33"); // NOI18N
+
+        cbSeparateCSV.setEditable(true);
+        cbSeparateCSV.setModel(new javax.swing.DefaultComboBoxModel(new String[] { ";", ",", "#", "\\t" }));
+        cbSeparateCSV.setName("cbSeparateCSV"); // NOI18N
+
         buttonExportToCSV.setText(resourceMap.getString("buttonExportToCSV.text")); // NOI18N
         buttonExportToCSV.setName("buttonExportToCSV"); // NOI18N
         buttonExportToCSV.addActionListener(new java.awt.event.ActionListener() {
@@ -3238,13 +3370,6 @@ public class FAdmin extends javax.swing.JFrame {
                 buttonExportToCSVActionPerformed(evt);
             }
         });
-
-        jLabel33.setText(resourceMap.getString("jLabel33.text")); // NOI18N
-        jLabel33.setName("jLabel33"); // NOI18N
-
-        cbSeparateCSV.setEditable(true);
-        cbSeparateCSV.setModel(new javax.swing.DefaultComboBoxModel(new String[] { ";", ",", "#", "\\t" }));
-        cbSeparateCSV.setName("cbSeparateCSV"); // NOI18N
 
         javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
         jPanel12.setLayout(jPanel12Layout);
@@ -3261,7 +3386,7 @@ public class FAdmin extends javax.swing.JFrame {
                     .addComponent(dateChooserFinishCsv, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(dateChooserStartCsv, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
                     .addComponent(cbSeparateCSV, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(78, 78, 78)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 65, Short.MAX_VALUE)
                 .addComponent(buttonExportToCSV)
                 .addContainerGap())
         );
@@ -3269,43 +3394,49 @@ public class FAdmin extends javax.swing.JFrame {
             jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel12Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel31)
-                    .addComponent(dateChooserStartCsv, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel32)
-                    .addComponent(dateChooserFinishCsv, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonExportToCSV)
-                    .addComponent(jLabel33)
-                    .addComponent(cbSeparateCSV, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel12Layout.createSequentialGroup()
+                        .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel31)
+                            .addComponent(dateChooserStartCsv, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel32)
+                            .addComponent(dateChooserFinishCsv, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel33)
+                            .addComponent(cbSeparateCSV, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(buttonExportToCSV, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
+
+        jLabel25.setText(resourceMap.getString("jLabel25.text")); // NOI18N
+        jLabel25.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jLabel25.setName("jLabel25"); // NOI18N
 
         javax.swing.GroupLayout jPanel18Layout = new javax.swing.GroupLayout(jPanel18);
         jPanel18.setLayout(jPanel18Layout);
         jPanel18Layout.setHorizontalGroup(
             jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel18Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel18Layout.createSequentialGroup()
-                        .addComponent(jLabel25)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spinnerRemoveRecall, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel18Layout.createSequentialGroup()
-                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel18Layout.createSequentialGroup()
                                 .addComponent(jButton11)
                                 .addGap(18, 18, 18)
                                 .addComponent(jButton12))
-                            .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE))))
+                            .addComponent(jSplitPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)))
+                    .addGroup(jPanel18Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel25)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spinnerRemoveRecall, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel18Layout.setVerticalGroup(
@@ -3313,21 +3444,22 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel18Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel25)
+                    .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(spinnerRemoveRecall, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel18Layout.createSequentialGroup()
-                        .addComponent(jScrollPane13, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
+                        .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel18Layout.createSequentialGroup()
+                        .addComponent(jSplitPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton12)
-                            .addComponent(jButton11)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel18Layout.createSequentialGroup()
-                        .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                            .addComponent(jButton11))
+                        .addGap(17, 17, 17))))
         );
 
         tabbedPaneMain.addTab(resourceMap.getString("jPanel18.TabConstraints.tabTitle"), jPanel18); // NOI18N
@@ -3650,17 +3782,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jScrollPane7.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jScrollPane7.border.title"))); // NOI18N
-        jScrollPane7.setName("jScrollPane7"); // NOI18N
-
-        listReposts.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        listReposts.setName("listReposts"); // NOI18N
-        jScrollPane7.setViewportView(listReposts);
-
+        jTabbedPane2.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jTabbedPane2.border.title"))); // NOI18N
         jTabbedPane2.setName("jTabbedPane2"); // NOI18N
 
         jPanel23.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel23.border.title"))); // NOI18N
@@ -3708,13 +3830,13 @@ public class FAdmin extends javax.swing.JFrame {
                                 .addGap(10, 10, 10)
                                 .addComponent(spinnerBranchId, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jLabel13))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 132, Short.MAX_VALUE)
                         .addGroup(jPanel23Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(buttonCloudTest, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(buttonSendDataToSky, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)))
                     .addGroup(jPanel23Layout.createSequentialGroup()
                         .addGap(20, 20, 20)
-                        .addComponent(textFieldURLWebService, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)))
+                        .addComponent(textFieldURLWebService, javax.swing.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel23Layout.setVerticalGroup(
@@ -3773,9 +3895,9 @@ public class FAdmin extends javax.swing.JFrame {
                 .addGroup(jPanel24Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel24Layout.createSequentialGroup()
                         .addComponent(spinnerZonBoadrServPort, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 121, Short.MAX_VALUE)
                         .addComponent(buttonCheckZoneBoardServ, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(textFieldZonBoadrServAddr, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE))
+                    .addComponent(textFieldZonBoadrServAddr, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel24Layout.setVerticalGroup(
@@ -3801,14 +3923,13 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTabbedPane2, 0, 0, Short.MAX_VALUE)
                     .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -3816,23 +3937,174 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE)
+                    .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(180, Short.MAX_VALUE))
         );
 
         tabbedPaneMain.addTab(resourceMap.getString("jPanel8.TabConstraints.tabTitle"), jPanel8); // NOI18N
 
         jPanel1.add(tabbedPaneMain);
 
-        getContentPane().add(jPanel1);
+        panelPager.setBackground(resourceMap.getColor("panelPager.background")); // NOI18N
+        panelPager.setBorder(new javax.swing.border.MatteBorder(null));
+        panelPager.setName("panelPager"); // NOI18N
+        panelPager.setPreferredSize(new java.awt.Dimension(1010, 50));
+
+        labelPager.setText(resourceMap.getString("labelPager.text")); // NOI18N
+        labelPager.setName("labelPager"); // NOI18N
+
+        panelPagerRadio.setBackground(resourceMap.getColor("panelPagerRadio.background")); // NOI18N
+        panelPagerRadio.setName("panelPagerRadio"); // NOI18N
+        panelPagerRadio.setOpaque(false);
+        panelPagerRadio.setLayout(new java.awt.GridLayout(3, 0));
+
+        bgPager.add(rbPager1);
+        rbPager1.setText(resourceMap.getString("rbPager1.text")); // NOI18N
+        rbPager1.setName("rbPager1"); // NOI18N
+        rbPager1.setOpaque(false);
+        rbPager1.setPreferredSize(new java.awt.Dimension(93, 14));
+        rbPager1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbPager1ActionPerformed(evt);
+            }
+        });
+        panelPagerRadio.add(rbPager1);
+
+        bgPager.add(rbPager2);
+        rbPager2.setText(resourceMap.getString("rbPager2.text")); // NOI18N
+        rbPager2.setName("rbPager2"); // NOI18N
+        rbPager2.setOpaque(false);
+        rbPager2.setPreferredSize(new java.awt.Dimension(93, 14));
+        rbPager2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbPager1ActionPerformed(evt);
+            }
+        });
+        panelPagerRadio.add(rbPager2);
+
+        bgPager.add(rbPager3);
+        rbPager3.setText(resourceMap.getString("rbPager3.text")); // NOI18N
+        rbPager3.setName("rbPager3"); // NOI18N
+        rbPager3.setOpaque(false);
+        rbPager3.setPreferredSize(new java.awt.Dimension(93, 14));
+        rbPager3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbPager1ActionPerformed(evt);
+            }
+        });
+        panelPagerRadio.add(rbPager3);
+
+        panelPagerCombo.setName("panelPagerCombo"); // NOI18N
+        panelPagerCombo.setOpaque(false);
+
+        labelPagerCaptionCombo.setText(resourceMap.getString("labelPagerCaptionCombo.text")); // NOI18N
+        labelPagerCaptionCombo.setName("labelPagerCaptionCombo"); // NOI18N
+
+        comboBoxPager.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboBoxPager.setName("comboBoxPager"); // NOI18N
+        comboBoxPager.setOpaque(false);
+        comboBoxPager.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboBoxPagerActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelPagerComboLayout = new javax.swing.GroupLayout(panelPagerCombo);
+        panelPagerCombo.setLayout(panelPagerComboLayout);
+        panelPagerComboLayout.setHorizontalGroup(
+            panelPagerComboLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelPagerComboLayout.createSequentialGroup()
+                .addGroup(panelPagerComboLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(labelPagerCaptionCombo)
+                    .addComponent(comboBoxPager, 0, 323, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        panelPagerComboLayout.setVerticalGroup(
+            panelPagerComboLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelPagerComboLayout.createSequentialGroup()
+                .addComponent(labelPagerCaptionCombo)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(comboBoxPager, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        panelEditPager.setName("panelEditPager"); // NOI18N
+        panelEditPager.setOpaque(false);
+
+        labelPagerCaptionEdit.setText(resourceMap.getString("labelPagerCaptionEdit.text")); // NOI18N
+        labelPagerCaptionEdit.setName("labelPagerCaptionEdit"); // NOI18N
+
+        textFieldPager.setText(resourceMap.getString("textFieldPager.text")); // NOI18N
+        textFieldPager.setName("textFieldPager"); // NOI18N
+
+        buttonPagerEdit.setText(resourceMap.getString("buttonPagerEdit.text")); // NOI18N
+        buttonPagerEdit.setName("buttonPagerEdit"); // NOI18N
+        buttonPagerEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonPagerEditActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelEditPagerLayout = new javax.swing.GroupLayout(panelEditPager);
+        panelEditPager.setLayout(panelEditPagerLayout);
+        panelEditPagerLayout.setHorizontalGroup(
+            panelEditPagerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelEditPagerLayout.createSequentialGroup()
+                .addGroup(panelEditPagerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(labelPagerCaptionEdit)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelEditPagerLayout.createSequentialGroup()
+                        .addComponent(textFieldPager, javax.swing.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(buttonPagerEdit)))
+                .addContainerGap())
+        );
+        panelEditPagerLayout.setVerticalGroup(
+            panelEditPagerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelEditPagerLayout.createSequentialGroup()
+                .addComponent(labelPagerCaptionEdit)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(panelEditPagerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(textFieldPager, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(buttonPagerEdit))
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout panelPagerLayout = new javax.swing.GroupLayout(panelPager);
+        panelPager.setLayout(panelPagerLayout);
+        panelPagerLayout.setHorizontalGroup(
+            panelPagerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelPagerLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(labelPager, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelEditPager, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelPagerCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelPagerRadio, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        panelPagerLayout.setVerticalGroup(
+            panelPagerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelPagerLayout.createSequentialGroup()
+                .addGap(3, 3, 3)
+                .addGroup(panelPagerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(panelEditPager, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(panelPagerLayout.createSequentialGroup()
+                        .addGroup(panelPagerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(panelPagerCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(panelPagerRadio, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 3, Short.MAX_VALUE)))
+                .addGap(0, 0, 0))
+            .addGroup(panelPagerLayout.createSequentialGroup()
+                .addComponent(labelPager, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
+                .addContainerGap())
+        );
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
 
@@ -3945,6 +4217,21 @@ public class FAdmin extends javax.swing.JFrame {
 
         setJMenuBar(jMenuBar1);
 
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 1062, Short.MAX_VALUE)
+            .addComponent(panelPager, javax.swing.GroupLayout.DEFAULT_SIZE, 1062, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(panelPager, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -4040,8 +4327,13 @@ private void tabbedPaneMainStateChanged(javax.swing.event.ChangeEvent evt) {//GE
     // это событие переключения закладок на табе.
     menuServices.setEnabled(tabbedPaneMain.getSelectedIndex() == 1);
     menuUsers.setEnabled(tabbedPaneMain.getSelectedIndex() == 1);
+    // в пейджере листнем новость
+    if (form != null && forPager != null && new Date().getTime() - ancorPager > 0/*1000 * 60 * 5*/) {
+        ancorPager = new Date().getTime();
+        forPager.showData(true);
+    }
 }//GEN-LAST:event_tabbedPaneMainStateChanged
-
+    private long ancorPager = new Date().getTime();
 private void textFieldUserIdentKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textFieldUserIdentKeyReleased
 
     saveUser();
@@ -4432,7 +4724,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                             + "    IFNULL(r.name, '') as res "
                             + " FROM statistic s left join results r on s.results_id=r.id, clients c, users u, services sv "
                             + " WHERE s.client_id=c.id and s.user_id=u.id and s.service_id=sv.id "
-                            + "    and s.client_stand_time>='" + std + "' and s.client_stand_time<='" + find+"'";
+                            + "    and s.client_stand_time>='" + std + "' and s.client_stand_time<='" + find + "'";
                     try (ResultSet set = connection.createStatement().executeQuery(sql)) {
                         final Writer writer;
                         try {
@@ -4503,6 +4795,36 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
 
         }
     }//GEN-LAST:event_buttonExportToCSVActionPerformed
+
+    private void textFieldExtPointKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textFieldExtPointKeyReleased
+        saveUser();
+    }//GEN-LAST:event_textFieldExtPointKeyReleased
+
+    private void buttonPagerEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPagerEditActionPerformed
+        sendPager();
+    }//GEN-LAST:event_buttonPagerEditActionPerformed
+
+    private void comboBoxPagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxPagerActionPerformed
+        sendPager();
+    }//GEN-LAST:event_comboBoxPagerActionPerformed
+
+    private void rbPager1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbPager1ActionPerformed
+        sendPager();
+    }//GEN-LAST:event_rbPager1ActionPerformed
+
+    private void sendPager() {
+        if (forPager != null) {
+            final Thread t = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    forPager.sendData();
+                }
+            });
+            t.setDaemon(true);
+            t.start();
+        }
+    }
 
     @Action
     public void changeServicePriority() {
@@ -5138,7 +5460,211 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
             }
         }
     }
+
+    public static class Answer {
+
+        public Answer() {
+        }
+
+        public Answer(List<PagerData> data, String currVersion) {
+            this.data = data;
+            this.currVersion = currVersion;
+        }
+        @Expose
+        @SerializedName("curr_version")
+        private String currVersion;
+
+        public String getCurrVersion() {
+            return currVersion;
+        }
+
+        public void setCurrVersion(String currVersion) {
+            this.currVersion = currVersion;
+        }
+        @Expose
+        @SerializedName("data")
+        private List<PagerData> data;
+
+        public List<PagerData> getData() {
+            return data;
+        }
+
+        public void setData(List<PagerData> data) {
+            this.data = data;
+        }
+
+        public void start() {
+            if (!already) {
+                for (int i = 0; i < 2000; i++) {
+                    if (form == null || form.panelPager == null) {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException ex) {
+                        }
+                    } else {
+                        showData(false);
+                    }
+                }
+            }
+        }
+        private boolean already = false;
+        private PagerData pd;
+
+        private void showData(boolean forse) {
+            if (!already || forse) {
+                already = true;
+                final int d = (int) (Math.random() * data.size());
+                pd = null;
+                form.rbPager1.setSelected(false);
+                form.rbPager2.setSelected(false);
+                form.rbPager3.setSelected(false);
+                pd = data.get(d);
+                form.labelPager.setText(pd.textData);
+                form.labelPagerCaptionCombo.setText(pd.quizCaption);
+                form.labelPagerCaptionEdit.setText(pd.quizCaption);
+                switch (pd.dataType) {
+                    case 0:
+                        form.panelEditPager.setVisible(false);
+                        form.panelPagerCombo.setVisible(false);
+                        form.panelPagerRadio.setVisible(false);
+                        break;
+                    case 1:
+                        form.panelEditPager.setVisible(false);
+                        form.panelPagerCombo.setVisible(!pd.checked && pd.pagerQuizItemsList.size() > 3);
+                        form.panelPagerRadio.setVisible(!pd.checked && pd.pagerQuizItemsList.size() < 4);
+                        if (pd.pagerQuizItemsList.size() > 3) {
+                            final Object[] ar = ArrayUtils.addAll(new PagerQuizItems[1], pd.pagerQuizItemsList.toArray());
+                            form.comboBoxPager.setModel(new DefaultComboBoxModel(ar));
+                        } else {
+                            form.rbPager1.setText(pd.pagerQuizItemsList.get(0).itemText);
+                            form.rbPager2.setText(pd.pagerQuizItemsList.get(1).itemText);
+                            if (pd.pagerQuizItemsList.size() == 2) {
+                                form.rbPager3.setVisible(false);
+                            } else {
+                                form.rbPager3.setVisible(true);
+                                form.rbPager3.setText(pd.pagerQuizItemsList.get(2).itemText);
+                            }
+                        }
+                        break;
+                    case 2:
+                        form.panelEditPager.setVisible(!pd.checked);
+                        form.panelPagerCombo.setVisible(false);
+                        form.panelPagerRadio.setVisible(false);
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
+                form.panelPager.setVisible(true);
+
+                if (!FAbout.VERSION_.equalsIgnoreCase(currVersion) && !forse) {
+                    form.setTitle(form.getTitle() + "  " + getLocaleMessage("qsys.new_ver") + " " + currVersion + " " + getLocaleMessage("qsys.available"));
+                }
+            }
+        }
+
+        public void sendData() {
+            if (pd != null) {
+                String paraqms = "&dataid=" + pd.id;
+                switch (pd.dataType) {
+                    case 0:
+                        break;
+                    case 1:
+                        if (pd.pagerQuizItemsList.size() > 3) {
+                            if (form.comboBoxPager.getSelectedItem() == null) {
+                                return;
+                            }
+                            paraqms = paraqms + "&quizid=" + ((PagerQuizItems) (form.comboBoxPager.getSelectedItem())).id;
+                        } else {
+                            String sel = "";
+                            if (form.rbPager1.isSelected()) {
+                                sel = form.rbPager1.getText();
+                            } else if (form.rbPager2.isSelected()) {
+                                sel = form.rbPager2.getText();
+                            } else if (form.rbPager3.isSelected()) {
+                                sel = form.rbPager3.getText();
+                            }
+                            for (PagerQuizItems q : pd.pagerQuizItemsList) {
+                                if (q.itemText.equals(sel)) {
+                                    paraqms = paraqms + "&quizid=" + q.id;
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    case 2:
+                        try {
+                            paraqms = paraqms + "&inputdata=" + new BCodec().encode(form.textFieldPager.getText().length() > 545 ? form.textFieldPager.getText().substring(0, 545) : form.textFieldPager.getText(), "utf8");
+                        } catch (EncoderException ex) {
+                        }
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
+                try {
+                    //http://localhost:8080/qskyapi/setpagerdata?qsysver=1.3.1&dataid=3&inputdata=Hello%20world!
+                    //http://localhost:8080/qskyapi/setpagerdata?qsysver=1.3.1&dataid=2&quizid=3
+                    final URL url = new URL(PAGER_URL + "/qskyapi/setpagerdata?qsysver=" + FAbout.VERSION_ + paraqms);
+                    final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("User-Agent", "Java bot");
+                    conn.connect();
+                    final int code = conn.getResponseCode();
+                    if (code != 200) {
+                        System.err.println("Strange! Pager not enabled. Returned code not 200.");
+                    } else {
+                        pd.checked = true;
+                    }
+                    conn.disconnect();
+                } catch (Exception e) {
+                    System.err.println("Pager not enabled.");
+                    return;
+                }
+                showData(true);
+            }
+        }
+    }
+
+    public static class PagerData {
+
+        @Expose
+        @SerializedName("id")
+        private Long id;
+        @Expose
+        @SerializedName("type")
+        private int dataType;
+        @Expose
+        @SerializedName("text")
+        private String textData;
+        @Expose
+        @SerializedName("qcap")
+        private String quizCaption;
+        @Expose
+        @SerializedName("quis_items")
+        private List<PagerQuizItems> pagerQuizItemsList;
+
+        public PagerData() {
+        }
+        public boolean checked = false;
+    }
+
+    public static class PagerQuizItems {
+
+        @Expose
+        @SerializedName("id")
+        private Long id;
+        @Expose
+        @SerializedName("text")
+        private String itemText;
+
+        public PagerQuizItems() {
+        }
+
+        @Override
+        public String toString() {
+            return itemText;
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup bgPager;
     private javax.swing.JButton buttonAddCalendar;
     private javax.swing.JButton buttonCheckZoneBoardServ;
     private javax.swing.JButton buttonClientRequest;
@@ -5150,6 +5676,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.ButtonGroup buttonGroupSource;
     private javax.swing.ButtonGroup buttonGroupVoice;
     private javax.swing.JButton buttonLock;
+    private javax.swing.JButton buttonPagerEdit;
     private javax.swing.JButton buttonRefreshBan;
     private javax.swing.JButton buttonResetMainTablo;
     private javax.swing.JButton buttonRestart;
@@ -5165,6 +5692,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JCheckBox checkBoxClientAuto;
     private javax.swing.JCheckBox checkBoxReport;
     private javax.swing.JCheckBox checkBoxServerAuto;
+    private javax.swing.JComboBox comboBoxPager;
     private javax.swing.JComboBox comboBoxVoices;
     private com.toedter.calendar.JDateChooser dateChooserFinishCsv;
     private com.toedter.calendar.JDateChooser dateChooserStartCsv;
@@ -5215,6 +5743,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JLabel jLabel31;
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
+    private javax.swing.JLabel jLabel34;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -5334,10 +5863,14 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
+    private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JLabel labelButtonCaption;
     private javax.swing.JLabel labelInfoItem;
+    private javax.swing.JLabel labelPager;
+    private javax.swing.JLabel labelPagerCaptionCombo;
+    private javax.swing.JLabel labelPagerCaptionEdit;
     private javax.swing.JLabel labelRespinse;
     private javax.swing.JLabel labelSchedule;
     private javax.swing.JLabel labelServerState;
@@ -5360,6 +5893,10 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JMenu menuLangs;
     private javax.swing.JMenu menuServices;
     private javax.swing.JMenu menuUsers;
+    private javax.swing.JPanel panelEditPager;
+    private javax.swing.JPanel panelPager;
+    private javax.swing.JPanel panelPagerCombo;
+    private javax.swing.JPanel panelPagerRadio;
     private javax.swing.JPasswordField passwordFieldUser;
     private javax.swing.JPopupMenu popupBreaks;
     private javax.swing.JPopupMenu popupCalendar;
@@ -5376,6 +5913,9 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JRadioButton rbNotificationGongOrVoice;
     private javax.swing.JRadioButton rbNotificationGongVoice;
     private javax.swing.JRadioButton rbNotificationNo;
+    private javax.swing.JRadioButton rbPager1;
+    private javax.swing.JRadioButton rbPager2;
+    private javax.swing.JRadioButton rbPager3;
     private javax.swing.JRadioButton rbPointOffice;
     private javax.swing.JRadioButton rbPointStoika;
     private javax.swing.JRadioButton rbPointWindow;
@@ -5400,8 +5940,10 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JTable tableCalendar;
     private javax.swing.JTextField textFieldCalendarName;
     private javax.swing.JTextField textFieldClientAdress;
+    private javax.swing.JTextField textFieldExtPoint;
     private javax.swing.JTextField textFieldFinishTime;
     private javax.swing.JTextField textFieldInfoItemName;
+    private javax.swing.JTextField textFieldPager;
     private javax.swing.JTextField textFieldResponse;
     private javax.swing.JTextField textFieldScheduleName;
     private javax.swing.JTextField textFieldSearchService;
