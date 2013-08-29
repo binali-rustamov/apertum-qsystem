@@ -401,7 +401,7 @@ public final class Executer {
         @Override
         public RpcGetAllServices process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            return new RpcGetAllServices(new RpcGetAllServices.ServicesForWelcome(QServiceTree.getInstance().getRoot(), ServerProps.getInstance().getProps().getStartTime(), ServerProps.getInstance().getProps().getFinishTime()));
+            return new RpcGetAllServices(new RpcGetAllServices.ServicesForWelcome(QServiceTree.getInstance().getRoot(), ServerProps.getInstance().getProps()));
         }
     };
     /**

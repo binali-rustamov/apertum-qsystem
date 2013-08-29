@@ -35,7 +35,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -89,7 +88,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import org.apache.commons.codec.net.BCodec;
-import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.lang.ArrayUtils;
 import org.hibernate.jdbc.Work;
 import org.jdesktop.application.Application;
@@ -797,6 +795,7 @@ public class FAdmin extends javax.swing.JFrame {
         rbKindCommon.setSelected(!ServerProps.getInstance().getProps().getNumering());
         rbKindPersonal.setSelected(ServerProps.getInstance().getProps().getNumering());
         spinnerRemoveRecall.getModel().setValue(ServerProps.getInstance().getProps().getLimitRecall());
+        chBoxBtnFreeDsn.setSelected(ServerProps.getInstance().getProps().getButtonFreeDesign());
         switch (ServerProps.getInstance().getProps().getPoint()) {
             case 0:
                 rbPointOffice.setSelected(true);
@@ -1002,6 +1001,7 @@ public class FAdmin extends javax.swing.JFrame {
         ServerProps.getInstance().getProps().setVoice(comboBoxVoices.getSelectedIndex());
         ServerProps.getInstance().getProps().setBlackTime((int) spinnerBlackListTimeMin.getValue());
         ServerProps.getInstance().getProps().setLimitRecall((int) spinnerRemoveRecall.getValue());
+        ServerProps.getInstance().getProps().setButtonFreeDesign(chBoxBtnFreeDsn.isSelected());
 
         ServerProps.getInstance().getStandards().setWaitMax((Integer) spinnerWaitMax.getValue());
         ServerProps.getInstance().getStandards().setWorkMax((Integer) spinnerWorkMax.getValue());
@@ -1780,6 +1780,7 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel22 = new javax.swing.JPanel();
         rbKindPersonal = new javax.swing.JRadioButton();
         rbKindCommon = new javax.swing.JRadioButton();
+        chBoxBtnFreeDsn = new javax.swing.JCheckBox();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel23 = new javax.swing.JPanel();
         textFieldURLWebService = new javax.swing.JTextField();
@@ -3623,8 +3624,7 @@ public class FAdmin extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(rbPointWindow)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(rbPointStoika)
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addComponent(rbPointStoika))
         );
 
         jPanel21.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel21.border.title"))); // NOI18N
@@ -3675,29 +3675,34 @@ public class FAdmin extends javax.swing.JFrame {
         jPanel21.setLayout(jPanel21Layout);
         jPanel21Layout.setHorizontalGroup(
             jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel21Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel21Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(comboBoxVoices, 0, 159, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(rbNotificationGongVoice)
-                        .addComponent(rbNotificationNo)
-                        .addComponent(rbNotificationGong)
-                        .addComponent(rbNotificationGongOrVoice))))
+                        .addGroup(jPanel21Layout.createSequentialGroup()
+                            .addComponent(rbNotificationGongVoice)
+                            .addContainerGap())
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(rbNotificationNo)
+                            .addComponent(rbNotificationGong)
+                            .addComponent(rbNotificationGongOrVoice)))
+                    .addGroup(jPanel21Layout.createSequentialGroup()
+                        .addComponent(comboBoxVoices, 0, 149, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         jPanel21Layout.setVerticalGroup(
             jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel21Layout.createSequentialGroup()
+            .addGroup(jPanel21Layout.createSequentialGroup()
                 .addComponent(rbNotificationNo)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(rbNotificationGong)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(rbNotificationGongOrVoice)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(rbNotificationGongVoice, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
+                .addComponent(rbNotificationGongVoice)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(comboBoxVoices, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N
@@ -3733,9 +3738,11 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel22Layout.createSequentialGroup()
                 .addComponent(rbKindPersonal)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(rbKindCommon)
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addComponent(rbKindCommon))
         );
+
+        chBoxBtnFreeDsn.setText(resourceMap.getString("chBoxBtnFreeDsn.text")); // NOI18N
+        chBoxBtnFreeDsn.setName("chBoxBtnFreeDsn"); // NOI18N
 
         javax.swing.GroupLayout jPanel16Layout = new javax.swing.GroupLayout(jPanel16);
         jPanel16.setLayout(jPanel16Layout);
@@ -3754,12 +3761,15 @@ public class FAdmin extends javax.swing.JFrame {
                             .addComponent(spinnerLastNumber, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)))
                     .addGroup(jPanel16Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jPanel22, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(10, 10, 10)
-                .addComponent(jPanel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(12, Short.MAX_VALUE))
+                        .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(chBoxBtnFreeDsn)
+                            .addGroup(jPanel16Layout.createSequentialGroup()
+                                .addComponent(jPanel22, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanel20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap(16, Short.MAX_VALUE))
         );
         jPanel16Layout.setVerticalGroup(
             jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3776,10 +3786,12 @@ public class FAdmin extends javax.swing.JFrame {
                             .addComponent(spinnerLastNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel22, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jPanel22, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(jPanel21, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chBoxBtnFreeDsn)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane2.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jTabbedPane2.border.title"))); // NOI18N
@@ -3922,12 +3934,12 @@ public class FAdmin extends javax.swing.JFrame {
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
                 .addContainerGap())
@@ -3944,7 +3956,7 @@ public class FAdmin extends javax.swing.JFrame {
                             .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(180, Short.MAX_VALUE))
+                .addContainerGap(176, Short.MAX_VALUE))
         );
 
         tabbedPaneMain.addTab(resourceMap.getString("jPanel8.TabConstraints.tabTitle"), jPanel8); // NOI18N
@@ -5688,6 +5700,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JButton buttonShutDown;
     private javax.swing.JButton buttonUnlock;
     private javax.swing.JComboBox cbSeparateCSV;
+    private javax.swing.JCheckBox chBoxBtnFreeDsn;
     private javax.swing.JCheckBox checkBoxAdmin;
     private javax.swing.JCheckBox checkBoxClientAuto;
     private javax.swing.JCheckBox checkBoxReport;

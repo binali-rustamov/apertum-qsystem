@@ -14,9 +14,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ru.apertum.qsystem.server;
 
+import ru.apertum.qsystem.server.controller.IServerListener;
+import ru.apertum.qsystem.server.controller.ServerEvents;
 import ru.apertum.qsystem.server.model.QNet;
 import ru.apertum.qsystem.server.model.QStandards;
 
@@ -38,6 +39,17 @@ public class ServerProps {
     }
 
     private ServerProps() {
+        load();
+        ServerEvents.getInstance().registerListener(new IServerListener() {
+
+            @Override
+            public void restartEvent() {
+                load();
+            }
+        });
+    }
+
+    private void load() {
         Spring.getInstance().getHt().load(netProp, new Long(1));
         Spring.getInstance().getHt().load(standards, new Long(1));
     }
@@ -47,6 +59,7 @@ public class ServerProps {
     }
 
     private static class ServerPropsHolder {
+
         private static final ServerProps INSTANCE = new ServerProps();
     }
- }
+}

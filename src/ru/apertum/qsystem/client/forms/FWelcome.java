@@ -32,6 +32,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -71,6 +72,7 @@ import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.output.OutputException;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import org.netbeans.lib.awtextra.AbsoluteLayout;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.common.ClientNetProperty;
@@ -154,6 +156,7 @@ public class FWelcome extends javax.swing.JFrame {
      */
     protected static Date startTime;
     protected static Date finishTime;
+    protected static boolean btnFreeDesign;
     /**
      * Информация для взаимодействия по сети.
      * Формируется по данным из командной строки.
@@ -350,6 +353,7 @@ public class FWelcome extends javax.swing.JFrame {
         root = servs.getRoot();
         FWelcome.startTime = servs.getStartTime();
         FWelcome.finishTime = servs.getFinishTime();
+        FWelcome.btnFreeDesign = servs.getButtonFreeDesign();
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             @Override
@@ -594,8 +598,12 @@ public class FWelcome extends javax.swing.JFrame {
             panelForPaging.setVisible(false);
         }
 
-        final GridLayout la = new GridLayout(rows, cols, delta, delta / 2);
-        panel.setLayout(la);
+        if (btnFreeDesign) {
+            panel.setLayout(null);
+        } else {
+            final GridLayout la = new GridLayout(rows, cols, delta, delta / 2);
+            panel.setLayout(la);
+        }
         int i = 0;
         for (QService service : current.getChildren()) {
             boolean f = true;
@@ -607,6 +615,9 @@ public class FWelcome extends javax.swing.JFrame {
             if (button.isIsVisible() && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
                 if (f) {
                     panel.add(button);
+                    if (btnFreeDesign) {
+                        button.setBounds(service.getButX(), service.getButY(), service.getButB(), service.getButH());
+                    }
                     buttonForwardPage.setEnabled((i + 1) != childCount); // это чтоб кнопки листания небыли доступны когда листать дальше некуда
                 }
                 i++;
@@ -1334,6 +1345,7 @@ public class FWelcome extends javax.swing.JFrame {
         FWelcome.infoTree = null;
         FWelcome.startTime = servs.getStartTime();
         FWelcome.finishTime = servs.getFinishTime();
+        FWelcome.btnFreeDesign = servs.getButtonFreeDesign();
         loadRootParam();
         QLog.l().logger().info("Пункт регистрации реинициализирован. Состояние \"" + stateWindow + "\"");
     }

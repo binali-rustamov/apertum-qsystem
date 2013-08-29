@@ -34,7 +34,7 @@ public class QInfoTree extends ATreeModel<QInfoItem> {
 
     @Override
     protected LinkedList<QInfoItem> load() {
-        return new LinkedList<QInfoItem>(Spring.getInstance().getHt().loadAll(QInfoItem.class));
+        return new LinkedList<>(Spring.getInstance().getHt().loadAll(QInfoItem.class));
     }
 
     private static class QInfoTreeHolder {

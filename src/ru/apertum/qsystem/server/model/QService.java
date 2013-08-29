@@ -341,6 +341,63 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     public void setTicketText(String ticketText) {
         this.ticketText = ticketText;
     }
+    
+    /**
+     * Расположение кнопки на пункте регистрации
+     */
+    @Column(name = "but_x")
+    @Expose
+    @SerializedName("but_x")
+    private Integer butX = 100;
+    
+    @Column(name = "but_y")
+    @Expose
+    @SerializedName("but_y")
+    private Integer butY = 100;
+    
+    @Column(name = "but_b")
+    @Expose
+    @SerializedName("but_b")
+    private Integer butB = 100;
+    
+    @Column(name = "but_h")
+    @Expose
+    @SerializedName("but_h")
+    private Integer butH = 100;
+
+    public Integer getButB() {
+        return butB;
+    }
+
+    public void setButB(Integer butB) {
+        this.butB = butB;
+    }
+
+    public Integer getButH() {
+        return butH;
+    }
+
+    public void setButH(Integer butH) {
+        this.butH = butH;
+    }
+
+    public Integer getButX() {
+        return butX;
+    }
+
+    public void setButX(Integer butX) {
+        this.butX = butX;
+    }
+
+    public Integer getButY() {
+        return butY;
+    }
+
+    public void setButY(Integer butY) {
+        this.butY = butY;
+    }
+    
+    
     /**
      * последний номер, выданный последнему кастомеру при номерировании клиентов обособлено в услуге.
      * тут такой замут. когда услугу создаешь из json где-то на клиенте, то там же спринг-контекст не поднят

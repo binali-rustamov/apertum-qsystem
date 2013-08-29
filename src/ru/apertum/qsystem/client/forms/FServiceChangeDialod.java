@@ -115,6 +115,11 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         checkBoxBackoffice.setSelected(service.getEnable().intValue() != 1);
         spinnerPunktReg.setValue(service.getPoint());
 
+        spinButX.setValue(service.getButX());
+        spinButY.setValue(service.getButY());
+        spinButB.setValue(service.getButB());
+        spinButH.setValue(service.getButH());
+
         setHide(true);
         textAreaButtonCaptionKeyPressed(null);
         textAreaInfoHtmlKeyReleased(null);
@@ -171,6 +176,11 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         service.setPreInfoHtml(textAreaInfoHtml.getText());
         service.setPreInfoPrintText(textAreaTextPrint.getText());
         service.setTicketText(textFieldTicketText.getText());
+
+        service.setButX((Integer) spinButX.getValue());
+        service.setButY((Integer) spinButY.getValue());
+        service.setButB((Integer) spinButB.getValue());
+        service.setButH((Integer) spinButH.getValue());
     }
 
     private void setHide(boolean b) {
@@ -253,6 +263,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel13 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
         panelProps = new javax.swing.JPanel();
         comboBoxEnabled = new javax.swing.JComboBox();
         jLabel21 = new javax.swing.JLabel();
@@ -292,6 +304,15 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         labelCaptionButton = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         textAreaButtonCaption = new javax.swing.JTextArea();
+        jPanel6 = new javax.swing.JPanel();
+        spinButX = new javax.swing.JSpinner();
+        jLabel14 = new javax.swing.JLabel();
+        spinButY = new javax.swing.JSpinner();
+        jLabel16 = new javax.swing.JLabel();
+        spinButB = new javax.swing.JSpinner();
+        jLabel17 = new javax.swing.JLabel();
+        spinButH = new javax.swing.JSpinner();
+        jLabel18 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jSplitPane3 = new javax.swing.JSplitPane();
         jSplitPane1 = new javax.swing.JSplitPane();
@@ -312,6 +333,13 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         buttonSave = new javax.swing.JButton();
         buttonCancel = new javax.swing.JButton();
 
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FServiceChangeDialod.class);
+        jLabel13.setText(resourceMap.getString("jLabel13.text")); // NOI18N
+        jLabel13.setName("jLabel13"); // NOI18N
+
+        jLabel15.setText(resourceMap.getString("jLabel15.text")); // NOI18N
+        jLabel15.setName("jLabel15"); // NOI18N
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
 
@@ -321,7 +349,6 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         comboBoxEnabled.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Активна", "Неактивна", "Невидима" }));
         comboBoxEnabled.setName("comboBoxEnabled"); // NOI18N
 
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FServiceChangeDialod.class);
         jLabel21.setText(resourceMap.getString("jLabel21.text")); // NOI18N
         jLabel21.setName("jLabel21"); // NOI18N
 
@@ -548,6 +575,74 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
 
         jSplitPane2.setLeftComponent(jScrollPane1);
 
+        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel6.border.title"))); // NOI18N
+        jPanel6.setName("jPanel6"); // NOI18N
+
+        spinButX.setModel(new javax.swing.SpinnerNumberModel(0, 0, 2000, 10));
+        spinButX.setName("spinButX"); // NOI18N
+
+        jLabel14.setText(resourceMap.getString("jLabel14.text")); // NOI18N
+        jLabel14.setName("jLabel14"); // NOI18N
+
+        spinButY.setModel(new javax.swing.SpinnerNumberModel(0, 0, 2000, 10));
+        spinButY.setName("spinButY"); // NOI18N
+
+        jLabel16.setText(resourceMap.getString("jLabel16.text")); // NOI18N
+        jLabel16.setName("jLabel16"); // NOI18N
+
+        spinButB.setModel(new javax.swing.SpinnerNumberModel(100, 50, 2000, 10));
+        spinButB.setName("spinButB"); // NOI18N
+
+        jLabel17.setText(resourceMap.getString("jLabel17.text")); // NOI18N
+        jLabel17.setName("jLabel17"); // NOI18N
+
+        spinButH.setModel(new javax.swing.SpinnerNumberModel(50, 50, 2000, 10));
+        spinButH.setName("spinButH"); // NOI18N
+
+        jLabel18.setText(resourceMap.getString("jLabel18.text")); // NOI18N
+        jLabel18.setName("jLabel18"); // NOI18N
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel14)
+                    .addComponent(jLabel16)
+                    .addComponent(jLabel17)
+                    .addComponent(jLabel18))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(spinButH, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
+                    .addComponent(spinButB, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
+                    .addComponent(spinButY, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
+                    .addComponent(spinButX, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spinButX, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel14))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spinButY, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel16))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spinButB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel17))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spinButH, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel18))
+                .addContainerGap(203, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -555,17 +650,22 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
-                    .addComponent(jLabel24))
+                    .addComponent(jLabel24)
+                    .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel24)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel24)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -805,10 +905,10 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveActionPerformed
-        if (service != null)  {
+        if (service != null) {
             saveService();
         }
-        if (serviceLng != null)  {
+        if (serviceLng != null) {
             saveServiceLang();
         }
         setVisible(false);
@@ -844,6 +944,12 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
@@ -861,6 +967,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -876,6 +983,10 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JLabel labelLimitForOnePerson;
     private javax.swing.JPanel panelButtons;
     private javax.swing.JPanel panelProps;
+    private javax.swing.JSpinner spinButB;
+    private javax.swing.JSpinner spinButH;
+    private javax.swing.JSpinner spinButX;
+    private javax.swing.JSpinner spinButY;
     private javax.swing.JSpinner spinnerDayLimit;
     private javax.swing.JSpinner spinnerLimit;
     private javax.swing.JSpinner spinnerLimitForOnePerson;

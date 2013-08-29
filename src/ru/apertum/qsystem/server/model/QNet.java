@@ -310,4 +310,19 @@ public class QNet implements Serializable {
     public void setLimitRecall(Integer limitRecall) {
         this.limitRecall = limitRecall;
     }
+    
+    /**
+     * Свободное расположение кнопок на пункте регистрации
+     */
+    @Column(name = "button_free_design")
+    private Boolean buttonFreeDesign;
+
+    public Boolean getButtonFreeDesign() {
+        return buttonFreeDesign;
+    }
+
+    public void setButtonFreeDesign(Boolean buttonFreeDesign) {
+        this.buttonFreeDesign = buttonFreeDesign;
+    }
+    
 }

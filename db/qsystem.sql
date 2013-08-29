@@ -145,6 +145,10 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`services` (
   `point` INT NOT NULL DEFAULT 0 COMMENT 'указание для какого пункта регистрации услуга, 0-для всех, х-для киоска х.' ,
   `ticket_text` VARCHAR(1500) NULL COMMENT 'Текст напечатается на талоне.' ,
   `seq_id` INT NOT NULL DEFAULT 0 COMMENT 'порядок следования кнопок услуг на пункте регистрации' ,
+  `but_x` INT NOT NULL DEFAULT 0 COMMENT 'позиция кнопки' ,
+  `but_y` INT NOT NULL DEFAULT 0 COMMENT 'позиция кнопки' ,
+  `but_b` INT NOT NULL DEFAULT 0 COMMENT 'позиция кнопки' ,
+  `but_h` INT NOT NULL DEFAULT 0 COMMENT 'позиция кнопки' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_servises_parent_id_servises_id`
     FOREIGN KEY (`prent_id` )
@@ -320,6 +324,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`net` (
   `voice` INT NOT NULL DEFAULT 0 COMMENT '0 - по умолчанию, ну и т.д. по набору звуков' ,
   `black_time` INT NOT NULL DEFAULT 0 COMMENT 'Время нахождения в блеклисте в минутах. 0 - попавшие в блекслист не блокируются' ,
   `limit_recall` INT NOT NULL DEFAULT 0 COMMENT 'Количество повторных вызовов перед отклонением неявившегося посетителя, 0-бесконечно' ,
+  `button_free_design` TINYINT(1)  NOT NULL DEFAULT false COMMENT 'авторасстановка кнопок на киоске' ,
   PRIMARY KEY (`id`) )
 ENGINE = InnoDB, 
 COMMENT = 'Сетевые настройки сервера.' ;
@@ -736,8 +741,8 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`, `seq_id`) VALUES (1, 'Дерево услуг', 'Дерево услуг', '-', '<html><p align=center><span style=\'font-size:55.0;color:#DC143C\'>Система управления очередью</span><br><span style=\'font-size:45.0;color:#DC143C\'><i>выберите требуемую услугу</i>', 1, 1, NULL, 0, 0, 1, 14, 60, NULL, 0, '', 0, NULL, '', '', 0, NULL, 0);
-INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`, `seq_id`) VALUES (2, 'Услуга', 'Описание услуги', 'А', '<html><b><p align=center><span style=\'font-size:20.0pt;color:blue\'>Некая услуга', 1, 1, 1, 0, 0, 1, 14, 60, 1, 0, '', 0, 1, '', '', 0, NULL, 0);
+INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`, `seq_id`, `but_x`, `but_y`, `but_b`, `but_h`) VALUES (1, 'Дерево услуг', 'Дерево услуг', '-', '<html><p align=center><span style=\'font-size:55.0;color:#DC143C\'>Система управления очередью</span><br><span style=\'font-size:45.0;color:#DC143C\'><i>выберите требуемую услугу</i>', 1, 1, NULL, 0, 0, 1, 14, 60, NULL, 0, '', 0, NULL, '', '', 0, NULL, 0, 100, 100, 200, 100);
+INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`, `seq_id`, `but_x`, `but_y`, `but_b`, `but_h`) VALUES (2, 'Услуга', 'Описание услуги', 'А', '<html><b><p align=center><span style=\'font-size:20.0pt;color:blue\'>Некая услуга', 1, 1, 1, 0, 0, 1, 14, 60, 1, 0, '', 0, 1, '', '', 0, NULL, 0, 100, 100, 200, 100);
 
 COMMIT;
 
@@ -766,7 +771,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`, `limit_recall`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '2.1', 1, 999, 0, 0, 1, -1, '', '127.0.0.1', 27007, 0, 0, 0);
+INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`, `limit_recall`, `button_free_design`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '2.1', 1, 999, 0, 0, 1, -1, '', '127.0.0.1', 27007, 0, 0, 0, 0);
 
 COMMIT;
 

@@ -19,6 +19,7 @@ package ru.apertum.qsystem.common.cmd;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import java.util.Date;
+import ru.apertum.qsystem.server.model.QNet;
 import ru.apertum.qsystem.server.model.QService;
 
 /**
@@ -39,10 +40,11 @@ public class RpcGetAllServices extends JsonRPC20 {
         public ServicesForWelcome() {
         }
 
-        public ServicesForWelcome(QService root, Date startTime, Date finishTime) {
+        public ServicesForWelcome(QService root, QNet qnet) {
             this.root = root;
-            this.startTime = startTime;
-            this.finishTime = finishTime;
+            this.startTime = qnet.getStartTime();
+            this.finishTime = qnet.getFinishTime();
+            this.buttonFreeDesign = qnet.getButtonFreeDesign();
         }
         @Expose
         @SerializedName("root")
@@ -77,6 +79,20 @@ public class RpcGetAllServices extends JsonRPC20 {
         @Expose
         @SerializedName("finish_time")
         private Date finishTime;
+        /**
+         * Свободное расположение кнопок на пункте регистрации
+         */
+        @Expose
+        @SerializedName("btn_free_dsn")
+        private Boolean buttonFreeDesign;
+
+        public Boolean getButtonFreeDesign() {
+            return buttonFreeDesign;
+        }
+
+        public void setButtonFreeDesign(Boolean buttonFreeDesign) {
+            this.buttonFreeDesign = buttonFreeDesign;
+        }
     }
     @Expose
     @SerializedName("result")

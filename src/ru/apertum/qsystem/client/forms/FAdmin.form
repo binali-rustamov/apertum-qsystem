@@ -3218,13 +3218,13 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="jPanel16" alignment="0" max="32767" attributes="1"/>
-                              <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
                                   <Component id="jPanel9" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jPanel10" min="-2" max="-2" attributes="0"/>
                               </Group>
+                              <Component id="jPanel16" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jTabbedPane2" pref="552" max="32767" attributes="1"/>
@@ -3247,7 +3247,7 @@
                                   <Component id="jPanel16" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="180" max="32767" attributes="0"/>
+                          <EmptySpace pref="176" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -3481,20 +3481,25 @@
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jPanel22" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jPanel20" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="chBoxBtnFreeDsn" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="jPanel22" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="jPanel20" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="jPanel21" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
                                   </Group>
                               </Group>
-                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                              <Component id="jPanel21" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="12" max="32767" attributes="0"/>
+                              <EmptySpace pref="16" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
                                       <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
@@ -3509,13 +3514,15 @@
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="jPanel20" max="32767" attributes="1"/>
-                                          <Component id="jPanel22" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="jPanel22" min="-2" max="-2" attributes="1"/>
+                                          <Component id="jPanel20" min="-2" max="-2" attributes="1"/>
                                       </Group>
                                   </Group>
-                                  <Component id="jPanel21" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="jPanel21" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
+                              <Component id="chBoxBtnFreeDsn" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -3571,7 +3578,6 @@
                                   <Component id="rbPointWindow" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="rbPointStoika" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="17" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -3621,15 +3627,23 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="1" attributes="0">
-                                  <EmptySpace max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="comboBoxVoices" alignment="0" pref="159" max="32767" attributes="1"/>
                                       <Group type="103" alignment="1" groupAlignment="0" attributes="0">
-                                          <Component id="rbNotificationGongVoice" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="rbNotificationNo" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="rbNotificationGong" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="rbNotificationGongOrVoice" alignment="0" min="-2" max="-2" attributes="1"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="rbNotificationGongVoice" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="103" alignment="1" groupAlignment="0" attributes="0">
+                                              <Component id="rbNotificationNo" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="rbNotificationGong" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="rbNotificationGongOrVoice" alignment="0" min="-2" max="-2" attributes="1"/>
+                                          </Group>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="comboBoxVoices" pref="149" max="32767" attributes="1"/>
+                                          <EmptySpace max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -3637,17 +3651,17 @@
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="1" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
                                   <Component id="rbNotificationNo" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="rbNotificationGong" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="rbNotificationGongOrVoice" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="rbNotificationGongVoice" pref="40" max="32767" attributes="0"/>
+                                  <Component id="rbNotificationGongVoice" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="comboBoxVoices" min="-2" pref="25" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -3767,7 +3781,6 @@
                                   <Component id="rbKindPersonal" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="rbKindCommon" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="40" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -3793,6 +3806,12 @@
                         </Component>
                       </SubComponents>
                     </Container>
+                    <Component class="javax.swing.JCheckBox" name="chBoxBtnFreeDsn">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" resourceKey="chBoxBtnFreeDsn.text"/>
+                        <Property name="name" type="java.lang.String" value="chBoxBtnFreeDsn" noResource="true"/>
+                      </Properties>
+                    </Component>
                   </SubComponents>
                 </Container>
                 <Container class="javax.swing.JTabbedPane" name="jTabbedPane2">
