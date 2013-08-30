@@ -196,7 +196,7 @@ public class QUser implements IidGetter, Serializable {
     
     @Expose
     @SerializedName("point_ext")
-    private String pointExt;
+    private String pointExt = "";
 
     @Column(name = "point_ext")
     public String getPointExt() {
