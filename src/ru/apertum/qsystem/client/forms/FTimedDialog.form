@@ -115,6 +115,9 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonCloseActionPerformed"/>
               </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new QButton(WelcomeParams.getInstance().servButtonType);"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JLabel" name="labelMess">
               <Properties>

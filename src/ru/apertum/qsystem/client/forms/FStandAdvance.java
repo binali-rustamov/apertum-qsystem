@@ -26,6 +26,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.common.WelcomeParams;
+import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -129,8 +130,8 @@ public class FStandAdvance extends javax.swing.JDialog {
         panelUp = new ru.apertum.qsystem.client.model.QPanel();
         jLabel2 = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        jButton1 = new QButton(WelcomeParams.getInstance().servButtonType);
+        jButton2 = new QButton(WelcomeParams.getInstance().servButtonType);
         panelMain = new ru.apertum.qsystem.client.model.QPanel();
         panelAdvKod = new ru.apertum.qsystem.client.model.QPanel();
         labelKod = new javax.swing.JLabel();

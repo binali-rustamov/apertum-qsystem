@@ -32,7 +32,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -57,9 +56,6 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.ServiceLoader;
 import javax.imageio.ImageIO;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.standard.*;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -72,7 +68,6 @@ import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.output.OutputException;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
-import org.netbeans.lib.awtextra.AbsoluteLayout;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.common.ClientNetProperty;
@@ -572,7 +567,7 @@ public class FWelcome extends javax.swing.JFrame {
         // тут есть невидимые услуги и услуги не с того киоска
         int childCount = 0;
         for (QService service : current.getChildren()) {
-            if (service.getStatus() != -1 && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
+            if (!(isAdvanceRegim() && service.getAdvanceLimit() == 0) && service.getStatus() != -1 && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
                 childCount++;
             }
         }
@@ -612,7 +607,7 @@ public class FWelcome extends javax.swing.JFrame {
             }
 
             final QButton button = new QButton(service, this, panelMain, WelcomeParams.getInstance().buttonType);
-            if (button.isIsVisible() && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
+            if (!(isAdvanceRegim() && service.getAdvanceLimit() == 0) && button.isIsVisible() && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
                 if (f) {
                     panel.add(button);
                     if (btnFreeDesign) {
@@ -684,7 +679,7 @@ public class FWelcome extends javax.swing.JFrame {
                 int line = 1;
                 write(caption, line, WelcomeParams.getInstance().leftMargin, 1.5, 1.5);
                 line++;
-                write(getLocaleMessage("ticket.your_number"), ++line, 115, 1, 1);
+                write(getLocaleMessage("ticket.your_number"), ++line, 80, 1, 1);
 
                 int x;
                 final String num = ("".equals(customer.getPrefix()) ? "" : customer.getPrefix() + "-") + customer.getNumber();
@@ -863,22 +858,10 @@ public class FWelcome extends javax.swing.JFrame {
                 return Printable.PAGE_EXISTS;
             }
         };
-        PrinterJob job = PrinterJob.getPrinterJob();
+        final PrinterJob job = PrinterJob.getPrinterJob();
         job.setPrintable(canvas);
-        PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
-        attr.add(MediaSizeName.EXECUTIVE);
-        // размер области
-        /*
-        int[] insets = {5, 0, 200, 200};
-        attr.add(new MediaPrintableArea(
-        insets[0], // отсуп слева 
-        insets[1], // отсуп сверху 
-        insets[2], // ширина 
-        insets[3], // высота 
-        MediaPrintableArea.MM));
-         */
         try {
-            job.print(attr);
+            job.print(WelcomeParams.getInstance().printAttributeSet);
             //job.print();
         } catch (PrinterException ex) {
             QLog.l().logger().error("Ошибка печати: ", ex);
@@ -1103,22 +1086,10 @@ public class FWelcome extends javax.swing.JFrame {
                 return Printable.PAGE_EXISTS;
             }
         };
-        PrinterJob job = PrinterJob.getPrinterJob();
+        final PrinterJob job = PrinterJob.getPrinterJob();
         job.setPrintable(canvas);
-        PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
-        attr.add(MediaSizeName.EXECUTIVE);
-        // размер области
-        /*
-        int[] insets = {5, 0, 200, 200};
-        attr.add(new MediaPrintableArea(
-        insets[0], // отсуп слева
-        insets[1], // отсуп сверху
-        insets[2], // ширина
-        insets[3], // высота
-        MediaPrintableArea.MM));
-         */
         try {
-            job.print(attr);
+            job.print(WelcomeParams.getInstance().printAttributeSet);
             //job.print();
         } catch (PrinterException ex) {
             QLog.l().logger().error("Ошибка печати: ", ex);
@@ -1216,12 +1187,10 @@ public class FWelcome extends javax.swing.JFrame {
                 }
             }
         };
-        PrinterJob job = PrinterJob.getPrinterJob();
+        final PrinterJob job = PrinterJob.getPrinterJob();
         job.setPrintable(canvas);
-        PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
-        attr.add(MediaSizeName.EXECUTIVE);
         try {
-            job.print(attr);
+            job.print(WelcomeParams.getInstance().printAttributeSet);
         } catch (PrinterException ex) {
             QLog.l().logger().error("Ошибка печати: ", ex);
         }
@@ -1383,20 +1352,20 @@ public class FWelcome extends javax.swing.JFrame {
         panelCaption = new QPanel(WelcomeParams.getInstance().topImg);
         labelCaption = new javax.swing.JLabel();
         panelButtons = new javax.swing.JPanel();
-        buttonAdvance = new javax.swing.JButton();
-        buttonStandAdvance = new javax.swing.JButton();
-        buttonToBegin = new javax.swing.JButton();
-        buttonBack = new javax.swing.JButton();
+        buttonAdvance = new QButton(WelcomeParams.getInstance().servButtonType);
+        buttonStandAdvance = new QButton(WelcomeParams.getInstance().servButtonType);
+        buttonToBegin = new QButton(WelcomeParams.getInstance().servButtonType);
+        buttonBack = new QButton(WelcomeParams.getInstance().servButtonType);
         panelCentre = new javax.swing.JPanel();
         panelMain = new javax.swing.JPanel();
         panelLock = new javax.swing.JPanel();
         labelLock = new javax.swing.JLabel();
-        buttonInfo = new javax.swing.JButton();
-        buttonResponse = new javax.swing.JButton();
+        buttonInfo = new QButton(WelcomeParams.getInstance().servVertButtonType);
+        buttonResponse = new QButton(WelcomeParams.getInstance().servVertButtonType);
         panelLngs = new javax.swing.JPanel();
         panelForPaging = new javax.swing.JPanel();
-        buttonBackPage = new javax.swing.JButton();
-        buttonForwardPage = new javax.swing.JButton();
+        buttonBackPage = new QButton(WelcomeParams.getInstance().servButtonType);
+        buttonForwardPage = new QButton(WelcomeParams.getInstance().servButtonType);
         labelForwardPage = new javax.swing.JLabel();
         labelBackPage = new javax.swing.JLabel();
 
@@ -1807,6 +1776,7 @@ private void buttonAdvanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     if (isMed && !isAdvanceRegim()) {
         showMed();
     }
+    showButtons(root, panelMain);
 }//GEN-LAST:event_buttonAdvanceActionPerformed
 
 private void buttonStandAdvanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStandAdvanceActionPerformed

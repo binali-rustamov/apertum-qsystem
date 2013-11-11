@@ -1680,12 +1680,14 @@ public class FReception extends javax.swing.JFrame {
         // это заплата на баг с коннектом.
         // без предконнекта из main в дальнейшем сокет не хочет работать,
         // долго висит и вываливает минут через 15-20 эксепшн java.net.SocketException: Malformed reply from SOCKS server  
+        /*
         Socket skt = null;
         try {
             skt = new Socket(netProperty.getAddress(), 61111);
             skt.close();
         } catch (IOException ex) {
         }
+        */
 
         final boolean res;
         try {

@@ -148,8 +148,8 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="buttonBack" alignment="3" pref="71" max="32767" attributes="0"/>
-                          <Component id="jButton2" alignment="3" pref="71" max="32767" attributes="0"/>
                           <Component id="buttonInRoot" alignment="3" pref="71" max="32767" attributes="0"/>
+                          <Component id="jButton2" alignment="3" pref="71" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -180,6 +180,9 @@
                 <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="jButton2" noResource="true"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new QButton(WelcomeParams.getInstance().servButtonType);"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="buttonInRoot">
               <Properties>
@@ -204,6 +207,9 @@
                 <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="buttonInRoot" noResource="true"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new QButton(WelcomeParams.getInstance().servButtonType);"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="buttonBack">
               <Properties>
@@ -228,6 +234,9 @@
                 <Property name="focusPainted" type="boolean" value="false"/>
                 <Property name="name" type="java.lang.String" value="buttonBack" noResource="true"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new QButton(WelcomeParams.getInstance().servButtonType);"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>

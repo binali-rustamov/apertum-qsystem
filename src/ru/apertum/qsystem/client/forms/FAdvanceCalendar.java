@@ -39,6 +39,7 @@ import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.common.WelcomeParams;
 import ru.apertum.qsystem.client.model.IAdviceEvent;
 import ru.apertum.qsystem.client.model.QAvancePanel;
+import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -169,10 +170,10 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         panelSut = new javax.swing.JPanel();
         panelSun = new javax.swing.JPanel();
         panelBottom = new javax.swing.JPanel();
-        buttonClose = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        buttonClose = new QButton(WelcomeParams.getInstance().servButtonType);
+        jButton1 = new QButton(WelcomeParams.getInstance().servButtonType);
+        jButton2 = new QButton(WelcomeParams.getInstance().servButtonType);
+        jButton3 = new QButton(WelcomeParams.getInstance().servButtonType);
 
         setName("Form"); // NOI18N
         setUndecorated(true);

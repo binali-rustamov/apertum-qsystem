@@ -20,6 +20,8 @@ import java.awt.Frame;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.common.WelcomeParams;
+import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
@@ -90,7 +92,7 @@ public class FTimedDialog extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        buttonClose = new javax.swing.JButton();
+        buttonClose = new QButton(WelcomeParams.getInstance().servButtonType);
         labelMess = new javax.swing.JLabel();
 
         setName("Form"); // NOI18N

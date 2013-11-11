@@ -13,7 +13,7 @@
 
     <!-- http://mvnrepository.com -->
     <dependencies>
-        <dependency org="mysql" name="mysql-connector-java" rev="5.1.13" conf="runtime->*" transitive="false"/>
+        <dependency org="mysql" name="mysql-connector-java" rev="5.1.26" conf="runtime->*" transitive="false"/>
 
         <!-- http://blog.springsource.com/2009/12/02/obtaining-spring-3-artifacts-with-maven/ ->
         <dependency org="org.springframework" name="spring-webmvc" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
@@ -84,7 +84,19 @@
         <dependency org="org.eclipse.jetty" name="jetty-http" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-io" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-servlet" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-servlets" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-security" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-webapp" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-jsp" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-runner" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-xml" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-annotations" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <!--dependency org="org.eclipse.jetty" name="jetty-plus" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-client" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-deploy" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-distribution" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/-->
+        <!--dependency org="org.eclipse.jetty" name="jetty-start" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-util-ajax" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/-->
        
         
         <!--dependency org="org.mortbay.jetty" name="servlet-api-3.0" rev="7.0.0pre2" conf="runtime->*" transitive="false"/-->

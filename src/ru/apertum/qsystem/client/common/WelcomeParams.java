@@ -23,6 +23,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.MediaPrintableArea;
+import javax.print.attribute.standard.MediaSizeName;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
@@ -50,6 +54,8 @@ public class WelcomeParams {
     private static final String LINE_LENGTH = "line_length";
     private static final String SCALE_VERTICAL = "scale_vertical";
     private static final String SCALE_HORIZONTAL = "scale_horizontal";
+    private static final String EXECUTIVE = "ptinter.MediaSizeName.EXECUTIVE";
+    private static final String PRINTABLE_AREA = "printer.MediaPrintableArea";
     private static final String LOGO = "logo";
     private static final String BARCODE = "barcode";
     private static final String INPUT_DATA_QR = "input_data_qrcode";
@@ -72,6 +78,8 @@ public class WelcomeParams {
     private static final String INPUT_FONT_SIZE = "input_font_size";// - размер шрифта вводимого текста клиентом
     private static final String LINES_BUTTON_COUNT = "lines_button_count";// - количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
     private static final String BUTTON_TYPE = "button_type";// - это внешний вид кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
+    private static final String SERV_BUTTON_TYPE = "serv_button_type";// - вид управляющей кнопки на пункте регистрации. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
+    private static final String SERV_VERT_BUTTON_TYPE = "serv_vert_button_type";// - вид вертикальной управляющей кнопки на пункте регистрации. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
     private static final String BUTTON_IMG = "button_img";// - это присутствие пиктограммы услуги или группы на кнопке
     private static final String TOP_SIZE = "top_size";// - это ширина верхней панели на п.р. с видом кнопок
     private static final String TOP_IMG = "top_img";// - это картинка на верхней панели на п.р. с видом кнопок
@@ -87,6 +95,7 @@ public class WelcomeParams {
     public int lineLenght = 40; // Длинна стоки на квитанции
     public double scaleVertical = 0.8; // маштабирование по вертикале
     public double scaleHorizontal = 0.8; // машcтабирование по горизонтали
+    public PrintRequestAttributeSet printAttributeSet = new HashPrintRequestAttributeSet(); // атрибуты печати ринтера
     public boolean logo = true; // присутствие логотипа на квитанции
     public int barcode = 1; // присутствие штрихкода на квитанции
     public boolean input_data_qrcode = true; // присутствие qr-штрихкода на квитанции если клиент ввел свои персональные данные
@@ -103,6 +112,8 @@ public class WelcomeParams {
     public int pageLinesCount = 30; // Количество строк на странице.
     public int linesButtonCount = 5; // количество рядов кнопок на киоске, если будет привышение, то начнотся листание страниц
     public String buttonType = ""; // - это внешний вид кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
+    public String servButtonType = ""; // - это внешний вид сервисной кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
+    public String servVertButtonType = ""; // - это внешний вид вертикальной сервисной кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
     public boolean buttonImg = true; // - это присутствие пиктограммы услуги или группы на кнопке
     public int topSize = 0; // - это ширина верхней панели на п.р. с видом кнопок
     public String topImg = ""; // - это картинка на верхней панели на п.р. с видом кнопок
@@ -219,20 +230,133 @@ public class WelcomeParams {
                 case "12":
                     buttonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn12.png";
                     break;
-                default:
+                default: {
                     final File f = new File(settings.getProperty(BUTTON_TYPE));
                     if (f.exists()) {
                         buttonType = settings.getProperty(BUTTON_TYPE);
                     } else {
                         buttonType = "";
                     }
+                }
             }
         } else {
             buttonType = "";
+        }
+        if (settings.containsKey(SERV_BUTTON_TYPE)) {
+            switch (settings.getProperty(SERV_BUTTON_TYPE)) {
+                case "1":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn1.png";
+                    break;
+                case "2":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn2.png";
+                    break;
+                case "3":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn3.png";
+                    break;
+                case "4":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn4.png";
+                    break;
+                case "5":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn5.png";
+                    break;
+                case "6":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn6.png";
+                    break;
+                case "7":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn7.png";
+                    break;
+                case "8":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn8.png";
+                    break;
+                case "9":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn9.png";
+                    break;
+                case "10":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn10.png";
+                    break;
+                case "11":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn11.png";
+                    break;
+                case "12":
+                    servButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn12.png";
+                    break;
+                default: {
+                    final File f = new File(settings.getProperty(SERV_BUTTON_TYPE));
+                    if (f.exists()) {
+                        servButtonType = settings.getProperty(SERV_BUTTON_TYPE);
+                    } else {
+                        servButtonType = "";
+                    }
+                }
+            }
+        } else {
+            servButtonType = "";
+        }
+        if (settings.containsKey(SERV_VERT_BUTTON_TYPE)) {
+            switch (settings.getProperty(SERV_VERT_BUTTON_TYPE)) {
+                case "1":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn1.png";
+                    break;
+                case "2":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn2.png";
+                    break;
+                case "3":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn3.png";
+                    break;
+                case "4":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn4.png";
+                    break;
+                case "5":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn5.png";
+                    break;
+                case "6":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn6.png";
+                    break;
+                case "7":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn7.png";
+                    break;
+                case "8":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn8.png";
+                    break;
+                case "9":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn9.png";
+                    break;
+                case "10":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn10.png";
+                    break;
+                case "11":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn11.png";
+                    break;
+                case "12":
+                    servVertButtonType = "/ru/apertum/qsystem/client/forms/resources/buttons/btn12.png";
+                    break;
+                default: {
+                    final File f = new File(settings.getProperty(SERV_VERT_BUTTON_TYPE));
+                    if (f.exists()) {
+                        servVertButtonType = settings.getProperty(SERV_VERT_BUTTON_TYPE);
+                    } else {
+                        servVertButtonType = "";
+                    }
+                }
+            }
+        } else {
+            servVertButtonType = "";
         }
         buttonImg = "1".equals(settings.getProperty(BUTTON_IMG, "1")) || "true".equals(settings.getProperty(BUTTON_IMG, "true")); // кнопка информационной системы на пункте регистрации
         topImg = settings.getProperty(TOP_IMG, "");
         topImgSecondary = settings.getProperty(TOP_IMG_SECONDARY, "");
         topSize = Integer.parseInt(settings.getProperty(TOP_SIZE, "0"));
+        if ("1".equals(settings.getProperty(EXECUTIVE, "0"))) {
+            printAttributeSet.add(MediaSizeName.EXECUTIVE);
+        }
+        if (!"".equals(settings.getProperty(PRINTABLE_AREA, "")) && settings.getProperty(PRINTABLE_AREA, "").split(",").length == 4) {
+            final String[] ss = settings.getProperty(PRINTABLE_AREA, "").split(",");
+            printAttributeSet.add(new MediaPrintableArea(
+                    Integer.parseInt(ss[0]), // отсуп слева 
+                    Integer.parseInt(ss[1]), // отсуп сверху 
+                    Integer.parseInt(ss[2]), // ширина 
+                    Integer.parseInt(ss[3]), // высота 
+                    MediaPrintableArea.MM));
+        }
     }
 }

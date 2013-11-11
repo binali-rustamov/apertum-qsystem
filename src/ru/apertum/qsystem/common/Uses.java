@@ -47,7 +47,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
-import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,6 +60,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.dom4j.Element;
@@ -657,17 +657,19 @@ public final class Uses {
                 return name.toLowerCase().endsWith(".jar");
             }
         });
-        final URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-        final Class sysclass = URLClassLoader.class;
-        final Class[] parameters = new Class[]{URL.class};
-        for (File file : list) {
-            QLog.l().logger().debug("Плагин " + file.getName());
-            try {
-                final Method method = sysclass.getDeclaredMethod("addURL", parameters);
-                method.setAccessible(true);
-                method.invoke(sysloader, new Object[]{file.toURI().toURL()});
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | MalformedURLException ex) {
-                QLog.l().logger().error("Плагин " + file.getName() + " НЕ загружен. " + ex);
+        if (list.length != 0) {
+            final URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+            final Class sysclass = URLClassLoader.class;
+            final Class[] parameters = new Class[]{URL.class};
+            for (File file : list) {
+                QLog.l().logger().debug("Плагин " + file.getName());
+                try {
+                    final Method method = sysclass.getDeclaredMethod("addURL", parameters);
+                    method.setAccessible(true);
+                    method.invoke(sysloader, new Object[]{file.toURI().toURL()});
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | MalformedURLException ex) {
+                    QLog.l().logger().error("Плагин " + file.getName() + " НЕ загружен. " + ex);
+                }
             }
         }
     }
@@ -704,7 +706,7 @@ public final class Uses {
             lp.add(imageLabel2, null);
             timer.start();
         }
-        final Timer timer = new Timer(200, new ActionListener() {
+        final Timer timer = new Timer(100, new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -754,8 +756,7 @@ public final class Uses {
      */
     public static void startSplash() {
         sh = true;
-        thread = new Thread(new SplashRun());
-        thread.start();
+        SwingUtilities.invokeLater(new SplashRun());
     }
 
     /**
@@ -763,8 +764,7 @@ public final class Uses {
      */
     public static void showSplash() {
         sh = true;
-        thread = new Thread(new SplashRun());
-        thread.start();
+        SwingUtilities.invokeLater(new SplashRun());
     }
 
     /**

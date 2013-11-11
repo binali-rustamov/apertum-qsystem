@@ -33,6 +33,7 @@ public class GsonPool extends SoftReferenceObjectPool {
             return new JsonPrimitive(color.getRGB());
         }
 
+        @Override
         public JsonElement serialize(Object arg0, Type arg1, JsonSerializationContext arg2) {
             final Color color = (Color) arg0;
             return new JsonPrimitive(color.getRGB());
@@ -50,6 +51,7 @@ public class GsonPool extends SoftReferenceObjectPool {
             return new JsonPrimitive(Uses.format_dd_MM_yyyy_time.format(date));
         }
 
+        @Override
         public JsonElement serialize(Object arg0, Type arg1, JsonSerializationContext arg2) {
             final Date date = (Date) arg0;
             return new JsonPrimitive(Uses.format_dd_MM_yyyy_time.format(date));

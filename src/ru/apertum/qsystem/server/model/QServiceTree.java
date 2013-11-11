@@ -16,7 +16,9 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import java.util.Date;
 import java.util.LinkedList;
+import javax.swing.tree.TreeNode;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Property;
@@ -39,8 +41,30 @@ public class QServiceTree extends ATreeModel<QService> {
     protected LinkedList<QService> load() {
         return new LinkedList<>(Spring.getInstance().getHt().findByCriteria(DetachedCriteria.forClass(QService.class).
                 setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY).
+                add(Property.forName("deleted").isNull()).
                 addOrder(Property.forName("seqId").asc()).
                 addOrder(Property.forName("id").asc())));
+    }
+
+    @Override
+    public void save() {
+        // Вложенные нужно добавить. т.к. они не сотрутся по констрейнту
+        for (QService t : deleted) {
+            QServiceTree.sailToStorm(t, new ISailListener() {
+
+                @Override
+                public void actionPerformed(TreeNode service) {
+                    final QService qs = (QService) service;
+                    qs.setDeleted(new Date());
+                    if (!deleted.contains(qs)) {
+                        deleted.add(qs);
+                    }
+                }
+            });
+        }
+        Spring.getInstance().getHt().saveOrUpdateAll(deleted);
+        deleted.clear();
+        Spring.getInstance().getHt().saveOrUpdateAll(getNodes());
     }
 
     private static class QServiceTreeHolder {

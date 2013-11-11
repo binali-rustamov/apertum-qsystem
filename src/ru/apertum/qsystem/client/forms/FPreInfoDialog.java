@@ -34,6 +34,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.common.WelcomeParams;
+import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -133,9 +134,9 @@ public class FPreInfoDialog extends javax.swing.JDialog {
         panelUp = new QPanel(WelcomeParams.getInstance().topImgSecondary);
         LabelCaption2 = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
-        jButton2 = new javax.swing.JButton();
-        buttonInRoot = new javax.swing.JButton();
-        buttonBack = new javax.swing.JButton();
+        jButton2 = new QButton(WelcomeParams.getInstance().servButtonType);
+        buttonInRoot = new QButton(WelcomeParams.getInstance().servButtonType);
+        buttonBack = new QButton(WelcomeParams.getInstance().servButtonType);
         panelMain = new ru.apertum.qsystem.client.model.QPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         labelHtml = new javax.swing.JLabel();
@@ -224,8 +225,8 @@ public class FPreInfoDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buttonBack, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
-                    .addComponent(buttonInRoot, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
+                    .addComponent(buttonInRoot, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
                 .addContainerGap())
         );
 

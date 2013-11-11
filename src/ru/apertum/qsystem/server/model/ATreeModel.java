@@ -237,7 +237,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
                 }
                 if (!flag) {
                     parent = (T) parent.getParent();
-                }
+        }
             }
             if (flag) {
                 del.add(t);

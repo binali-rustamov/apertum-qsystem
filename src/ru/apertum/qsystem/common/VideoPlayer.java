@@ -21,6 +21,7 @@ import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import javafx.application.Platform;
@@ -35,9 +36,9 @@ import javax.swing.JPanel;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
- * Может проигрывать фидеофайлы *.mpg, *.jpg.
- * Для этого используется установленная предварительно на компьютере среда JMF.
- * По умолчанию показ ролика бесконечно в цикле.
+ * Может проигрывать фидеофайлы *.mpg, *.jpg. Для этого используется установленная предварительно на компьютере среда JMF. По умолчанию показ ролика бесконечно
+ * в цикле.
+ *
  * @author Evgeniy Egorov
  */
 public class VideoPlayer extends JPanel {
@@ -52,9 +53,10 @@ public class VideoPlayer extends JPanel {
 
         Platform.runLater(new Runnable() {
 
+            @Override
             public void run() {
-                Group root = new Group();
-                Scene scene = new Scene(root);
+                final Group root = new Group();
+                final Scene scene = new Scene(root);
                 createJavaFXContent(root);
                 javafxPanel.setScene(scene);
                 scene.setFill(new Color(0, 0, 0, 1));
@@ -102,6 +104,7 @@ public class VideoPlayer extends JPanel {
 
     /**
      * Доступ к медиаплееру для детельной настройки параметров.
+     *
      * @return медиаплеер
      */
     public MediaView getMediaView() {
@@ -173,13 +176,23 @@ public class VideoPlayer extends JPanel {
         return false;
     }
 
+    private final static HashMap<String, MediaPlayer> vids = new HashMap<>();
+
+    private synchronized static MediaPlayer getMediaPlayer(String videoFilePath) {
+        if (vids.get(videoFilePath) == null) {
+            vids.put(videoFilePath, new MediaPlayer(new Media(new File(videoFilePath).toURI().toString())));
+        }
+        return vids.get(videoFilePath);
+    }
+
     /**
      * Учтановить ресурс для проигрывания
+     *
      * @param videoFilePath полный путь к видеофайлу
      */
     private boolean setVideoFile(String videoFilePath, int cycles) {
         try {
-            getMediaView().setMediaPlayer(new MediaPlayer(new Media(new File(videoFilePath).toURI().toString())));
+            getMediaView().setMediaPlayer(getMediaPlayer(videoFilePath));
             getMediaView().getMediaPlayer().setCycleCount(cycles);
             javafxPanel.getComponentListeners()[0].componentResized(null);
 
@@ -191,14 +204,15 @@ public class VideoPlayer extends JPanel {
                         boolean mute = getMediaView().getMediaPlayer().isMute();
                         final String vf = getNextVideoFile();
                         if (vf != null) {
-                            medView.setMediaPlayer(null);
+                            getMediaView().getMediaPlayer().stop();
+                            getMediaView().setMediaPlayer(null);
                             if (!setVideoFile(vf, 1)) {
                                 setVideoFile(getNextVideoFile(), 1);
                             }
                             getMediaView().getMediaPlayer().setMute(mute);
-                            removeAll();
-                            setLayout(new GridLayout(1, 1));
-                            add(javafxPanel);
+                            //removeAll();
+                            //setLayout(new GridLayout(1, 1));
+                            //add(javafxPanel);
                             final Timer t = new Timer(true);
                             t.schedule(new TimerTask() {
 
@@ -212,6 +226,7 @@ public class VideoPlayer extends JPanel {
                 });
             }
         } catch (Throwable th) {
+            QLog.l().logger().error("Проблема проигрывания видео при старте ролика.", th);
             return false;
         }
         return true;
@@ -220,6 +235,7 @@ public class VideoPlayer extends JPanel {
 
     /**
      * Сначала установи ресурс
+     *
      * @param nativePosition если false, то по всему контролу парента
      */
     public void setVideoSize(boolean nativePosition) {
@@ -229,12 +245,19 @@ public class VideoPlayer extends JPanel {
     }
 
     public void start() {
-        try {
-            getMediaView().getMediaPlayer().play();
-            javafxPanel.getComponentListeners()[0].componentResized(null);
-        } catch (NullPointerException npe) {
-            QLog.l().logger().error("Кодак не поддерживается. Codak not supported. Видео должно быть в формате H.264.", npe);
-        }
+        final Timer t = new Timer(true);
+        t.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                try {
+                    getMediaView().getMediaPlayer().play();
+                    javafxPanel.getComponentListeners()[0].componentResized(null);
+                } catch (Exception npe) {
+                    QLog.l().logger().error("Кодак не поддерживается. Codak not supported. Видео должно быть в формате H.264.", npe);
+                }
+            }
+        }, 1500);
     }
 
     public void pause() {
@@ -243,6 +266,8 @@ public class VideoPlayer extends JPanel {
 
     public void close() {
         getMediaView().getMediaPlayer().stop();
+        getMediaView().getMediaPlayer().dispose();
+        vids.clear();
         videoFiles = null;
     }
 }

@@ -225,7 +225,6 @@ public final class FClient extends javax.swing.JFrame {
         int i = 0;
         Timer t;
         String pref = "";
-        
 
         public void start2() {
             new Thread(new Runnable() {
@@ -315,6 +314,7 @@ public final class FClient extends javax.swing.JFrame {
             }
             getData2(data, clientAddress, clientPort);
         }
+
         protected void getData2(String data, InetAddress clientAddress, int clientPort) {
             //Определяем, по нашей ли услуге пришел кастомер
             boolean my = false;
@@ -698,11 +698,11 @@ public final class FClient extends javax.swing.JFrame {
      * Возможный состояния кнопок
      * 1 - доступна кнопка, 0 - не доступна
      */
-    private static final String KEYS_OFF = "000000";
-    private static final String KEYS_ALL = "111111";
-    private static final String KEYS_MAY_INVITE = "100000";
-    private static final String KEYS_INVITED = "111000";
-    private static final String KEYS_STARTED = "000111";
+    public static final String KEYS_OFF = "000000";
+    public static final String KEYS_ALL = "111111";
+    public static final String KEYS_MAY_INVITE = "100000";
+    public static final String KEYS_INVITED = "111000";
+    public static final String KEYS_STARTED = "000111";
     private String keys_current = KEYS_OFF;
 
     /**
@@ -1446,7 +1446,9 @@ public final class FClient extends javax.swing.JFrame {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.startSplashClient();
         // Загрузка плагинов из папки plugins
-        Uses.loadPlugins("./plugins/");
+        if (QLog.l().isPlaginable()) {
+            Uses.loadPlugins("./plugins/");
+        }
         // тут нужно провести мегаинициализацию номера пункта окна работника
         for (Integer i = 0; i < args.length - 1; i++) {
             if ("-point".equals(args[i])) {
@@ -1458,12 +1460,14 @@ public final class FClient extends javax.swing.JFrame {
         // это заплата на баг с коннектом.
         // без предконнекта из main в дальнейшем сокет не хочет работать,
         // долго висит и вываливает минут через 15-20 эксепшн java.net.SocketException: Malformed reply from SOCKS server  
+        /*
         Socket skt = null;
         try {
             skt = new Socket(netProperty.getAddress(), 61111);
             skt.close();
         } catch (IOException ex) {
         }
+        */
 
         if (!QLog.l().isTerminal()) {// в терминальном режиме запускаем много копий
             // Отсечем вторую копию.

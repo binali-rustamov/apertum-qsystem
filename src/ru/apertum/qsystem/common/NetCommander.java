@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -69,8 +70,8 @@ import ru.apertum.qsystem.server.model.response.QRespItem;
 import ru.apertum.qsystem.server.model.results.QResult;
 
 /**
- * Содержит статические методы отправки и получения заданий на сервер.
- * любой метод возвращает XML-узел ответа сервера.
+ * Содержит статические методы отправки и получения заданий на сервер. любой метод возвращает XML-узел ответа сервера.
+ *
  * @author Evgeniy Egorov
  */
 public class NetCommander {
@@ -78,10 +79,13 @@ public class NetCommander {
     private static final JsonRPC20 jsonRpc = new JsonRPC20();
 
     /**
-     *  основная работа по отсылки и получению результата.
+     * основная работа по отсылки и получению результата.
+     *
      * @param netProperty параметры соединения с сервером
-     * @param message отсылаемое сообщение.
+     * @param commandName
+     * @param params
      * @return XML-ответ
+     * @throws ru.apertum.qsystem.common.exceptions.QException
      */
     synchronized public static String send(INetProperty netProperty, String commandName, CmdParams params) throws QException {
         jsonRpc.setMethod(commandName);
@@ -100,10 +104,16 @@ public class NetCommander {
         QLog.l().logger().trace("Задание \"" + jsonRpc.getMethod() + "\" на " + netProperty.getAddress().getHostAddress() + ":" + netProperty.getPort() + "#\n" + message);
         final String data;
         try {
+            final Socket socket = new Socket();
+            try {
+                socket.connect(new InetSocketAddress(netProperty.getAddress(), netProperty.getPort()), 15000);
+            } catch (IOException ex) {
+                throw new QException("Невозможно подключиться к серверу. ", ex);
+            }
+            QLog.l().logger().trace("Создали Socket.");
             final PrintWriter writer;
             final Scanner in;
-            try (Socket socket = new Socket(netProperty.getAddress(), netProperty.getPort())) {
-                QLog.l().logger().trace("Создали Socket.");
+            try {
                 writer = new PrintWriter(socket.getOutputStream());
                 writer.print(URLEncoder.encode(message, "utf-8"));
                 QLog.l().logger().trace("Высылаем задание.");
@@ -115,9 +125,11 @@ public class NetCommander {
                     sb = sb.append(in.nextLine()).append("\n");
                 }
                 data = URLDecoder.decode(sb.toString(), "utf-8");
+                writer.close();
+                in.close();
+            } finally {
+                socket.close();
             }
-            writer.close();
-            in.close();
             QLog.l().logger().trace("Ответ:\n" + data);
         } catch (IOException ex) {
             throw new QException("Невозможно получить ответ от сервера. ", ex);
@@ -141,6 +153,7 @@ public class NetCommander {
 
     /**
      * Получение возможных услуг.
+     *
      * @param netProperty параметры соединения с сервером
      * @return XML-ответ
      */
@@ -152,10 +165,9 @@ public class NetCommander {
             res = send(netProperty, Uses.TASK_GET_SERVICES, null);
         } catch (QException ex) {// вывод исключений
             throw new ClientException("Проблема с командой. ", ex);
-        } finally {
-            if (res == null) {
-                return null;
-            }
+        }
+        if (res == null) {
+            return null;
         }
         final Gson gson = GsonPool.getInstance().borrowGson();
         final RpcGetAllServices rpc;
@@ -171,6 +183,7 @@ public class NetCommander {
 
     /**
      * Постановка в очередь.
+     *
      * @param netProperty netProperty параметры соединения с сервером.
      * @param serviceId услуга, в которую пытаемся встать.
      * @param password пароль того кто пытается выполнить задание.
@@ -203,13 +216,14 @@ public class NetCommander {
         }
         return rpc.getResult();
     }
-    
+
     /**
      * Сделать услугу временно неактивной или разблокировать временную неактивность
+     *
      * @param netProperty netProperty параметры соединения с сервером.
      * @param serviceId услуга, которую пытаемся править
-     * @param reason 
-     * @return 
+     * @param reason
+     * @ret
      */
     public static void changeTempAvailableService(INetProperty netProperty, long serviceId, String reason) {
         QLog.l().logger().info("Сделать услугу временно неактивной/активной.");
@@ -226,6 +240,7 @@ public class NetCommander {
 
     /**
      * Узнать сколько народу стоит к услуге и т.д.
+     *
      * @param netProperty параметры соединения с сервером.
      * @param serviceId id услуги о которой получаем информацию
      * @return количество предшествующих.
@@ -253,9 +268,10 @@ public class NetCommander {
         }
         return rpc.getResult();
     }
-    
+
     /**
      * Получить всю очередь к услуге и т.д.
+     *
      * @param netProperty параметры соединения с сервером.
      * @param serviceId id услуги о которой получаем информацию
      * @return количество предшествующих.
@@ -283,9 +299,10 @@ public class NetCommander {
         }
         return rpc.getResult();
     }
-    
+
     /**
      * Узнать можно ли вставать в услугу с такими введенными данными
+     *
      * @param netProperty параметры соединения с сервером.
      * @param serviceId id услуги о которой получаем информацию
      * @param inputData введенная ботва
@@ -318,6 +335,7 @@ public class NetCommander {
 
     /**
      * Получение описания всех юзеров для выбора себя.
+     *
      * @param netProperty параметры соединения с сервером
      * @return XML-ответ все юзеры системы
      */
@@ -349,6 +367,7 @@ public class NetCommander {
 
     /**
      * Получение описания очередей для юзера.
+     *
      * @param netProperty параметры соединения с сервером
      * @param userId id пользователя для которого идет опрос
      * @return список обрабатываемых услуг с количеством кастомеров в них стоящих и обрабатываемый кастомер если был
@@ -377,15 +396,16 @@ public class NetCommander {
         }
         return rpc.getResult();
     }
-    
+
     /**
-     * Подпорочка, нужна для того чтоб настроить маркеровку окна приема на клиенте и переслать на сервер, чтоб заменить значение из БД.
-     * Это значение, если есть, передается в строке параметров при старке клиентской проги и засовывается сюда, вот такая мегаинициализация.
+     * Подпорочка, нужна для того чтоб настроить маркеровку окна приема на клиенте и переслать на сервер, чтоб заменить значение из БД. Это значение, если есть,
+     * передается в строке параметров при старке клиентской проги и засовывается сюда, вот такая мегаинициализация.
      */
     static public String pointId = null;
 
     /**
      * Проверка на то что такой юзер уже залогинен в систему
+     *
      * @param netProperty параметры соединения с сервером
      * @param userId id пользователя для которого идет опрос
      * @return false - запрешено, true - новый
@@ -416,7 +436,8 @@ public class NetCommander {
     }
 
     /**
-     * Получение слкдующего юзера из очередей, обрабатываемых юзером.
+     * Получение слeдующего юзера из очередей, обрабатываемых юзером.
+     *
      * @param netProperty параметры соединения с сервером
      * @param userId
      * @return ответ-кастомер следующий по очереди
@@ -438,6 +459,8 @@ public class NetCommander {
             rpc = gson.fromJson(res, RpcInviteCustomer.class);
         } catch (JsonParseException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } catch (Exception ex){    
+            throw new ClientException("Ошибка при обработке ответа, возможно с библиотеками.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
         }
@@ -446,6 +469,7 @@ public class NetCommander {
 
     /**
      * Удаление вызванного юзером кастомера.
+     *
      * @param netProperty параметры соединения с сервером
      * @param userId
      */
@@ -463,9 +487,11 @@ public class NetCommander {
 
     /**
      * Перемещение вызванного юзером кастомера в пул отложенных.
+     *
      * @param netProperty параметры соединения с сервером
      * @param userId
      * @param status просто строка. берется из возможных состояний завершения работы
+     * @param postponedPeriod
      */
     public static void сustomerToPostpone(INetProperty netProperty, long userId, String status, int postponedPeriod) {
         QLog.l().logger().info("Перемещение вызванного юзером кастомера в пул отложенных.");
@@ -483,6 +509,7 @@ public class NetCommander {
 
     /**
      * Изменение отложенному кастомеру статеса
+     *
      * @param netProperty параметры соединения с сервером
      * @param postponCustomerId меняем этому кастомеру
      * @param status просто строка. берется из возможных состояний завершения работы
@@ -502,6 +529,7 @@ public class NetCommander {
 
     /**
      * Начать работу с вызванным кастомером.
+     *
      * @param netProperty параметры соединения с сервером
      * @param userId
      */
@@ -519,6 +547,7 @@ public class NetCommander {
 
     /**
      * Закончить работу с вызванным кастомером.
+     *
      * @param netProperty параметры соединения с сервером
      * @param userId
      * @param resultId
@@ -540,11 +569,12 @@ public class NetCommander {
 
     /**
      * Переадресовать клиента в другую очередь.
+     *
      * @param netProperty параметры соединения с сервером
      * @param userId
-     * @param serviceId 
+     * @param serviceId
      * @param requestBack
-     * @param resultId 
+     * @param resultId
      * @param comments комментарии при редиректе
      */
     public static void redirectCustomer(INetProperty netProperty, long userId, long serviceId, boolean requestBack, String comments, Long resultId) {
@@ -565,6 +595,7 @@ public class NetCommander {
 
     /**
      * Подтверждение живости клиентом для сервера.
+     *
      * @param netProperty параметры соединения с сервером
      * @param userId
      * @return XML-ответ
@@ -574,14 +605,14 @@ public class NetCommander {
         final CmdParams params = new CmdParams();
         params.userId = userId;
         /*
-        try {
-        // загрузим ответ
-        return send(netProperty, Uses.TASK_I_AM_LIVE, params);
-        } catch (IOException e) {// вывод исключений
-        throw new ClientException("Невозможно получить ответ от сервера. " + e.toString());
-        } catch (DocumentException e) {
-        throw new ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
-        }
+         try {
+         // загрузим ответ
+         return send(netProperty, Uses.TASK_I_AM_LIVE, params);
+         } catch (IOException e) {// вывод исключений
+         throw new ClientException("Невозможно получить ответ от сервера. " + e.toString());
+         } catch (DocumentException e) {
+         throw new ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
+         }
          *
          */
 
@@ -590,11 +621,11 @@ public class NetCommander {
 
     /**
      * Получение описания состояния сервера.
+     *
      * @param netProperty параметры соединения с сервером
      * @return XML-ответ
-     * @throws IOException
      */
-    public static LinkedList<ServiceInfo> getServerState(INetProperty netProperty) throws IOException {
+    public static LinkedList<ServiceInfo> getServerState(INetProperty netProperty) {
         QLog.l().logger().info("Получение описания состояния сервера.");
         // загрузим ответ
         String res = null;
@@ -617,6 +648,7 @@ public class NetCommander {
 
     /**
      * Получение описания состояния пункта регистрации.
+     *
      * @param netProperty параметры соединения с пунктом регистрации
      * @param message что-то вроде названия команды для пункта регистрации
      * @return некий ответ от пункта регистрации, вроде прям как строка для вывода
@@ -643,12 +675,12 @@ public class NetCommander {
     }
 
     /**
-     * Добавить сервис в список обслуживаемых юзером использую параметры.
-     * Используется при добавлении на горячую.
+     * Добавить сервис в список обслуживаемых юзером использую параметры. Используется при добавлении на горячую.
+     *
      * @param netProperty параметры соединения с пунктом регистрации
      * @param serviceId
      * @param userId
-     * @param coeff 
+     * @param coeff
      * @return содержить строковое сообщение о результате.
      */
     public static String setServiseFire(INetProperty netProperty, long serviceId, long userId, int coeff) {
@@ -677,8 +709,8 @@ public class NetCommander {
     }
 
     /**
-     * Удалить сервис из списока обслуживаемых юзером использую параметры.
-     * Используется при добавлении на горячую.
+     * Удалить сервис из списока обслуживаемых юзером использую параметры. Используется при добавлении на горячую.
+     *
      * @param netProperty параметры соединения с пунктом регистрации
      * @param serviceId
      * @param userId
@@ -709,8 +741,8 @@ public class NetCommander {
     }
 
     /**
-     * Получение конфигурации главного табло - ЖК или плазмы.
-     * Это XML-файл лежащий в папку приложения mainboard.xml
+     * Получение конфигурации главного табло - ЖК или плазмы. Это XML-файл лежащий в папку приложения mainboard.xml
+     *
      * @param netProperty параметры соединения с сервером
      * @return корень XML-файла mainboard.xml
      * @throws DocumentException принятый текст может не преобразоваться в XML
@@ -737,8 +769,8 @@ public class NetCommander {
     }
 
     /**
-     * Сохранение конфигурации главного табло - ЖК или плазмы.
-     * Это XML-файл лежащий в папку приложения mainboard.xml
+     * Сохранение конфигурации главного табло - ЖК или плазмы. Это XML-файл лежащий в папку приложения mainboard.xml
+     *
      * @param netProperty параметры соединения с сервером
      * @param boardConfig
      */
@@ -753,9 +785,10 @@ public class NetCommander {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + e.toString());
         }
     }
-    
+
     /**
      * Получение дневной таблици с данными для предварительной записи включающими информацию по занятым временам и свободным.
+     *
      * @param netProperty netProperty параметры соединения с сервером.
      * @param serviceId услуга, в которую пытаемся встать.
      * @param date день недели за который нужны данные.
@@ -789,6 +822,7 @@ public class NetCommander {
 
     /**
      * Получение недельной таблици с данными для предварительной записи.
+     *
      * @param netProperty netProperty параметры соединения с сервером.
      * @param serviceId услуга, в которую пытаемся встать.
      * @param date первый день недели за которую нужны данные.
@@ -822,6 +856,7 @@ public class NetCommander {
 
     /**
      * Предварительная запись в очередь.
+     *
      * @param netProperty netProperty параметры соединения с сервером.
      * @param serviceId услуга, в которую пытаемся встать.
      * @param date
@@ -859,6 +894,7 @@ public class NetCommander {
 
     /**
      * Предварительная запись в очередь.
+     *
      * @param netProperty netProperty параметры соединения с сервером.
      * @param advanceID идентификатор предварительно записанного.
      * @return XML-ответ.
@@ -888,6 +924,7 @@ public class NetCommander {
 
     /**
      * Рестарт сервера.
+     *
      * @param netProperty параметры соединения с сервером
      */
     public static void restartServer(INetProperty netProperty) {
@@ -901,6 +938,7 @@ public class NetCommander {
 
     /**
      * Получение списка отзывов
+     *
      * @param netProperty параметры соединения с сервером
      * @return XML-ответ
      */
@@ -912,10 +950,9 @@ public class NetCommander {
             res = send(netProperty, Uses.TASK_GET_RESPONSE_LIST, null);
         } catch (QException ex) {// вывод исключений
             throw new ClientException("Проблема с командой. ", ex);
-        } finally {
-            if (res == null) {
-                return null;
-            }
+        }
+        if (res == null) {
+            return null;
         }
         final Gson gson = GsonPool.getInstance().borrowGson();
         final RpcGetRespList rpc;
@@ -931,9 +968,11 @@ public class NetCommander {
 
     /**
      * Оставить отзыв.
+     *
      * @param netProperty параметры соединения с сервером.
      * @param serviceID услуга, может быть null
      * @param userID оператор, может быть null
+     * @param customerID
      * @param clientData номер талона, не null
      * @param respID идентификатор выбранного отзыва
      */
@@ -955,6 +994,7 @@ public class NetCommander {
 
     /**
      * Получение информационного дерева
+     *
      * @param netProperty параметры соединения с сервером
      * @return XML-ответ
      */
@@ -966,10 +1006,9 @@ public class NetCommander {
             res = send(netProperty, Uses.TASK_GET_INFO_TREE, null);
         } catch (QException ex) {// вывод исключений
             throw new ClientException("Проблема с командой. ", ex);
-        } finally {
-            if (res == null) {
-                return null;
-            }
+        }
+        if (res == null) {
+            return null;
         }
         final Gson gson = GsonPool.getInstance().borrowGson();
         final RpcGetInfoTree rpc;
@@ -985,6 +1024,7 @@ public class NetCommander {
 
     /**
      * Получение описания залогинившегося юзера.
+     *
      * @param netProperty параметры соединения с сервером
      * @param id
      * @return XML-ответ
@@ -1014,6 +1054,7 @@ public class NetCommander {
 
     /**
      * Получение списка возможных результатов работы с клиентом
+     *
      * @param netProperty параметры соединения с сервером
      * @return свисок возможных завершений работы
      */
@@ -1040,6 +1081,7 @@ public class NetCommander {
 
     /**
      * Изменение приоритета кастомеру
+     *
      * @param netProperty параметры соединения с сервером
      * @param prioritet
      * @param customer
@@ -1068,12 +1110,12 @@ public class NetCommander {
         }
         return rpc.getResult();
     }
-    
+
     /**
      * Пробить номер клиента. Стоит в очереди или отложен или вообще не найден.
+     *
      * @param netProperty параметры соединения с сервером
-     * @param prioritet
-     * @param customer
+     * @param customerNumber
      * @return Текстовый ответ о результате
      */
     public static String checkCustomerNumber(INetProperty netProperty, String customerNumber) {
@@ -1101,6 +1143,7 @@ public class NetCommander {
 
     /**
      * Получить список отложенных кастомеров
+     *
      * @param netProperty
      * @return список отложенных кастомеров
      */
@@ -1124,9 +1167,10 @@ public class NetCommander {
         }
         return rpc.getResult();
     }
-    
-     /**
+
+    /**
      * Получить список забаненных введенных данных
+     *
      * @param netProperty
      * @return список отложенных кастомеров
      */
@@ -1153,6 +1197,7 @@ public class NetCommander {
 
     /**
      * Вызов отложенного кастомера
+     *
      * @param netProperty
      * @param userId id юзера который вызывает
      * @param id это ID кастомера которого вызываем из пула отложенных, оно есть т.к. с качстомером давно работаем
@@ -1172,6 +1217,7 @@ public class NetCommander {
 
     /**
      * Рестарт главного табло
+     *
      * @param serverNetProperty
      */
     public static void restartMainTablo(INetProperty serverNetProperty) {
@@ -1186,8 +1232,10 @@ public class NetCommander {
 
     /**
      * Изменение приоритетов услуг оператором
+     *
      * @param netProperty
      * @param userId id юзера который вызывает
+     * @param smartData
      */
     public static void changeFlexPriority(INetProperty netProperty, long userId, String smartData) {
         QLog.l().logger().info("Изменение приоритетов услуг оператором.");
@@ -1201,10 +1249,13 @@ public class NetCommander {
             throw new ClientException("Проблема с командой. ", ex);
         }
     }
-       /**
+
+    /**
      * Изменение бегущей строки на табло из админской проги
+     *
      * @param netProperty параметры соединения с сервером
      * @param text новая строка
+     * @param nameSection
      */
     public static void setRunningText(INetProperty netProperty, String text, String nameSection) {
         QLog.l().logger().info("Получение описания авторизованного пользователя.");
@@ -1218,9 +1269,10 @@ public class NetCommander {
             throw new ClientException("Проблема с командой. ", ex);
         }
     }
-    
+
     /**
      * Получить норрмативы
+     *
      * @param netProperty
      * @return класс нормативов
      */

@@ -60,7 +60,7 @@ public class RpcGetGridOfWeek extends JsonRPC20 {
 
         @Expose
         @SerializedName("times")
-        private LinkedList<Date> times;
+        private LinkedList<Date> times = new LinkedList<>();
 
         public void addTime(Date time) {
             if (times == null) {

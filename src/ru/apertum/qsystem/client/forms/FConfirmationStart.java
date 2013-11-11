@@ -26,6 +26,7 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.common.WelcomeParams;
+import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -125,8 +126,8 @@ public class FConfirmationStart extends JDialog {
     private void initComponents() {
 
         jPanel1 = new QPanel(WelcomeParams.getInstance().backgroundImg);
-        buttonOk = new javax.swing.JButton();
-        buttonCancel = new javax.swing.JButton();
+        buttonOk = new QButton(WelcomeParams.getInstance().servButtonType);
+        buttonCancel = new QButton(WelcomeParams.getInstance().servButtonType);
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         labelInfo = new javax.swing.JLabel();

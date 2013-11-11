@@ -39,6 +39,7 @@ import ru.apertum.qsystem.server.controller.Executer;
  */
 public class CommandHandler extends AbstractHandler {
 
+    @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
         final String result;
         final int status;
@@ -109,6 +110,7 @@ public class CommandHandler extends AbstractHandler {
             default:
                 status = HttpServletResponse.SC_OK;
                 result = "<h1>QSystem<hr><br><br>URL не поддерживается // URL not supply</h1>";
+                return;
         }
         //System.out.println(status + "/n" + result);
         response.setContentType("text/html;charset=utf-8");

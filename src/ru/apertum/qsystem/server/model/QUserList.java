@@ -16,7 +16,11 @@
  */
 package ru.apertum.qsystem.server.model;
 
+import java.util.Date;
 import java.util.LinkedList;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Property;
 import ru.apertum.qsystem.server.Spring;
 
 /**
@@ -32,7 +36,9 @@ public class QUserList extends ATListModel<QUser> {
 
     @Override
     protected LinkedList<QUser> load() {
-        final LinkedList<QUser> users = new LinkedList<>(Spring.getInstance().getHt().loadAll(QUser.class));
+        final LinkedList<QUser> users = new LinkedList<>(
+                Spring.getInstance().getHt().findByCriteria(
+                DetachedCriteria.forClass(QUser.class).add(Property.forName("deleted").isNull()).setResultTransformer((Criteria.DISTINCT_ROOT_ENTITY))));
         // если этого не проделать, то параметр количества привязанных услуг к юзеру будет пустым после рестарта сервера из админки
         for (QUser qUser : users) {
             qUser.setServicesCnt(qUser.getPlanServiceList().getSize());
@@ -54,7 +60,12 @@ public class QUserList extends ATListModel<QUser> {
 
     @Override
     public void save() {
-        super.save();
+        for (QUser qUser : deleted) {
+            qUser.setDeleted(new Date());
+        }
+        Spring.getInstance().getHt().saveOrUpdateAll(deleted);
+        deleted.clear();
+        Spring.getInstance().getHt().saveOrUpdateAll(getItems());
         for (QUser qUser : getItems()) {
             qUser.savePlan();
         }

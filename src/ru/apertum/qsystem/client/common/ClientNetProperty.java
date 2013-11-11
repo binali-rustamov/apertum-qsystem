@@ -23,6 +23,7 @@ import ru.apertum.qsystem.common.model.IClientNetProperty;
 
 /**
  * Класс интерфейса INetPropertyImpl, для обработки командной строки клиентских модулей
+ *
  * @author Evgeniy Egorov
  */
 public class ClientNetProperty implements IClientNetProperty {

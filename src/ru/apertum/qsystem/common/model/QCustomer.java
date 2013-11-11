@@ -38,7 +38,6 @@ import javax.persistence.Transient;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.exceptions.ServerException;
@@ -142,6 +141,11 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
             }
         }
         this.state = state;
+        
+        // можно будет следить за тенью кастомера у юзера и за его изменениями
+        if (getUser()!=null) {
+            getUser().getShadow().setCustomerState(state);
+        }
 
         switch (state) {
             case STATE_DEAD:

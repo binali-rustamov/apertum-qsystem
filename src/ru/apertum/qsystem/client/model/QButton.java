@@ -86,6 +86,63 @@ public class QButton extends JButton {
     private final static int NO_VISIBLE = -1;
     private final static HashMap<String, Image> imgs = new HashMap<>();
 
+    public QButton() {
+        service = null;
+        form = null;
+        parent = null;
+        isActive = true;
+        isVisible = true;
+    }
+    
+    public QButton(String resourceName) {
+        service = null;
+        form = null;
+        parent = null;
+        isActive = true;
+        isVisible = true;
+        
+        // Нарисуем картинку на кнопке если надо. Загрузить можно из файла или ресурса
+        if ("".equals(resourceName)) {
+            background = null;
+        } else {
+            background = imgs.get(resourceName);
+            if (background == null) {
+                File file = new File(resourceName);
+                if (file.exists()) {
+                    try {
+                        background = ImageIO.read(file);
+                        imgs.put(resourceName, background);
+                    } catch (IOException ex) {
+                        background = null;
+                        QLog.l().logger().error(ex);
+                    }
+                } else {
+                    final DataInputStream inStream = new DataInputStream(getClass().getResourceAsStream(resourceName));
+                    byte[] b = null;
+                    try {
+                        b = new byte[inStream.available()];
+                        inStream.readFully(b);
+                    } catch (IOException ex) {
+                        background = null;
+                        QLog.l().logger().error(ex);
+                    }
+                    background = new ImageIcon(b).getImage();
+                    imgs.put(resourceName, background);
+                }
+            }
+        }
+        
+        //займемся внешним видом
+        // либо просто стандартная кнопка, либо картинка на кнопке если она есть
+        if (background == null) {
+            setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new BevelBorder(BevelBorder.RAISED)));
+        } else {
+            setOpaque(false);
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+        }
+    }
+
     public QButton(final QService service, FWelcome frm, JPanel prt, String resourceName) {
         super();
 

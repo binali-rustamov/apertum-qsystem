@@ -38,6 +38,7 @@ public class QLog {
     private static final String KEY_LOG_INFO = "LOGINFO";
     private static final String KEY_DEMO = "DEMO";
     private static final String KEY_IDE = "ide";
+    private static final String KEY_START = "-start";
     private static final String KEY_NOPLUGINS = "-noplugins";
     private static final String KEY_PAUSE = "-pause";
     private static final String KEY_TERMINAL = "-terminal";
@@ -103,6 +104,9 @@ public class QLog {
             case 4://админка
                 logger = Logger.getLogger("welcome.file");
                 break;
+            case 5://хардварные кнопки
+                logger = Logger.getLogger("user_buttons.file");
+                break;
             default:
                 throw new AssertionError();
         }
@@ -127,6 +131,9 @@ public class QLog {
                     case 4://админка
                         logger = Logger.getLogger("welcome.file.info.trace");
                         break;
+                    case 5://хардварные кнопки
+                        logger = Logger.getLogger("user_buttons.file.info.trace");
+                        break;
                     default:
                         throw new AssertionError();
                 }
@@ -150,6 +157,9 @@ public class QLog {
                         break;
                     case 4://админка
                         logger = Logger.getLogger("welcome.file.info");
+                        break;
+                    case 5://хардварные кнопки
+                        logger = Logger.getLogger("user_buttons.file.info");
                         break;
                     default:
                         throw new AssertionError();
@@ -192,7 +202,7 @@ public class QLog {
                 }
             }
         }
-        if (!isDebugin) {
+        /*if (!isDebugin) {
             final Properties settings = new Properties();
             final InputStream inStream = settings.getClass().getResourceAsStream("/ru/apertum/qsystem/common/version.properties");
             try {
@@ -200,7 +210,7 @@ public class QLog {
             } catch (IOException ex) {
                 throw new ClientException("Проблемы с чтением версии. " + ex);
             }
-        }
+        }*/
         isDebug = isDebugin;
         isDemo = isDem;
         plaginable = isPlug;
@@ -222,12 +232,13 @@ public class QLog {
     private static String[] args1 = new String[0];
     public static boolean isServer1 = false;
     public static boolean isIDE = false;
+    public static boolean isSTART = false;
     public static int loggerType = 0; // 0-сервер,1-клиент,2-приемная,3-админка,4-киоск
 
     /**
      * 
      * @param args
-     * @param loggerType  0-сервер,1-клиент,2-приемная,3-админка,4-киоск
+     * @param loggerType  0-сервер,1-клиент,2-приемная,3-админка,4-киоск,5-сервер хардварных кнопок
      * @return 
      */
     public static QLog initial(String[] args, int type) {
@@ -235,7 +246,9 @@ public class QLog {
         for (String string : args) {
             if (KEY_IDE.equalsIgnoreCase(string)) {
                 isIDE = true;
-                break;
+            }
+            if (KEY_START.equalsIgnoreCase(string)) {
+                isSTART = true;
             }
         }
         loggerType = type;
@@ -247,6 +260,9 @@ public class QLog {
         }
         QLog.l().logger.info("Mode: " + (QLog.l().isDebug() ? KEY_DEBUG : (QLog.l().isDemo() ? KEY_DEMO : "FULL")));
         QLog.l().logger.info("Plugins: " + (QLog.l().isPlaginable() ? "YES" : "NO"));
+        if (isSTART) {
+            QLog.l().logger.info("Auto start: YES");
+        }
 
         return log;
     }

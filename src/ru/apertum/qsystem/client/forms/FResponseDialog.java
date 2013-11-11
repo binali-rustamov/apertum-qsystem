@@ -44,6 +44,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.common.WelcomeParams;
+import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -237,7 +238,7 @@ public class FResponseDialog extends javax.swing.JDialog {
         panelUp = new QPanel(WelcomeParams.getInstance().topImgSecondary);
         LabelCaption = new javax.swing.JLabel();
         panelBottom = new ru.apertum.qsystem.client.model.QPanel();
-        jButton2 = new javax.swing.JButton();
+        jButton2 = new QButton(WelcomeParams.getInstance().servButtonType);
         panelMain = new ru.apertum.qsystem.client.model.QPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);

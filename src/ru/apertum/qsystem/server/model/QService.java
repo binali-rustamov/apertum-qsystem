@@ -44,6 +44,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
 import javax.persistence.Transient;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
@@ -114,6 +115,20 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     public final void setId(Long id) {
         this.id = id;
+    }
+    /**
+     * признак удаления с проставленим даты
+     */
+    @Column(name = "deleted")
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date deleted;
+
+    public Date getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Date deleted) {
+        this.deleted = deleted;
     }
     /**
      * Состояние услуги. 1 - доступна, 0 - недоступна, -1 - невидима.
@@ -341,7 +356,6 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     public void setTicketText(String ticketText) {
         this.ticketText = ticketText;
     }
-    
     /**
      * Расположение кнопки на пункте регистрации
      */
@@ -349,17 +363,14 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     @Expose
     @SerializedName("but_x")
     private Integer butX = 100;
-    
     @Column(name = "but_y")
     @Expose
     @SerializedName("but_y")
     private Integer butY = 100;
-    
     @Column(name = "but_b")
     @Expose
     @SerializedName("but_b")
     private Integer butB = 100;
-    
     @Column(name = "but_h")
     @Expose
     @SerializedName("but_h")
@@ -396,8 +407,6 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     public void setButY(Integer butY) {
         this.butY = butY;
     }
-    
-    
     /**
      * последний номер, выданный последнему кастомеру при номерировании клиентов обособлено в услуге.
      * тут такой замут. когда услугу создаешь из json где-то на клиенте, то там же спринг-контекст не поднят
@@ -921,7 +930,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     @Override
     public void addChild(ITreeIdGetter child) {
-        if (!childrenOfService.contains((QService)child)) { // бывает что добавляем повторно ужедобавленный
+        if (!childrenOfService.contains((QService) child)) { // бывает что добавляем повторно ужедобавленный
             childrenOfService.add((QService) child);
         }
     }

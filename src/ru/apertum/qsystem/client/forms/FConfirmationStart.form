@@ -115,6 +115,9 @@
             <Property name="focusPainted" type="boolean" value="false"/>
             <Property name="name" type="java.lang.String" value="buttonOk" noResource="true"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new QButton(WelcomeParams.getInstance().servButtonType);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JButton" name="buttonCancel">
           <Properties>
@@ -136,6 +139,9 @@
             <Property name="focusPainted" type="boolean" value="false"/>
             <Property name="name" type="java.lang.String" value="buttonCancel" noResource="true"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new QButton(WelcomeParams.getInstance().servButtonType);"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>

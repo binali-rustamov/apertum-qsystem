@@ -30,7 +30,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.Spring;
@@ -68,6 +70,20 @@ public class QUser implements IidGetter, Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+    /**
+     * признак удаления с проставленим даты
+     */
+    @Column(name = "deleted")
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date deleted;
+
+    public Date getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Date deleted) {
+        this.deleted = deleted;
     }
     /**
      * Удаленный или нет.
@@ -193,7 +209,6 @@ public class QUser implements IidGetter, Serializable {
     public Integer getAdressRS() {
         return adressRS;
     }
-    
     @Expose
     @SerializedName("point_ext")
     private String pointExt = "";
@@ -206,7 +221,6 @@ public class QUser implements IidGetter, Serializable {
     public void setPointExt(String pointExt) {
         this.pointExt = pointExt;
     }
-    
     //******************************************************************************************************************
     //******************************************************************************************************************
     //************************************** Услуги юзера **************************************************************
@@ -397,6 +411,7 @@ public class QUser implements IidGetter, Serializable {
         shadow = new Shadow(customer);
         shadow.setStartTime(null);
     }
+
     /**
      * Это чтоб осталась инфа сразу после вызова кастомера. Нужно для нормативов и статистики сиюминутной
      */
@@ -431,6 +446,11 @@ public class QUser implements IidGetter, Serializable {
             this.oldPref = oldCostomer.getPrefix();
             this.finTime = new Date();
             this.startTime = new Date();
+            if (oldCostomer.getState() == null) {
+                customerState = CustomerState.STATE_INVITED;
+            } else {
+                customerState = oldCostomer.getState();
+            }
         }
         private QService oldService;
         private QCustomer oldCustomer;
@@ -460,7 +480,6 @@ public class QUser implements IidGetter, Serializable {
         public void setStartTime(Date startTime) {
             this.startTime = startTime;
         }
-        
 
         public Long getIdOldCustomer() {
             return idOldCustomer;
@@ -524,6 +543,17 @@ public class QUser implements IidGetter, Serializable {
 
         public void setOldService(QService oldService) {
             this.oldService = oldService;
+        }
+        @Expose
+        @SerializedName("old_cust_state")
+        private CustomerState customerState;
+
+        public CustomerState getCustomerState() {
+            return customerState;
+        }
+
+        public void setCustomerState(CustomerState customerState) {
+            this.customerState = customerState;
         }
     }
 }

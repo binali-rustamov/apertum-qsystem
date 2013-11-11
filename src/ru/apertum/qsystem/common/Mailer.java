@@ -165,6 +165,7 @@ class MyAuthenticator extends Authenticator {
         this.password_ = password;
     }
 
+    @Override
     public PasswordAuthentication getPasswordAuthentication() {
         String user = user_;
         String password = password_;

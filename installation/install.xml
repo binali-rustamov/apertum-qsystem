@@ -118,6 +118,8 @@
             <fileset os="windows" dir="resource/img" includes="*.ico" targetdir="$INSTALL_PATH/icons/"/>
             <fileset os="unix" dir="resource/img" includes="*.png" targetdir="$INSTALL_PATH/icons/"/>
 			<file src="../plugins/" targetdir="$INSTALL_PATH/"/>
+			<file src="../logs/" targetdir="$INSTALL_PATH/"/>
+			<file src="../temp/" targetdir="$INSTALL_PATH/"/>
         </pack>
         <!-- 
         Для сервера кроме самих исполняемых библиотек еще нужно 
@@ -154,10 +156,14 @@
 			<file src="../config/reporter.properties" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/reporter.html" targetdir="$INSTALL_PATH/config/"/>
 			<fileset dir="../www/" includes="*.jpg,*.gif,*.png,*.mpg,*.htm,*.html,*.js,*.css" targetdir="$INSTALL_PATH/www/"/>
+			<file src="../www/war/" targetdir="$INSTALL_PATH/www/"/>
+			<fileset dir="../www/war/" includes="*.war" targetdir="$INSTALL_PATH/www/war/"/>
             <file os="windows" src="resource/txt/StartServer.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/server.sh" targetdir="$INSTALL_PATH"/>
 			<file os="windows" src="resource/txt/StartServerDemo.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/serverdemo.sh" targetdir="$INSTALL_PATH"/>
+			<file src="../config/qub.properties" targetdir="$INSTALL_PATH/config/"/>
+			<file src="../config/qub.adr" targetdir="$INSTALL_PATH/config/"/>
         </pack>
         <pack id="admin" name="Administrator" required="no" preselected="no">
             <description>Администрирование</description>
