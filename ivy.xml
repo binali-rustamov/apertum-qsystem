@@ -13,7 +13,7 @@
 
     <!-- http://mvnrepository.com -->
     <dependencies>
-        <dependency org="mysql" name="mysql-connector-java" rev="5.1.26" conf="runtime->*" transitive="false"/>
+        <dependency org="mysql" name="mysql-connector-java" rev="5.1.28" conf="runtime->*" transitive="false"/>
 
         <!-- http://blog.springsource.com/2009/12/02/obtaining-spring-3-artifacts-with-maven/ ->
         <dependency org="org.springframework" name="spring-webmvc" rev="3.0.5.RELEASE"  conf="compile->*" transitive="false"/>
@@ -36,8 +36,12 @@
         <dependency org="org.hibernate" name="hibernate-annotations" rev="3.4.0.GA" conf="compile->*" transitive="false"/>
         <dependency org="org.hibernate" name="hibernate-core" rev="3.3.2.GA" conf="compile->*" transitive="false"/>
         <dependency org="org.hibernate" name="hibernate-commons-annotations" rev="3.3.0.ga" conf="compile->*" transitive="false"/>
+        <!--dependency org="org.hibernate.common" name="hibernate-commons-annotations" rev="4.0.4.Final" conf="compile->*" transitive="false"/-->
+            
         <dependency org="javax.persistence" name="persistence-api" rev="1.0" conf="compile->*" transitive="false"/>
         <dependency org="c3p0" name="c3p0" rev="0.9.1.2" conf="compile->*" transitive="false"/>
+        <!--dependency org="javax.persistence" name="persistence-api" rev="1.0" conf="compile->*" transitive="false"/-->
+        <dependency org="org.hibernate.javax.persistence" name="hibernate-jpa-2.1-api" rev="1.0.0.Final" conf="compile->*" transitive="false"/>
 
         <dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="compile->*" transitive="false"/>
         <dependency org="javax.transaction" name="jta" rev="1.1" conf="runtime->*" transitive="false"/>
@@ -76,7 +80,7 @@
         <dependency org="net.sf.jasperreports" name="jasperreports" rev="5.2.0" conf="compile->*" transitive="false"/>
         <dependency org="net.sf.jasperreports" name="jasperreports-fonts" rev="4.0.0" conf="runtime->*" transitive="false"/>
 
-        <dependency org="com.google.code.gson" name="gson" rev="1.4" conf="compile->*" transitive="false"/>
+        <dependency org="com.google.code.gson" name="gson" rev="2.2.4" conf="compile->*" transitive="false"/>
         
         <dependency org="org.eclipse.jetty" name="jetty-server" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-util" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
