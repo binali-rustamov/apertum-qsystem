@@ -26,12 +26,15 @@ import java.util.Properties;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.MediaPrintableArea;
+import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.OrientationRequested;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
  * Класс загрузки и предоставления настроек пункта регистрации
+ *
  * @author Evgeniy Egorov
  */
 public class WelcomeParams {
@@ -56,6 +59,11 @@ public class WelcomeParams {
     private static final String SCALE_HORIZONTAL = "scale_horizontal";
     private static final String EXECUTIVE = "ptinter.MediaSizeName.EXECUTIVE";
     private static final String PRINTABLE_AREA = "printer.MediaPrintableArea";
+    // параметр размера бумаги. A0 A1 ... A10 B0 B2 ... B10 C0 C1 ... C6. Пустое или неверное значение - отключен
+    private static final String MEDIA_SIZE_NAME = "printer.MediaSizeName";
+    // параметр размера бумаги <ширина,длинна>. Пустое или неверное значение - отключен
+    private static final String FIND_MEDIA = "printer.findMedia";
+    private static final String ORIENTATION_PRINT = "printer.OrientationRequested";
     private static final String LOGO = "logo";
     private static final String BARCODE = "barcode";
     private static final String INPUT_DATA_QR = "input_data_qrcode";
@@ -140,7 +148,7 @@ public class WelcomeParams {
     private void loadSettings() {
         QLog.l().logger().debug("\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u043c \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u0438\u0437 \u0444\u0430\u0439\u043b\u0430 \"config" + File.separator + "welcome.property\"");
         final Properties settings = new Properties();
-        FileInputStream in = null;
+        final FileInputStream in;
         InputStreamReader inR = null;
         try {
             in = new FileInputStream("config" + File.separator + "welcome.properties");
@@ -357,6 +365,115 @@ public class WelcomeParams {
                     Integer.parseInt(ss[2]), // ширина 
                     Integer.parseInt(ss[3]), // высота 
                     MediaPrintableArea.MM));
+        }
+        if (!"".equals(settings.getProperty(FIND_MEDIA, "")) && settings.getProperty(FIND_MEDIA, "").split(",").length == 2) {
+            final String[] ss = settings.getProperty(FIND_MEDIA, "").split(",");
+            final MediaSizeName mediaSizeName = MediaSize.findMedia(Integer.parseInt(ss[0]), Integer.parseInt(ss[1]), MediaPrintableArea.MM);
+            printAttributeSet.add(mediaSizeName);
+        }
+        switch (settings.getProperty(ORIENTATION_PRINT, "")) {
+            case "1":
+                printAttributeSet.add(OrientationRequested.LANDSCAPE);
+                break;
+            case "2":
+                printAttributeSet.add(OrientationRequested.PORTRAIT);
+                break;
+            case "3":
+                printAttributeSet.add(OrientationRequested.REVERSE_LANDSCAPE);
+                break;
+            case "4":
+                printAttributeSet.add(OrientationRequested.REVERSE_PORTRAIT);
+                break;
+            default:
+                ;
+        }
+        switch (settings.getProperty(MEDIA_SIZE_NAME, "")) {
+            case "A0":
+                printAttributeSet.add(MediaSizeName.ISO_A0);
+                break;
+            case "A1":
+                printAttributeSet.add(MediaSizeName.ISO_A1);
+                break;
+            case "A2":
+                printAttributeSet.add(MediaSizeName.ISO_A2);
+                break;
+            case "A3":
+                printAttributeSet.add(MediaSizeName.ISO_A3);
+                break;
+            case "A4":
+                printAttributeSet.add(MediaSizeName.ISO_A4);
+                break;
+            case "A5":
+                printAttributeSet.add(MediaSizeName.ISO_A5);
+                break;
+            case "A6":
+                printAttributeSet.add(MediaSizeName.ISO_A6);
+                break;
+            case "A7":
+                printAttributeSet.add(MediaSizeName.ISO_A7);
+                break;
+            case "A8":
+                printAttributeSet.add(MediaSizeName.ISO_A8);
+                break;
+            case "A9":
+                printAttributeSet.add(MediaSizeName.ISO_A9);
+                break;
+            case "A10":
+                printAttributeSet.add(MediaSizeName.ISO_A10);
+                break;
+            case "B0":
+                printAttributeSet.add(MediaSizeName.ISO_B0);
+                break;
+            case "B1":
+                printAttributeSet.add(MediaSizeName.ISO_B1);
+                break;
+            case "B2":
+                printAttributeSet.add(MediaSizeName.ISO_B2);
+                break;
+            case "B3":
+                printAttributeSet.add(MediaSizeName.ISO_B3);
+                break;
+            case "B4":
+                printAttributeSet.add(MediaSizeName.ISO_B4);
+                break;
+            case "B5":
+                printAttributeSet.add(MediaSizeName.ISO_B5);
+                break;
+            case "B6":
+                printAttributeSet.add(MediaSizeName.ISO_B6);
+                break;
+            case "B7":
+                printAttributeSet.add(MediaSizeName.ISO_B7);
+                break;
+            case "B8":
+                printAttributeSet.add(MediaSizeName.ISO_B8);
+                break;
+            case "B9":
+                printAttributeSet.add(MediaSizeName.ISO_B9);
+                break;
+            case "B10":
+                printAttributeSet.add(MediaSizeName.ISO_B10);
+                break;
+            case "C0":
+                printAttributeSet.add(MediaSizeName.ISO_C0);
+                break;
+            case "C1":
+                printAttributeSet.add(MediaSizeName.ISO_C1);
+                break;
+            case "C2":
+                printAttributeSet.add(MediaSizeName.ISO_C2);
+                break;
+            case "C3":
+                printAttributeSet.add(MediaSizeName.ISO_C3);
+                break;
+            case "C4":
+                printAttributeSet.add(MediaSizeName.ISO_C4);
+                break;
+            case "C5":
+                printAttributeSet.add(MediaSizeName.ISO_C5);
+                break;
+            default:
+                ;
         }
     }
 }

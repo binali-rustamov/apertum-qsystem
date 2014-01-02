@@ -71,8 +71,7 @@ import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.forms.FServicePriority;
 
 /**
- * @author Evgeniy Egorov
- * Сдесь находятся константы и общеиспользуемые конструкции
+ * @author Evgeniy Egorov Сдесь находятся константы и общеиспользуемые конструкции
  *
  */
 public final class Uses {
@@ -199,6 +198,7 @@ public final class Uses {
     // Наименования заданий
     public static final String TASK_FOR_ALL_SITE = "Для всех сайтов домена";
     public static final String TASK_STAND_IN = "Поставить в очередь";
+    public static final String TASK_STAND_COMPLEX = "Поставить в несколько очередей";
     public static final String TASK_ADVANCE_STAND_IN = "Поставить в очередь предварительно";
     public static final String TASK_ADVANCE_CHECK_AND_STAND = "Поставить предварительно записанного";
     public static final String TASK_REDIRECT_CUSTOMER = "Переадресовать клиента к другой услуге";
@@ -245,6 +245,7 @@ public final class Uses {
     public static final String TASK_CHANGE_RUNNING_TEXT_ON_BOARD = "Изменить бегущий текст на табло";
     public static final String TASK_CHANGE_TEMP_AVAILABLE_SERVICE = "Изменить временную доступность";
     public static final String TASK_GET_STANDARDS = "Получить нормативы";
+    public static final String TASK_SET_BUSSY = "Перерыв оператора";
     // Формат отчетов
     public static final String REPORT_FORMAT_HTML = "html";
     public static final String REPORT_FORMAT_RTF = "rtf";
@@ -276,9 +277,26 @@ public final class Uses {
         "Ноября",
         "Декабря"
     };
+    public final static String[] UKRAINIAN_MONAT = {
+        "Лютий",
+        "Марта",
+        "Квітня",
+        "Мая",
+        "Червень",
+        "Липень",
+        "Августа",
+        "Вересня",
+        "Жовтня",
+        "Листопада",
+        "Грудень"
+    };
 
     public static String getRusDate(Date date, String format) {
         return new SimpleDateFormat(format, Locales.getInstance().getRussSymbolDateFormat()).format(date);
+    }
+
+    public static String getUkrDate(Date date, String format) {
+        return new SimpleDateFormat(format, Locales.getInstance().getUkrSymbolDateFormat()).format(date);
     }
     /**
      * Формат даты
@@ -338,6 +356,10 @@ public final class Uses {
      */
     public static final String TEMP_STATE_FILE = "temp.json";
     /**
+     * временный файл сохранения конфигурации комплексных услуг
+     */
+    public static final String TEMP_COMPLEX_FILE = "complex.json";
+    /**
      * временный файл сохранения текущей статистики для помехоустойчивости
      */
     public static final String TEMP_STATATISTIC_FILE = "temp_statistic.xml";
@@ -358,7 +380,8 @@ public final class Uses {
      */
     public static final int LOCK_FREE_INT = 1000000011;
     /**
-     * Константа возврата в пункт регистрации кол-во клиентов в очереди, в случае если услуга не оказывается учитывая ограничение посещений в день и лимит достигнут
+     * Константа возврата в пункт регистрации кол-во клиентов в очереди, в случае если услуга не оказывается учитывая ограничение посещений в день и лимит
+     * достигнут
      */
     public static final int LOCK_PER_DAY_INT = 1000000022;
     /**
@@ -368,6 +391,7 @@ public final class Uses {
 
     /**
      * Рекурентный формирователь для public static ArrayList elements(Element root, String tagName).
+     *
      * @param list массив элементов
      * @param el корневой элемент ветви
      * @param tagName имя искомых узлов
@@ -381,6 +405,7 @@ public final class Uses {
 
     /**
      * Возвращает массив эолементов с определенным именем из ветви
+     *
      * @param root корневой элемент ветви
      * @param tagName имя искомых узлов
      * @return массив элементов
@@ -394,6 +419,7 @@ public final class Uses {
 
     /**
      * Рекурентный формирователь для public static ArrayList elementsByAttr(...).
+     *
      * @param list массив элементов
      * @param el корневой элемент ветви
      * @param attrName имя искомых атрибутов
@@ -410,6 +436,7 @@ public final class Uses {
 
     /**
      * Возвращает массив эолементов с определенным значением атрибута из ветви
+     *
      * @param root корневой элемент ветви
      * @param attrName имя искомых атрибутов
      * @param attrValue значение атрибута
@@ -424,6 +451,7 @@ public final class Uses {
 
     /**
      * Рекурентный формирователь для public static ArrayList elementsByAttr(...).
+     *
      * @param list массив элементов
      * @param el корневой элемент ветви
      * @param text значение CData
@@ -439,6 +467,7 @@ public final class Uses {
 
     /**
      * Возвращает массив эолементов с определенным значением CData из ветви
+     *
      * @param root корневой элемент ветви
      * @param text текст в CData в xml-узле
      * @return массив элементов
@@ -452,6 +481,7 @@ public final class Uses {
 
     /**
      * Получение адреса из строчки.
+     *
      * @param adress строчка типа "125.256.214.854" или "rambler.ru"
      * @return InetAddress
      */
@@ -467,6 +497,7 @@ public final class Uses {
 
     /**
      * Послать сообщение по UDP
+     *
      * @param message текст посылаемого сообщения
      * @param address адрес получателя. Если адрес "255.255.255.255", то рассылка будет широковещательной.
      * @param port порт получателя
@@ -492,6 +523,7 @@ public final class Uses {
 
     /**
      * Послать сообщение по UDP широковещательно
+     *
      * @param message текст посылаемого сообщения
      * @param port порт получателя
      */
@@ -505,6 +537,7 @@ public final class Uses {
 
     /**
      * Загрузка ресурса из jar-файла
+     *
      * @param o - класс, нужен для получения ресурса
      * @param resourceName путь к ресурсу в jar-файле
      * @return массив байт, содержащий ресурс
@@ -517,8 +550,8 @@ public final class Uses {
     }
 
     /**
-     *  грузит картинку из файла или ресурсов.
-     *  Если Параметр пустой, то возвращает null.
+     * грузит картинку из файла или ресурсов. Если Параметр пустой, то возвращает null.
+     *
      * @param o Объект для загрузки ресурса из jar, чаще всего класс в котором понадобилась эта картинка.
      * @param resourceName путь к ресурсу или файлу картинки. Может быть пустым.
      * @param defaultResourceName Если нифайла ни ресурса не найдется, то загрузится этот ресурс
@@ -547,7 +580,6 @@ public final class Uses {
                     inStream = new DataInputStream(is);
                 }
 
-
             }
             byte[] b = null;
             try {
@@ -563,6 +595,7 @@ public final class Uses {
 
     /**
      * Для чтения байт из потока. не применять для потока связанного с сокетом.
+     *
      * @param stream из него читаем
      * @return byte[] результат
      * @throws java.io.IOException
@@ -578,8 +611,9 @@ public final class Uses {
 
     /**
      * Округление до нескольких знаков после запятой.
+     *
      * @param value
-     * @param scale 
+     * @param scale
      * @return Готовое обрезанное дробное число.
      */
     public static double roundAs(double value, int scale) {
@@ -588,6 +622,7 @@ public final class Uses {
 
     /**
      * Вызывает диалог выбора файла.
+     *
      * @param parent Относительно чего показывать форму диалога.
      * @param title Заголовок диалогового окна.
      * @param description Описание фильтра, например "Файлы XML(*.xml)".
@@ -613,6 +648,7 @@ public final class Uses {
 
     /**
      * Отцентирируем Окно по центру экрана
+     *
      * @param component это окно и будем центрировать
      */
     public static void setLocation(Component component) {
@@ -622,6 +658,7 @@ public final class Uses {
 
     /**
      * Растянем окно на весь экран
+     *
      * @param component это окно и будем растягивать
      */
     public static void setFullSize(Component component) {
@@ -645,6 +682,7 @@ public final class Uses {
 
     /**
      * Загрузка всех jar из папки в класспаф
+     *
      * @param folder из этой папки закрузим.
      */
     public static void loadPlugins(String folder) {
@@ -736,7 +774,7 @@ public final class Uses {
     private static boolean sh = false;
 
     /**
-     * Создание и показ сплэш-заставки  с блокировкой запуска второй копии
+     * Создание и показ сплэш-заставки с блокировкой запуска второй копии
      */
     public static void startSplashClient() {
         if (!QLog.l().isTerminal()) {
@@ -752,7 +790,7 @@ public final class Uses {
     static ServerSocket stopStartSecond;
 
     /**
-     * Создание и показ сплэш-заставки  с блокировкой запуска второй копии
+     * Создание и показ сплэш-заставки с блокировкой запуска второй копии
      */
     public static void startSplash() {
         sh = true;
@@ -760,7 +798,7 @@ public final class Uses {
     }
 
     /**
-     * Создание и показ сплэш-заставки  без блокировки запуска второй копии
+     * Создание и показ сплэш-заставки без блокировки запуска второй копии
      */
     public static void showSplash() {
         sh = true;

@@ -14,16 +14,18 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ru.apertum.qsystem.server;
 
+import java.util.ServiceLoader;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.server.controller.IIndicatorBoard;
+import ru.apertum.qsystem.server.controller.QIndicatorBoardMonitor;
 
 /**
  *
  * @author egorov
  */
-public class MainBoard  {
+public class MainBoard {
 
     private MainBoard() {
     }
@@ -33,6 +35,30 @@ public class MainBoard  {
     }
 
     private static class MainBoardHolder {
-        private static final IIndicatorBoard INSTANCE = (IIndicatorBoard) Spring.getInstance().getFactory().getBean("indicatorBoard");
+
+        //private static final IIndicatorBoard INSTANCE = (IIndicatorBoard) Spring.getInstance().getFactory().getBean("indicatorBoard");
+        private static final IIndicatorBoard INSTANCE = setup();
+
+        private static IIndicatorBoard setup() {
+            // поддержка расширяемости плагинами
+            IIndicatorBoard res = null;
+            for (final IIndicatorBoard board : ServiceLoader.load(IIndicatorBoard.class)) {
+                QLog.l().logger().info("Вызов SPI расширения. Описание: " + board.getDescription());
+                try {
+                    res = board;
+                } catch (Throwable tr) {
+                    QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+                }
+                // раз напечатили и хорошь
+                if (res != null) {
+                    break;
+                }
+            }
+            if (res == null) {
+                res = new QIndicatorBoardMonitor();
+                ((QIndicatorBoardMonitor)res).setConfigFile("config\\mainboard.xml");
+            }
+            return res;
+        }
     }
- }
+}

@@ -43,8 +43,8 @@ import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.QUser;
 
 /**
- * Вывод информации на мониторы.
- * Класс-менеджер вывода информации на общее табло в виде монитора.
+ * Вывод информации на мониторы. Класс-менеджер вывода информации на общее табло в виде монитора.
+ *
  * @author Evgeniy Egorov
  */
 public class QIndicatorBoardMonitor extends AIndicatorBoard {
@@ -66,6 +66,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
 
     /**
      * Заткнуть звук видеороликов для озвучки вызова голосом.
+     *
      * @param mute
      */
     public void setMute(boolean mute) {
@@ -76,7 +77,6 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
 
     /**
      * Создадим форму, спозиционируем, сконфигурируем и покажем
-     * @param configFilePath файл конфигурации табло, приезжает из Spring
      */
     protected void initIndicatorBoard() {
         if (indicatorBoard == null) {
@@ -116,8 +116,9 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
 
     /**
      * Переопределено что бы вызвать появление таблички с номером вызванного поверх главного табло
+     *
      * @param user
-     * @param customer 
+     * @param customer
      */
     @Override
     public synchronized void inviteCustomer(QUser user, QCustomer customer) {
@@ -138,7 +139,6 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
                 indicatorBoard.printRecord(t, "", "", "", -1);
             }
             markShowed(records);
-
 
             if (QLog.isServer1) { // если это не сервер, то QServiceTree полезет в спринг
                 final LinkedList<String> nexts = new LinkedList<>();
@@ -161,7 +161,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
     }
 
     /**
-     * 
+     *
      * @param record
      * @deprecated при конфигурации с мониторами в качестве табло пользовательские моники подключаются к пользовательским компам.
      */
@@ -260,5 +260,15 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
     public void clear() {
         records.clear();
         showOnBoard(new LinkedHashSet(records.values()));
+    }
+
+    @Override
+    public String getDescription() {
+        return "Default Tablo.";
+    }
+
+    @Override
+    public long getUID() {
+        return 1;
     }
 }

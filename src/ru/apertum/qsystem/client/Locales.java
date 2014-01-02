@@ -76,25 +76,35 @@ public final class Locales {
                 }
             }
         }
-        isRuss = getNameOfPresentLocale().toLowerCase().startsWith("ru");
+        isUkr = getLangCurrent().getISO3Language().toLowerCase().startsWith("ukr");
+        isRuss = getNameOfPresentLocale().toLowerCase().startsWith("ru") && !isUkr;
 
         russSymbolDateFormat = new DateFormatSymbols(getLocaleByName("RU"));
         russSymbolDateFormat.setMonths(Uses.RUSSIAN_MONAT);
+
+        ukrSymbolDateFormat = new DateFormatSymbols(getLocaleByName("UA"));
+        ukrSymbolDateFormat.setMonths(Uses.UKRAINIAN_MONAT);
     }
     private String configFileName = "config/langs.properties";
     private final PropertiesConfiguration config;
     public final boolean isRuss;
+    public final boolean isUkr;
     private final DateFormatSymbols russSymbolDateFormat;
+    private final DateFormatSymbols ukrSymbolDateFormat;
 
     public DateFormatSymbols getRussSymbolDateFormat() {
         return russSymbolDateFormat;
+    }
+
+    public DateFormatSymbols getUkrSymbolDateFormat() {
+        return ukrSymbolDateFormat;
     }
     /**
      * eng -> Locale(eng)
      */
     private final HashMap<String, Locale> locales = new HashMap<>();
     /**
-     *  Locale(eng)-> eng 
+     * Locale(eng)-> eng
      */
     private final HashMap<Locale, String> locales_name = new HashMap<>();
     /**
@@ -102,11 +112,11 @@ public final class Locales {
      */
     private final HashMap<String, String> lngs = new HashMap<>();
     /**
-     * eng -> English 
+     * eng -> English
      */
     private final HashMap<String, String> lngs_names = new HashMap<>();
     /**
-     * eng -> buttontext 
+     * eng -> buttontext
      */
     private final HashMap<String, String> lngs_buttontext = new HashMap<>();
 

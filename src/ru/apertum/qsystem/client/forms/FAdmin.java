@@ -137,6 +137,7 @@ import ru.apertum.qsystem.server.model.schedule.QScheduleList;
 
 /**
  * Created on 1 Декабрь 2008 г., 18:51
+ *
  * @author Evgeniy Egorov
  */
 public class FAdmin extends javax.swing.JFrame {
@@ -192,6 +193,7 @@ public class FAdmin extends javax.swing.JFrame {
 
         /**
          * Обеспечение автоматизации запроса.
+         *
          * @param e
          */
         @Override
@@ -220,7 +222,7 @@ public class FAdmin extends javax.swing.JFrame {
     //***************************************** таймер автоматического запроса  *************************************************
 
     /**
-     * Creates new form FAdmin 
+     * Creates new form FAdmin
      */
     public FAdmin() {
         addWindowListener(new WindowListener() {
@@ -411,7 +413,6 @@ public class FAdmin extends javax.swing.JFrame {
         textFieldStartTime.setInputVerifier(DateVerifier);
         textFieldFinishTime.setInputVerifier(DateVerifier);
 
-
         //Загрузим настройки
         loadSettings();
         // Старт таймера автоматических запросов.
@@ -434,7 +435,6 @@ public class FAdmin extends javax.swing.JFrame {
         helper.enableHelpKey(jPanel3, "monitoring");
         helper.enableHelpKey(jPanel4, "configuring");
         helper.enableHelpKey(jPanel8, "net");
-
 
         helper.enableHelpKey(jPanel17, "schedulers");
         helper.enableHelpKey(jPanel19, "calendars");
@@ -630,8 +630,8 @@ public class FAdmin extends javax.swing.JFrame {
         textFieldCalendarName.setText(item.getName());
 
         tableCalendar.setModel(new CalendarTableModel(item.getId()));
-        tableCalendar.setDefaultRenderer(FreeDay.class, new TableСell());
-        tableCalendar.setDefaultRenderer(Object.class, new TableСell());
+        tableCalendar.setDefaultRenderer(FreeDay.class, new TableСell((Integer) (spinCalendarYear.getValue())));
+        tableCalendar.setDefaultRenderer(Object.class, new TableСell((Integer) (spinCalendarYear.getValue())));
         tableCalendar.getColumnModel().getColumn(0).setPreferredWidth(500);
     }
 
@@ -785,6 +785,7 @@ public class FAdmin extends javax.swing.JFrame {
         spinnerDowntimeNax.setValue(ServerProps.getInstance().getStandards().getDowntimeMax());
         spinnerLineServiceMax.setValue(ServerProps.getInstance().getStandards().getLineServiceMax());
         spinnerLineTotalMax.setValue(ServerProps.getInstance().getStandards().getLineTotalMax());
+        spinnerRelocation.setValue(ServerProps.getInstance().getStandards().getRelocation());
 
         textFieldZonBoadrServAddr.setText(ServerProps.getInstance().getProps().getZoneBoardServAddr());
         spinnerZonBoadrServPort.setValue(ServerProps.getInstance().getProps().getZoneBoardServPort());
@@ -896,7 +897,7 @@ public class FAdmin extends javax.swing.JFrame {
         int col = 0;
         String html = "";
         for (ServiceInfo inf : srvs) {
-            col = +inf.getCountWait();
+            col += inf.getCountWait();
             html = html
                     + "<tr>"
                     + "" + (0 == inf.getCountWait() ? green : red) + inf.getCountWait() + "</span></td>"
@@ -1008,6 +1009,7 @@ public class FAdmin extends javax.swing.JFrame {
         ServerProps.getInstance().getStandards().setDowntimeMax((Integer) spinnerDowntimeNax.getValue());
         ServerProps.getInstance().getStandards().setLineServiceMax((Integer) spinnerLineServiceMax.getValue());
         ServerProps.getInstance().getStandards().setLineTotalMax((Integer) spinnerLineTotalMax.getValue());
+        ServerProps.getInstance().getStandards().setRelocation((Integer) spinnerRelocation.getValue());
         try {
             ServerProps.getInstance().getProps().setStartTime(Uses.format_HH_mm.parse(textFieldStartTime.getText()));
             ServerProps.getInstance().getProps().setFinishTime(Uses.format_HH_mm.parse(textFieldFinishTime.getText()));
@@ -1134,6 +1136,50 @@ public class FAdmin extends javax.swing.JFrame {
         user.setAdressRS(32);
         QUserList.getInstance().addElement(user);
         listUsers.setSelectedValue(user, true);
+    }
+
+    @Action
+    public void addNewUserByCopy() {
+        if (listUsers.getSelectedIndex() != -1) {
+            final QUser user = (QUser) listUsers.getSelectedValue();
+            // Запросим название юзера и если оно уникально, то примем
+            String userName = "";
+            boolean flag = true;
+            while (flag) {
+                userName = (String) JOptionPane.showInputDialog(this, getLocaleMessage("admin.add_user_dialog.title"), getLocaleMessage("admin.add_user_dialog.caption"), 3, null, null, userName);
+                if (userName == null) {
+                    return;
+                }
+                if ("".equals(userName)) {
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err1.title"), getLocaleMessage("admin.add_user_dialog.err1.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                } else if (QUserList.getInstance().hasByName(userName)) {
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err2.title"), getLocaleMessage("admin.add_user_dialog.err2.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                } else if (userName.indexOf('\"') != -1) {
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err3.title"), getLocaleMessage("admin.add_user_dialog.err3.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                } else if (userName.length() > 150) {
+                    JOptionPane.showConfirmDialog(this, getLocaleMessage("admin.add_user_dialog.err4.title"), getLocaleMessage("admin.add_user_dialog.err4.caption"), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                } else {
+                    flag = false;
+                }
+            }
+            QLog.l().logger().debug("Добавляем пользователя \"" + userName + "\"");
+            final QUser newUser = new QUser();
+            LinkedList<QPlanService> plan = new LinkedList<>();
+            for (QPlanService pl : user.getPlanServices()) {
+                plan.add(new QPlanService(pl.getService(), pl.getUser(), pl.getCoefficient()));
+            }
+            newUser.setPlanServices(plan);
+            newUser.setName(userName);
+            newUser.setPassword("");
+            newUser.setPoint(user.getPoint());
+            newUser.setAdressRS(user.getAdressRS());
+            newUser.setPointExt(user.getPointExt());
+            newUser.setReportAccess(user.getReportAccess());
+            newUser.setAdminAccess(user.getAdminAccess());
+            newUser.setAdminAccess(user.getAdminAccess());
+            QUserList.getInstance().addElement(newUser);
+            listUsers.setSelectedValue(newUser, true);
+        }
     }
 
     @Action
@@ -1295,6 +1341,7 @@ public class FAdmin extends javax.swing.JFrame {
 
     /**
      * Из привязок к услугам всех юзеров убрать привязку к данной услуге и всех ее вложенных.
+     *
      * @param service удаляемая услуга
      */
     private void deleteServicesFromUsers(QService service) {
@@ -1310,6 +1357,7 @@ public class FAdmin extends javax.swing.JFrame {
 
     /**
      * Из привязок к услугам всех юзеров убрать привязку к данной услуге.
+     *
      * @param service удаляемая услуга
      */
     private void deleteServiceFromUsers(QService service) {
@@ -1544,6 +1592,7 @@ public class FAdmin extends javax.swing.JFrame {
         buttonGroupSource = new javax.swing.ButtonGroup();
         popupUser = new javax.swing.JPopupMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem45 = new javax.swing.JMenuItem();
         jMenuItem20 = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JSeparator();
         jMenuItem10 = new javax.swing.JMenuItem();
@@ -1693,6 +1742,8 @@ public class FAdmin extends javax.swing.JFrame {
         jButton16 = new javax.swing.JButton();
         jButton17 = new javax.swing.JButton();
         jButton15 = new javax.swing.JButton();
+        jLabel36 = new javax.swing.JLabel();
+        spinCalendarYear = new javax.swing.JSpinner();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane8 = new javax.swing.JScrollPane();
         treeInfo = new javax.swing.JTree();
@@ -1732,6 +1783,8 @@ public class FAdmin extends javax.swing.JFrame {
         spinnerLineServiceMax = new javax.swing.JSpinner();
         jLabel30 = new javax.swing.JLabel();
         spinnerLineTotalMax = new javax.swing.JSpinner();
+        spinnerRelocation = new javax.swing.JSpinner();
+        jLabel35 = new javax.swing.JLabel();
         spinnerRemoveRecall = new javax.swing.JSpinner();
         jSplitPane4 = new javax.swing.JSplitPane();
         jScrollPane7 = new javax.swing.JScrollPane();
@@ -1843,6 +1896,10 @@ public class FAdmin extends javax.swing.JFrame {
         jMenuItem1.setAction(actionMap.get("addUser")); // NOI18N
         jMenuItem1.setName("jMenuItem1"); // NOI18N
         popupUser.add(jMenuItem1);
+
+        jMenuItem45.setAction(actionMap.get("addNewUserByCopy")); // NOI18N
+        jMenuItem45.setName("jMenuItem45"); // NOI18N
+        popupUser.add(jMenuItem45);
 
         jMenuItem20.setAction(actionMap.get("renameUser")); // NOI18N
         jMenuItem20.setName("jMenuItem20"); // NOI18N
@@ -2914,6 +2971,19 @@ public class FAdmin extends javax.swing.JFrame {
         jButton15.setText(resourceMap.getString("jButton15.text")); // NOI18N
         jButton15.setName("jButton15"); // NOI18N
 
+        jLabel36.setText(resourceMap.getString("jLabel36.text")); // NOI18N
+        jLabel36.setName("jLabel36"); // NOI18N
+
+        spinCalendarYear.setModel(new javax.swing.SpinnerNumberModel(2014, 2014, 2050, 1));
+        spinCalendarYear.setEditor(new javax.swing.JSpinner.NumberEditor(spinCalendarYear, ""));
+        spinCalendarYear.setFocusable(false);
+        spinCalendarYear.setName("spinCalendarYear"); // NOI18N
+        spinCalendarYear.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                spinCalendarYearStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel19Layout = new javax.swing.GroupLayout(jPanel19);
         jPanel19.setLayout(jPanel19Layout);
         jPanel19Layout.setHorizontalGroup(
@@ -2938,10 +3008,14 @@ public class FAdmin extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(jButton15))
                             .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 814, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel19Layout.createSequentialGroup()
+                            .addGroup(jPanel19Layout.createSequentialGroup()
                                 .addComponent(jLabel23)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)))))
+                                .addComponent(textFieldCalendarName, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel36)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(spinCalendarYear, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         jPanel19Layout.setVerticalGroup(
@@ -2952,7 +3026,9 @@ public class FAdmin extends javax.swing.JFrame {
                     .addGroup(jPanel19Layout.createSequentialGroup()
                         .addGroup(jPanel19Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel23)
-                            .addComponent(textFieldCalendarName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(textFieldCalendarName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(spinCalendarYear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel36))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane15, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -3250,33 +3326,43 @@ public class FAdmin extends javax.swing.JFrame {
         spinnerLineTotalMax.setModel(new javax.swing.SpinnerNumberModel(0, 0, 1000, 1));
         spinnerLineTotalMax.setName("spinnerLineTotalMax"); // NOI18N
 
+        spinnerRelocation.setModel(new javax.swing.SpinnerNumberModel(1, 1, 600, 1));
+        spinnerRelocation.setName("spinnerRelocation"); // NOI18N
+
+        jLabel35.setText(resourceMap.getString("jLabel35.text")); // NOI18N
+        jLabel35.setName("jLabel35"); // NOI18N
+
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
         jPanel7Layout.setHorizontalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel7Layout.createSequentialGroup()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(jLabel26)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spinnerWaitMax, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel7Layout.createSequentialGroup()
+                    .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(jLabel27)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spinnerWorkMax, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel7Layout.createSequentialGroup()
+                    .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(jLabel28)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spinnerDowntimeNax, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel7Layout.createSequentialGroup()
+                    .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(jLabel29)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spinnerLineServiceMax, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel7Layout.createSequentialGroup()
+                    .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(jLabel30)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spinnerLineTotalMax, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(spinnerLineTotalMax, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addComponent(jLabel35)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(spinnerRelocation, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
@@ -3302,7 +3388,11 @@ public class FAdmin extends javax.swing.JFrame {
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel30)
                     .addComponent(spinnerLineTotalMax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel35)
+                    .addComponent(spinnerRelocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         spinnerRemoveRecall.setModel(new javax.swing.SpinnerNumberModel(0, 0, 5, 1));
@@ -3423,9 +3513,9 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel18Layout.createSequentialGroup()
                 .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel18Layout.createSequentialGroup()
-                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel18Layout.createSequentialGroup()
@@ -4803,8 +4893,6 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                 }
             });
 
-
-
         }
     }//GEN-LAST:event_buttonExportToCSVActionPerformed
 
@@ -4823,6 +4911,17 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private void rbPager1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbPager1ActionPerformed
         sendPager();
     }//GEN-LAST:event_rbPager1ActionPerformed
+
+    private void spinCalendarYearStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinCalendarYearStateChanged
+        System.out.println(spinCalendarYear.getValue());
+        tableCalendar.setModel((CalendarTableModel) tableCalendar.getModel());
+        tableCalendar.setDefaultRenderer(FreeDay.class, new TableСell((Integer) (spinCalendarYear.getValue())));
+        tableCalendar.setDefaultRenderer(Object.class, new TableСell((Integer) (spinCalendarYear.getValue())));
+
+        ((CalendarTableModel) tableCalendar.getModel()).fireTableDataChanged();
+        ((CalendarTableModel) tableCalendar.getModel()).fireTableStructureChanged();
+        tableCalendar.getColumnModel().getColumn(0).setPreferredWidth(500);
+    }//GEN-LAST:event_spinCalendarYearStateChanged
 
     private void sendPager() {
         if (forPager != null) {
@@ -5036,7 +5135,6 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
             }
             QLog.l().logger().debug("Удаляем отзыв \"" + ((QRespItem) listResponse.getSelectedValue()).getName() + "\"");
 
-
             final int del = listResponse.getSelectedIndex();
             final QResponseList m = (QResponseList) listResponse.getModel();
             final int col = m.getSize();
@@ -5092,7 +5190,6 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                 return;
             }
             QLog.l().logger().debug("Удаляем план \"" + ((QSchedule) listSchedule.getSelectedValue()).getName() + "\"");
-
 
             final int del = listSchedule.getSelectedIndex();
             final QScheduleList m = (QScheduleList) listSchedule.getModel();
@@ -5165,7 +5262,6 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
             }
             QLog.l().logger().debug("Удаляем результат \"" + ((QResult) listResults.getSelectedValue()).getName() + "\"");
 
-
             final int del = listResults.getSelectedIndex();
             final QResultList m = (QResultList) listResults.getModel();
             final int col = m.getSize();
@@ -5222,7 +5318,6 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
             }
             QLog.l().logger().debug("Удаляем календарь \"" + ((QCalendar) listCalendar.getSelectedValue()).getName() + "\"");
 
-
             final int del = listCalendar.getSelectedIndex();
             final QCalendarList m = (QCalendarList) listCalendar.getModel();
             final int col = m.getSize();
@@ -5251,19 +5346,19 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     @Action
     public void dropCalendarSelection() {
         final CalendarTableModel model = (CalendarTableModel) tableCalendar.getModel();
-        model.dropCalendar();
+        model.dropCalendar((Integer) (spinCalendarYear.getValue()));
     }
 
     @Action
     public void checkSaturday() {
         final CalendarTableModel model = (CalendarTableModel) tableCalendar.getModel();
-        model.checkSaturday();
+        model.checkSaturday((Integer) (spinCalendarYear.getValue()));
     }
 
     @Action
     public void checkSundays() {
         final CalendarTableModel model = (CalendarTableModel) tableCalendar.getModel();
-        model.checkSunday();
+        model.checkSunday((Integer) (spinCalendarYear.getValue()));
     }
 
     @Action
@@ -5356,7 +5451,6 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                 return;
             }
             QLog.l().logger().debug("Удаляем перерывы \"" + ((QBreaks) listBreaks.getSelectedValue()).getName() + "\"");
-
 
             final int del = listBreaks.getSelectedIndex();
             final QBreaksList m = (QBreaksList) listBreaks.getModel();
@@ -5757,6 +5851,8 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel34;
+    private javax.swing.JLabel jLabel35;
+    private javax.swing.JLabel jLabel36;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -5804,6 +5900,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JMenuItem jMenuItem42;
     private javax.swing.JMenuItem jMenuItem43;
     private javax.swing.JMenuItem jMenuItem44;
+    private javax.swing.JMenuItem jMenuItem45;
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JMenuItem jMenuItem7;
@@ -5932,6 +6029,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JRadioButton rbPointOffice;
     private javax.swing.JRadioButton rbPointStoika;
     private javax.swing.JRadioButton rbPointWindow;
+    private javax.swing.JSpinner spinCalendarYear;
     private javax.swing.JSpinner spinnerBlackListTimeMin;
     private javax.swing.JSpinner spinnerBranchId;
     private javax.swing.JSpinner spinnerClientPort;
@@ -5942,6 +6040,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JSpinner spinnerLineTotalMax;
     private javax.swing.JSpinner spinnerPropClientPort;
     private javax.swing.JSpinner spinnerPropServerPort;
+    private javax.swing.JSpinner spinnerRelocation;
     private javax.swing.JSpinner spinnerRemoveRecall;
     private javax.swing.JSpinner spinnerServerPort;
     private javax.swing.JSpinner spinnerUserRS;

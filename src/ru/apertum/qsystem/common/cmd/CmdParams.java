@@ -19,6 +19,7 @@ package ru.apertum.qsystem.common.cmd;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import java.util.LinkedList;
 
 /**
  *
@@ -73,4 +74,7 @@ public class CmdParams {
     @Expose
     @SerializedName("comments")
     public String comments;
+    @Expose
+    @SerializedName("complex_id")
+    public LinkedList<LinkedList<Long>> complexId;
 }

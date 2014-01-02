@@ -63,15 +63,10 @@ import ru.apertum.qsystem.server.model.calendar.QCalendar;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
 /**
- * Модель данных для функционирования очереди
- * включает в себя:
- * - структуру хранения
- * - методы доступа
- * - методы манипулирования
- * - логирование итераций 
- * Главный класс модели данных.
- * Содержит объекты всех кастомеров в очереди к этой услуге.
- * Имеет все необходимые методы для манипулирования кастомерами в пределах одной очереди
+ * Модель данных для функционирования очереди включает в себя: - структуру хранения - методы доступа - методы манипулирования - логирование итераций Главный
+ * класс модели данных. Содержит объекты всех кастомеров в очереди к этой услуге. Имеет все необходимые методы для манипулирования кастомерами в пределах одной
+ * очереди
+ *
  * @author Evgeniy Egorov
  *
  */
@@ -94,8 +89,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     private final LinkedList<QCustomer> clients = new LinkedList<>(customers);
 
     /**
-     * Это все кастомеры стоящие к этой услуге в виде списка
-     * Только для бакапа на диск
+     * Это все кастомеры стоящие к этой услуге в виде списка Только для бакапа на диск
+     *
      * @return
      */
     public LinkedList<QCustomer> getClients() {
@@ -142,9 +137,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         return status;
     }
     /**
-     * Пунктов регистрации может быть много.
-     * Наборы кнопок на разных киосках могут быть разные.
-     * Указание для какого пункта регистрации услуга, 0-для всех, х-для киоска х.
+     * Пунктов регистрации может быть много. Наборы кнопок на разных киосках могут быть разные. Указание для какого пункта регистрации услуга, 0-для всех, х-для
+     * киоска х.
      */
     @Column(name = "point")
     @Expose
@@ -157,6 +151,37 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     public void setPoint(Integer point) {
         this.point = point;
+    }
+    /**
+     * Норматив. Среднее время оказания этой услуги. Зачем надо? Не знаю. Пока для маршрутизации при медосмотре. Может потом тоже применем.
+     */
+    @Column(name = "duration")
+    @Expose
+    @SerializedName("duration")
+    private Integer duration = 1;
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    /**
+     * шаблон звукового приглашения. null или 0... - использовать родительский. Далее что играем а что нет.
+     */
+    @Column(name = "sound_template")
+    @Expose
+    @SerializedName("sound_template")
+    private String soundTemplate;
+
+    public String getSoundTemplate() {
+        return soundTemplate;
+    }
+
+    public void setSoundTemplate(String soundTemplate) {
+        this.soundTemplate = soundTemplate;
     }
 
     public final void setStatus(Integer status) {
@@ -199,8 +224,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         this.personDayLimit = personDayLimit;
     }
     /**
-     * Это ограничение в днях, в пределах которого можно записаться вперед при предварительной записи
-     * может быть null или 0 если нет ограничения
+     * Это ограничение в днях, в пределах которого можно записаться вперед при предварительной записи может быть null или 0 если нет ограничения
      */
     @Column(name = "advance_limit_period")
     @Expose
@@ -230,9 +254,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         this.advanceTimePeriod = advanceTimePeriod;
     }
     /**
-     * Способ вызова клиента юзером
-     * 1 - стандартно
-     * 2 - backoffice, т.е. вызов следующего без табло и звука, запершение только редиректом
+     * Способ вызова клиента юзером 1 - стандартно 2 - backoffice, т.е. вызов следующего без табло и звука, запершение только редиректом
      */
     @Column(name = "enable")
     @Expose
@@ -247,9 +269,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         this.enable = enable;
     }
     /**
-     * Способ вызова клиента юзером
-     * 1 - стандартно
-     * 2 - backoffice, т.е. вызов следующего без табло и звука, запершение только редиректом
+     * Способ вызова клиента юзером 1 - стандартно 2 - backoffice, т.е. вызов следующего без табло и звука, запершение только редиректом
      */
     @Column(name = "seq_id")
     private Integer seqId = 0;
@@ -262,8 +282,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         this.seqId = seqId;
     }
     /**
-     * Требовать или нет от пользователя после окончания работы с клиентом по этой услуге
-     * обозначить результат этой работы выбрав пункт из словаря результатов
+     * Требовать или нет от пользователя после окончания работы с клиентом по этой услуге обозначить результат этой работы выбрав пункт из словаря результатов
      */
     @Column(name = "result_required")
     @Expose
@@ -278,8 +297,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         this.result_required = result_required;
     }
     /**
-     * Требовать или нет на пункте регистрации ввода от клиента каких-то
-     * данных перед постановкой в очередь после выбора услуги.
+     * Требовать или нет на пункте регистрации ввода от клиента каких-то данных перед постановкой в очередь после выбора услуги.
      */
     @Column(name = "input_required")
     @Expose
@@ -294,9 +312,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         this.input_required = input_required;
     }
     /**
-     * Заголовок окна при вводе на пункте регистрации клиентом каких-то
-     * данных перед постановкой в очередь после выбора услуги.
-     * Также печатается на талоне рядом с введенными данными.
+     * Заголовок окна при вводе на пункте регистрации клиентом каких-то данных перед постановкой в очередь после выбора услуги. Также печатается на талоне рядом
+     * с введенными данными.
      */
     @Column(name = "input_caption")
     @Expose
@@ -311,8 +328,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         this.input_caption = input_caption;
     }
     /**
-     * html текст информационного сообщения перед постановкой в очередь
-     * Если этот параметр пустой, то не требуется показывать информационную напоминалку на пункте регистрации
+     * html текст информационного сообщения перед постановкой в очередь Если этот параметр пустой, то не требуется показывать информационную напоминалку на
+     * пункте регистрации
      */
     @Column(name = "pre_info_html")
     @Expose
@@ -408,16 +425,14 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         this.butY = butY;
     }
     /**
-     * последний номер, выданный последнему кастомеру при номерировании клиентов обособлено в услуге.
-     * тут такой замут. когда услугу создаешь из json где-то на клиенте, то там же спринг-контекст не поднят
-     * да и нужно это только в качестве данных.
+     * последний номер, выданный последнему кастомеру при номерировании клиентов обособлено в услуге. тут такой замут. когда услугу создаешь из json где-то на
+     * клиенте, то там же спринг-контекст не поднят да и нужно это только в качестве данных.
      */
     @Transient
     private int lastNumber = Integer.MIN_VALUE;
     /**
-     * последний номер, выданный последнему кастомеру при номерировании клиентов общем рядом для всех услуг.
-     * Ограничение самого минимально возможного номера клиента при сквозном нумерировании
-     * происходит при определении параметров нумерации.
+     * последний номер, выданный последнему кастомеру при номерировании клиентов общем рядом для всех услуг. Ограничение самого минимально возможного номера
+     * клиента при сквозном нумерировании происходит при определении параметров нумерации.
      */
     @Transient
     private static int lastStNumber = Integer.MIN_VALUE;
@@ -433,6 +448,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     /**
      * Получить номер для сделующего кастомера. Произойдет инкремент счетчика номеров.
+     *
      * @return
      */
     synchronized public int getNextNumber() {
@@ -466,6 +482,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     /**
      * Иссяк лимит на одинаковые введенные данные в день по услуге или нет
+     *
+     * @param data
      * @return true - превышен, в очередь становиться нельзя; false - можно в очередь встать
      */
     public boolean isLimitPersonPerDayOver(String data) {
@@ -501,6 +519,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     /**
      * Иссяк лимит на возможных обработанных в день по услуге или нет
+     *
      * @param advCusts сколько предварительнозаписанных уже есть в очереди
      * @return true - превышен, в очередь становиться нельзя; false - можно в очередь встать
      */
@@ -547,11 +566,10 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     }
 
     /**
-     * Дополнит XML узел атрибутами об услуге.
-     * Если обрабатываемый кастомер уже имеет префикс, то этот префикс остается у него без изменения,
-     * а если этот префикс совпадает с префиксом самой услуги,
-     * то при номере кастомера больше последнего номера ведущегося в услуге,
-     * нужно сменить номер ведущийся в системе на кастомеровский.
+     * Дополнит XML узел атрибутами об услуге. Если обрабатываемый кастомер уже имеет префикс, то этот префикс остается у него без изменения, а если этот
+     * префикс совпадает с префиксом самой услуги, то при номере кастомера больше последнего номера ведущегося в услуге, нужно сменить номер ведущийся в системе
+     * на кастомеровский.
+     *
      * @param customer кастомер в которого добавить
      */
     private void updateInfo(QCustomer customer) {
@@ -575,9 +593,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     // ********************  МЕТОДЫ УПРАВЛЕНИЯ ЭЛЕМЕНТАМИ И СТРУКТУРЫ ************************  
     // ***************************************************************************************
     /**
-     * Добавить в очередь
-     * при этом проставится название сервиса, в который всрал, и его описание,
-     * если у кастомера нету префикса, то проставится и префикс.
+     * Добавить в очередь при этом проставится название сервиса, в который всрал, и его описание, если у кастомера нету префикса, то проставится и префикс.
+     *
      * @param customer это кастомер которого добавляем в очередь к услуге
      */
     public void addCustomer(QCustomer customer) {
@@ -642,7 +659,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     }
 
     /**
-     * Получить, но не удалять.  NoSuchElementException при неудаче
+     * Получить, но не удалять. NoSuchElementException при неудаче
+     *
      * @return первого в очереди кастомера
      */
     public QCustomer getCustomer() {
@@ -650,7 +668,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     }
 
     /**
-     * Получить и удалить.  NoSuchElementException при неудаче
+     * Получить и удалить. NoSuchElementException при неудаче
+     *
      * @return первого в очереди кастомера
      */
     public QCustomer removeCustomer() {
@@ -669,14 +688,16 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     /**
      * Получить но не удалять. null при неудаче
+     *
      * @return первого в очереди кастомера
      */
     public QCustomer peekCustomer() {
         return getCustomers().peek();
     }
 
-    /** 
+    /**
      * Получить и удалить. может вернуть null при неудаче
+     *
      * @return первого в очереди кастомера
      */
     public QCustomer polCustomer() {
@@ -695,7 +716,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     }
 
     /**
-     * Удалить любого в очереди кастомера. 
+     * Удалить любого в очереди кастомера.
+     *
      * @param customer удаляемый кастомер
      * @return может вернуть false при неудаче
      */
@@ -713,8 +735,9 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         return res;
     }
 
-    /** 
-     *  Получение количества кастомеров, стоящих в очереди.
+    /**
+     * Получение количества кастомеров, стоящих в очереди.
+     *
      * @return количество кастомеров в этой услуге
      */
     public int getCountCustomers() {
@@ -858,19 +881,33 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     public static enum Field {
 
-        /** Надпись на кнопке */
+        /**
+         * Надпись на кнопке
+         */
         BUTTON_TEXT,
-        /** заголовок ввода клиентом */
+        /**
+         * заголовок ввода клиентом
+         */
         INPUT_CAPTION,
-        /** читаем перед тем как встать в очередь  */
+        /**
+         * читаем перед тем как встать в очередь
+         */
         PRE_INFO_HTML,
-        /** печатаем подсказку перед тем как встать в очередь  */
+        /**
+         * печатаем подсказку перед тем как встать в очередь
+         */
         PRE_INFO_PRINT_TEXT,
-        /** текст на талоте персонально услуги */
+        /**
+         * текст на талоте персонально услуги
+         */
         TICKET_TEXT,
-        /** описание услуги */
+        /**
+         * описание услуги
+         */
         DESCRIPTION,
-        /** имя услуги */
+        /**
+         * имя услуги
+         */
         NAME
     };
 
@@ -914,8 +951,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     //*******************************************************************************************************************
     //********************** Реализация методов узла в дереве *********************************************************** 
     /**
-     * По сути группа объединения услуг или коернь всего дерева.
-     * То во что включена данныя услуга.
+     * По сути группа объединения услуг или коернь всего дерева. То во что включена данныя услуга.
      */
     @Transient
     private QService parentService;

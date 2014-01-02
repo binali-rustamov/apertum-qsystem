@@ -34,6 +34,12 @@ import ru.apertum.qsystem.client.forms.FAdmin;
  */
 public class TableСell extends JLabel implements TableCellRenderer {
 
+    final int year;
+
+    public TableСell(Integer year) {
+        this.year = year;
+    }
+
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (column == 0) {
@@ -99,21 +105,21 @@ public class TableСell extends JLabel implements TableCellRenderer {
         return this;
     }
 
-    private Color getWorkColor(int row){
-       return row % 2 == 1 ? new Color(247, 247, 255) : Color.WHITE;
+    private Color getWorkColor(int row) {
+        return row % 2 == 1 ? new Color(247, 247, 255) : Color.WHITE;
     }
 
-    private static boolean checkDate(int month, int day) {
+    private boolean checkDate(int month, int day) {
         final GregorianCalendar gc = new GregorianCalendar();
-        gc.setTime(new Date());
+        gc.set(GregorianCalendar.YEAR, year);
         gc.set(GregorianCalendar.MONTH, month);
         gc.set(GregorianCalendar.DAY_OF_MONTH, day);
         return month == gc.get(GregorianCalendar.MONTH);
     }
 
-    private static Date getDate(int month, int day) {
+    private Date getDate(int month, int day) {
         final GregorianCalendar gc = new GregorianCalendar();
-        gc.setTime(new Date());
+        gc.set(GregorianCalendar.YEAR, year);
         gc.set(GregorianCalendar.MONTH, month);
         gc.set(GregorianCalendar.DAY_OF_MONTH, day);
         return gc.getTime();

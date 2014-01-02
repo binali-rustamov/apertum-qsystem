@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import ru.apertum.qsystem.server.ServerProps;
+import ru.apertum.qsystem.server.model.QService;
 
 /**
  * Класс проигрывания звуковых ресурсов и файлов.
@@ -373,25 +374,6 @@ public class SoundPlayer implements Runnable {
         }
         final LinkedList<String> res = new LinkedList<>();
         // путь к звуковым файлам
-        /*
-        final String voice;
-        switch (voc) {
-            case 1:
-                voice = "Alyona/";
-                break;
-            case 2:
-                voice = "Nikolay/";
-                break;
-            case 3:
-                voice = "Olga/";
-                break;
-            default:
-                voice = "";
-        }
-
-        final String path = "/ru/apertum/qsystem/server/sound/" + voice;
-         * 
-         */
         final String path = "/ru/apertum/qsystem/server/sound/";
         if ((isFirst && ivt == 2) || ivt == 1 || ivt == 3) {
             res.add(path + "ding.wav");
@@ -417,6 +399,116 @@ public class SoundPlayer implements Runnable {
             }
 
             res.addAll(toSoundSimple(path, pointNumber));
+        }
+        SoundPlayer.play(res);
+    }
+
+    /**
+     * Проговорить вызов клиента голосом
+     * @param service 
+     * @param clientNumber номер вызываемого клиента
+     * @param pointNumber  номер кабинета, куда вызвали
+     * @param isFirst 
+     */
+    public static void inviteClient(QService service, String clientNumber, String pointNumber, boolean isFirst) {
+        // Для начала найдем шаблон
+        QService tempServ = service;
+        while ((tempServ.getSoundTemplate() == null || tempServ.getSoundTemplate().startsWith("0")) && tempServ.getParent() != null) {
+            tempServ = tempServ.getParent();
+        }
+        if (tempServ.getSoundTemplate() == null || tempServ.getSoundTemplate().startsWith("0")) {
+            return;
+        }
+
+        int gong = 1;
+        if (tempServ.getSoundTemplate().length() > 1) {
+            switch (tempServ.getSoundTemplate().substring(1, 2)) {
+                case "1":
+                    gong = 1;
+                    break;
+                case "2":
+                    gong = 2;
+                    break;
+                case "3":
+                    gong = 3;
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
+        boolean client = false;
+        if (tempServ.getSoundTemplate().length() > 2) {
+            client = "1".equals(tempServ.getSoundTemplate().substring(2, 3));
+        }
+        boolean cl_num = false;
+        if (tempServ.getSoundTemplate().length() > 3) {
+            cl_num = "1".equals(tempServ.getSoundTemplate().substring(3, 4));
+        }
+        int go_to = 5;
+        if (tempServ.getSoundTemplate().length() > 4) {
+            switch (tempServ.getSoundTemplate().substring(4, 5)) {
+                case "1":
+                    go_to = 1;
+                    break;
+                case "2":
+                    go_to = 2;
+                    break;
+                case "3":
+                    go_to = 3;
+                    break;
+                case "4":
+                    go_to = 4;
+                    break;
+                case "5":
+                    go_to = 5;
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
+        boolean go_num = false;
+        if (tempServ.getSoundTemplate().length() > 5) {
+            go_num = tempServ.getSoundTemplate().endsWith("1");
+        }
+
+        final LinkedList<String> res = new LinkedList<>();
+        // путь к звуковым файлам
+        final String path = "/ru/apertum/qsystem/server/sound/";
+        if ((isFirst && gong == 3) || gong == 2) {
+            res.add(path + "ding.wav");
+        }
+
+        if (!(isFirst && gong == 3)) {
+            if (client) {
+                res.add(path + "client.wav");
+            }
+            if (cl_num) {
+                res.addAll(toSoundSimple(path, clientNumber));
+            }
+            switch (go_to) {
+                case 0:
+                    res.add(path + "tocabinet.wav");
+                    break;
+                case 1:
+                    res.add(path + "towindow.wav");
+                    break;
+                case 2:
+                    res.add(path + "tostoika.wav");
+                    break;
+                case 3:
+                    res.add(path + "tostoika.wav");
+                    break;
+                case 4:
+                    res.add(path + "totable.wav");
+                    break;
+                case 5:
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+            if (go_num) {
+                res.addAll(toSoundSimple(path, pointNumber));
+            }
         }
         SoundPlayer.play(res);
     }

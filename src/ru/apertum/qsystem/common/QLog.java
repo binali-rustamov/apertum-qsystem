@@ -16,19 +16,15 @@
  */
 package ru.apertum.qsystem.common;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Enumeration;
-import java.util.Properties;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
-import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
- * Собственно, логер лог4Ж
- * Это синглтон. Тут в место getInstance() для короткого написания используется l()
+ * Собственно, логер лог4Ж Это синглтон. Тут в место getInstance() для короткого написания используется l()
+ *
  * @author Evgeniy Egorov
  */
 public class QLog {
@@ -42,6 +38,7 @@ public class QLog {
     private static final String KEY_NOPLUGINS = "-noplugins";
     private static final String KEY_PAUSE = "-pause";
     private static final String KEY_TERMINAL = "-terminal";
+    private static final String KEY_WELCOME_BTN = "-buttons";
     private Logger logger = Logger.getLogger("server.file");//**.file.info.trace
 
     public Logger logger() {
@@ -82,12 +79,19 @@ public class QLog {
         return terminal;
     }
 
+    private final boolean buttons;
+
+    public boolean isButtons() {
+        return buttons;
+    }
+
     private QLog() {
 
         boolean isDebugin = false;
         boolean isDem = false;
         boolean isPlug = true;
         boolean isTerminal = false;
+        boolean isButtons = false;
         switch (loggerType) {
             case 0://сервер
                 logger = Logger.getLogger("server.file");
@@ -192,6 +196,10 @@ public class QLog {
             if (KEY_TERMINAL.equalsIgnoreCase(args1[i])) {
                 isTerminal = true;
             }
+            // ключ, отвечающий за возможность работы регистрации в кнопочном исполнении. 
+            if (KEY_WELCOME_BTN.equalsIgnoreCase(args1[i])) {
+                isButtons = true;
+            }
             // ключ, отвечающий за паузу на старте. 
             if (KEY_PAUSE.equalsIgnoreCase(args1[i])) {
                 if (i < args1.length - 1 && args1[i + 1].matches("^-?\\d+$")) {
@@ -203,19 +211,19 @@ public class QLog {
             }
         }
         /*if (!isDebugin) {
-            final Properties settings = new Properties();
-            final InputStream inStream = settings.getClass().getResourceAsStream("/ru/apertum/qsystem/common/version.properties");
-            try {
-                settings.load(inStream);
-            } catch (IOException ex) {
-                throw new ClientException("Проблемы с чтением версии. " + ex);
-            }
-        }*/
+         final Properties settings = new Properties();
+         final InputStream inStream = settings.getClass().getResourceAsStream("/ru/apertum/qsystem/common/version.properties");
+         try {
+         settings.load(inStream);
+         } catch (IOException ex) {
+         throw new ClientException("Проблемы с чтением версии. " + ex);
+         }
+         }*/
         isDebug = isDebugin;
         isDemo = isDem;
         plaginable = isPlug;
         terminal = isTerminal;
-
+        buttons = isButtons;
 
         if ("server.file.info.trace".equalsIgnoreCase(logger.getName())) {
             logRep = Logger.getLogger("reports.file.info.trace");
@@ -236,10 +244,10 @@ public class QLog {
     public static int loggerType = 0; // 0-сервер,1-клиент,2-приемная,3-админка,4-киоск
 
     /**
-     * 
+     *
      * @param args
-     * @param loggerType  0-сервер,1-клиент,2-приемная,3-админка,4-киоск,5-сервер хардварных кнопок
-     * @return 
+     * @param type 0-сервер,1-клиент,2-приемная,3-админка,4-киоск,5-сервер хардварных кнопок 
+     * @return
      */
     public static QLog initial(String[] args, int type) {
         args1 = args;

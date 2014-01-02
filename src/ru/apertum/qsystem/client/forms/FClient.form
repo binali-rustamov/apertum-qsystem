@@ -238,7 +238,7 @@
       <Connection component="Form" name="getIconImages" type="method"/>
     </Property>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[510, 400]"/>
+      <Dimension value="[545, 400]"/>
     </Property>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
   </Properties>

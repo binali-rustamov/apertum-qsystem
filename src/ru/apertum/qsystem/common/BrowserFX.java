@@ -39,8 +39,8 @@ import ru.apertum.qsystem.common.exceptions.ClientException;
  */
 public class BrowserFX extends JPanel {
 
-    private static JFXPanel javafxPanel;
-    private static Browser bro;
+    private final JFXPanel javafxPanel;
+    private Browser bro;
 
     public BrowserFX() {
         javafxPanel = new JFXPanel();
@@ -50,6 +50,7 @@ public class BrowserFX extends JPanel {
 
         Platform.runLater(new Runnable() {
 
+            @Override
             public void run() {
                 bro = new Browser();
                 Scene scene = new Scene(bro, 750, 500, Color.web("#666970"));
@@ -60,7 +61,7 @@ public class BrowserFX extends JPanel {
 
     public void load(final String url) {
         int k = 0;
-        while ((bro == null || bro.getWebEngine() == null) && k < 30) {
+        while ((bro == null || bro.getWebEngine() == null) && k < 50) {
             k++;
             try {
                 Thread.sleep(100);
@@ -72,6 +73,7 @@ public class BrowserFX extends JPanel {
         }
         Platform.runLater(new Runnable() {
 
+            @Override
             public void run() {
                 bro.load(url);
             }
@@ -92,7 +94,7 @@ public class BrowserFX extends JPanel {
 
                 @Override
                 public void onChanged(Change<? extends Node> change) {
-                    Set<Node> deadSeaScrolls = browser.lookupAll(".scroll-bar");
+                    final Set<Node> deadSeaScrolls = browser.lookupAll(".scroll-bar");
                     for (Node scroll : deadSeaScrolls) {
                         scroll.setVisible(false);
                     }

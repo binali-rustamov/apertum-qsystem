@@ -17,7 +17,7 @@
 package ru.apertum.qsystem.common;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
@@ -143,7 +143,7 @@ public class NetCommander {
             if (rpc.getError() != null) {
                 throw new QException("Выполнение задания произошло с ошибкой. " + rpc.getError().getCode() + ":" + rpc.getError().getMessage());
             }
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new QException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -173,7 +173,7 @@ public class NetCommander {
         final RpcGetAllServices rpc;
         try {
             rpc = gson.fromJson(res, RpcGetAllServices.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -209,7 +209,43 @@ public class NetCommander {
         final RpcStandInService rpc;
         try {
             rpc = gson.fromJson(res, RpcStandInService.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
+            throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return rpc.getResult();
+    }
+
+    /**
+     * Постановка в очередь.
+     *
+     * @param netProperty netProperty параметры соединения с сервером.
+     * @param servicesId услуги, в которые пытаемся встать.
+     * @param password пароль того кто пытается выполнить задание.
+     * @param priority приоритет.
+     * @param inputData
+     * @return Созданный кастомер.
+     */
+    public static QCustomer standInSetOfServices(INetProperty netProperty, LinkedList<LinkedList<Long>> servicesId, String password, int priority, String inputData) {
+        QLog.l().logger().info("Встать в очередь комплексно.");
+        // загрузим ответ
+        final CmdParams params = new CmdParams();
+        params.complexId = servicesId;
+        params.password = password;
+        params.priority = priority;
+        params.textData = inputData;
+        String res = null;
+        try {
+            res = send(netProperty, Uses.TASK_STAND_COMPLEX, params);
+        } catch (QException ex) {// вывод исключений
+            throw new ClientException("Проблема с командой. ", ex);
+        }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final RpcStandInService rpc;
+        try {
+            rpc = gson.fromJson(res, RpcStandInService.class);
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -261,7 +297,7 @@ public class NetCommander {
         final RpcGetServiceState rpc;
         try {
             rpc = gson.fromJson(res, RpcGetServiceState.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new QException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -292,7 +328,7 @@ public class NetCommander {
         final RpcGetServiceState rpc;
         try {
             rpc = gson.fromJson(res, RpcGetServiceState.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new QException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -325,7 +361,7 @@ public class NetCommander {
         final RpcGetInt rpc;
         try {
             rpc = gson.fromJson(res, RpcGetInt.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new QException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -357,7 +393,7 @@ public class NetCommander {
         final RpcGetUsersList rpc;
         try {
             rpc = gson.fromJson(res, RpcGetUsersList.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -389,7 +425,7 @@ public class NetCommander {
         final RpcGetSelfSituation rpc;
         try {
             rpc = gson.fromJson(res, RpcGetSelfSituation.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -427,7 +463,7 @@ public class NetCommander {
         final RpcGetBool rpc;
         try {
             rpc = gson.fromJson(res, RpcGetBool.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -457,9 +493,9 @@ public class NetCommander {
         final RpcInviteCustomer rpc;
         try {
             rpc = gson.fromJson(res, RpcInviteCustomer.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
-        } catch (Exception ex){    
+        } catch (Exception ex) {
             throw new ClientException("Ошибка при обработке ответа, возможно с библиотеками.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -552,19 +588,31 @@ public class NetCommander {
      * @param userId
      * @param resultId
      * @param comments это если закончили работать с редиректенным и его нужно вернуть
+     * @return
      */
-    public static void getFinishCustomer(INetProperty netProperty, long userId, Long resultId, String comments) {
+    public static QCustomer getFinishCustomer(INetProperty netProperty, long userId, Long resultId, String comments) {
         QLog.l().logger().info("Закончить работу с вызванным кастомером.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
         params.userId = userId;
         params.resultId = resultId;
         params.textData = comments;
+        String res = null;
         try {
-            send(netProperty, Uses.TASK_FINISH_CUSTOMER, params);
+            res = send(netProperty, Uses.TASK_FINISH_CUSTOMER, params);
         } catch (QException e) {// вывод исключений
             throw new ClientException("Невозможно получить ответ от сервера. " + e.toString());
         }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final RpcStandInService rpc;
+        try {
+            rpc = gson.fromJson(res, RpcStandInService.class);
+        } catch (JsonSyntaxException ex) {
+            throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return rpc.getResult();
     }
 
     /**
@@ -638,7 +686,7 @@ public class NetCommander {
         final RpcGetServerState rpc;
         try {
             rpc = gson.fromJson(res, RpcGetServerState.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -666,7 +714,7 @@ public class NetCommander {
         final RpcGetSrt rpc;
         try {
             rpc = gson.fromJson(res, RpcGetSrt.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -700,7 +748,7 @@ public class NetCommander {
         final RpcGetSrt rpc;
         try {
             rpc = gson.fromJson(res, RpcGetSrt.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -732,7 +780,7 @@ public class NetCommander {
         final RpcGetSrt rpc;
         try {
             rpc = gson.fromJson(res, RpcGetSrt.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -760,7 +808,7 @@ public class NetCommander {
         final RpcGetSrt rpc;
         try {
             rpc = gson.fromJson(res, RpcGetSrt.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -812,7 +860,7 @@ public class NetCommander {
         final RpcGetGridOfDay rpc;
         try {
             rpc = gson.fromJson(res, RpcGetGridOfDay.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -846,7 +894,7 @@ public class NetCommander {
         final RpcGetGridOfWeek rpc;
         try {
             rpc = gson.fromJson(res, RpcGetGridOfWeek.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -884,7 +932,7 @@ public class NetCommander {
         final RpcGetAdvanceCustomer rpc;
         try {
             rpc = gson.fromJson(res, RpcGetAdvanceCustomer.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -914,7 +962,7 @@ public class NetCommander {
         final RpcStandInService rpc;
         try {
             rpc = gson.fromJson(res, RpcStandInService.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -958,7 +1006,7 @@ public class NetCommander {
         final RpcGetRespList rpc;
         try {
             rpc = gson.fromJson(res, RpcGetRespList.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -1014,7 +1062,7 @@ public class NetCommander {
         final RpcGetInfoTree rpc;
         try {
             rpc = gson.fromJson(res, RpcGetInfoTree.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -1044,7 +1092,7 @@ public class NetCommander {
         final RpcGetAuthorizCustomer rpc;
         try {
             rpc = gson.fromJson(res, RpcGetAuthorizCustomer.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -1071,7 +1119,7 @@ public class NetCommander {
         final RpcGetResultsList rpc;
         try {
             rpc = gson.fromJson(res, RpcGetResultsList.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -1103,7 +1151,7 @@ public class NetCommander {
         final RpcGetSrt rpc;
         try {
             rpc = gson.fromJson(res, RpcGetSrt.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -1133,7 +1181,7 @@ public class NetCommander {
         final RpcGetSrt rpc;
         try {
             rpc = gson.fromJson(res, RpcGetSrt.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -1160,7 +1208,7 @@ public class NetCommander {
         final RpcGetPostponedPoolInfo rpc;
         try {
             rpc = gson.fromJson(res, RpcGetPostponedPoolInfo.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -1187,7 +1235,7 @@ public class NetCommander {
         final RpcBanList rpc;
         try {
             rpc = gson.fromJson(res, RpcBanList.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
@@ -1289,11 +1337,42 @@ public class NetCommander {
         final RpcGetStandards rpc;
         try {
             rpc = gson.fromJson(res, RpcGetStandards.class);
-        } catch (JsonParseException ex) {
+        } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
         }
         return (QStandards) rpc.getResult();
+    }
+    
+    /**
+     * Изменение приоритетов услуг оператором
+     *
+     * @param netProperty
+     * @param userId id юзера который вызывает
+     * @param smartData
+     */
+    public static boolean setBussy(INetProperty netProperty, long userId, boolean lock) {
+        QLog.l().logger().info("Изменение приоритетов услуг оператором.");
+        final CmdParams params = new CmdParams();
+        params.userId = userId;
+        params.requestBack = lock;
+        // загрузим ответ
+        final String res;
+        try {
+            res = send(netProperty, Uses.TASK_SET_BUSSY, params);
+        } catch (QException ex) {// вывод исключений
+            throw new ClientException("Проблема с командой. ", ex);
+        }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final RpcGetBool rpc;
+        try {
+            rpc = gson.fromJson(res, RpcGetBool.class);
+        } catch (JsonSyntaxException ex) {
+            throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return rpc.getResult();
     }
 }

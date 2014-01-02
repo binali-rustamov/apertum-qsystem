@@ -46,13 +46,9 @@ import ru.apertum.qsystem.server.Spring;
 import ru.apertum.qsystem.server.model.IidGetter;
 
 /**
- * @author Evgeniy Egorov
- * Реализация клиета
- * Наипростейший "очередник".
- * Используется для организации простой очереди.
- * Если используется СУБД, то сохранение происходит при смене ссостояния.
- * ВАЖНО! Всегда изменяйте статус кастомера при его изменении, особенно при его удалении.
- * 
+ * @author Evgeniy Egorov Реализация клиета Наипростейший "очередник". Используется для организации простой очереди. Если используется СУБД, то сохранение
+ * происходит при смене ссостояния. ВАЖНО! Всегда изменяйте статус кастомера при его изменении, особенно при его удалении.
+ *
  */
 @Entity
 @Table(name = "clients")
@@ -63,8 +59,9 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     }
 
     /**
-     * создаем клиента имея только его номер в очереди. Префикс не определен, т.к. еще не знаем об услуге
-     * куда его поставить. Присвоем кастомену услугу - присвоются и ее атрибуты.
+     * создаем клиента имея только его номер в очереди. Префикс не определен, т.к. еще не знаем об услуге куда его поставить. Присвоем кастомену услугу -
+     * присвоются и ее атрибуты.
+     *
      * @param number номер клиента в очереди
      */
     public QCustomer(int number) {
@@ -90,8 +87,8 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
         this.id = id;
     }
     /**
-     *  АТРИБУТЫ "ОЧЕРЕДНИКА"
-     *  персональный номер, именно по нему система ведет учет и управление очередниками
+     * АТРИБУТЫ "ОЧЕРЕДНИКА" персональный номер, именно по нему система ведет учет и управление очередниками
+     *
      * @param number новер - целое число
      */
     @Expose
@@ -107,12 +104,11 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
         return number;
     }
     /**
-     * АТРИБУТЫ "ОЧЕРЕДНИКА"
-     *  состояние кастомера, именно по нему система знает что сейчас происходит с кастомером
-     * Это состояние менять только если кастомер уже готов к этому и все другие параметры у него заполнены.
-     * Если данные пишутся в БД, то только по состоянию завершенности обработки над ним.
-     * Так что если какая-то итерация закончена и про кастомера должно занестись в БД, то как и надо выставлять что кастомер ЗАКОНЧИЛ обрабатываться,
-     * а уж потом менять , если надо, его атрибуты и менять состояние, например на РЕДИРЕКТЕННОГО.
+     * АТРИБУТЫ "ОЧЕРЕДНИКА" состояние кастомера, именно по нему система знает что сейчас происходит с кастомером Это состояние менять только если кастомер уже
+     * готов к этому и все другие параметры у него заполнены. Если данные пишутся в БД, то только по состоянию завершенности обработки над ним. Так что если
+     * какая-то итерация закончена и про кастомера должно занестись в БД, то как и надо выставлять что кастомер ЗАКОНЧИЛ обрабатываться, а уж потом менять ,
+     * если надо, его атрибуты и менять состояние, например на РЕДИРЕКТЕННОГО.
+     *
      * @param state - состояние клиента
      * @see ru.apertum.qsystem.common.Uses
      */
@@ -126,24 +122,15 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
 
     /**
      * Специально для редиректа и возврата после редиректа
+     *
      * @param state
-     * @param newServiceId 
+     * @param newServiceId
      */
     public void setState(CustomerState state, Long newServiceId) {
-
-        // поддержка расширяемости плагинами
-        for (final IChangeCustomerStateEvent event : ServiceLoader.load(IChangeCustomerStateEvent.class)) {
-            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
-            try {
-                event.change(this, state, newServiceId);
-            } catch (Throwable tr) {
-                QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
-            }
-        }
         this.state = state;
-        
+
         // можно будет следить за тенью кастомера у юзера и за его изменениями
-        if (getUser()!=null) {
+        if (getUser() != null) {
             getUser().getShadow().setCustomerState(state);
         }
 
@@ -158,6 +145,9 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
             case STATE_WAIT_AFTER_POSTPONED:
                 QLog.l().logger().debug("Статус: Кастомер был возвращен из отложенных по истечению времени и ждет с номером \"" + getPrefix() + getNumber() + "\"");
                 break;
+            case STATE_WAIT_COMPLEX_SERVICE:
+                QLog.l().logger().debug("Статус: Кастомер был опять поставлен в очередь т.к. услуга комплекстая и ждет с номером \"" + getPrefix() + getNumber() + "\"");
+                break;    
             case STATE_INVITED:
                 QLog.l().logger().debug("Статус: Пригласили кастомера с номером \"" + getPrefix() + getNumber() + "\"");
                 break;
@@ -193,6 +183,16 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
                 saveToSelfDB();
                 break;
         }
+
+        // поддержка расширяемости плагинами
+        for (final IChangeCustomerStateEvent event : ServiceLoader.load(IChangeCustomerStateEvent.class)) {
+            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+            try {
+                event.change(this, state, newServiceId);
+            } catch (Throwable tr) {
+                QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+            }
+        }
     }
 
     private void saveToSelfDB() {
@@ -219,7 +219,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
         return state;
     }
     /**
-     *  ПРИОРИТЕТ "ОЧЕРЕДНИКА"
+     * ПРИОРИТЕТ "ОЧЕРЕДНИКА"
      */
     @Expose
     @SerializedName("priority")
@@ -235,13 +235,12 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     }
 
     /**
-     *  Сравнение очередников для выбора первого. Участвует приоритет очередника.
-     *  сравним по приоритету, потом по времени
+     * Сравнение очередников для выбора первого. Участвует приоритет очередника. сравним по приоритету, потом по времени
+     *
      * @param customer
-     * @return используется отношение "обслужится позднее"(сравнение дает ответ на вопрос "я обслужусь позднее чем тот в параметре?")
-     *         1 - "обслужится позднее" чем кастомер в параметре, -1 - "обслужится раньше"  чем кастомер в параметре, 0 - одновременно
-     *         -1 - быстрее обслужится чем кастомер из параметров, т.к. встал раньше
-     *         1 - обслужится после чем кастомер из параметров, т.к. встал позднее
+     * @return используется отношение "обслужится позднее"(сравнение дает ответ на вопрос "я обслужусь позднее чем тот в параметре?") 1 - "обслужится позднее"
+     * чем кастомер в параметре, -1 - "обслужится раньше" чем кастомер в параметре, 0 - одновременно -1 - быстрее обслужится чем кастомер из параметров, т.к.
+     * встал раньше 1 - обслужится после чем кастомер из параметров, т.к. встал позднее
      */
     @Override
     public int compareTo(QCustomer customer) {
@@ -274,10 +273,9 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     }
 
     /**
-     * Кастомеру проставим атрибуты услуги включая имя, описание, префикс. 
-     * Причем префикс ставится раз и навсегда.
-     * При добавлении кастомера в услугу addCustomer() происходит тоже самое + выставляется префикс, если такой
-     * атрибут не добавлен в XML-узел кастомера
+     * Кастомеру проставим атрибуты услуги включая имя, описание, префикс. Причем префикс ставится раз и навсегда. При добавлении кастомера в услугу
+     * addCustomer() происходит тоже самое + выставляется префикс, если такой атрибут не добавлен в XML-узел кастомера
+     *
      * @param service не передавать тут NULL
      */
     public void setService(QService service) {
@@ -326,6 +324,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     }
     /**
      * Префикс услуги, к которой стоит кастомер.
+     *
      * @return Строка префикса.
      */
     @Expose
@@ -400,6 +399,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
 
     /**
      * Введенные кастомером данные на пункте регистрации.
+     *
      * @return
      */
     @Column(name = "input_data")
@@ -411,14 +411,14 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
         this.input_data = input_data;
     }
     /**
-     * Список услуг в которые необходимо вернуться после редиректа
-     * Новые услуги для возврата добвляются в начало списка.
-     * При возврате берем первую из списка и удаляем ее.
+     * Список услуг в которые необходимо вернуться после редиректа Новые услуги для возврата добвляются в начало списка. При возврате берем первую из списка и
+     * удаляем ее.
      */
     private final LinkedList<QService> serviceBack = new LinkedList<>();
 
     /**
      * При редиректе если есть возврат. то добавим услугу для возврата
+     *
      * @param service в эту услугу нужен возврат
      */
     public void addServiceForBack(QService service) {
@@ -428,6 +428,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
 
     /**
      * Куда вернуть если работу закончили но кастомер редиректенный
+     *
      * @return вернуть в эту услугу
      */
     @Transient
@@ -531,4 +532,18 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     public String getName() {
         return prefix + getNumber() + " " + getInput_data();
     }
+
+    @Expose
+    @SerializedName("complex_id")
+    public LinkedList<LinkedList<Long>> complexId = new LinkedList<>();
+
+    @Transient
+    public LinkedList<LinkedList<Long>> getComplexId() {
+        return complexId;
+    }
+
+    public void setComplexId(LinkedList<LinkedList<Long>> complexId) {
+        this.complexId = complexId;
+    }
+
 }

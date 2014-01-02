@@ -28,6 +28,7 @@ import javax.persistence.Table;
 
 /**
  * Нормативные настройки системы.
+ *
  * @author Evgeniy Egorov
  */
 @Entity
@@ -132,4 +133,21 @@ public class QStandards implements Serializable {
                 + ",LineServiceMax=" + getLineServiceMax()
                 + ",LineTotalMax=" + getLineTotalMax() + "]";
     }
+
+    /**
+     * типа параметр если есть перемещение, например между корпусами или ходьба до оператора
+     */
+    @Column(name = "relocation")
+    @Expose
+    @SerializedName("relocation")
+    private Integer relocation;
+
+    public Integer getRelocation() {
+        return relocation;
+    }
+
+    public void setRelocation(Integer relocation) {
+        this.relocation = relocation;
+    }
+
 }

@@ -125,20 +125,28 @@ public class CalendarTableModel extends AbstractTableModel {
     /**
      * Сбросить выделенные дни в календаре
      */
-    public void dropCalendar() {
+    public void dropCalendar(int year) {
         QLog.l().logger().debug("Сбросим календарь");
-        days.clear();
+        final ArrayList<FreeDay> del = new ArrayList<>();
+        final GregorianCalendar gc = new GregorianCalendar();
+        for (FreeDay freeDay : days) {
+            gc.setTime(freeDay.getDate());
+            if (gc.get(GregorianCalendar.YEAR) == year) {
+                del.add(freeDay);
+            }
+        }
+        days.removeAll(del);
         fireTableDataChanged();
     }
 
     /**
      * Пометить все субботы выходными
      */
-    public void checkSaturday() {
+    public void checkSaturday(int year) {
         QLog.l().logger().debug("Пометив все субботы");
         final GregorianCalendar gc = new GregorianCalendar();
-        gc.setTime(new Date());
-        final int ye = gc.get(GregorianCalendar.YEAR) % 4 == 0 ? 366 : 365;
+        gc.set(GregorianCalendar.YEAR, year);
+        final int ye = year % 4 == 0 ? 366 : 365;
         for (int d = 1; d <= ye; d++) {
             gc.set(GregorianCalendar.DAY_OF_YEAR, d);
             if (gc.get(GregorianCalendar.DAY_OF_WEEK) == 7) {
@@ -151,11 +159,11 @@ public class CalendarTableModel extends AbstractTableModel {
     /**
      * Пометить все воскресенья выходными
      */
-    public void checkSunday() {
+    public void checkSunday(int year) {
         QLog.l().logger().debug("Пометим все воскресенья");
         final GregorianCalendar gc = new GregorianCalendar();
-        gc.setTime(new Date());
-        final int ye = gc.get(GregorianCalendar.YEAR) % 4 == 0 ? 366 : 365;
+        gc.set(GregorianCalendar.YEAR, year);
+        final int ye = year % 4 == 0 ? 366 : 365;
         for (int d = 1; d <= ye; d++) {
             gc.set(GregorianCalendar.DAY_OF_YEAR, d);
             if (gc.get(GregorianCalendar.DAY_OF_WEEK) == 1) {

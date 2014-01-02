@@ -34,7 +34,7 @@ import ru.apertum.qsystem.common.exceptions.ServerException;
  * Добавлено поле для регистрации аннорированных классов.
  * @author Evgeniy Egorov
  */
-public class AnnotationSessionFactoryBean extends LocalSessionFactoryBean {
+public class AnnotationSessionFactoryBean /*extends LocalSessionFactoryBean*/ {
 
     /**
      * Поле для регистрации аннорированных классов.
@@ -60,6 +60,7 @@ public class AnnotationSessionFactoryBean extends LocalSessionFactoryBean {
      * @param config
      * @throws org.hibernate.HibernateException
      */
+    /*
     @Override
     protected void postProcessConfiguration(Configuration config) throws HibernateException {
         super.postProcessConfiguration(config);
@@ -85,4 +86,5 @@ public class AnnotationSessionFactoryBean extends LocalSessionFactoryBean {
             }
         }
     }
+    */
 }

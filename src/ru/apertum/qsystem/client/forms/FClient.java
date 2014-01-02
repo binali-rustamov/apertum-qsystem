@@ -34,7 +34,6 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -42,6 +41,7 @@ import java.util.Locale;
 import java.util.ServiceLoader;
 import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import org.dom4j.DocumentException;
 import org.jdesktop.application.Action;
@@ -67,6 +67,7 @@ import ru.apertum.qsystem.client.model.QPanel;
 import ru.apertum.qsystem.client.model.QTray;
 import ru.apertum.qsystem.client.model.QTray.MessageType;
 import ru.apertum.qsystem.common.AUDPServer;
+import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfService;
 import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfSituation;
 import ru.apertum.qsystem.common.exceptions.ClientException;
@@ -80,13 +81,13 @@ import ru.apertum.qsystem.server.model.results.QResult;
 
 /**
  * Created on 11 Сентябрь 2008 г., 16:57
+ *
  * @author Evgeniy Egorov
  */
 public final class FClient extends javax.swing.JFrame {
 
     /**
-     * Информация для взаимодействия по сети.
-     * Формируется по данным из командной строки.
+     * Информация для взаимодействия по сети. Формируется по данным из командной строки.
      */
     private final INetProperty netProperty;
 
@@ -175,6 +176,7 @@ public final class FClient extends javax.swing.JFrame {
 
     /**
      * Заставляем мигать все табло.
+     *
      * @param blinked мигаем или нет.
      */
     private void setBlinkBoard(boolean blinked) {
@@ -372,8 +374,8 @@ public final class FClient extends javax.swing.JFrame {
         return user;
     }
     /**
-     * Описание того, сколько народу стоит в очередях к этому юзеру, ну и прочее(потом)mess
-     * Не использовать на прямую.
+     * Описание того, сколько народу стоит в очередях к этому юзеру, ну и прочее(потом)mess Не использовать на прямую.
+     *
      * @see setSituation(Element plan)
      */
     private SelfSituation userPlan;
@@ -388,11 +390,12 @@ public final class FClient extends javax.swing.JFrame {
 
     /**
      * Creates new form FClient
+     *
      * @param user
      * @param netProperty
      * @throws AWTException
      */
-    public FClient(QUser user, IClientNetProperty netProperty) throws AWTException {
+    public FClient(QUser user, final IClientNetProperty netProperty) throws AWTException {
         addWindowListener(new WindowListener() {
 
             @Override
@@ -478,6 +481,7 @@ public final class FClient extends javax.swing.JFrame {
             }
         });
         labelUser.setText(user.getName() + " - " + (NetCommander.pointId != null && !NetCommander.pointId.equals("") ? NetCommander.pointId : user.getPoint()));
+        ch.setSelected(user.isPause());
         setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
 
         int ii = 1;
@@ -501,6 +505,24 @@ public final class FClient extends javax.swing.JFrame {
         helper.setHelpListener(menuItemHelp);
         helper.enableHelpKey(panelDown, "client");
 
+        ch.setOpaque(false);
+        ch.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final boolean state = NetCommander.setBussy(netProperty, getUser().getId(), ch.isSelected());
+                ch.setSelected(state);
+                if (state) {
+                    ch.setForeground(new Color(250, 0, 0));
+                    ch.setText(getLocaleMessage("client.pause").toUpperCase());
+                } else {
+                    ch.setForeground(new Color(0, 150, 0));
+                    ch.setText(getLocaleMessage("client.pause"));
+                }
+            }
+        });
+        menuBar.add(ch);
+        
         Font f = new Font("Time New Roman", 0, 16);
         labelMotiv.setFont(f);
         labelMotiv.setForeground(new Color(0, 150, 0));
@@ -511,6 +533,7 @@ public final class FClient extends javax.swing.JFrame {
 
     }
     private final JLabel labelMotiv = new JLabel();
+    private final JCheckBox ch = new JCheckBox(getLocaleMessage("client.pause"));
 
     class TimerMotiv implements ActionListener {
 
@@ -559,12 +582,13 @@ public final class FClient extends javax.swing.JFrame {
             final long tt = new Date().getTime() - start;
             labelMotiv.setForeground(tt < t1 ? new Color(0, 150, 0) : (tt > t2 ? new Color(200, 0, 0) : new Color(90, 0, 230)));
             final String tts = prob + action + "  " + tt / 1000 / 60 + ":" + (tt / 1000) % 60;
-            labelMotiv.setText(tts.substring(tts.length() - 43));
+            labelMotiv.setText(tts.substring(tts.length() - 26));
         }
     }
 
     /**
      * Создадим форму, спозиционируем, сконфигурируем и покажем
+     *
      * @param configFilePath файл конфигурации табло, приезжает из Spring
      */
     private static void initIndicatorBoard(final String cfgFile) throws DocumentException {
@@ -610,6 +634,7 @@ public final class FClient extends javax.swing.JFrame {
 
     /**
      * Определяет какова ситуация в очереди к пользователю.
+     *
      * @param plan - ситуация в XML
      */
     protected void setSituation(SelfSituation plan) {
@@ -657,8 +682,14 @@ public final class FClient extends javax.swing.JFrame {
                 count = count + srv.getCountWait();
             }
         }
+        // Обозначим очередь иконкой
+        if (inCount == 0) {
+            tray.setNewIcon("/ru/apertum/qsystem/client/forms/resources/client.png");
+        } else {
+            tray.setNewIcon("/ru/apertum/qsystem/client/forms/resources/clientBusy.png");
+        }
         // покажим сообщение в трее если очередь была пуста и кто-то приперся
-        if (count == 0 && inCount != 0) {
+        if (count == 0 && inCount != 0 && plan.getCustomer() == null) {
             Toolkit.getDefaultToolkit().beep();
             tray.showMessageTray(Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF()), temp1.replaceAll("<br>", "\n"), MessageType.INFO);
             tray.getTrayIcon().getActionListeners()[0].actionPerformed(null);
@@ -670,9 +701,9 @@ public final class FClient extends javax.swing.JFrame {
             setCustomer(plan.getCustomer());
         } else {
             if (inCount == 0) {
-                setKeyRegim(KEYS_OFF);/* нет клиентов, нечеого вызывать*/
+                setKeyRegim(KEYS_OFF);//* нет клиентов, нечеого вызывать*/
             } else {
-                setKeyRegim(KEYS_MAY_INVITE); /*в очереди кто-то есть, можно вызвать*/
+                setKeyRegim(KEYS_MAY_INVITE); //*в очереди кто-то есть, можно вызвать*/
             }
             labelNextNumber.setText(getLocaleMessage("messages.noCall"));
             printCustomerNumber("", -1);
@@ -695,8 +726,7 @@ public final class FClient extends javax.swing.JFrame {
         labelPost.setText("<html><span style='color:" + color + "'>" + plan.getPostponedList().size() + "</span>");
     }
     /**
-     * Возможный состояния кнопок
-     * 1 - доступна кнопка, 0 - не доступна
+     * Возможный состояния кнопок 1 - доступна кнопка, 0 - не доступна
      */
     public static final String KEYS_OFF = "000000";
     public static final String KEYS_ALL = "111111";
@@ -707,6 +737,7 @@ public final class FClient extends javax.swing.JFrame {
 
     /**
      * Механизм включения/отключения кнопок
+     *
      * @param regim
      */
     public void setKeyRegim(String regim) {
@@ -728,9 +759,11 @@ public final class FClient extends javax.swing.JFrame {
         menuItemFinish.setEnabled('1' == regim.charAt(5));
     }
 
-    /*******************************************************************************************************************
-    /*******************************************************************************************************************
-    /************************************      Обработчики кнопок      ************************************************/
+    /**
+     * *****************************************************************************************************************
+     * /*******************************************************************************************************************
+     * /************************************ Обработчики кнопок ***********************************************
+     */
     private long go() {
         QLog.l().logger().trace("Начало действия");
         return System.currentTimeMillis();
@@ -742,6 +775,7 @@ public final class FClient extends javax.swing.JFrame {
 
     /**
      * Действие по нажатию кнопки "Вызов"
+     *
      * @param evt
      */
     @Action
@@ -762,6 +796,7 @@ public final class FClient extends javax.swing.JFrame {
 
     /**
      * Действие по нажатию кнопки "Отклонить"
+     *
      * @param evt
      */
     @Action
@@ -784,6 +819,7 @@ public final class FClient extends javax.swing.JFrame {
 
     /**
      * Действие по нажатию кнопки "Начать прием"
+     *
      * @param evt
      */
     @Action
@@ -799,6 +835,7 @@ public final class FClient extends javax.swing.JFrame {
 
     /**
      * Действие по нажатию кнопки "Завершить прием"
+     *
      * @param evt
      */
     @Action
@@ -821,7 +858,11 @@ public final class FClient extends javax.swing.JFrame {
                 resComments = user.getName() + ": " + dlg.getTempComments();
             }
         }
-        NetCommander.getFinishCustomer(netProperty, user.getId(), res, resComments);
+        // вернется кастомер и возможно он еще не домой а по списку услуг. Список определяется при старте кастомера в обработку специяльным юзером в регистратуре
+        final QCustomer cust = NetCommander.getFinishCustomer(netProperty, user.getId(), res, resComments);
+        if (cust != null && cust.getService() != null && cust.getState() == CustomerState.STATE_WAIT_COMPLEX_SERVICE) {
+            JOptionPane.showMessageDialog(this, "Следующая услуга" + " \"" + cust.getService().getName() + "\". " + "Номер посетителя" + " \"" + cust.getPrefix() + cust.getNumber() + "\"." + "\n\n" + cust.getService().getDescription(), "Продолжение комплексой услуги", JOptionPane.INFORMATION_MESSAGE);
+        }
         // Получаем новую обстановку
         //Получаем состояние очередей для юзера
         setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
@@ -831,6 +872,7 @@ public final class FClient extends javax.swing.JFrame {
 
     /**
      * Действие по нажатию кнопки "Перенаправить"
+     *
      * @param evt
      */
     @Action
@@ -975,7 +1017,7 @@ public final class FClient extends javax.swing.JFrame {
         setTitle(resourceMap.getString("Form.title")); // NOI18N
         setIconImage(getIconImage());
         setIconImages(getIconImages());
-        setMinimumSize(new java.awt.Dimension(510, 400));
+        setMinimumSize(new java.awt.Dimension(545, 400));
         setName("Form"); // NOI18N
 
         panelDown.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1165,7 +1207,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel5.TabConstraints.tabTitle"), jPanel5); // NOI18N
@@ -1191,7 +1233,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel6.TabConstraints.tabTitle"), jPanel6); // NOI18N
@@ -1215,7 +1257,7 @@ public final class FClient extends javax.swing.JFrame {
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(resourceMap.getString("jPanel7.TabConstraints.tabTitle"), jPanel7); // NOI18N
@@ -1259,7 +1301,7 @@ public final class FClient extends javax.swing.JFrame {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(labelResume, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)))
+                        .addComponent(labelResume, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -1274,7 +1316,7 @@ public final class FClient extends javax.swing.JFrame {
                     .addComponent(jLabel4)
                     .addComponent(labelResume))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
@@ -1423,10 +1465,10 @@ public final class FClient extends javax.swing.JFrame {
     private static boolean clientboardFX = false;
 
     /**
-     * Если есть монитор для вывода номера клиента, то выведет текст нома на него.
-     * Если текст для вывода пуст, то тобло перестанет моргать и отчистиццо.
+     * Если есть монитор для вывода номера клиента, то выведет текст нома на него. Если текст для вывода пуст, то тобло перестанет моргать и отчистиццо.
+     *
      * @param text текст нома клиента.
-     * @param blinkCount  0 - постоянное мигание, -1 не мигает. число - количество миганий
+     * @param blinkCount 0 - постоянное мигание, -1 не мигает. число - количество миганий
      */
     private void printCustomerNumber(String text, int blinkCount) {
         if (indicatorBoard != null) {
@@ -1461,13 +1503,13 @@ public final class FClient extends javax.swing.JFrame {
         // без предконнекта из main в дальнейшем сокет не хочет работать,
         // долго висит и вываливает минут через 15-20 эксепшн java.net.SocketException: Malformed reply from SOCKS server  
         /*
-        Socket skt = null;
-        try {
-            skt = new Socket(netProperty.getAddress(), 61111);
-            skt.close();
-        } catch (IOException ex) {
-        }
-        */
+         Socket skt = null;
+         try {
+         skt = new Socket(netProperty.getAddress(), 61111);
+         skt.close();
+         } catch (IOException ex) {
+         }
+         */
 
         if (!QLog.l().isTerminal()) {// в терминальном режиме запускаем много копий
             // Отсечем вторую копию.
@@ -1501,7 +1543,6 @@ public final class FClient extends javax.swing.JFrame {
                     break;
                 }
             }
-
 
             // Посмотрим, не пытались ли влезть под уже имеющейся в системе ролью
             if (!NetCommander.getSelfServicesCheck(netProperty, user.getId())) {
@@ -1567,10 +1608,10 @@ public final class FClient extends javax.swing.JFrame {
         final long start = go();
 
         /*
-        String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
-        if (status == null) {
-        return;
-        }
+         String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
+         if (status == null) {
+         return;
+         }
          * 
          */
         if (moveToPostponed == null) {
@@ -1605,7 +1646,6 @@ public final class FClient extends javax.swing.JFrame {
         if (listPostponed.getSelectedIndex() != -1) {
             final long start = go();
             final QCustomer cust = (QCustomer) listPostponed.getSelectedValue();
-
 
             String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
             if (status == null) {

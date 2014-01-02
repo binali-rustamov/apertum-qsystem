@@ -17,7 +17,7 @@
 
 package ru.apertum.qsystem.server.controller;
 
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.evgenic.rxtx.serialPort.ISerialExceptionListener;
 import ru.evgenic.rxtx.serialPort.ISerialLoggerListener;

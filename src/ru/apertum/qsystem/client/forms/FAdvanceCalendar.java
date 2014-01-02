@@ -727,8 +727,13 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
             gc_now.setTime(new Date());
             // проверим не отлистал ли пользователь слишком далеко, куда уже нельзя
             boolean f = true;
-            if (Math.abs(gc_client.get(GregorianCalendar.DAY_OF_YEAR) - gc_now.get(GregorianCalendar.DAY_OF_YEAR)) > res.getAdvanceLimitPeriod()
-                    && res.getAdvanceLimitPeriod() != 0) {
+            int per = 0;
+            if (gc_client.get(GregorianCalendar.DAY_OF_YEAR) - gc_now.get(GregorianCalendar.DAY_OF_YEAR) > 0) {
+                per = gc_client.get(GregorianCalendar.DAY_OF_YEAR) - gc_now.get(GregorianCalendar.DAY_OF_YEAR);
+            } else {
+                per = gc_client.get(GregorianCalendar.DAY_OF_YEAR) + (gc_now.isLeapYear(gc_now.get(GregorianCalendar.YEAR)) ? 365 : 366 - gc_now.get(GregorianCalendar.DAY_OF_YEAR));
+            }
+            if (per > res.getAdvanceLimitPeriod() && res.getAdvanceLimitPeriod() != 0) {
                 f = false;
             }
 

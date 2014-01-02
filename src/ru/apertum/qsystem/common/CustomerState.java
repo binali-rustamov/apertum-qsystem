@@ -36,6 +36,10 @@ public enum CustomerState {
      */
     STATE_WAIT_AFTER_POSTPONED,
     /**
+     * Кастомер был опять поставлен в очередь т.к. услуга комплекстая и ждет с номером
+     */
+    STATE_WAIT_COMPLEX_SERVICE,
+    /**
      * пригласили
      */
     STATE_INVITED,

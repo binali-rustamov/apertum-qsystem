@@ -30,11 +30,10 @@ import javax.persistence.Transient;
 import ru.apertum.qsystem.common.Uses;
 
 /**
- * Это класс для загрузки набора сервисов обслуживаемых юзером.
- * Ничего хитрого, связь многие-ко-многим + коэффициент участия.
- * Так сделано потому что у сервисов нет привязки к юзерам, эта привязка вроде как односторонняя и
- * еще имеется поле "коэффициент участия", которое будет игнориться при связи "многие-ко-многим".
+ * Это класс для загрузки набора сервисов обслуживаемых юзером. Ничего хитрого, связь многие-ко-многим + коэффициент участия. Так сделано потому что у сервисов
+ * нет привязки к юзерам, эта привязка вроде как односторонняя и еще имеется поле "коэффициент участия", которое будет игнориться при связи "многие-ко-многим".
  * Текстовое название услуги подтягиваеццо отдельно.
+ *
  * @author Evgeniy Egorov
  */
 @Entity
@@ -65,8 +64,7 @@ public class QPlanService implements Serializable {
         this.id = id;
     }
     /**
-     * Коэфф. степени участия. По умолчанию основной.
-     * низкий/основной/VIP
+     * Коэфф. степени участия. По умолчанию основной. низкий/основной/VIP
      */
     @Expose
     @SerializedName("coeff")
@@ -98,7 +96,7 @@ public class QPlanService implements Serializable {
     public void setFlexible_coef(Boolean flexible_coef) {
         this.flexible_coef = flexible_coef;
     }
-    
+
     /**
      * Соответствие услуги.
      */
@@ -130,7 +128,7 @@ public class QPlanService implements Serializable {
 
     @Override
     public String toString() {
-        return (getFlexible_coef() ? "* " : "") + service.getName() + " [" + Uses.COEFF_WORD.get(getCoefficient()) + "]";
+        return (getFlexible_coef() ? "* " : "") + "[" + Uses.COEFF_WORD.get(getCoefficient()) + "]" + service.getPrefix() + " " + service.getName();
     }
     //******************************************************************************************************************
     //*******            Статистика             *******************************************
@@ -142,6 +140,7 @@ public class QPlanService implements Serializable {
 
     /**
      * В минутах
+     *
      * @return среднее время ожидания кастомером
      */
     @Transient
@@ -159,6 +158,7 @@ public class QPlanService implements Serializable {
 
     /**
      * В минутах
+     *
      * @return среднее время работы с кастомерами
      */
     @Transient
@@ -208,7 +208,7 @@ public class QPlanService implements Serializable {
      */
     public synchronized void upWait(long wait_time) {
         waiters++;
-        avg_wait = (avg_wait * (waiters -1) + wait_time / 60000 ) / waiters;
+        avg_wait = (avg_wait * (waiters - 1) + wait_time / 60000) / waiters;
         avg_wait = avg_wait == 0 ? 1 : avg_wait;
     }
 }

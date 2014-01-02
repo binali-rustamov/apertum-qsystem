@@ -27,38 +27,28 @@ import org.apache.commons.pool.impl.SoftReferenceObjectPool;
  */
 public class GsonPool extends SoftReferenceObjectPool {
 
-    private static class ColorSerializer implements JsonDeserializer<Object>, JsonSerializer<Object> {
+    private static class ColorSerializer implements JsonDeserializer<Color>, JsonSerializer<Color> {
 
-        public JsonElement serialize(Color color, Type typeOfT, JsonSerializationContext context) {
-            return new JsonPrimitive(color.getRGB());
+        @Override
+        public JsonElement serialize(Color arg0, Type arg1, JsonSerializationContext arg2) {
+            return new JsonPrimitive(arg0.getRGB());
         }
 
         @Override
-        public JsonElement serialize(Object arg0, Type arg1, JsonSerializationContext arg2) {
-            final Color color = (Color) arg0;
-            return new JsonPrimitive(color.getRGB());
-        }
-
-        @Override
-        public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public Color deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             return new Color(json.getAsInt());
         }
     }
 
-    private static class DateSerializer implements JsonDeserializer<Object>, JsonSerializer<Object> {
+    private static class DateSerializer implements JsonDeserializer<Date>, JsonSerializer<Date> {
 
-        public JsonElement serialize(Date date, Type typeOfT, JsonSerializationContext context) {
-            return new JsonPrimitive(Uses.format_dd_MM_yyyy_time.format(date));
+        @Override
+        public JsonElement serialize(Date arg0, Type arg1, JsonSerializationContext arg2) {
+            return new JsonPrimitive(Uses.format_dd_MM_yyyy_time.format(arg0));
         }
 
         @Override
-        public JsonElement serialize(Object arg0, Type arg1, JsonSerializationContext arg2) {
-            final Date date = (Date) arg0;
-            return new JsonPrimitive(Uses.format_dd_MM_yyyy_time.format(date));
-        }
-
-        @Override
-        public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             try {
                 return Uses.format_dd_MM_yyyy_time.parse(json.getAsString());
             } catch (ParseException ex) {
@@ -85,8 +75,8 @@ public class GsonPool extends SoftReferenceObjectPool {
                     final GsonBuilder gsonb = new GsonBuilder();
                     final DateSerializer ds = new DateSerializer();
                     final ColorSerializer cs = new ColorSerializer();
-                    gsonb.registerTypeAdapter(Date.class, ds);
-                    gsonb.registerTypeAdapter(Color.class, cs);
+                    gsonb.registerTypeHierarchyAdapter(Date.class, ds);
+                    gsonb.registerTypeHierarchyAdapter(Color.class, cs);
                     return gsonb.excludeFieldsWithoutExposeAnnotation().create();
 
 

@@ -28,6 +28,7 @@ import ru.apertum.qsystem.common.model.QCustomer;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.dom4j.DocumentHelper;
@@ -65,6 +66,7 @@ import ru.apertum.qsystem.common.cmd.RpcBanList;
 import ru.apertum.qsystem.common.cmd.RpcGetGridOfDay;
 import ru.apertum.qsystem.common.cmd.RpcGetStandards;
 import ru.apertum.qsystem.common.cmd.RpcGetServiceState;
+import ru.apertum.qsystem.extra.ISelectNextService;
 import ru.apertum.qsystem.server.MainBoard;
 import ru.apertum.qsystem.server.QServer;
 import ru.apertum.qsystem.server.ServerProps;
@@ -89,13 +91,10 @@ import ru.apertum.qsystem.server.model.schedule.QBreaks;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
 /**
- * Пул очередей.
- * Пул очередей - главная структура управления очередями.
- * В системе существуют несколько очередей, например для оказания разных услуг.
- * Пул получает XML-задания из сети, определяет требуемое действие.
- * Выполняет действия по организации пула.
- * Выполняет задания, касающиеся нескольких очередей.
+ * Пул очередей. Пул очередей - главная структура управления очередями. В системе существуют несколько очередей, например для оказания разных услуг. Пул
+ * получает XML-задания из сети, определяет требуемое действие. Выполняет действия по организации пула. Выполняет задания, касающиеся нескольких очередей.
  * Работает как singleton.
+ *
  * @author Evgeniy Egorov
  */
 public final class Executer {
@@ -110,8 +109,8 @@ public final class Executer {
     }
 
     /**
-     * Конструктор пула очередей
-     * Также нужно оперделить способ вывода информации для клиентов на табло.
+     * Конструктор пула очередей Также нужно оперделить способ вывода информации для клиентов на табло.
+     *
      * @param property свойства и настройки по которым строим пул
      * @param ignoreWork создавать или нет статистику и табло.
      */
@@ -125,14 +124,15 @@ public final class Executer {
     // задния, доступны по их именам
     private final HashMap<String, Task> tasks = new HashMap<>();
 
+    public HashMap<String, Task> getTasks() {
+        return tasks;
+    }
+
     /**
-     * 
-     * @author Evgeniy Egorov
-     * Базовый класс обработчиков заданий.
-     * сам себя складывает в HashMap<String, ATask> tasks.
-     * метод process исполняет задание.
+     *
+     * @author Evgeniy Egorov Базовый класс обработчиков заданий. сам себя складывает в HashMap<String, ATask> tasks. метод process исполняет задание.
      */
-    private class Task {
+    public class Task {
 
         protected final String name;
         protected CmdParams cmdParams;
@@ -157,7 +157,7 @@ public final class Executer {
      */
     public static final Lock postponedTaskLock = new ReentrantLock();
     /**
-     * Ставим кастомера в очередь.  
+     * Ставим кастомера в очередь.
      */
     final AddCustomerTask addCustomerTask = new AddCustomerTask(Uses.TASK_STAND_IN);
 
@@ -202,9 +202,69 @@ public final class Executer {
                 //разослать оповещение о том, что появился посетитель
                 //рассылаем широковещетельно по UDP на определенный порт
                 Uses.sendUDPBroadcast(service.getId().toString(), ServerProps.getInstance().getProps().getClientPort());
-            } finally {
-                return new RpcStandInService(customer);
+            } catch (Exception ex) {
+                QLog.l().logger().error(ex);
             }
+            return new RpcStandInService(customer);
+        }
+    };
+    /**
+     * Ставим кастомера в очередь к нескольким услугам.
+     *
+     * @return
+     */
+    final Task addCustomerTaskComplex = new Task(Uses.TASK_STAND_COMPLEX) {
+
+        @Override
+        public RpcStandInService process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+
+            Long serviceID = null;
+
+            // поддержка расширяемости плагинами
+            for (final ISelectNextService event : ServiceLoader.load(ISelectNextService.class)) {
+                QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+                try {
+                    serviceID = event.select(null, null, cmdParams.complexId).getId();
+                } catch (Throwable tr) {
+                    QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+                }
+            }
+
+            // дефлотный выбор следующей услуги
+            if (serviceID == null) {
+                for (LinkedList<Long> ids : cmdParams.complexId) {
+                    for (Long id : ids) {
+                        serviceID = id;
+                        ids.remove(id);
+                        break;
+                    }
+                    if (serviceID != null) {
+                        break;
+                    }
+                }
+            } else {
+                // подотрем выбраную услугу
+                for (LinkedList<Long> ids : cmdParams.complexId) {
+                    for (Long id : ids) {
+                        if (serviceID == id) {
+                            ids.remove(id);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (serviceID == null) {
+                throw new ServerException("Ошибка поставить в очередь к многим услугам. Услуг не найдено.");
+            }
+
+            // создаем кастомера вызвав задание по созданию кастомера
+            // загрузим задание
+            cmdParams.serviceId = serviceID;
+            final RpcStandInService txtCustomer = addCustomerTask.process(cmdParams, ipAdress, IP);
+            txtCustomer.getResult().setComplexId(cmdParams.complexId);
+            return txtCustomer;
+
         }
     };
     /**
@@ -213,9 +273,8 @@ public final class Executer {
     final Task inviteCustomerTask = new Task(Uses.TASK_INVITE_NEXT_CUSTOMER) {
 
         /**
-         * Cинхронизируем, ато вызовут одного и того же.
-         * А еще сдесь надо вызвать метод, который "проговорит" кого и куда вазвали.
-         * Может случиться ситуация когда двое вызывают последнего кастомера, первому достанется, а второму нет.
+         * Cинхронизируем, ато вызовут одного и того же. А еще сдесь надо вызвать метод, который "проговорит" кого и куда вазвали. Может случиться ситуация
+         * когда двое вызывают последнего кастомера, первому достанется, а второму нет.
          */
         @Override
         synchronized public RpcInviteCustomer process(CmdParams cmdParams, String ipAdress, byte[] IP) {
@@ -239,7 +298,7 @@ public final class Executer {
                     // кастомер переходит в состояние в котором был в такое и переходит.
                     user.getCustomer().setState(user.getCustomer().getState());
                     // просигналим звуком
-                    SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), false);
+                    SoundPlayer.inviteClient(user.getCustomer().getService(), user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), false);
 
                     //разослать оповещение о том, что посетитель вызван повторно
                     //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
@@ -306,7 +365,6 @@ public final class Executer {
                 customer.setState(user.getCustomer().getState() == CustomerState.STATE_INVITED ? CustomerState.STATE_WORK : CustomerState.STATE_WORK_SECONDARY);
             }
 
-
             // если кастомер вызвался, то его обязательно отправить в ответ
             // он уже есть у юзера
             try {
@@ -314,7 +372,7 @@ public final class Executer {
                 QServer.savePool();
                 if (customer.getService().getEnable().intValue() == 1) { // услуга требует вызова
                     // просигналим звуком
-                    SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
+                    SoundPlayer.inviteClient(customer.getService(), user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
                     //разослать оповещение о том, что появился вызванный посетитель
                     // Должно высветитьсяна основном табло
                     MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
@@ -322,9 +380,10 @@ public final class Executer {
                 //разослать оповещение о том, что посетителя вызвали, состояние очереди изменилось
                 //рассылаем широковещетельно по UDP на определенный порт
                 Uses.sendUDPBroadcast(customer.getService().getId().toString(), ServerProps.getInstance().getProps().getClientPort());
-            } finally {
-                return new RpcInviteCustomer(customer);
+            } catch (Exception ex) {
+                QLog.l().logger().error(ex);
             }
+            return new RpcInviteCustomer(customer);
         }
     };
     /**
@@ -333,9 +392,8 @@ public final class Executer {
     final Task invitePostponedTask = new Task(Uses.TASK_INVITE_POSTPONED) {
 
         /**
-         * Cинхронизируем, а то вызовут одного и того же.
-         * А еще сдесь надо вызвать метод, который "проговорит" кого и куда вазвали.
-         * Может случиться ситуация когда двое вызывают последнего кастомера, первому достанется, а второму нет.
+         * Cинхронизируем, а то вызовут одного и того же. А еще сдесь надо вызвать метод, который "проговорит" кого и куда вазвали. Может случиться ситуация
+         * когда двое вызывают последнего кастомера, первому достанется, а второму нет.
          */
         @Override
         synchronized public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
@@ -379,7 +437,7 @@ public final class Executer {
             try {
                 // просигналим звуком
                 //SoundPlayer.play("/ru/apertum/qsystem/server/sound/sound.wav");
-                SoundPlayer.inviteClient(user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
+                SoundPlayer.inviteClient(customer.getService(), user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
                 // сохраняем состояния очередей.
                 QServer.savePool();
                 //разослать оповещение о том, что появился вызванный посетитель
@@ -388,9 +446,10 @@ public final class Executer {
                 //разослать оповещение о том, что отложенного вызвали, состояние очереди изменилось не изменилось, но пул отложенных изменился
                 //рассылаем широковещетельно по UDP на определенный порт
                 Uses.sendUDPBroadcast(Uses.TASK_REFRESH_POSTPONED_POOL, ServerProps.getInstance().getProps().getClientPort());
-            } finally {
-                return new RpcInviteCustomer(customer);
+            } catch (Exception ex) {
+                QLog.l().logger().error(ex);
             }
+            return new RpcInviteCustomer(customer);
         }
     };
     /**
@@ -405,8 +464,9 @@ public final class Executer {
         }
     };
     /**
-     * Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
-     * если ввели, то тут спрашиваем у сервера есть ли возможность встать в очередь с такими введенными данными
+     * Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода если ввели, то тут спрашиваем у сервера есть ли возможность
+     * встать в очередь с такими введенными данными
+     *
      * @return 1 - превышен, 0 - можно встать. 2 - забанен
      */
     final Task aboutServicePersonLimit = new Task(Uses.TASK_ABOUT_SERVICE_PERSON_LIMIT) {
@@ -482,6 +542,13 @@ public final class Executer {
             }
             // Если нет расписания, календаря или выходной то отказ по расписанию
             if (srv.getSchedule() == null || checkFreeDay(day, new Long(1)) || (srv.getCalendar() != null && checkFreeDay(day, srv.getCalendar().getId()))) {
+                if (srv.getSchedule() == null) {
+                    QLog.l().logger().warn("Если нет расписания, то отказ по расписанию.");
+                } else if (checkFreeDay(day, new Long(1))) {
+                    QLog.l().logger().warn("Если выходной то отказ по расписанию.");
+                } else {
+                    QLog.l().logger().warn("Если нет календаря и выходной то отказ по расписанию.");
+                }
                 min = Uses.LOCK_FREE_INT;
             } else {
                 // Определим время начала и нонца работы на этот день
@@ -543,9 +610,11 @@ public final class Executer {
                     final int eh = gc_day.get(GregorianCalendar.HOUR_OF_DAY);
                     final int em = gc_day.get(GregorianCalendar.MINUTE);
                     if (!(sh * 60 + sm <= h * 60 + m && h * 60 + m <= eh * 60 + em) && (!((sh == eh) && (sm == em)))) {
+                        QLog.l().logger().warn("Если текущее время не попадает в рабочий интервал то отказ по расписанию. " + sh + "." + sm + " < " + h + "." + m + " < " + eh + "." + em);
                         min = Uses.LOCK_FREE_INT;
                     }
                 } else {
+                    QLog.l().logger().warn("Если в этот день не определено начало или конец то отказ по расписанию." + (start == null ? "start == null" : "end == null"));
                     min = Uses.LOCK_FREE_INT;
                 }
             }
@@ -677,6 +746,7 @@ public final class Executer {
 
         /**
          * Проверка залогиневшегося чела по имени
+         *
          * @param userId id чела для проверки
          * @return есть юзер с таким именем или нет
          */
@@ -714,6 +784,7 @@ public final class Executer {
 
         /**
          * Проверка залогиневшегося чела по адресу
+         *
          * @param ipAdress адрес для проверки
          * @return есть там юзер или нет
          */
@@ -787,8 +858,7 @@ public final class Executer {
         }
     };
     /**
-     * Получить описание состояния очередей для пользователя и проверить
-     * Отсечем дубляжи запуска от одних и тех же юзеров. но с разных компов
+     * Получить описание состояния очередей для пользователя и проверить Отсечем дубляжи запуска от одних и тех же юзеров. но с разных компов
      */
     final Task getCheckSelfTask = new Task(Uses.TASK_GET_SELF_SERVICES_CHECK) {
         // надо запоминать название пунктов приема из БД для юзеров, не то перетрется клиентской настройкой и не восстановить
@@ -848,6 +918,7 @@ public final class Executer {
         public AJsonRPC20 process(CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
+            QLog.l().logger().warn("УДАЛЕНИЕ: Удалили по неявке кастомера " + user.getCustomer().getPrefix() + "-" + user.getCustomer().getNumber() + " он ввел \"" + user.getCustomer().getInput_data() + "\"");
             // Если кастомер имел что-то введенное на пункте регистрации, то удалить всех таких кастомеров с такими введеными данными
             // и отправить его в бан, ибо нехрен набирать кучу талонов и просирать очереди.
             if (user.getCustomer().getInput_data() != null && !"".equals(user.getCustomer().getInput_data())) {
@@ -880,9 +951,10 @@ public final class Executer {
                 //разослать оповещение о том, что посетитель откланен
                 // Должно подтереться основном табло
                 MainBoard.getInstance().killCustomer(user);
-            } finally {
-                return new JsonRPC20OK();
+            } catch (Exception ex) {
+                QLog.l().logger().error(ex);
             }
+            return new JsonRPC20OK();
         }
     };
     private static final HashMap<String, Date> killedCustomers = new HashMap<>();
@@ -940,9 +1012,8 @@ public final class Executer {
                 MainBoard.getInstance().killCustomer(user);
             } catch (Throwable t) {
                 QLog.l().logger().error("Загнулось под конец.", t);
-            } finally {
-                return new JsonRPC20OK();
             }
+            return new JsonRPC20OK();
         }
     };
     /**
@@ -1019,6 +1090,36 @@ public final class Executer {
                 customer.setFinishTime(new Date());
                 // кастомер переходит в состояние "Завершенности", но не "мертвости"
                 customer.setState(CustomerState.STATE_FINISH);
+                // дело такое, кастомер может идти по списку услуг, т.е. есть набор услуг, юзер завершает работу, а сстема его ведет по списку услуг
+                // тут посмотрим может его уже провели по списку комплексных услуг, если у него вообще они были
+                // если провели то у него статус другой STATE_WAIT_COMPLEX_SERVICE
+                // если нет, то статус STATE_FINISH и список в комплексных не пуст
+                // провести к другой услуге его могли в плагине IChangeCustomerStateEvent
+                // если нет то дефолтная проводочка в следующую услугу.
+                if (customer.getState() == CustomerState.STATE_FINISH && customer.getComplexId() != null) {
+                    int len = 0;
+                    for (LinkedList<Long> li : customer.getComplexId()) {
+                        len += li.size();
+                    }
+                    if (len != 0) {
+                        QLog.l().logger().debug("Дефолтная проводка по комплексным услугам. Омталось " + len);
+                        Long serviceID = null;
+                        for (LinkedList<Long> ids : customer.getComplexId()) {
+                            for (Long id : ids) {
+                                serviceID = id;
+                                ids.remove(id);
+                                break;
+                            }
+                            if (serviceID != null) {
+                                break;
+                            }
+                        }
+                        final QService nextServ = QServiceTree.getInstance().getById(serviceID);
+                        nextServ.addCustomer(customer);
+                        customer.setService(nextServ);
+                        customer.setState(CustomerState.STATE_WAIT_COMPLEX_SERVICE);
+                    }
+                }
             }
             try {
                 user.setCustomer(null);//бобик сдох и медальки не осталось
@@ -1027,9 +1128,10 @@ public final class Executer {
                 //разослать оповещение о том, что посетитель откланен
                 //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
                 MainBoard.getInstance().killCustomer(user);
-            } finally {
-                return new JsonRPC20OK();
+            } catch (Exception ex) {
+                QLog.l().logger().error(ex);
             }
+            return new RpcStandInService(customer);
         }
     };
     /**
@@ -1100,9 +1202,10 @@ public final class Executer {
                 //разослать оповещение о том, что посетитель откланен
                 //рассылаем широковещетельно по UDP на определенный порт. Должно подтереться на основном табло
                 MainBoard.getInstance().killCustomer(user);
-            } finally {
-                return new JsonRPC20OK();
+            } catch (Exception ex) {
+                QLog.l().logger().error(ex);
             }
+            return new JsonRPC20OK();
         }
     };
     /**
@@ -1181,8 +1284,7 @@ public final class Executer {
         }
     };
     /**
-     * Получение конфигурации главного табло - ЖК или плазмы.
-     * Это XML-файл лежащий в папку приложения mainboard.xml
+     * Получение конфигурации главного табло - ЖК или плазмы. Это XML-файл лежащий в папку приложения mainboard.xml
      */
     final Task getBoardConfig = new Task(Uses.TASK_GET_BOARD_CONFIG) {
 
@@ -1193,8 +1295,7 @@ public final class Executer {
         }
     };
     /**
-     * Сохранение конфигурации главного табло - ЖК или плазмы.
-     * Это XML-файл лежащий в папку приложения mainboard.xml
+     * Сохранение конфигурации главного табло - ЖК или плазмы. Это XML-файл лежащий в папку приложения mainboard.xml
      */
     final Task saveBoardConfig = new Task(Uses.TASK_SAVE_BOARD_CONFIG) {
 
@@ -1288,7 +1389,6 @@ public final class Executer {
                     }
                 }
 
-
                 // Если работаем в этот день то определим часы на которые еще можно записаться
                 if (!(start == null || end == null)) {
                     // Сдвинем на интервал края дня т.к. это так же сдвинуто на пунктe регистрации
@@ -1304,8 +1404,6 @@ public final class Executer {
                     QLog.l().logger().trace("Загрузим уже занятых позиций ранее записанными кастомерами от " + Uses.format_for_rep.format(startDay) + " до " + Uses.format_for_rep.format(endDay));
                     // Загрузим уже занятых позиций ранее записанными кастомерами
                     final List<QAdvanceCustomer> advCustomers = Spring.getInstance().getHt().find("FROM QAdvanceCustomer a WHERE advance_time >'" + Uses.format_for_rep.format(startDay) + "' and advance_time <= '" + Uses.format_for_rep.format(endDay) + "' and service_id = " + service.getId());
-
-
 
                     // бежим по часам внутри дня
                     while (start.before(end) || start.equals(end)) {
@@ -1404,9 +1502,7 @@ public final class Executer {
                         start = gc.getTime();
                     }
 
-
                 }
-
 
             }
             return new RpcGetGridOfDay(advCusts);
@@ -1601,7 +1697,6 @@ public final class Executer {
                             start = gc.getTime();
                         }
 
-
                     }
                 } // проверка на нерабочий день календаря
                 // переход на следующий день
@@ -1614,6 +1709,7 @@ public final class Executer {
 
     /**
      * Проверка даты на нерабочую в определенном календаре
+     *
      * @param date проверяемая дата, важен месяц и день
      * @param calcId в каком календаре будем проверять
      * @return Выходной день в этом календаре или нет
@@ -1621,11 +1717,12 @@ public final class Executer {
     private static boolean checkFreeDay(Date date, Long calcId) {
         final GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(date);
+        final int y = gc.get(GregorianCalendar.YEAR);
         final int m = gc.get(GregorianCalendar.MONTH);
         final int d = gc.get(GregorianCalendar.DAY_OF_MONTH);
         for (FreeDay day : CalendarTableModel.getFreeDays(calcId)) {
             gc.setTime(day.getDate());
-            if (m == gc.get(GregorianCalendar.MONTH) && d == gc.get(GregorianCalendar.DAY_OF_MONTH)) {
+            if (m == gc.get(GregorianCalendar.MONTH) && d == gc.get(GregorianCalendar.DAY_OF_MONTH) && y == gc.get(GregorianCalendar.YEAR)) {
                 return true;
             }
         }
@@ -1664,7 +1761,6 @@ public final class Executer {
             gc.set(GregorianCalendar.SECOND, 0);
             gc.set(GregorianCalendar.MILLISECOND, 0);
             final Date startTime = gc.getTime();
-            System.out.println(startTime);
             //хорошо бы отсекать повторную запись к этому же специалиста на этот же день
             customer.setAdvanceTime(startTime);
             customer.setService(service);
@@ -1988,6 +2084,18 @@ public final class Executer {
             return new RpcGetStandards(ServerProps.getInstance().getStandards());
         }
     };
+    /**
+     * Поставить паузу у пользователя.
+     */
+    final Task setPause = new Task(Uses.TASK_SET_BUSSY) {
+
+        @Override
+        public RpcGetBool process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+            QUserList.getInstance().getById(cmdParams.userId).setPause(cmdParams.requestBack);
+            return new RpcGetBool(QUserList.getInstance().getById(cmdParams.userId).isPause());
+        }
+    };
 
 //****************************************************************************
 //********************* КОНЕЦ добавления в мап обработчиков заданий  *********
@@ -1997,9 +2105,10 @@ public final class Executer {
 //**********************************************************************************************    
     /**
      * Выполнение всех заданий, пришедших на обработку
+     *
      * @param rpc объект задания
      * @param ipAdress адрес того кто прислал задание
-     * @param IP  адрес того кто прислал задание
+     * @param IP адрес того кто прислал задание
      * @return объект результата выполнения задания
      */
     public Object doTask(JsonRPC20 rpc, String ipAdress, byte[] IP) {

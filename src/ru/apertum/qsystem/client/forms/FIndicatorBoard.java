@@ -101,6 +101,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Получить форму табло. Получаем главное табло.
      * Вызов этого метода создает новый объект. не использовать при одиночном табло. сделано для зонального.
      * @param rootParams параметры табло.
+     * @param isDebug
      * @return
      */
     public static FIndicatorBoard getIndicatorBoardForZone(Element rootParams, boolean isDebug) {
@@ -390,8 +391,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     /**
      * это лейблы, в которых будут таблицы ближайших клиентосов
      */
-    private ArrayList<RunningLabel> nexts = new ArrayList<>();
-    private HashMap<RunningLabel, Element> el_nexts = new HashMap<>();
+    private final ArrayList<RunningLabel> nexts = new ArrayList<>();
+    private final HashMap<RunningLabel, Element> el_nexts = new HashMap<>();
 
     public boolean needNext() {
         return !nexts.isEmpty();

@@ -17,17 +17,19 @@
 package ru.apertum.qsystem.extra;
 
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.server.model.ATreeModel;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 
 /**
- * Интерфейс для плагинов печати талонов. Нужен для добавления плагинов
- * Реализовываем этот интерфейс, оформляем jar как сервисный, кладем в папку plugins.
+ * Интерфейс для плагинов печати талонов. Нужен для добавления плагинов Реализовываем этот интерфейс, оформляем jar как сервисный, кладем в папку plugins.
+ *
  * @author Evgeniy Egorov
  */
 public interface IPrintTicket extends IExtra {
 
     /**
      * Печать талона.
+     *
      * @param customer Для него печатаем
      * @param caption Название конторы при печати из админки
      * @return true - Если все нормально напечатали.
@@ -36,9 +38,19 @@ public interface IPrintTicket extends IExtra {
 
     /**
      * Печать талона для предварительной записи
+     *
      * @param advCustomer Для него печатаем
-     * @param caption  Название конторы при печати из админки
+     * @param caption Название конторы при печати из админки
      * @return true - Если все нормально напечатали.
      */
     public boolean printTicketAdvance(final QAdvanceCustomer advCustomer, String caption);
+
+    /**
+     * Печать талона для предварительной записи
+     *
+     * @param customer Для него печатаем
+     * @param tm это деоево услуг чтоб в нем искать услуги по ID
+     * @return true - Если все нормально напечатали.
+     */
+    public boolean printTicketComplex(QCustomer customer, ATreeModel tm);
 }

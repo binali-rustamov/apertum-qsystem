@@ -80,7 +80,14 @@ public final class QTray {
      */
     @Override
     protected void finalize() {
-        removeTrayIcon();
+        try {
+            removeTrayIcon();
+        } finally {
+            try {
+                super.finalize();
+            } catch (Throwable ex) {
+            }
+        }
     }
 
     synchronized public static QTray getInstance(final JFrame frame, String resourceName, String hint) {
@@ -147,11 +154,11 @@ public final class QTray {
     }
     //***********************************************************************
     //*************** Работа с миганием *************************************
-    private int DELAY_BLINK = 500;
+    private final int DELAY_BLINK = 500;
     /**
      * Таймер мигания.
      */
-    private Timer timer = new Timer(DELAY_BLINK, new TimerPrinter());
+    private final Timer timer = new Timer(DELAY_BLINK, new TimerPrinter());
 
     /**
      * Собыите на таймер
@@ -197,6 +204,7 @@ public final class QTray {
 
     /**
      * Показать сообщение в системном трее
+     * @param caption
      * @param message текст сообщения
      * @param type тип сообщения
      */

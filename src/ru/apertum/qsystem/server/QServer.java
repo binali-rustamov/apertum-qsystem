@@ -18,6 +18,7 @@ package ru.apertum.qsystem.server;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import java.io.*;
@@ -53,8 +54,8 @@ import ru.apertum.qsystem.server.model.QUserList;
 import ru.apertum.qsystem.server.model.postponed.QPostponedList;
 
 /**
- * Класс старта и exit
- * инициализации сервера. Организация потоков выполнения заданий.
+ * Класс старта и exit инициализации сервера. Организация потоков выполнения заданий.
+ *
  * @author Evgeniy Egorov
  */
 public class QServer extends Thread {
@@ -64,12 +65,12 @@ public class QServer extends Thread {
 
     /**
      * @param args - первым параметром передается полное имя настроечного XML-файла
-     * @throws Exception 
+     * @throws Exception
      */
     public static void main(String[] args) throws Exception {
         QLog.initial(args, 0);
         Locale.setDefault(Locales.getInstance().getLangCurrent());
-        
+
         //Установка вывода консольных сообщений в нужной кодировке
         if ("\\".equals(File.separator)) {
             try {
@@ -80,7 +81,6 @@ public class QServer extends Thread {
                 System.out.println("Unable to setup console codepage: " + e);
             }
         }
-
 
         System.out.println("Welcome to the QSystem server. Your MySQL mast be prepared.");
         FAbout.loadVersionSt();
@@ -117,15 +117,13 @@ public class QServer extends Thread {
         System.out.println("Набирите 'exit' чтобы штатно остановить работу сервера.");
         System.out.println();
 
-
-
         final long start = System.currentTimeMillis();
 
         // Загрузка плагинов из папки plugins
         if (QLog.l().isPlaginable()) {
             Uses.loadPlugins("./plugins/");
         }
-        
+
         // посмотрим не нужно ли стартануть jetty
         // для этого нужно запускать с ключом http
         // если етсь ключ http, то запускаем сервер и принимаем на нем команды серверу суо
@@ -142,7 +140,6 @@ public class QServer extends Thread {
             }
         }
 
-
         // Отчетный сервер, выступающий в роли вэбсервера, обрабатывающего запросы на выдачу отчетов
         WebServer.getInstance().startWebServer(ServerProps.getInstance().getProps().getWebServerPort());
         // запускаем движок индикации сообщения для кастомеров
@@ -151,7 +148,6 @@ public class QServer extends Thread {
         loadPool();
 
         // test ServerProps.getInstance().getProps().getZoneBoardServAddrList();
-
         if (!(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getStartTime()).equals(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getFinishTime())))) {
             /**
              * Таймер, по которому будем Очистка всех услуг и рассылка спама с дневным отчетом.
@@ -194,7 +190,7 @@ public class QServer extends Thread {
             };
             clearServices.start();
         }
-        
+
         // привинтить сокет на локалхост, порт 3128
         final ServerSocket server;
         try {
@@ -226,7 +222,6 @@ public class QServer extends Thread {
             } catch (Exception e) {
                 throw new ServerException("Ошибка сети: " + e);
             }
-
 
             if (!QLog.l().isDebug()) {
                 final char ch = '*';
@@ -337,7 +332,7 @@ public class QServer extends Thread {
                 // полученное задание передаем в пул
                 final Object result = Executer.getInstance().doTask(rpc, socket.getInetAddress().getHostAddress(), socket.getInetAddress().getAddress());
                 answer = gson.toJson(result);
-            } catch (Exception ex){
+            } catch (Exception ex) {
                 QLog.l().logger().error("Поздно пойманная ошибка при выполнении команды. ", ex);
                 throw new ServerException("Поздно пойманная ошибка при выполнении команды: " + ex.getStackTrace());
             } finally {
@@ -449,7 +444,6 @@ public class QServer extends Thread {
             QLog.l().logger().warn("Восстановление состояние системы после вчерашнего... нештатного завершения работы сервера.");
             //восстанавливаем состояние
 
-
             final FileInputStream fis;
             try {
                 fis = new FileInputStream(recovFile);
@@ -467,26 +461,26 @@ public class QServer extends Thread {
                 throw new ServerException(ex);
             }
 
-
-
             final TempList recList;
             final Gson gson = GsonPool.getInstance().borrowGson();
             final RpcGetAdvanceCustomer rpc;
             try {
                 recList = gson.fromJson(rec_data, TempList.class);
-            } catch (JsonParseException ex) {
+            } catch (JsonSyntaxException ex) {
                 throw new ServerException("Не возможно интерпритировать сохраненные данные.\n" + ex.toString());
             } finally {
                 GsonPool.getInstance().returnGson(gson);
             }
-
-
 
             try {
                 QPostponedList.getInstance().loadPostponedList(recList.postponed);
                 for (QCustomer recCustomer : recList.backup) {
                     // в эту очередь он был
                     final QService service = QServiceTree.getInstance().getById(recCustomer.getService().getId());
+                    if (service == null) {
+                        QLog.l().logger().warn("Попытка добавить клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к услуге \"" + recCustomer.getService().getName() + "\" не успешна. Услуга не обнаружена!");
+                        continue;
+                    }
                     service.setCountPerDay(recCustomer.getService().getCountPerDay());
                     service.setDay(recCustomer.getService().getDay());
                     // так зовут юзера его обрабатываюшего
@@ -500,6 +494,10 @@ public class QServer extends Thread {
                         QLog.l().logger().debug("Добавили клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к услуге \"" + recCustomer.getService().getName() + "\"");
                     } else {
                         // сохраненный кастомер обрабатывался юзером с именем userId
+                        if (QUserList.getInstance().getById(user.getId()) == null) {
+                            QLog.l().logger().warn("Попытка добавить клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к юзеру \"" + user.getName() + "\" не успешна. Юзер не обнаружен!");
+                            continue;
+                        }
                         QUserList.getInstance().getById(user.getId()).setCustomer(recCustomer);
                         recCustomer.setUser(QUserList.getInstance().getById(user.getId()));
                         QLog.l().logger().debug("Добавили клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к юзеру \"" + user.getName() + "\"");
@@ -524,7 +522,6 @@ public class QServer extends Thread {
 
         QPostponedList.getInstance().clear();
         MainBoard.getInstance().clear();
-
 
         // Сотрем временные файлы
         deleteTempFile();

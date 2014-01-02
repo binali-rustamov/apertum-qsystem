@@ -24,6 +24,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import gnu.io.SerialPortEvent;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -41,6 +42,8 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -62,6 +65,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.tree.TreeNode;
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeException;
 import net.sourceforge.barbecue.BarcodeFactory;
@@ -87,19 +92,21 @@ import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.IClientNetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.extra.IPrintTicket;
+import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.apertum.qsystem.server.model.QService;
+import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.infosystem.QInfoItem;
 import ru.apertum.qsystem.server.model.response.QRespItem;
+import ru.evgenic.rxtx.serialPort.IReceiveListener;
 import ru.evgenic.rxtx.serialPort.ISerialPort;
 import ru.evgenic.rxtx.serialPort.RxtxSerialPort;
 
 /**
- * Модуль показа окна выбора услуги для постановки в очередь.
- * Created on 8 Сентябрь 2008 г., 16:07
- * Класс, который покажит форму с кнопками, соответствующими услуга.
- * При нажатии на кнопку, кастомер пытается встать в очередь.
+ * Модуль показа окна выбора услуги для постановки в очередь. Created on 8 Сентябрь 2008 г., 16:07 Класс, который покажит форму с кнопками, соответствующими
+ * услуга. При нажатии на кнопку, кастомер пытается встать в очередь.
+ *
  * @author Evgeniy Egorov
  */
 public class FWelcome extends javax.swing.JFrame {
@@ -153,8 +160,7 @@ public class FWelcome extends javax.swing.JFrame {
     protected static Date finishTime;
     protected static boolean btnFreeDesign;
     /**
-     * Информация для взаимодействия по сети.
-     * Формируется по данным из командной строки.
+     * Информация для взаимодействия по сети. Формируется по данным из командной строки.
      */
     public static IClientNetProperty netProperty;
     /**
@@ -169,7 +175,7 @@ public class FWelcome extends javax.swing.JFrame {
     //******************************************************************************************************************
     //*****************************************Сервер удаленного управления ********************************************
     /**
-     * 
+     *
      */
     private final Thread server = new Thread(new CommandServer());
     /**
@@ -319,7 +325,7 @@ public class FWelcome extends javax.swing.JFrame {
 
     /**
      * @param args the command line arguments
-     * @throws Exception 
+     * @throws Exception
      */
     public static void main(final String args[]) throws Exception {
         QLog.initial(args, 4);
@@ -349,14 +355,144 @@ public class FWelcome extends javax.swing.JFrame {
         FWelcome.startTime = servs.getStartTime();
         FWelcome.finishTime = servs.getFinishTime();
         FWelcome.btnFreeDesign = servs.getButtonFreeDesign();
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        if (QLog.l().isButtons()) {
+            // ***************************************************************************************************************************************
+            // ***  Это кнопочный терминал
+            // ***************************************************************************************************************************************
+            QLog.l().logger().info("Кнопочный режим пункта регистрации включен.");
 
-            @Override
-            public void run() {
-                final FWelcome w = new FWelcome(root);
-                w.setVisible(true);
+            final GregorianCalendar gc = new GregorianCalendar();
+            gc.setTime(startTime);
+            final long stime = gc.get(GregorianCalendar.HOUR_OF_DAY) * 60 + gc.get(GregorianCalendar.MINUTE);
+            gc.setTime(finishTime);
+            final long ftime = gc.get(GregorianCalendar.HOUR_OF_DAY) * 60 + gc.get(GregorianCalendar.MINUTE);
+
+            final HashMap<Byte, QService> addrs = new HashMap<>();
+            final File addrFile = new File("config/buttons.adr");
+            try (FileInputStream fis = new FileInputStream(addrFile); Scanner s = new Scanner(fis)) {
+                while (s.hasNextLine()) {
+                    final String line = s.nextLine().trim();
+                    if (!line.startsWith("#")) {
+                        final String[] ss = line.split("=");
+                        QServiceTree.sailToStorm(root, new ISailListener() {
+
+                            @Override
+                            public void actionPerformed(TreeNode service) {
+                                if (((QService) service).getId().equals(Long.valueOf(ss[1]))) {
+                                    QLog.l().logger().debug(ss[0] + " = " + ss[1] + " " + ((QService) service).getName());
+                                    addrs.put(Byte.valueOf(ss[0]), (QService) service);
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch (IOException ex) {
+                System.err.println(ex);
+                throw new RuntimeException(ex);
             }
-        });
+
+            serialPort = new RxtxSerialPort(WelcomeParams.getInstance().buttons_COM);
+            serialPort.setDataBits(WelcomeParams.getInstance().buttons_databits);
+            serialPort.setParity(WelcomeParams.getInstance().buttons_parity);
+            serialPort.setSpeed(WelcomeParams.getInstance().buttons_speed);
+            serialPort.setStopBits(WelcomeParams.getInstance().buttons_stopbits);
+            serialPort.bind(new IReceiveListener() {
+
+                @Override
+                public void actionPerformed(SerialPortEvent spe, byte[] bytes) {
+                    final GregorianCalendar gc = new GregorianCalendar();
+                    final long now = gc.get(GregorianCalendar.HOUR_OF_DAY) * 60 + gc.get(GregorianCalendar.MINUTE);
+                    if (now > stime && now < ftime) {
+                        if (bytes.length == 4 && bytes[0] == 0x01 && bytes[3] == 0x07) {
+                            final QService serv = addrs.get(bytes[2]);
+                            if (addrs.get(bytes[2]) == null) {
+                                QLog.l().logger().error("Не найдена услуга по нажатию кнопки " + bytes[2]);
+                                return;
+                            }
+                            final QCustomer customer;
+                            try {
+                                customer = NetCommander.standInService(netProperty, serv.getId(), "1", 1, "");
+                            } catch (Exception ex) {
+                                QLog.l().logger().error("Не поставлен в очередь в " + serv.getName() + "  ID=" + serv.getId(), ex);
+                                return;
+                            }
+                            FWelcome.printTicket(customer, root.getName());
+                        } else {
+                            String s = "";
+                            for (byte b : bytes) {
+                                s = s + (b & 0xFF) + "_";
+                            }
+                            QLog.l().logger().error("Collision! Package lenght not 4 bytes or broken: \"" + s + "\"");
+                        }
+                    } else {
+                        QLog.l().logger().warn("Не поставлен в очередь т.к. не приемные часы в " + new Date());
+                    }
+                }
+
+                @Override
+                public void actionPerformed(SerialPortEvent spe) {
+                }
+            });
+            int pos = 0;
+            boolean exit = false;
+            // индикатор
+            while (!exit) {
+                Thread.sleep(1500);
+                // ждём нового подключения, после чего запускаем обработку клиента
+                // в новый вычислительный поток и увеличиваем счётчик на единичку
+
+                if (!QLog.l().isDebug()) {
+                    final char ch = '*';
+                    String progres = "Process: " + ch;
+                    final int len = 5;
+                    for (int i = 0; i < pos; i++) {
+                        progres = progres + ch;
+                    }
+                    for (int i = 0; i < len; i++) {
+                        progres = progres + ' ';
+                    }
+                    if (++pos == len) {
+                        pos = 0;
+                    }
+                    System.out.print(progres);
+                    System.out.write(13);// '\b' - возвращает корретку на одну позицию назад
+                }
+
+                // Попробуем считать нажатую клавишу
+                // если нажади ENTER, то завершаем работу сервера
+                // и затираем файл временного состояния Uses.TEMP_STATE_FILE
+                //BufferedReader r = new BufferedReader(new StreamReader(System.in));
+                int bytesAvailable = System.in.available();
+                if (bytesAvailable > 0) {
+                    byte[] data = new byte[bytesAvailable];
+                    System.in.read(data);
+                    if (bytesAvailable == 5
+                            && data[0] == 101
+                            && data[1] == 120
+                            && data[2] == 105
+                            && data[3] == 116
+                            && ((data[4] == 10) || (data[4] == 13))) {
+                        // набрали команду "exit" и нажали ENTER
+                        QLog.l().logger().info("Завершение работы сервера.");
+                        exit = true;
+                    }
+                }
+            }// while
+            serialPort.free();
+            // ***************************************************************************************************************************************
+        } else {
+            // ***************************************************************************************************************************************
+            // ***  Это тачевый терминал
+            // ***************************************************************************************************************************************
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    final FWelcome w = new FWelcome(root);
+                    w.setVisible(true);
+                }
+            });
+        }
     }
 
     public FWelcome(QService root) {
@@ -479,10 +615,9 @@ public class FWelcome extends javax.swing.JFrame {
         showButtons(root, panelMain);
     }
     /**
-     * Это когда происходит авторизация клиента при постановке в очередь,
-     * например перед выбором услуге в регистуре, то сюда попадает ID этого авторизованного пользователя.
-     * Дальше этот ID передать в команду постановки предварительного и там если по нему найдется этот клиент, то он
-     * должен попасть в табличку предварительно зарегиных.
+     * Это когда происходит авторизация клиента при постановке в очередь, например перед выбором услуге в регистуре, то сюда попадает ID этого авторизованного
+     * пользователя. Дальше этот ID передать в команду постановки предварительного и там если по нему найдется этот клиент, то он должен попасть в табличку
+     * предварительно зарегиных.
      */
     public long advancedCustomer = -1;
 
@@ -524,6 +659,7 @@ public class FWelcome extends javax.swing.JFrame {
 
     /**
      * Создаем и расставляем кнопки по форме.
+     *
      * @param current уровень отображения кнопок.
      * @param panel
      */
@@ -711,7 +847,6 @@ public class FWelcome extends javax.swing.JFrame {
                 }
                 write(num, ++line + 2, x, 6, 3);
 
-
                 line = line + 3;
 
                 write(getLocaleMessage("ticket.service"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
@@ -739,7 +874,7 @@ public class FWelcome extends javax.swing.JFrame {
 
                 write(getLocaleMessage("ticket.time"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
 
-                write(Locales.getInstance().isRuss ? Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm") : Uses.format_for_label.format(customer.getStandTime()), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                write(Locales.getInstance().isRuss ? Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm") : (Locales.getInstance().isUkr ? Uses.getUkrDate(customer.getStandTime(), "dd MMMM HH:mm") : Uses.format_for_label.format(customer.getStandTime())), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (customer.getService().getInput_required()) {
                     write(customer.getService().getTextToLocale(QService.Field.INPUT_CAPTION).replaceAll("<.*?>", ""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
@@ -890,7 +1025,6 @@ public class FWelcome extends javax.swing.JFrame {
             }
         }
 
-
         final Printable canvas = new Printable() {
 
             private int write(String text, int line, int x, double kx, double ky) {
@@ -931,7 +1065,6 @@ public class FWelcome extends javax.swing.JFrame {
                 write(Locales.getInstance().isRuss ? Uses.getRusDate(gc_time.getTime(), Uses.DATE_FORMAT_FULL) : Uses.format_dd_MMMM_yyyy.format(gc_time.getTime()), ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
                 //write(FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + (t) + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00", ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
                 write(FWelcome.getLocaleMessage("qbutton.take_adv_ticket_come_to") + " " + (t) + ":" + t_m, ++line + 1, WelcomeParams.getInstance().leftMargin, 2, 1);
-
 
                 line = line + 2;
 
@@ -1152,7 +1285,6 @@ public class FWelcome extends javax.swing.JFrame {
 
                 int line = 1;
 
-
                 write(caption, ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1.5, pageIndex);
                 ++line;
                 // напечатаем текст подсказки
@@ -1176,7 +1308,6 @@ public class FWelcome extends javax.swing.JFrame {
                 for (String string : strings) {
                     write(string, ++line, WelcomeParams.getInstance().leftMargin, 1, 1, pageIndex);
                 }
-
 
                 write(".", line + 2, 0, 1, 1, pageIndex);
 
@@ -1270,6 +1401,7 @@ public class FWelcome extends javax.swing.JFrame {
 
     /**
      * Заблокировать пункт постановки в очередь.
+     *
      * @param message Сообщение, которое выведется на экран пункта.
      */
     public void lock(String message) {
@@ -1339,10 +1471,9 @@ public class FWelcome extends javax.swing.JFrame {
     };
     //==================================================================================================================
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -1713,6 +1844,7 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     /**
      * Переключение режима постановки в очередь и предварительной записи
+     *
      * @param advanceRegim true - предварительная запись, false - встать в очередь
      */
     public void setAdvanceRegim(boolean advanceRegim) {
@@ -1742,6 +1874,7 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     /**
      * Заставка на некоторый таймаут
+     *
      * @param text текст на заставке
      * @param imagePath картинка на заставке
      * @return
@@ -1759,17 +1892,27 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         };
         clock.start();
         clearPanel(panelMain);
-        panelMain.setLayout(new GridLayout(1, 1, 1, 1));
+        panelMain.setLayout(new GridLayout(2, 1, 50, 1));
         labelInfo.setText(text);
         labelInfo.setHorizontalAlignment(JLabel.CENTER);
-        labelInfo.setIcon(new ImageIcon(getClass().getResource(imagePath)));
+        labelInfo.setVerticalAlignment(JLabel.BOTTOM);
+        labelInfo.setVerticalTextPosition(SwingConstants.BOTTOM);
+        labelInfo.setHorizontalTextPosition(SwingConstants.LEFT);
+        
+        labelInfo2.setIcon(new ImageIcon(getClass().getResource(imagePath)));
+        //labelInfo2.setIcon(new ImageIcon("E:/WORK/apertum-qsystem/temp/resources/down.png"));
+        labelInfo2.setHorizontalTextPosition(SwingConstants.CENTER);
+        labelInfo2.setHorizontalAlignment(JLabel.CENTER);
+        
         panelMain.add(labelInfo);
+        panelMain.add(labelInfo2);
         labelInfo.setBounds(0, 0, 200, 200);
         panelMain.repaint();
         labelInfo.repaint();
         return clock;
     }
     private JLabel labelInfo = new JLabel();
+    private JLabel labelInfo2 = new JLabel();
 
 private void buttonAdvanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAdvanceActionPerformed
     setAdvanceRegim(!isAdvanceRegim());

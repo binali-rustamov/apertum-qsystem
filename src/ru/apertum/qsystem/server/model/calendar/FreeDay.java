@@ -14,7 +14,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ru.apertum.qsystem.server.model.calendar;
 
 import java.io.Serializable;
@@ -53,11 +52,8 @@ public class FreeDay implements Serializable {
     public int hashCode() {
         final GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(date);
-        return (int) (gc.get(GregorianCalendar.DAY_OF_YEAR ) + getCalendarId() * 1000);
+        return (int) (gc.get(GregorianCalendar.YEAR) * 1000 + gc.get(GregorianCalendar.DAY_OF_YEAR) + getCalendarId() * 100000000);
     }
-    
-    
-    
 
     public FreeDay() {
     }
@@ -77,7 +73,6 @@ public class FreeDay implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-
     @Column(name = "out_day")
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date date;
@@ -89,7 +84,6 @@ public class FreeDay implements Serializable {
     public void setDate(Date date) {
         this.date = date;
     }
-
     @Column(name = "calendar_id")
     private Long calendarId;
 
@@ -106,6 +100,6 @@ public class FreeDay implements Serializable {
         gc.setTime(date);
         final GregorianCalendar gc2 = new GregorianCalendar();
         gc2.setTime(getDate());
-        return (gc.get(GregorianCalendar.DAY_OF_YEAR) == gc2.get(GregorianCalendar.DAY_OF_YEAR));
+        return (gc.get(GregorianCalendar.DAY_OF_YEAR) == gc2.get(GregorianCalendar.DAY_OF_YEAR) && gc.get(GregorianCalendar.YEAR) == gc2.get(GregorianCalendar.YEAR));
     }
 }

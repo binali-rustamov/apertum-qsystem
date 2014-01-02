@@ -419,6 +419,21 @@ public class QUser implements IidGetter, Serializable {
         shadow = new Shadow(cust);
         shadow.setFinTime(null);
     }
+    /**
+     * Типо не набрасывать сюда посетителей при маршрутизации в списке услуг.
+     */
+    @Expose
+    @SerializedName("pause")
+    public Boolean pause = false;
+
+    @Transient
+    public Boolean isPause() {
+        return pause;
+    }
+
+    public void setPause(Boolean pause) {
+        this.pause = pause;
+    }
     @Expose
     @SerializedName("shadow")
     private Shadow shadow = null;

@@ -19,6 +19,7 @@ package ru.apertum.qsystem.server.controller;
 import org.dom4j.Element;
 import ru.apertum.qsystem.client.forms.AFBoardRedactor;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.extra.IExtra;
 import ru.apertum.qsystem.server.model.QUser;
 
 /**
@@ -26,7 +27,7 @@ import ru.apertum.qsystem.server.model.QUser;
  * Имеет методы для конфигурирования.
  * @author Evgeniy Egorov
  */
-public interface IIndicatorBoard {
+public interface IIndicatorBoard extends IExtra {
 
     /**
      * На табло по определенному адресу должен замигать номер вызываемого клиента.
