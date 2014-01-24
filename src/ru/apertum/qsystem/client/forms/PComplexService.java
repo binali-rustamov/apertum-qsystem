@@ -94,7 +94,6 @@ public class PComplexService extends javax.swing.JPanel {
         }
         return localeMap.getString(key);
     }
-
     final private File configFile;
     final IClientNetProperty netProperty;
 
@@ -125,6 +124,7 @@ public class PComplexService extends javax.swing.JPanel {
         listServ5.setModel(new DefaultListModel<QService>());
         listServ5.setTransferHandler(thList);
         treeServices.setTransferHandler(new TransferHandler() {
+
             @Override
             public int getSourceActions(JComponent c) {
                 return MOVE;
@@ -207,11 +207,17 @@ public class PComplexService extends javax.swing.JPanel {
         loadState();
     }
 
-    private final TransferHandler thList = new TransferHandler() {
-
-        private boolean isGood(QService data) {
-            boolean flag = true;
-            DefaultListModel<QService> sl = (DefaultListModel<QService>) (listFreeServices.getModel());
+    private boolean isGood(QService data) {
+        boolean flag = true;
+        DefaultListModel<QService> sl = (DefaultListModel<QService>) (listFreeServices.getModel());
+        for (Object o : sl.toArray()) {
+            if (((QService) o).getId().equals(data.getId())) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) {
+            sl = (DefaultListModel<QService>) (listServ1.getModel());
             for (Object o : sl.toArray()) {
                 if (((QService) o).getId().equals(data.getId())) {
                     flag = false;
@@ -219,7 +225,7 @@ public class PComplexService extends javax.swing.JPanel {
                 }
             }
             if (flag) {
-                sl = (DefaultListModel<QService>) (listServ1.getModel());
+                sl = (DefaultListModel<QService>) (listServ2.getModel());
                 for (Object o : sl.toArray()) {
                     if (((QService) o).getId().equals(data.getId())) {
                         flag = false;
@@ -227,7 +233,7 @@ public class PComplexService extends javax.swing.JPanel {
                     }
                 }
                 if (flag) {
-                    sl = (DefaultListModel<QService>) (listServ2.getModel());
+                    sl = (DefaultListModel<QService>) (listServ3.getModel());
                     for (Object o : sl.toArray()) {
                         if (((QService) o).getId().equals(data.getId())) {
                             flag = false;
@@ -235,7 +241,7 @@ public class PComplexService extends javax.swing.JPanel {
                         }
                     }
                     if (flag) {
-                        sl = (DefaultListModel<QService>) (listServ3.getModel());
+                        sl = (DefaultListModel<QService>) (listServ4.getModel());
                         for (Object o : sl.toArray()) {
                             if (((QService) o).getId().equals(data.getId())) {
                                 flag = false;
@@ -243,23 +249,12 @@ public class PComplexService extends javax.swing.JPanel {
                             }
                         }
                         if (flag) {
-                            sl = (DefaultListModel<QService>) (listServ4.getModel());
+                            sl = (DefaultListModel<QService>) (listServ5.getModel());
                             for (Object o : sl.toArray()) {
                                 if (((QService) o).getId().equals(data.getId())) {
                                     flag = false;
                                     break;
                                 }
-                            }
-                            if (flag) {
-                                sl = (DefaultListModel<QService>) (listServ5.getModel());
-                                for (Object o : sl.toArray()) {
-                                    if (((QService) o).getId().equals(data.getId())) {
-                                        flag = false;
-                                        break;
-                                    }
-                                }
-                            } else {
-                                return false;
                             }
                         } else {
                             return false;
@@ -273,8 +268,12 @@ public class PComplexService extends javax.swing.JPanel {
             } else {
                 return false;
             }
-            return flag;
+        } else {
+            return false;
         }
+        return flag;
+    }
+    private final TransferHandler thList = new TransferHandler() {
 
         @Override
         public boolean canImport(TransferHandler.TransferSupport info) {
@@ -378,6 +377,16 @@ public class PComplexService extends javax.swing.JPanel {
         treeServices.setBorder(javax.swing.BorderFactory.createTitledBorder("Оказываемые услуги"));
         treeServices.setDragEnabled(true);
         treeServices.setDropMode(javax.swing.DropMode.ON);
+        treeServices.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                treeServicesMouseClicked(evt);
+            }
+        });
+        treeServices.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                treeServicesKeyPressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(treeServices);
 
         jSplitPane1.setLeftComponent(jScrollPane1);
@@ -576,7 +585,7 @@ public class PComplexService extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1020,7 +1029,6 @@ public class PComplexService extends javax.swing.JPanel {
                 }
                 return line;
             }
-
             Graphics2D g2;
 
             @Override
@@ -1208,7 +1216,6 @@ public class PComplexService extends javax.swing.JPanel {
         }
     }
 
-
     private void listOfListsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listOfListsMouseClicked
         if (evt.getClickCount() > 1) {
             final JList list = ((JList) (evt.getComponent()));
@@ -1221,6 +1228,25 @@ public class PComplexService extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_listOfListsMouseClicked
+
+    private void treeServicesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeServicesMouseClicked
+        final TreePath selectedPath = treeServices.getSelectionPath();
+        if (selectedPath != null) {
+            if (evt == null || evt.getClickCount() > 1) {
+                final QService service = (QService) selectedPath.getLastPathComponent();
+                final DefaultListModel<QService> sl = (DefaultListModel<QService>) (listFreeServices.getModel());
+                if (service.isLeaf() && isGood((QService) service)) {
+                    sl.addElement((QService) service);
+                }
+            }
+        }
+    }//GEN-LAST:event_treeServicesMouseClicked
+
+    private void treeServicesKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_treeServicesKeyPressed
+        if (evt.getKeyCode() == 10 || evt.getKeyCode() == 32) {
+            treeServicesMouseClicked(null);
+        }
+    }//GEN-LAST:event_treeServicesKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonClearLists;
