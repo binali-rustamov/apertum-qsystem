@@ -21,7 +21,11 @@ import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import javafx.application.Platform;
@@ -47,6 +51,8 @@ public class VideoPlayer extends JPanel {
 
     public VideoPlayer() {
         javafxPanel = new JFXPanel();
+        javafxPanel.setOpaque(false);
+        setOpaque(false);
         GridLayout gl = new GridLayout(1, 1);
         setLayout(gl);
         add(javafxPanel, BorderLayout.CENTER);
@@ -59,7 +65,7 @@ public class VideoPlayer extends JPanel {
                 final Scene scene = new Scene(root);
                 createJavaFXContent(root);
                 javafxPanel.setScene(scene);
-                scene.setFill(new Color(0, 0, 0, 1));
+                scene.setFill(new Color(0, 0, 0, 0));
             }
 
             private void createJavaFXContent(Group root) {
@@ -127,25 +133,70 @@ public class VideoPlayer extends JPanel {
 
     private String getNextVideoFile() {
         if (videoFiles == null || pos >= videoFiles.length - 1) {
-            videoFiles = new File(videoResourcePath).list();
+            if (new File(videoResourcePath).isDirectory()) {
+                // ролики в папке
+                videoFiles = new File(videoResourcePath).list();
+                int i = 0;
+                for (String string : videoFiles) {
+                    videoFiles[i++] = videoResourcePath + (videoResourcePath.substring(videoResourcePath.length() - 1).equals("/") ? "" : "/") + string;
+                }
+            } else {
+                // список роликов в текстовом файле построчно
+                try (FileInputStream fis = new FileInputStream(videoResourcePath); Scanner s = new Scanner(fis)) {
+                    final LinkedList<String> l = new LinkedList<>();
+                    while (s.hasNextLine()) {
+                        final String line = s.nextLine().trim();
+                        if (!line.startsWith("#") && new File(line).isFile()) {
+                            l.add(line);
+                        }
+                    }
+                    videoFiles = l.toArray(new String[0]);
+                } catch (IOException ex) {
+                    System.err.println(ex);
+                    throw new RuntimeException(ex);
+                }
+            }
+
             pos = -1;
         }
         //выберем файл
-        String fl = videoResourcePath + (videoResourcePath.substring(videoResourcePath.length() - 1).equals("/") ? "" : "/") + videoFiles[++pos];
+        String fl = videoFiles[++pos];
         // проверим его на существование или найдем существующий далее по списку
         while (pos < videoFiles.length - 1 && !new File(fl).exists()) {
-            fl = videoResourcePath + (videoResourcePath.substring(videoResourcePath.length() - 1).equals("/") ? "" : "/") + videoFiles[++pos];
+            fl = videoFiles[++pos];
         }
         if (new File(fl).exists()) {
             // если нашли существующий то ок
             return fl;
         } else {
-            // перечитаем набор файлов из папки
-            videoFiles = new File(videoResourcePath).list();
+            // перечитаем набор файлов
+            if (new File(videoResourcePath).isDirectory()) {
+                // ролики в папке
+                videoFiles = new File(videoResourcePath).list();
+                int i = 0;
+                for (String string : videoFiles) {
+                    videoFiles[i++] = videoResourcePath + (videoResourcePath.substring(videoResourcePath.length() - 1).equals("/") ? "" : "/") + string;
+                }
+            } else {
+                // список роликов в текстовом файле построчно
+                try (FileInputStream fis = new FileInputStream(videoResourcePath); Scanner s = new Scanner(fis)) {
+                    final LinkedList<String> l = new LinkedList<>();
+                    while (s.hasNextLine()) {
+                        final String line = s.nextLine().trim();
+                        if (!line.startsWith("#") && new File(line).isFile()) {
+                            l.add(line);
+                        }
+                    }
+                    videoFiles = l.toArray(new String[0]);
+                } catch (IOException ex) {
+                    System.err.println(ex);
+                    throw new RuntimeException(ex);
+                }
+            }
             pos = -1;
-            fl = videoResourcePath + (videoResourcePath.substring(videoResourcePath.length() - 1).equals("/") ? "" : "/") + videoFiles[++pos];
+            fl = videoFiles[++pos];
             while (pos < videoFiles.length && !new File(fl).exists()) {
-                fl = videoResourcePath + (videoResourcePath.substring(videoResourcePath.length() - 1).equals("/") ? "" : "/") + videoFiles[++pos];
+                fl = videoFiles[++pos];
             }
             if (new File(fl).exists()) {
                 return fl;
@@ -161,7 +212,7 @@ public class VideoPlayer extends JPanel {
         videoFiles = null;
         this.videoResourcePath = videoResourcePath;
         File f = new File(videoResourcePath);
-        if (f.isDirectory()) {
+        if (f.isDirectory() || f.getName().endsWith(".txt")) {
             final String vf = getNextVideoFile();
             if (vf != null) {
                 if (!setVideoFile(vf, 1)) {

@@ -14,7 +14,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ru.apertum.qsystem.server.model.monitorium;
 
 import java.util.LinkedHashSet;
@@ -41,12 +40,12 @@ public class QMonitoriumBoard extends AIndicatorBoard {
 
     @Override
     protected void showOnBoard(LinkedHashSet<Record> records) {
-       // throw new UnsupportedOperationException("Not supported yet.");
+        // throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     protected void showToUser(Record record) {
-       // throw new UnsupportedOperationException("Not supported yet.");
+        // throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -61,7 +60,7 @@ public class QMonitoriumBoard extends AIndicatorBoard {
 
     @Override
     public void saveConfig(Element element) {
-       // throw new UnsupportedOperationException("Not supported yet.");
+        // throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

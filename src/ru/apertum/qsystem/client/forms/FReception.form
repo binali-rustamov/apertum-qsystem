@@ -35,6 +35,20 @@
             <Property name="name" type="java.lang.String" value="menuItemAdv" noResource="true"/>
           </Properties>
         </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator4">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="jSeparator4" noResource="true"/>
+          </Properties>
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="menuItemServDisable">
+          <Properties>
+            <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
+              <action class="ru.apertum.qsystem.client.forms.FReception" id="serviceDisable" methodName="serviceDisable"/>
+            </Property>
+            <Property name="text" type="java.lang.String" resourceKey="menuItemServDisable.text"/>
+            <Property name="name" type="java.lang.String" value="menuItemServDisable" noResource="true"/>
+          </Properties>
+        </MenuItem>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPopupMenu" name="popupLineList">

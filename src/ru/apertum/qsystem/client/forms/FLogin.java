@@ -1,18 +1,18 @@
 /*
- *  Copyright (C) 2010 {Apertum}Projects. web: www.apertum.ru email: info@apertum.ru
+ * Copyright (C) 2014 Evgeniy Egorov
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ru.apertum.qsystem.client.forms;
 
@@ -20,28 +20,34 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Scanner;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.help.Helper;
 import ru.apertum.qsystem.common.NetCommander;
-import ru.apertum.qsystem.client.model.QPanel;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.model.INetProperty;
+import ru.apertum.qsystem.hibernate.AnnotationSessionFactoryBean;
+import ru.apertum.qsystem.server.Spring;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.QUserList;
-import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.common.exceptions.ClientException;
 
 /**
- * Created on 27 Февраль 2009 г., 14:32
+ *
  * @author Evgeniy Egorov
  */
 public class FLogin extends javax.swing.JDialog {
@@ -61,7 +67,6 @@ public class FLogin extends javax.swing.JDialog {
     private INetProperty netProperty;
     private QUserList userList;
     private JFrame parent;
-    
     /**
      * Уровни логирования
      */
@@ -80,6 +85,7 @@ public class FLogin extends javax.swing.JDialog {
     final public void setLevel(int level) {
         this.level = level;
         passwordField.setText("");
+        labelServer.setText("");
         switch (level) {
             case LEVEL_USER:
                 labelLavel.setText(LABEL_USER);
@@ -88,6 +94,10 @@ public class FLogin extends javax.swing.JDialog {
                 labelLavel.setText(LABEL_REPORT);
                 break;
             case LEVEL_ADMIN:
+                final AnnotationSessionFactoryBean as = (AnnotationSessionFactoryBean) Spring.getInstance().getFactory().getBean("conf");
+                if (as.getServers().size() > 1) {
+                    labelServer.setText("<html>" + as.getName() + "<br>" + as.getUrl());
+                }
                 labelLavel.setText(LABEL_ADMIN);
                 break;
             default:
@@ -114,7 +124,9 @@ public class FLogin extends javax.swing.JDialog {
      */
     private static FLogin loginForm;
 
-    /** Creates new form FLogin
+    /**
+     * Creates new form FLogin
+     *
      * @param netProperty
      * @param parent
      * @param modal
@@ -137,7 +149,7 @@ public class FLogin extends javax.swing.JDialog {
 
         final LinkedList<QUser> users = NetCommander.getUsers(netProperty);
 
-        ArrayList<QUser>users_ = new ArrayList<>();
+        ArrayList<QUser> users_ = new ArrayList<>();
         for (QUser user : users) {
             boolean flag = false;
             switch (getLevel()) {
@@ -161,28 +173,57 @@ public class FLogin extends javax.swing.JDialog {
 
     /**
      * Чтоб не дублировать код
+     *
      * @param str список пользователей
      */
     private void afterCreate(Object[] users) {
+        jLabel1.setText(getLocaleMessage("jLabel1.text"));
+        jLabel2.setText(getLocaleMessage("jLabel2.text"));
+        buttonEnter.setText(getLocaleMessage("pressOK.Action.text"));
+        buttonExit.setText(getLocaleMessage("pressCancel.Action.text"));
+        FAbout.loadVersionSt();
+        labelName.setText(FAbout.NAME_);
         DefaultComboBoxModel m = new DefaultComboBoxModel(users);
         comboBoxUser.setModel(m);
+        final File f = new File("temp/lusr");
+        if (f.exists()) {
+            String str = "";
+            try (FileInputStream fis = new FileInputStream(f); Scanner s = new Scanner(new InputStreamReader(fis, "UTF-8"))) {
+                while (s.hasNextLine()) {
+                    final String line = s.nextLine().trim();
+                    str += line;
+                }
+            } catch (IOException ex) {
+            }
+            if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?")) {
+                for (int i = 0; i < m.getSize(); i++) {
+                    if (((QUser) (m.getElementAt(i))).getId().equals(Long.parseLong(str))) {
+                        m.setSelectedItem(m.getElementAt(i));
+                        break;
+                    }
+                }
+            }
+        }
         //привязка помощи к форме.
         final Helper helper = Helper.getHelp(level == LEVEL_ADMIN ? "ru/apertum/qsystem/client/help/admin.hs" : "ru/apertum/qsystem/client/help/client.hs");
-        helper.enableHelpKey(jPanel1, "loginning");
+        helper.enableHelpKey(qPanel1, "loginning");
         addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowOpened(WindowEvent e) {
                 labelLavel.setLocation(2, getHeight() - 15);
+                labelServer.setLocation(5, getHeight() - 45);
             }
         });
     }
 
-    /** Creates new form FLogin
+    /**
+     * Creates new form FLogin
+     *
      * @param userList
      * @param parent
      * @param modal
-     * @param level 
+     * @param level
      */
     public FLogin(QUserList userList, JFrame parent, boolean modal, int level) {
         super(parent, modal);
@@ -199,7 +240,7 @@ public class FLogin extends javax.swing.JDialog {
         this.userGetter = new GetUserFromList();
         setLevel(level);
 
-        ArrayList<QUser>users_ = new ArrayList<>();
+        ArrayList<QUser> users_ = new ArrayList<>();
         for (QUser usr : userList.getItems()) {
             boolean flag = false;
             switch (getLevel()) {
@@ -222,8 +263,8 @@ public class FLogin extends javax.swing.JDialog {
     }
 
     /**
-     * Логирование без предварительно созданного списка пользователей.
-     * Этот список определяется путем отправки задания на сервер.
+     * Логирование без предварительно созданного списка пользователей. Этот список определяется путем отправки задания на сервер.
+     *
      * @param netProperty свойства коннекта
      * @param owner относительно этого контрола модальность и позиционирование
      * @param modal режим модальности
@@ -253,11 +294,20 @@ public class FLogin extends javax.swing.JDialog {
             System.exit(0);
         }
         QLog.l().logger().info("Вход в систему выполнен. Пользователь \"" + loginForm.comboBoxUser.getSelectedItem() + "\", уровень доступа \"" + level + "\".");
-        return  (QUser) loginForm.comboBoxUser.getSelectedItem();
+        final File f = new File("temp/lusr");
+        try {
+            try (FileOutputStream fos = new FileOutputStream(f)) {
+                fos.write(((QUser) loginForm.comboBoxUser.getSelectedItem()).getId().toString().getBytes());
+                fos.flush();
+            }
+        } catch (IOException ex) {
+        }
+        return (QUser) loginForm.comboBoxUser.getSelectedItem();
     }
 
     /**
      * Логирование имея уже готовый список возможных пользователей для логирования.
+     *
      * @param userList список пользователей
      * @param owner относительно этого контрола модальность и позиционирование
      * @param modal режим модальности
@@ -287,6 +337,14 @@ public class FLogin extends javax.swing.JDialog {
             System.exit(0);
         }
         QLog.l().logger().info("Вход в систему выполнен. Пользователь \"" + loginForm.comboBoxUser.getSelectedItem() + "\", уровень доступа \"" + level + "\".");
+        final File f = new File("temp/lusr");
+        try {
+            try (FileOutputStream fos = new FileOutputStream(f)) {
+                fos.write(loginForm.userGetter.getUser().getId().toString().getBytes());
+                fos.flush();
+            }
+        } catch (IOException ex) {
+        }
         return loginForm.userGetter.getUser();
     }
 
@@ -345,7 +403,6 @@ public class FLogin extends javax.swing.JDialog {
         return true;
     }
 
-    @Action
     public void pressOK() {
         ok = checkLogin();
         if (ok) {
@@ -358,190 +415,332 @@ public class FLogin extends javax.swing.JDialog {
         }
     }
 
-    @Action
     public void pressCancel() {
         System.exit(0);
     }
+
+    private void keyPress(java.awt.event.KeyEvent evt) {
+
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            pressOK();
+        }
+        if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            System.exit(0);
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new QPanel("/ru/apertum/qsystem/client/forms/resources/fon_login.jpg");
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        comboBoxUser = new javax.swing.JComboBox();
-        passwordField = new javax.swing.JPasswordField();
-        jLabel3 = new javax.swing.JLabel();
+        qPanel1 = new ru.apertum.qsystem.client.model.QPanel();
+        labelLavel = new javax.swing.JLabel();
+        labelServer = new javax.swing.JLabel();
         buttonEnter = new javax.swing.JButton();
         buttonExit = new javax.swing.JButton();
-        labelLavel = new javax.swing.JLabel();
+        comboBoxUser = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
+        passwordField = new javax.swing.JPasswordField();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        labelName = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        jPanel6 = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
+        labelLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setName("Form"); // NOI18N
-        setResizable(false);
         setUndecorated(true);
-        addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                keyPress(evt);
+        setResizable(false);
+
+        qPanel1.setBorder(new javax.swing.border.MatteBorder(null));
+        qPanel1.setBackgroundImgage("/ru/apertum/qsystem/client/forms/resources/fon_login.jpg");
+
+        labelLavel.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        labelLavel.setForeground(new java.awt.Color(255, 0, 0));
+        labelLavel.setText("ComponentOfSystem");
+
+        labelServer.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        labelServer.setForeground(new java.awt.Color(255, 255, 0));
+        labelServer.setText("serverBD");
+
+        buttonEnter.setText("Enter");
+        buttonEnter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonEnterActionPerformed(evt);
             }
         });
-
-        jPanel1.setBorder(new javax.swing.border.MatteBorder(null));
-        jPanel1.setName("jPanel1"); // NOI18N
-
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FLogin.class);
-        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
-        jLabel1.setName("jLabel1"); // NOI18N
-
-        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
-        jLabel2.setName("jLabel2"); // NOI18N
-
-        comboBoxUser.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        comboBoxUser.setName("comboBoxUser"); // NOI18N
-        comboBoxUser.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                comboBoxUserKeyPressed(evt);
-            }
-        });
-
-        passwordField.setText(resourceMap.getString("passwordField.text")); // NOI18N
-        passwordField.setName("passwordField"); // NOI18N
-        passwordField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                passwordFieldKeyPressed(evt);
-            }
-        });
-
-        jLabel3.setIcon(resourceMap.getIcon("jLabel3.icon")); // NOI18N
-        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
-        jLabel3.setName("jLabel3"); // NOI18N
-
-        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FLogin.class, this);
-        buttonEnter.setAction(actionMap.get("pressOK")); // NOI18N
-        buttonEnter.setName("buttonEnter"); // NOI18N
         buttonEnter.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 buttonEnterKeyPressed(evt);
             }
         });
 
-        buttonExit.setAction(actionMap.get("pressCancel")); // NOI18N
-        buttonExit.setName("buttonExit"); // NOI18N
+        buttonExit.setText("Exit");
+        buttonExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonExitActionPerformed(evt);
+            }
+        });
         buttonExit.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 buttonExitKeyPressed(evt);
             }
         });
 
-        labelLavel.setFont(resourceMap.getFont("labelLavel.font")); // NOI18N
-        labelLavel.setForeground(resourceMap.getColor("labelLavel.foreground")); // NOI18N
-        labelLavel.setText(resourceMap.getString("labelLavel.text")); // NOI18N
-        labelLavel.setName("labelLavel"); // NOI18N
+        comboBoxUser.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboBoxUser.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                comboBoxUserKeyPressed(evt);
+            }
+        });
+
+        jLabel1.setText("User");
+
+        passwordField.setText("jPasswordField1");
+        passwordField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                passwordFieldKeyPressed(evt);
+            }
+        });
+
+        jLabel2.setText("Password");
+
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/key02.png"))); // NOI18N
+
+        labelName.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        labelName.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        labelName.setText("jLabel4");
+
+        jPanel1.setBorder(new javax.swing.border.MatteBorder(null));
+        jPanel1.setOpaque(false);
+        jPanel1.setPreferredSize(new java.awt.Dimension(1, 140));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(61, 61, 61)
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(comboBoxUser, javax.swing.GroupLayout.Alignment.LEADING, 0, 193, Short.MAX_VALUE))
-                .addContainerGap(135, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(171, 171, 171)
-                .addComponent(buttonEnter, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonExit)
-                .addContainerGap(251, Short.MAX_VALUE))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(69, 69, 69)
-                .addComponent(labelLavel, javax.swing.GroupLayout.PREFERRED_SIZE, 373, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(126, Short.MAX_VALUE))
+            .addGap(0, 1, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(122, 122, 122)
-                        .addComponent(jLabel3))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel1)
-                            .addComponent(comboBoxUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(50, 50, 50)))
+            .addGap(0, 108, Short.MAX_VALUE)
+        );
+
+        jPanel3.setBorder(new javax.swing.border.MatteBorder(null));
+        jPanel3.setOpaque(false);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 23, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
+        jPanel4.setBorder(new javax.swing.border.MatteBorder(null));
+        jPanel4.setOpaque(false);
+        jPanel4.setPreferredSize(new java.awt.Dimension(120, 12));
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 20, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 21, Short.MAX_VALUE)
+        );
+
+        jPanel5.setBorder(new javax.swing.border.MatteBorder(null));
+        jPanel5.setOpaque(false);
+        jPanel5.setPreferredSize(new java.awt.Dimension(120, 26));
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 48, Short.MAX_VALUE)
+        );
+
+        jPanel6.setBorder(new javax.swing.border.MatteBorder(null));
+        jPanel6.setOpaque(false);
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 28, Short.MAX_VALUE)
+        );
+
+        jPanel7.setBorder(new javax.swing.border.MatteBorder(null));
+        jPanel7.setOpaque(false);
+
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 88, Short.MAX_VALUE)
+        );
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 35, Short.MAX_VALUE)
+        );
+
+        labelLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/label.png"))); // NOI18N
+
+        javax.swing.GroupLayout qPanel1Layout = new javax.swing.GroupLayout(qPanel1);
+        qPanel1.setLayout(qPanel1Layout);
+        qPanel1Layout.setHorizontalGroup(
+            qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(qPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(labelLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(buttonExit)
-                    .addComponent(buttonEnter))
-                .addGap(32, 32, 32)
-                .addComponent(labelLavel)
-                .addContainerGap(83, Short.MAX_VALUE))
+                .addComponent(labelName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 3, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(qPanel1Layout.createSequentialGroup()
+                .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(qPanel1Layout.createSequentialGroup()
+                        .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, qPanel1Layout.createSequentialGroup()
+                                .addContainerGap(96, Short.MAX_VALUE)
+                                .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, qPanel1Layout.createSequentialGroup()
+                                        .addComponent(buttonEnter, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(buttonExit, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, qPanel1Layout.createSequentialGroup()
+                                        .addComponent(jLabel3)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
+                                            .addComponent(jPanel6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, qPanel1Layout.createSequentialGroup()
+                                                .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                    .addComponent(jLabel1)
+                                                    .addComponent(jLabel2))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                    .addComponent(passwordField, javax.swing.GroupLayout.Alignment.TRAILING)
+                                                    .addComponent(comboBoxUser, javax.swing.GroupLayout.Alignment.TRAILING, 0, 185, Short.MAX_VALUE)))))))
+                            .addGroup(qPanel1Layout.createSequentialGroup()
+                                .addComponent(labelLavel)
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED))
+                    .addGroup(qPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(labelServer)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        qPanel1Layout.setVerticalGroup(
+            qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(qPanel1Layout.createSequentialGroup()
+                .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(labelName)
+                    .addGroup(qPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(labelLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(qPanel1Layout.createSequentialGroup()
+                        .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(qPanel1Layout.createSequentialGroup()
+                                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(comboBoxUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel1))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel2))
+                                .addGap(11, 11, 11)
+                                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(qPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(buttonExit)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(buttonEnter))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
+                        .addComponent(labelServer)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(labelLavel))))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(37, Short.MAX_VALUE))
+            .addComponent(qPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(38, Short.MAX_VALUE))
+            .addComponent(qPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-private void keyPress(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_keyPress
-
-    if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+    private void buttonEnterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonEnterActionPerformed
         pressOK();
-    }
-    if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
-        System.exit(0);
-    }
-}//GEN-LAST:event_keyPress
+    }//GEN-LAST:event_buttonEnterActionPerformed
 
-private void passwordFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordFieldKeyPressed
-
-    keyPress(evt);
-}//GEN-LAST:event_passwordFieldKeyPressed
-
-private void comboBoxUserKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_comboBoxUserKeyPressed
-
-    keyPress(evt);
-}//GEN-LAST:event_comboBoxUserKeyPressed
-
-private void buttonEnterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_buttonEnterKeyPressed
-
-    keyPress(evt);
-}//GEN-LAST:event_buttonEnterKeyPressed
-
-private void buttonExitKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_buttonExitKeyPressed
-
-    if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+    private void buttonExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonExitActionPerformed
         pressCancel();
-    }
-    if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
-        System.exit(0);
-    }
-}//GEN-LAST:event_buttonExitKeyPressed
+    }//GEN-LAST:event_buttonExitActionPerformed
+
+    private void comboBoxUserKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_comboBoxUserKeyPressed
+        keyPress(evt);
+    }//GEN-LAST:event_comboBoxUserKeyPressed
+
+    private void passwordFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordFieldKeyPressed
+        keyPress(evt);
+    }//GEN-LAST:event_passwordFieldKeyPressed
+
+    private void buttonEnterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_buttonEnterKeyPressed
+        keyPress(evt);
+    }//GEN-LAST:event_buttonEnterKeyPressed
+
+    private void buttonExitKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_buttonExitKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            pressCancel();
+        }
+        if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            System.exit(0);
+        }
+    }//GEN-LAST:event_buttonExitKeyPressed
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonEnter;
     private javax.swing.JButton buttonExit;
@@ -550,7 +749,16 @@ private void buttonExitKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JLabel labelLabel;
     private javax.swing.JLabel labelLavel;
+    private javax.swing.JLabel labelName;
+    private javax.swing.JLabel labelServer;
     private javax.swing.JPasswordField passwordField;
+    private ru.apertum.qsystem.client.model.QPanel qPanel1;
     // End of variables declaration//GEN-END:variables
 }

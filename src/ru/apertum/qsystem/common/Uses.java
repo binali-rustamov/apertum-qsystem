@@ -278,17 +278,18 @@ public final class Uses {
         "Декабря"
     };
     public final static String[] UKRAINIAN_MONAT = {
-        "Лютий",
-        "Марта",
+        "Січня",
+        "Лютого",
+        "Березня",
         "Квітня",
-        "Мая",
-        "Червень",
-        "Липень",
-        "Августа",
+        "Травня",
+        "Червня",
+        "Липня",
+        "Серпня",
         "Вересня",
         "Жовтня",
         "Листопада",
-        "Грудень"
+        "Грудня"
     };
 
     public static String getRusDate(Date date, String format) {
@@ -710,6 +711,7 @@ public final class Uses {
                 }
             }
         }
+
     }
 
     /**
@@ -845,9 +847,12 @@ public final class Uses {
     }
     private static ResourceMap localeMap = null;
 
-    public static String getLocaleMessage(String key) {
+    public static String
+            getLocaleMessage(String key) {
         if (localeMap == null) {
-            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(Uses.class);
+            localeMap = Application.getInstance(QSystem.class
+            ).getContext().getResourceMap(Uses.class
+            );
         }
         return localeMap.getString(key);
     }

@@ -49,7 +49,6 @@ import javax.persistence.Transient;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
-import org.hibernate.annotations.Cascade;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.QLog;
@@ -852,9 +851,8 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     public void setCalendar(QCalendar calendar) {
         this.calendar = calendar;
     }
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "services_id")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     @Expose
     @SerializedName("langs")
     private Set<QServiceLang> langs = new HashSet<>();
@@ -958,7 +956,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     @Transient
     @Expose
     @SerializedName("inner_services")
-    private LinkedList<QService> childrenOfService = new LinkedList<>();
+    private final LinkedList<QService> childrenOfService = new LinkedList<>();
 
     public LinkedList<QService> getChildren() {
         return childrenOfService;

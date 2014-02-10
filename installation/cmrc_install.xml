@@ -25,7 +25,7 @@
     <!-- 
         Параметры GUI. Пока без применения look & feel
     -->
-    <guiprefs width="640" height="480" resizable="yes">
+    <guiprefs width="800" height="480" resizable="yes">
         <modifier key="labelGap" value="2"/>
         <modifier key="useHeadingPanel" value="yes"/>
         <modifier key="headingImageOnLeft" value="yes"/>
@@ -116,7 +116,7 @@
 			<fileset dir="../config/board" includes="*.jpg,*.gif,*.png,*.mpg,*.txt" targetdir="$INSTALL_PATH/config/board/"/>
             <fileset os="windows" dir="resource/img" includes="*.ico" targetdir="$INSTALL_PATH/icons/"/>
             <fileset os="unix" dir="resource/img" includes="*.png" targetdir="$INSTALL_PATH/icons/"/>
-			<file src="../plugins/" targetdir="$INSTALL_PATH/"/>
+			<singlefile src="../plugins/" target="$INSTALL_PATH/plugins"/>
         </pack>
         <!-- 
         Для сервера кроме самих исполняемых библиотек еще нужно 
@@ -136,21 +136,20 @@
             <description>Сервер</description>
             <!-- fileset os="windows" dir="D:/Files/Downloads/rxtx-2.1-7-bins-r2/rxtx-2.1-7-bins-r2/Windows/i368-mingw32" includes="*.dll" targetdir="${ENV[WINDIR]}/system32"/>
             <fileset os="unix" dir="D:/Files/Downloads/rxtx-2.1-7-bins-r2/rxtx-2.1-7-bins-r2/Linux/i686-unknown-linux-gnu" includes="*.so" targetdir="$INSTALL_PATH"/ -->
-            <file os="windows" src="resource/bin/7za.exe" targetdir="$INSTALL_PATH/dist"/>
-            <file os="windows" src="resource/txt/admspr.bat" targetdir="$INSTALL_PATH/dist"/>
-            <file os="windows" src="resource/txt/admdbcom.bat" targetdir="$INSTALL_PATH/dist"/>
-            <file os="unix" src="resource/bin/jar" targetdir="$INSTALL_PATH/dist"/>
-            <file os="unix" src="resource/bin/libjli.so" targetdir="$INSTALL_PATH/dist"/>
-            <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH/dist"/>
-            <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH/dist"/>
+            <!--file os="windows" src="resource/bin/7za.exe" targetdir="$INSTALL_PATH/dist"/-->
+            <file os="windows" src="resource/txt/admspr.bat" targetdir="$INSTALL_PATH"/>
+            <file os="windows" src="resource/txt/admdbcom.bat" targetdir="$INSTALL_PATH"/>
+            <!--file os="unix" src="resource/bin/jar" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/bin/libjli.so" targetdir="$INSTALL_PATH/dist"/-->
+            <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH"/>
             <file src="../db/qsystem.sql" targetdir="$INSTALL_PATH/DB/"/>
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/reporter.properties" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/reporter.html" targetdir="$INSTALL_PATH/config/"/>
 			<fileset dir="../www/" includes="*.jpg,*.gif,*.png,*.mpg,*.htm,*.html,*.js,*.css" targetdir="$INSTALL_PATH/www/"/>
-			<file src="../www/war/" targetdir="$INSTALL_PATH/www/"/>
-			<fileset dir="../www/war/" includes="*.war" targetdir="$INSTALL_PATH/www/war/"/>
+			<singlefile src="../www/war/" target="$INSTALL_PATH//www/war"/>
             <file os="windows" src="resource/txt/StartServer.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/server.sh" targetdir="$INSTALL_PATH"/>
 			<file src="../config/qub.properties" targetdir="$INSTALL_PATH/config/"/>
@@ -163,13 +162,13 @@
             <file os="windows" src="resource/txt/StartAdmin.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/admin.sh" targetdir="$INSTALL_PATH"/>
             <parsable targetfile="$INSTALL_PATH/config/admin.properties"/>
-            <file os="windows" src="resource/bin/7za.exe" targetdir="$INSTALL_PATH/dist"/>
-            <file os="windows" src="resource/txt/admspr.bat" targetdir="$INSTALL_PATH/dist"/>
-            <file os="windows" src="resource/txt/admdbcom.bat" targetdir="$INSTALL_PATH/dist"/>
-            <file os="unix" src="resource/bin/jar" targetdir="$INSTALL_PATH/dist"/>
-            <file os="unix" src="resource/bin/libjli.so" targetdir="$INSTALL_PATH/dist"/>
-            <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH/dist"/>
-            <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH/dist"/>
+            <!--file os="windows" src="resource/bin/7za.exe" targetdir="$INSTALL_PATH/dist"/-->
+            <file os="windows" src="resource/txt/admspr.bat" targetdir="$INSTALL_PATH"/>
+            <file os="windows" src="resource/txt/admdbcom.bat" targetdir="$INSTALL_PATH"/>
+            <!--file os="unix" src="resource/bin/jar" targetdir="$INSTALL_PATH/dist"/>
+            <file os="unix" src="resource/bin/libjli.so" targetdir="$INSTALL_PATH/dist"/-->
+            <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH"/>
         </pack>
         <pack id="registrationPoint" name="Registration point" required="no" preselected="no">
             <description>Пункт регистрации</description>

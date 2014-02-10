@@ -152,12 +152,6 @@ public class QPanel extends JPanel implements Serializable {
     private void setVideoFile() {
         if (player == null) {
             player = new VideoPlayer();
-            for (MouseListener ml : getMouseListeners()) {
-              //  player.getMediaView().addMouseListener(ml);
-            }
-            for (MouseMotionListener mml : getMouseMotionListeners()) {
-             //   player.getMediaView().addMouseMotionListener(mml);
-            }
             removeAll();
             setLayout(new GridLayout(1, 1));
             add(player);

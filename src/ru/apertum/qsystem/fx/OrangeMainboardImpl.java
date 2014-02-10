@@ -34,14 +34,14 @@ import ru.apertum.qsystem.server.model.QUser;
  * @author Евгений
  */
 public class OrangeMainboardImpl implements IIndicatorBoard {
-    
+
     final OrangeMainboard board = new OrangeMainboard();
 
     final Timer timer = new Timer(2000, new ActionListener() {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-          //todo  board.showData(forShow, forBlink);
+            //todo  board.showData(forShow, forBlink);
             timer.stop();
         }
     });
@@ -56,7 +56,7 @@ public class OrangeMainboardImpl implements IIndicatorBoard {
         if (!timer.isRunning()) {
             timer.start();
             if (flag) {
-          //todo      board.showData(forShow, forBlink);
+                //todo      board.showData(forShow, forBlink);
             }
             flag = false;
         }
@@ -70,7 +70,7 @@ public class OrangeMainboardImpl implements IIndicatorBoard {
                 }
             }
         }
-      //todo  board.showNextCustomers(nests);
+        //todo  board.showNextCustomers(nests);
     }
     final private ArrayList<QUser> forBlink = new ArrayList<>();
     final private ArrayList<QUser> forShow = new ArrayList<>();
@@ -79,7 +79,7 @@ public class OrangeMainboardImpl implements IIndicatorBoard {
     public void workCustomer(QUser user) {
         forBlink.remove(user);
         if (!timer.isRunning()) {
-         //todo   board.showData(forShow, forBlink);
+            //todo   board.showData(forShow, forBlink);
         }
     }
 
@@ -88,7 +88,7 @@ public class OrangeMainboardImpl implements IIndicatorBoard {
         forBlink.remove(user);
         forShow.remove(user);
         if (!timer.isRunning()) {
-          //todo  board.showData(forShow, forBlink);
+            //todo  board.showData(forShow, forBlink);
         }
     }
 

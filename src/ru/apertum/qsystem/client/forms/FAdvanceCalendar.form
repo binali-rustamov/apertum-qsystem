@@ -146,10 +146,14 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelMonday">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" resourceKey="labelMonday.font"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelMonday.text"/>
                     <Property name="name" type="java.lang.String" value="labelMonday" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" resourceKey="labelMonday.AccessibleContext.accessibleName"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -189,10 +193,14 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelTuesday">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" resourceKey="labelTuesday.font"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelTuesday.text"/>
                     <Property name="name" type="java.lang.String" value="labelTuesday" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" resourceKey="labelTuesday.AccessibleContext.accessibleName"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -233,10 +241,14 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelWednesday">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" resourceKey="labelWednesday.font"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelWednesday.text"/>
                     <Property name="name" type="java.lang.String" value="labelWednesday" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" resourceKey="labelWednesday.AccessibleContext.accessibleName"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -277,10 +289,14 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelThursday">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" resourceKey="labelThursday.font"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelThursday.text"/>
                     <Property name="name" type="java.lang.String" value="labelThursday" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" resourceKey="labelThursday.AccessibleContext.accessibleName"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -321,10 +337,14 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelFriday">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" resourceKey="labelFriday.font"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelFriday.text"/>
                     <Property name="name" type="java.lang.String" value="labelFriday" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" resourceKey="labelFriday.AccessibleContext.accessibleName"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -364,10 +384,14 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelSaturday">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" resourceKey="labelSaturday.font"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelSaturday.text"/>
                     <Property name="name" type="java.lang.String" value="labelSaturday" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" resourceKey="labelSaturday.AccessibleContext.accessibleName"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -407,10 +431,14 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="labelSunday">
                   <Properties>
+                    <Property name="font" type="java.awt.Font" resourceKey="labelSunday.font"/>
                     <Property name="horizontalAlignment" type="int" value="0"/>
                     <Property name="text" type="java.lang.String" resourceKey="labelSunday.text"/>
                     <Property name="name" type="java.lang.String" value="labelSunday" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" resourceKey="labelSunday.AccessibleContext.accessibleName"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -652,6 +680,7 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
                   <action class="ru.apertum.qsystem.client.forms.FAdvanceCalendar" id="closeAdvaseForm" methodName="closeAdvaseForm"/>
                 </Property>
+                <Property name="font" type="java.awt.Font" resourceKey="buttonClose.font"/>
                 <Property name="icon" type="javax.swing.Icon" resourceKey="buttonClose.icon"/>
                 <Property name="text" type="java.lang.String" resourceKey="buttonClose.text"/>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -678,6 +707,7 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
                   <action class="ru.apertum.qsystem.client.forms.FAdvanceCalendar" id="showBefore" methodName="showBefore"/>
                 </Property>
+                <Property name="font" type="java.awt.Font" resourceKey="jButton1.font"/>
                 <Property name="icon" type="javax.swing.Icon" resourceKey="jButton1.icon"/>
                 <Property name="text" type="java.lang.String" resourceKey="jButton1.text"/>
                 <Property name="actionCommand" type="java.lang.String" resourceKey="jButton1.actionCommand"/>
@@ -705,6 +735,7 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
                   <action class="ru.apertum.qsystem.client.forms.FAdvanceCalendar" id="setNow" methodName="setNow"/>
                 </Property>
+                <Property name="font" type="java.awt.Font" resourceKey="jButton2.font"/>
                 <Property name="icon" type="javax.swing.Icon" resourceKey="jButton2.icon"/>
                 <Property name="text" type="java.lang.String" resourceKey="jButton2.text"/>
                 <Property name="actionCommand" type="java.lang.String" resourceKey="jButton2.actionCommand"/>
@@ -732,6 +763,7 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
                   <action class="ru.apertum.qsystem.client.forms.FAdvanceCalendar" id="showArter" methodName="showArter"/>
                 </Property>
+                <Property name="font" type="java.awt.Font" resourceKey="jButton3.font"/>
                 <Property name="icon" type="javax.swing.Icon" resourceKey="jButton3.icon"/>
                 <Property name="text" type="java.lang.String" resourceKey="jButton3.text"/>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">

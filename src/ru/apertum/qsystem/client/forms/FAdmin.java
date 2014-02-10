@@ -19,6 +19,7 @@ package ru.apertum.qsystem.client.forms;
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -35,10 +36,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -47,6 +50,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,12 +66,14 @@ import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.TreePath;
-import org.apache.commons.codec.EncoderException;
 import org.dom4j.DocumentException;
 import org.jdesktop.application.Action;
 import ru.apertum.qsystem.common.NetCommander;
@@ -80,13 +86,17 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
+import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.BCodec;
 import org.apache.commons.lang.ArrayUtils;
 import org.hibernate.jdbc.Work;
@@ -105,6 +115,8 @@ import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.extra.IDataExchange;
 import ru.apertum.qsystem.extra.IPing;
+import ru.apertum.qsystem.hibernate.AnnotationSessionFactoryBean;
+import ru.apertum.qsystem.hibernate.SqlServers;
 import ru.apertum.qsystem.reports.model.QReportsList;
 import ru.apertum.qsystem.server.MainBoard;
 import ru.apertum.qsystem.server.ServerProps;
@@ -386,15 +398,15 @@ public class FAdmin extends javax.swing.JFrame {
         treeServices.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         treeInfo.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         /*
-        treeServices.setCellRenderer(new DefaultTreeCellRenderer() {
+         treeServices.setCellRenderer(new DefaultTreeCellRenderer() {
         
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-        setText(((Element) value).attributeValue(Uses.TAG_NAME));
-        return this;
-        }
-        });*/
+         @Override
+         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+         super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+         setText(((Element) value).attributeValue(Uses.TAG_NAME));
+         return this;
+         }
+         });*/
         treeServices.addTreeSelectionListener(new TreeSelectionListener() {
 
             @Override
@@ -491,6 +503,19 @@ public class FAdmin extends javax.swing.JFrame {
             }
         });
         treeServices.setDropMode(DropMode.INSERT);
+
+        // типо переключалка серверов
+        final AnnotationSessionFactoryBean as = (AnnotationSessionFactoryBean) Spring.getInstance().getFactory().getBean("conf");
+        if (as.getServers().size() > 1) {
+            JMenu menu = new JMenu(getLocaleMessage("admin.servers"));
+            for (SqlServers.SqlServer ser : as.getServers()) {
+                final JMenuItem mi1 = new JMenuItem(as);
+                mi1.setText(ser.isCurrent() ? "<html><u><i>" + ser.getName() + "</i></u>" : ser.getName());
+                menu.add(mi1);
+            }
+            jMenuBar1.add(menu, 4);
+            jMenuBar1.add(new JLabel("<html><span style='font-size:13.0pt;color:red'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  [" + as.getName() + "]"));
+        }
     }
 
     /**
@@ -653,13 +678,20 @@ public class FAdmin extends javax.swing.JFrame {
             s = s + ", " + sl.getLang();
         }
         s = s.length() > 1 ? "[" + s.substring(2) + "]" : "";
-        labelServiceInfo.setText("<html><body text=\"#336699\"> " + (service.getEnable() == 1 ? "" : "<font color=\"#FF0000\">!*** </font>") + s + " " + getLocaleMessage("service.service") + service.getSeqId() + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>"
+        labelServiceInfo.setText("<html><body text=\"#336699\"> "
                 + "<font color=\"#"
                 + (service.getStatus() == 1
                 ? "00AA00\">" + getLocaleMessage("service.kind.active")
                 : (service.getStatus() == 0 ? "CCAA00\">" + getLocaleMessage("service.kind.not_active") : "DD0000\">" + getLocaleMessage("service.kind.unavailable"))) + "/" + service.getPoint()
                 + "</font>"
-                + ";    " + getLocaleMessage("service.prefix") + ": " + "<font color=\"#DD0000\">" + service.getPrefix() + "</font>" + ";  " + getLocaleMessage("service.description") + ": " + service.getDescription()
+                + ";    "
+                + getLocaleMessage("service.prefix") + ": " + "<font color=\"#DD0000\">" + service.getPrefix() + "</font>" + ";  "
+                + (service.getEnable() == 1 ? "" : "<font color=\"#FF0000\">!*** </font>")
+                + s + " " + getLocaleMessage("service.service") + service.getSeqId() + ": \""
+                + "<font color=\"#000000\">"
+                + service.getName() + "\"    "
+                + "</font>"
+                + getLocaleMessage("service.description") + ": " + service.getDescription()
                 + ";<br>" + getLocaleMessage("service.restrict_day_reg") + ": " + (service.getDayLimit() == 0 ? getLocaleMessage("service.work_calendar.no") : service.getDayLimit())
                 + ";<br>" + getLocaleMessage("service.restrict_adv_reg") + " " + service.getAdvanceTimePeriod() + " " + getLocaleMessage("service.min") + ": " + service.getAdvanceLimit()
                 + ";<br>  " + getLocaleMessage("service.restrict_adv_period") + ": " + service.getAdvanceLimitPeriod()
@@ -667,6 +699,17 @@ public class FAdmin extends javax.swing.JFrame {
                 + (service.getInput_required() ? getLocaleMessage("service.required_client_data") + ": \"" + service.getInput_caption() + "\"(" + service.getPersonDayLimit() + ")" : getLocaleMessage("service.required_client_data.not")) + ";<br>   "
                 + (service.getResult_required() ? getLocaleMessage("service.required_result") : getLocaleMessage("service.required_result.not")) + ";");
         labelButtonCaption.setText(service.getButtonText());
+
+        final LinkedList<QUser> usrs = new LinkedList<>();
+        for (QUser user : QUserList.getInstance().getItems()) {
+            for (QPlanService plan : user.getPlanServices()) {
+                if (plan.getService().getId().equals(service.getId())) {
+                    usrs.add(user);
+                    break;
+                }
+            }
+        }
+        userServsList.setModel(new DefaultComboBoxModel(usrs.toArray()));
     }
 
     /**
@@ -674,9 +717,7 @@ public class FAdmin extends javax.swing.JFrame {
      */
     private void infoListChange() {
         final TreePath selectedPath = treeInfo.getSelectionPath();
-        if (selectedPath == null) {
-            return;
-        } else {
+        if (selectedPath != null) {
             showInfoInfo((QInfoItem) selectedPath.getLastPathComponent());
         }
     }
@@ -978,7 +1019,8 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     /**
-     * Сохранение данных о сетевых настройках, повесим на нажатие кнопок элементов ввода.
+     * Сохранение данных о сетевых настройках, повесим на нажатие кнопок
+     * элементов ввода.
      */
     public void saveNet() {
 
@@ -1081,6 +1123,30 @@ public class FAdmin extends javax.swing.JFrame {
             @Override
             public void run() {
                 try {
+                    for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                        System.out.println(info.getName());
+                        /*Metal Nimbus CDE/Motif Windows   Windows Classic  //GTK+*/
+                        if ("Windows".equals(info.getName())) {
+                            javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                            break;
+                        }
+                    }
+                    if ("/".equals(File.separator)) {
+                        final FontUIResource f = new FontUIResource(new Font("Serif", Font.PLAIN, 10));
+                        final Enumeration<Object> keys = UIManager.getDefaults().keys();
+                        while (keys.hasMoreElements()) {
+                            final Object key = keys.nextElement();
+                            final Object value = UIManager.get(key);
+                            if (value instanceof FontUIResource) {
+                                final FontUIResource orig = (FontUIResource) value;
+                                final Font font = new Font(f.getFontName(), orig.getStyle(), f.getSize());
+                                UIManager.put(key, new FontUIResource(font));
+                            }
+                        }
+                    }
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+                }
+                try {
                     form = new FAdmin();
                     if (forPager != null) {
                         forPager.showData(false);
@@ -1100,6 +1166,7 @@ public class FAdmin extends javax.swing.JFrame {
     private static Answer forPager = null;
     //private static final String PAGER_URL = "http://localhost:8080";
     private static final String PAGER_URL = "http://dev.apertum.ru:8080";
+    //private static final String PAGER_URL = "http://109.120.172.108:8080";
 
     @Action
     public void hideWindow() {
@@ -1340,7 +1407,8 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     /**
-     * Из привязок к услугам всех юзеров убрать привязку к данной услуге и всех ее вложенных.
+     * Из привязок к услугам всех юзеров убрать привязку к данной услуге и всех
+     * ее вложенных.
      *
      * @param service удаляемая услуга
      */
@@ -1461,7 +1529,8 @@ public class FAdmin extends javax.swing.JFrame {
     }
 
     /**
-     * @see http://static.springsource.org/spring/docs/3.0.x/reference/transaction.html#transaction-programmatic
+     * @see
+     * http://static.springsource.org/spring/docs/3.0.x/reference/transaction.html#transaction-programmatic
      */
     @Action
     public void saveConfiguration() {
@@ -1477,10 +1546,11 @@ public class FAdmin extends javax.swing.JFrame {
                         Spring.getInstance().getHt().saveOrUpdate(ServerProps.getInstance().getProps());
                         //Сохраняем нормативные параметры
                         Spring.getInstance().getHt().saveOrUpdate(ServerProps.getInstance().getStandards());
-                        // Сохраняем перерывы в расписании
-                        QBreaksList.getInstance().save();
+
                         // Сохраняем планы расписания
                         QScheduleList.getInstance().save();
+                        // Сохраняем перерывы в расписании
+                        QBreaksList.getInstance().save();
                         // Сохраняем календари услуг
                         QCalendarList.getInstance().save();
                         // Сохраняем услуги
@@ -1715,6 +1785,9 @@ public class FAdmin extends javax.swing.JFrame {
         jScrollPane19 = new javax.swing.JScrollPane();
         jScrollPane6 = new javax.swing.JScrollPane();
         labelButtonCaption = new javax.swing.JLabel();
+        jPanel28 = new javax.swing.JPanel();
+        jScrollPane22 = new javax.swing.JScrollPane();
+        userServsList = new javax.swing.JList();
         jPanel17 = new javax.swing.JPanel();
         jScrollPane12 = new javax.swing.JScrollPane();
         listSchedule = new javax.swing.JList();
@@ -2721,6 +2794,26 @@ public class FAdmin extends javax.swing.JFrame {
         jScrollPane19.setViewportView(jScrollPane6);
 
         jTabbedPane1.addTab(resourceMap.getString("jScrollPane19.TabConstraints.tabTitle"), jScrollPane19); // NOI18N
+
+        jPanel28.setName("jPanel28"); // NOI18N
+
+        jScrollPane22.setName("jScrollPane22"); // NOI18N
+
+        userServsList.setName("userServsList"); // NOI18N
+        jScrollPane22.setViewportView(userServsList);
+
+        javax.swing.GroupLayout jPanel28Layout = new javax.swing.GroupLayout(jPanel28);
+        jPanel28.setLayout(jPanel28Layout);
+        jPanel28Layout.setHorizontalGroup(
+            jPanel28Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane22, javax.swing.GroupLayout.DEFAULT_SIZE, 1028, Short.MAX_VALUE)
+        );
+        jPanel28Layout.setVerticalGroup(
+            jPanel28Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane22, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab(resourceMap.getString("jPanel28.TabConstraints.tabTitle"), jPanel28); // NOI18N
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -3973,7 +4066,7 @@ public class FAdmin extends javax.swing.JFrame {
         textFieldZonBoadrServAddr.setText(resourceMap.getString("textFieldZonBoadrServAddr.text")); // NOI18N
         textFieldZonBoadrServAddr.setName("textFieldZonBoadrServAddr"); // NOI18N
 
-        spinnerZonBoadrServPort.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(500L), Long.valueOf(500L), Long.valueOf(60000L), Long.valueOf(1L)));
+        spinnerZonBoadrServPort.setModel(new javax.swing.SpinnerNumberModel(500, 500, 60000, 1));
         spinnerZonBoadrServPort.setName("spinnerZonBoadrServPort"); // NOI18N
 
         buttonCheckZoneBoardServ.setText(resourceMap.getString("buttonCheckZoneBoardServ.text")); // NOI18N
@@ -4478,9 +4571,7 @@ private void treeServicesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRS
     // Редактирование услуги.
     if (evt.getClickCount() == 2) {
         final TreePath selectedPath = treeServices.getSelectionPath();
-        if (selectedPath == null) {
-            return;
-        } else {
+        if (selectedPath != null) {
             editService();
         }
     }
@@ -4590,7 +4681,6 @@ private void tableCalendarFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRS
         for (QCalendar calendar : QCalendarList.getInstance().getItems()) {
             if (((QCalendar) listCalendar.getModel().getElementAt(i)).getId().equals(calendar.getId())) {
                 flag = true;
-                continue;
             }
         }
         if (!flag) {
@@ -5002,9 +5092,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     @Action
     public void editService() {
         final TreePath selectedPath = treeServices.getSelectionPath();
-        if (selectedPath == null) {
-            return;
-        } else {
+        if (selectedPath != null) {
             final QService service = (QService) selectedPath.getLastPathComponent();
             FServiceChangeDialod.changeService(this, true, service, (ComboBoxModel) listSchedule.getModel(), (ComboBoxModel) listCalendar.getModel());
             showServiceInfo(service);
@@ -5521,9 +5609,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     @Action
     public void editLangs() {
         final TreePath selectedPath = treeServices.getSelectionPath();
-        if (selectedPath == null) {
-            return;
-        } else {
+        if (selectedPath != null) {
             final QService service = (QService) selectedPath.getLastPathComponent();
             FServiceLangList.changeServiceLangList(this, true, service);
             showServiceInfo(service);
@@ -5533,9 +5619,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     @Action
     public void setDisableService() {
         final TreePath selectedPath = treeServices.getSelectionPath();
-        if (selectedPath == null) {
-            return;
-        } else {
+        if (selectedPath != null) {
             final QService service = (QService) selectedPath.getLastPathComponent();
             final String name = (String) JOptionPane.showInputDialog(this,
                     getLocaleMessage("admin.select_ability.message") + " \"" + service.getName() + "\"",
@@ -5699,8 +5783,8 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                         break;
                     case 2:
                         try {
-                            paraqms = paraqms + "&inputdata=" + new BCodec().encode(form.textFieldPager.getText().length() > 545 ? form.textFieldPager.getText().substring(0, 545) : form.textFieldPager.getText(), "utf8");
-                        } catch (EncoderException ex) {
+                            paraqms = paraqms + "&inputdata=" + new BCodec().encode(URLEncoder.encode(form.textFieldPager.getText().length() > 545 ? form.textFieldPager.getText().substring(0, 545) : form.textFieldPager.getText(), "utf8"), "utf8");
+                        } catch (EncoderException | UnsupportedEncodingException ex) {
                         }
                         break;
                     default:
@@ -5926,6 +6010,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JPanel jPanel25;
     private javax.swing.JPanel jPanel26;
     private javax.swing.JPanel jPanel27;
+    private javax.swing.JPanel jPanel28;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
@@ -5947,6 +6032,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane20;
     private javax.swing.JScrollPane jScrollPane21;
+    private javax.swing.JScrollPane jScrollPane22;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
@@ -6070,5 +6156,6 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JTextPane textPaneResponse;
     private javax.swing.JTree treeInfo;
     private javax.swing.JTree treeServices;
+    private javax.swing.JList userServsList;
     // End of variables declaration//GEN-END:variables
 }

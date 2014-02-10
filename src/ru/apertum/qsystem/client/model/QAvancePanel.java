@@ -17,6 +17,7 @@
 package ru.apertum.qsystem.client.model;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.util.Date;
@@ -49,8 +50,9 @@ public class QAvancePanel extends QPanel {
         setLayout(new GridLayout(1, 1));
         label.setVerticalAlignment(SwingConstants.CENTER);
         label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setFont(Font.getFont("Verdana"));
         //label.setText("<html><b><p align=center><span style='font-size:12.0pt;color:black'>" + ( "00:00".equals(Uses.format_HH_mm.format(data)) ? "24:00" : Uses.format_HH_mm.format(data) ) + "</span><br/><span style='font-size:13.0pt;color:" + (enable ? "green'>Свободно" : "red'>Занято"));
-        label.setText("<html><b><p align=center><span style='font-size:22.0pt;color:" + (enable ? "black" : "red") + "'>" + ("00:00".equals(Uses.format_HH_mm.format(data)) ? "24:00" : Uses.format_HH_mm.format(data)) + "</span>");
+        label.setText("<html><p align=center><span style='font-size:15.0pt;color:" + (enable ? "black" : "red") + "'>" + ("00:00".equals(Uses.format_HH_mm.format(data)) ? "24:00" : Uses.format_HH_mm.format(data)) + "</span>");
         add(label);
         //Реакция на нажатие мышки
         addMouseListener(new java.awt.event.MouseAdapter() {

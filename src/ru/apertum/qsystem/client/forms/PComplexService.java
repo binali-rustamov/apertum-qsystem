@@ -40,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -54,6 +55,9 @@ import javax.swing.TransferHandler;
 import static javax.swing.TransferHandler.MOVE;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import net.sourceforge.barbecue.Barcode;
@@ -123,6 +127,8 @@ public class PComplexService extends javax.swing.JPanel {
         listServ4.setTransferHandler(thList);
         listServ5.setModel(new DefaultListModel<QService>());
         listServ5.setTransferHandler(thList);
+        treeDepends.setModel(new DepServiceTree(new DepService("root1", Long.MIN_VALUE)));
+        treeDepends.setTransferHandler(thDepTree);
         treeServices.setTransferHandler(new TransferHandler() {
 
             @Override
@@ -333,6 +339,81 @@ public class PComplexService extends javax.swing.JPanel {
             return true;
         }
     };
+    private final TransferHandler thDepTree = new TransferHandler() {
+
+        @Override
+        public boolean canImport(TransferHandler.TransferSupport info) {
+
+            final JTree.DropLocation dl = (JTree.DropLocation) info.getDropLocation();
+            final TreePath tp = dl.getPath();
+            final DefaultMutableTreeNode parent = (DefaultMutableTreeNode) tp.getLastPathComponent();
+            return parent.getParent().getParent() == null;
+        }
+
+        @Override
+        public boolean importData(TransferHandler.TransferSupport info) {
+            if (!info.isDrop()) {
+                return false;
+            }
+            final Transferable t = info.getTransferable();
+            final ArrayList<QService> dataA;
+            try {
+                dataA = (ArrayList<QService>) t.getTransferData(DataFlavor.stringFlavor);
+            } catch (UnsupportedFlavorException | IOException e) {
+                System.err.println(e);
+                return false;
+            }
+            if (dataA == null || dataA.isEmpty()) {
+                return false;
+            }
+            final JTree.DropLocation dl = (JTree.DropLocation) info.getDropLocation();
+            final TreePath tp = dl.getPath();
+            final DepService parent = (DepService) tp.getLastPathComponent();
+            if (parent.getParent().getParent() == null) {
+                for (QService data : dataA) {
+                    if (data.isLeaf()) {
+                        boolean f = true;
+                        final Enumeration<DepService> e = parent.children();
+                        while (e.hasMoreElements()) {
+                            final DepService ds = e.nextElement();
+                            if (ds.getId().equals(data.getId())) {
+                                f = false;
+                                break;
+                            }
+                        }
+                        if (f && !data.getId().equals(parent.getId())) {
+                            ((DepServiceTree) treeDepends.getModel()).insertNodeInto(new DepService(data.getName(), data.getId()), parent, parent.getChildCount());
+                        }
+                    } else {
+                        QServiceTree.sailToStorm(data, new ISailListener() {
+
+                            @Override
+                            public void actionPerformed(TreeNode service) {
+                                if (service.isLeaf()) {
+                                    final QService data = (QService) service;
+                                    boolean f = true;
+                                    final Enumeration<DepService> e = parent.children();
+                                    while (e.hasMoreElements()) {
+                                        final DepService ds = e.nextElement();
+                                        if (ds.getId().equals(data.getId())) {
+                                            f = false;
+                                            break;
+                                        }
+                                    }
+                                    if (f && !data.getId().equals(parent.getId())) {
+                                        ((DepServiceTree) treeDepends.getModel()).insertNodeInto(new DepService(data.getName(), data.getId()), parent, parent.getChildCount());
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+                saveState();
+            }
+
+            return true;
+        }
+    };
 
     /**
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always
@@ -351,6 +432,8 @@ public class PComplexService extends javax.swing.JPanel {
         jScrollPane6 = new javax.swing.JScrollPane();
         listOfLists = new javax.swing.JList();
         jPanel1 = new javax.swing.JPanel();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel7 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jSplitPane3 = new javax.swing.JSplitPane();
         jPanel5 = new javax.swing.JPanel();
@@ -370,6 +453,9 @@ public class PComplexService extends javax.swing.JPanel {
         buttonSetInLine = new javax.swing.JButton();
         buttonSaveList = new javax.swing.JButton();
         buttonClearLists = new javax.swing.JButton();
+        jPanel8 = new javax.swing.JPanel();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        treeDepends = new javax.swing.JTree();
 
         jSplitPane1.setDividerLocation(350);
         jSplitPane1.setContinuousLayout(true);
@@ -408,11 +494,11 @@ public class PComplexService extends javax.swing.JPanel {
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -432,7 +518,7 @@ public class PComplexService extends javax.swing.JPanel {
 
         jPanel3.setBorder(new javax.swing.border.MatteBorder(null));
 
-        jSplitPane3.setDividerLocation(191);
+        jSplitPane3.setDividerLocation(195);
         jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane3.setAutoscrolls(true);
         jSplitPane3.setContinuousLayout(true);
@@ -506,11 +592,11 @@ public class PComplexService extends javax.swing.JPanel {
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
         );
 
         jSplitPane3.setLeftComponent(jPanel4);
@@ -523,7 +609,7 @@ public class PComplexService extends javax.swing.JPanel {
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+            .addComponent(jSplitPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
         );
 
         buttonSetInLine.setText("В очередь");
@@ -547,31 +633,70 @@ public class PComplexService extends javax.swing.JPanel {
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(buttonClearLists)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(buttonSaveList)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonSetInLine)
-                .addGap(6, 6, 6))
-            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonSaveList)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buttonSetInLine)
+                    .addComponent(buttonSaveList)
                     .addComponent(buttonClearLists))
                 .addContainerGap())
         );
+
+        jTabbedPane1.addTab("Списки услуг", jPanel7);
+
+        treeDepends.setExpandsSelectedPaths(false);
+        treeDepends.setRootVisible(false);
+        treeDepends.setShowsRootHandles(true);
+        treeDepends.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                treeDependsMouseClicked(evt);
+            }
+        });
+        jScrollPane9.setViewportView(treeDepends);
+
+        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Зависимости услуг", jPanel8);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jTabbedPane1)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jTabbedPane1)
+        );
+
+        jTabbedPane1.getAccessibleContext().setAccessibleName("Списки услуг");
+        jTabbedPane1.getAccessibleContext().setAccessibleDescription("");
 
         jSplitPane2.setLeftComponent(jPanel1);
 
@@ -581,7 +706,7 @@ public class PComplexService extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 970, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -689,12 +814,17 @@ public class PComplexService extends javax.swing.JPanel {
         public SaveList() {
         }
 
-        public SaveList(ArrayList<ComplexListOfServices> backup) {
+        public SaveList(ArrayList<ComplexListOfServices> backup, LinkedList<LinkedList<Long>> dependences) {
             this.backup = backup;
+            this.dependences = dependences;
         }
         @Expose
         @SerializedName("backup")
         ArrayList<ComplexListOfServices> backup;
+
+        @Expose
+        @SerializedName("dependences")
+        LinkedList<LinkedList<Long>> dependences;
     }
 
     /**
@@ -713,11 +843,27 @@ public class PComplexService extends javax.swing.JPanel {
         Gson gson = null;
         try {
             gson = GsonPool.getInstance().borrowGson();
+            // сохраняем списки услуг
             final ArrayList<ComplexListOfServices> li = new ArrayList<>();
             for (Object cs : ((DefaultListModel<ComplexListOfServices>) (listOfLists.getModel())).toArray()) {
                 li.add((ComplexListOfServices) cs);
             }
-            fos.write(gson.toJson(new SaveList(li)).getBytes("UTF-8"));
+            // сохраняем зависимости
+            final LinkedList<LinkedList<Long>> deps = new LinkedList<>();
+            final DepService root = (DepService) treeDepends.getModel().getRoot();
+            final Enumeration<DepService> e = root.children();
+            while (e.hasMoreElements()) {
+                final DepService ds = e.nextElement();
+                final LinkedList<Long> dSer = new LinkedList<>();
+                dSer.add(ds.getId());
+                final Enumeration<DepService> e1 = ds.children();
+                while (e1.hasMoreElements()) {
+                    final DepService ds1 = e1.nextElement();
+                    dSer.add(ds1.getId());
+                }
+                deps.add(dSer);
+            }
+            fos.write(gson.toJson(new SaveList(li, deps)).getBytes("UTF-8"));
             fos.flush();
             fos.close();
         } catch (IOException ex) {
@@ -727,6 +873,70 @@ public class PComplexService extends javax.swing.JPanel {
         }
 
         QLog.l().logger().info("Конфигурация комплексных услуг сохранена.");
+    }
+
+    public class DepService extends DefaultMutableTreeNode {
+
+        final String name;
+        final Long id;
+
+        public DepService(String name, Long id) {
+            this.name = name;
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
+    }
+
+    public class DepServiceTree extends DefaultTreeModel {
+
+        public DepServiceTree(final TreeNode root1) {
+            super(root1);
+            final DefaultTreeModel f = this;
+            final ATreeModel tm = (ATreeModel) treeServices.getModel();
+            QServiceTree.sailToStorm(tm.getRoot(), new ISailListener() {
+
+                @Override
+                public void actionPerformed(TreeNode service) {
+                    final QService serv = (QService) service;
+                    if (serv.isLeaf()) {
+                        final DepService ser = new DepService(serv.getName(), serv.getId());
+                        f.insertNodeInto(ser, (MutableTreeNode) root1, root1.getChildCount());
+                    }
+                }
+            });
+        }
+
+        public LinkedList<Long> getDeps(Long id) {
+            final LinkedList<Long> deps = new LinkedList<>();
+            deps.add(id);
+            final DepServiceTree tm = (DepServiceTree) treeDepends.getModel();
+            final Enumeration<DepService> e = ((DefaultMutableTreeNode) tm.getRoot()).children();
+            while (e.hasMoreElements()) {
+                final DepService ds = e.nextElement();
+                if (id.equals(ds.getId())) {
+                    final Enumeration<DepService> e1 = ds.children();
+                    while (e1.hasMoreElements()) {
+                        final DepService ds1 = e1.nextElement();
+                        deps.add(ds1.getId());
+                    }
+                    break;
+                }
+            }
+            return deps;
+        }
     }
 
     /**
@@ -739,6 +949,9 @@ public class PComplexService extends javax.swing.JPanel {
         if (recovFile.exists()) {
             QLog.l().logger().warn("Восстановление состояние системы после вчерашнего... нештатного завершения работы сервера.");
             //восстанавливаем состояние
+
+            //для начала сделаем список зависимостей - дерево перврго уровня
+            treeDepends.setModel(new DepServiceTree(new DepService("root", -1L)));
 
             final FileInputStream fis;
             try {
@@ -757,7 +970,7 @@ public class PComplexService extends javax.swing.JPanel {
                 throw new ClientException(ex);
             }
 
-            final SaveList recList;
+            SaveList recList;
             final Gson gson = GsonPool.getInstance().borrowGson();
             try {
                 recList = gson.fromJson(rec_data, SaveList.class);
@@ -766,8 +979,30 @@ public class PComplexService extends javax.swing.JPanel {
             } finally {
                 GsonPool.getInstance().returnGson(gson);
             }
+            if (recList == null) {
+                recList = new SaveList(new ArrayList<ComplexListOfServices>(), new LinkedList<LinkedList<Long>>());
+            }
 
             try {
+                // загружаем зависимости в уже загруженные услуги(дерево зависимостей)
+                final DepService root = (DepService) treeDepends.getModel().getRoot();
+                final Enumeration<DepService> e = root.children();
+                while (e.hasMoreElements()) {
+                    final DepService ds = e.nextElement();
+                    for (LinkedList<Long> rec : recList.dependences) {
+                        if (rec.get(0).equals(ds.id)) {
+                            for (Long long1 : rec) {
+                                final QService ser = QServiceTree.getInstance().getById(long1);
+                                if (ser != null && !ser.getId().equals(ds.id)) {
+                                    ds.add(new DepService(ser.getName(), long1));
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                // загружаем списки сохраненные
                 ((DefaultListModel) (listOfLists.getModel())).clear();
                 for (ComplexListOfServices rec : recList.backup) {
 
@@ -918,46 +1153,46 @@ public class PComplexService extends javax.swing.JPanel {
                 }
             }
 
-            final LinkedList<LinkedList<Long>> ids = new LinkedList<>();
+            final LinkedList<LinkedList<LinkedList<Long>>> ids = new LinkedList<>();
             if (listFreeServices.getModel().getSize() != 0) {
-                final LinkedList<Long> list = new LinkedList<>();
+                final LinkedList<LinkedList<Long>> list = new LinkedList<>();
                 for (Object object : ((DefaultListModel) (listFreeServices.getModel())).toArray()) {
-                    list.add(((QService) object).getId());
+                    list.add(((DepServiceTree) (treeDepends.getModel())).getDeps(((QService) object).getId()));
                 }
                 ids.add(list);
             }
             if (listServ1.getModel().getSize() != 0) {
-                final LinkedList<Long> list = new LinkedList<>();
+                final LinkedList<LinkedList<Long>> list = new LinkedList<>();
                 for (Object object : ((DefaultListModel) (listServ1.getModel())).toArray()) {
-                    list.add(((QService) object).getId());
+                    list.add(((DepServiceTree) (treeDepends.getModel())).getDeps(((QService) object).getId()));
                 }
                 ids.add(list);
             }
             if (listServ2.getModel().getSize() != 0) {
-                final LinkedList<Long> list = new LinkedList<>();
+                final LinkedList<LinkedList<Long>> list = new LinkedList<>();
                 for (Object object : ((DefaultListModel) (listServ2.getModel())).toArray()) {
-                    list.add(((QService) object).getId());
+                    list.add(((DepServiceTree) (treeDepends.getModel())).getDeps(((QService) object).getId()));
                 }
                 ids.add(list);
             }
             if (listServ3.getModel().getSize() != 0) {
-                final LinkedList<Long> list = new LinkedList<>();
+                final LinkedList<LinkedList<Long>> list = new LinkedList<>();
                 for (Object object : ((DefaultListModel) (listServ3.getModel())).toArray()) {
-                    list.add(((QService) object).getId());
+                    list.add(((DepServiceTree) (treeDepends.getModel())).getDeps(((QService) object).getId()));
                 }
                 ids.add(list);
             }
             if (listServ4.getModel().getSize() != 0) {
-                final LinkedList<Long> list = new LinkedList<>();
+                final LinkedList<LinkedList<Long>> list = new LinkedList<>();
                 for (Object object : ((DefaultListModel) (listServ4.getModel())).toArray()) {
-                    list.add(((QService) object).getId());
+                    list.add(((DepServiceTree) (treeDepends.getModel())).getDeps(((QService) object).getId()));
                 }
                 ids.add(list);
             }
             if (listServ5.getModel().getSize() != 0) {
-                final LinkedList<Long> list = new LinkedList<>();
+                final LinkedList<LinkedList<Long>> list = new LinkedList<>();
                 for (Object object : ((DefaultListModel) (listServ5.getModel())).toArray()) {
-                    list.add(((QService) object).getId());
+                    list.add(((DepServiceTree) (treeDepends.getModel())).getDeps(((QService) object).getId()));
                 }
                 ids.add(list);
             }
@@ -983,8 +1218,10 @@ public class PComplexService extends javax.swing.JPanel {
 
         // поддержка расширяемости плагинами
         boolean flag = false;
-        for (final IPrintTicket event : ServiceLoader.load(IPrintTicket.class)) {
-            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+        for (final IPrintTicket event : ServiceLoader.load(IPrintTicket.class
+        )) {
+            QLog.l()
+                    .logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
             try {
                 flag = event.printTicketComplex(customer, tm);
             } catch (Throwable tr) {
@@ -1081,9 +1318,16 @@ public class PComplexService extends javax.swing.JPanel {
 
                 line = line + 3;
 
-                write(FWelcome.getLocaleMessage("ticket.time"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
+                write(FWelcome.getLocaleMessage("ticket.time") + " " +
+                        (Locales.getInstance().isRuss ?
+                                Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm") :
+                                (Locales.getInstance().isUkr ? 
+                                        Uses.getUkrDate(customer.getStandTime(), "dd MMMM HH:mm") : 
+                                        Uses.format_for_label.format(customer.getStandTime())))
+               
+                        , ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
 
-                write(Locales.getInstance().isRuss ? Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm") : (Locales.getInstance().isUkr ? Uses.getUkrDate(customer.getStandTime(), "dd MMMM HH:mm") : Uses.format_for_label.format(customer.getStandTime())), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+               // write(Locales.getInstance().isRuss ? Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm") : (Locales.getInstance().isUkr ? Uses.getUkrDate(customer.getStandTime(), "dd MMMM HH:mm") : Uses.format_for_label.format(customer.getStandTime())), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (customer.getService().getInput_required()) {
                     write(customer.getService().getTextToLocale(QService.Field.INPUT_CAPTION).replaceAll("<.*?>", ""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
@@ -1114,10 +1358,13 @@ public class PComplexService extends javax.swing.JPanel {
 
                 write(FWelcome.getLocaleMessage("ticket.wait"), ++line, WelcomeParams.getInstance().leftMargin, 1.8, 1);
 
-                write(FWelcome.getLocaleMessage("ticket.service"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
-                write("№ 1 _____________________________", ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
+                line++;
+                //write(FWelcome.getLocaleMessage("ticket.service"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
+                //write("№ 1 _____________________________", ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
+                g2.drawRect(WelcomeParams.getInstance().leftMargin, WelcomeParams.getInstance().topMargin + line * WelcomeParams.getInstance().lineHeigth,
+                        (int) (WelcomeParams.getInstance().lineHeigth*1.1), (int) (WelcomeParams.getInstance().lineHeigth*1.1));
                 final long n1 = customer.getService().getId();
-                String name = customer.getService().getTextToLocale(QService.Field.NAME);
+                String name = " 1    " + customer.getService().getTextToLocale(QService.Field.NAME);
                 line = writeLongString(name, line);
                 name = customer.getService().getTextToLocale(QService.Field.DESCRIPTION);
                 line = writeLongString(name, line);
@@ -1128,15 +1375,15 @@ public class PComplexService extends javax.swing.JPanel {
                 }
 
                 final LinkedList<QService> servs = new LinkedList<>();
-                for (LinkedList<Long> ids : customer.getComplexId()) {
-                    for (final Long id : ids) {
-                        if (id != n1) {
+                for (LinkedList<LinkedList<Long>> ids : customer.getComplexId()) {
+                    for (final LinkedList<Long> id : ids) {
+                        if (id.getFirst() != n1) {
                             QServiceTree.sailToStorm(tm.getRoot(), new ISailListener() {
 
                                 @Override
                                 public void actionPerformed(TreeNode service) {
                                     final QService serv = (QService) service;
-                                    if (id == serv.getId().longValue()) {
+                                    if (id.getFirst() == serv.getId().longValue()) {
                                         servs.add(serv);
                                     }
                                 }
@@ -1146,8 +1393,11 @@ public class PComplexService extends javax.swing.JPanel {
                 }
                 for (QService qService : servs) {
                     ++line;
-                    write("№   _____________________________", ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
-                    String str = qService.getTextToLocale(QService.Field.NAME);
+                    //write("№   _____________________________", ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
+                    
+                    g2.drawRect(WelcomeParams.getInstance().leftMargin, WelcomeParams.getInstance().topMargin + line * WelcomeParams.getInstance().lineHeigth, 
+                           (int) (WelcomeParams.getInstance().lineHeigth*1.1), (int) (WelcomeParams.getInstance().lineHeigth*1.1));
+                    String str = "        "+qService.getTextToLocale(QService.Field.NAME);
                     line = writeLongString(str, line);
                     str = qService.getTextToLocale(QService.Field.DESCRIPTION);
                     line = writeLongString(str, line);
@@ -1248,6 +1498,20 @@ public class PComplexService extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_treeServicesKeyPressed
 
+    private void treeDependsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeDependsMouseClicked
+        final TreePath selectedPath = treeDepends.getSelectionPath();
+        if (selectedPath != null) {
+            if (evt == null || evt.getClickCount() > 1) {
+                final DepService service = (DepService) selectedPath.getLastPathComponent();
+                final DefaultListModel<QService> sl = (DefaultListModel<QService>) (listFreeServices.getModel());
+                if (service.isLeaf() && service.getParent().getParent() != null) {
+                    (((DepServiceTree) treeDepends.getModel())).removeNodeFromParent(service);
+                    saveState();
+                }
+            }
+        }
+    }//GEN-LAST:event_treeDependsMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonClearLists;
     private javax.swing.JButton buttonSaveList;
@@ -1258,6 +1522,8 @@ public class PComplexService extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -1266,9 +1532,11 @@ public class PComplexService extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
+    private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JList listFreeServices;
     private javax.swing.JList listOfLists;
     private javax.swing.JList listServ1;
@@ -1276,6 +1544,7 @@ public class PComplexService extends javax.swing.JPanel {
     private javax.swing.JList listServ3;
     private javax.swing.JList listServ4;
     private javax.swing.JList listServ5;
+    private javax.swing.JTree treeDepends;
     private javax.swing.JTree treeServices;
     // End of variables declaration//GEN-END:variables
 }

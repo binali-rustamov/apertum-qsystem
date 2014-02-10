@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.ServiceLoader;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import ru.apertum.qsystem.client.Locales;
@@ -42,6 +43,8 @@ import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.extra.IStartServer;
+import ru.apertum.qsystem.hibernate.AnnotationSessionFactoryBean;
 import ru.apertum.qsystem.reports.model.QReportsList;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.controller.Executer;
@@ -142,11 +145,9 @@ public class QServer extends Thread {
 
         // Отчетный сервер, выступающий в роли вэбсервера, обрабатывающего запросы на выдачу отчетов
         WebServer.getInstance().startWebServer(ServerProps.getInstance().getProps().getWebServerPort());
+        loadPool();
         // запускаем движок индикации сообщения для кастомеров
         MainBoard.getInstance().showBoard();
-
-        loadPool();
-
         // test ServerProps.getInstance().getProps().getZoneBoardServAddrList();
         if (!(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getStartTime()).equals(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getFinishTime())))) {
             /**
@@ -191,6 +192,23 @@ public class QServer extends Thread {
             clearServices.start();
         }
 
+        // подключения плагинов, которые стартуют в самом начале.
+        // поддержка расширяемости плагинами
+        for (final IStartServer event : ServiceLoader.load(IStartServer.class)) {
+            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+            try {
+                new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        event.start();
+                    }
+                }).start();
+            } catch (Throwable tr) {
+                QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+            }
+        }
+
         // привинтить сокет на локалхост, порт 3128
         final ServerSocket server;
         try {
@@ -202,8 +220,9 @@ public class QServer extends Thread {
             throw new ServerException("Ошибка сети: " + e);
         }
         server.setSoTimeout(500);
+        final AnnotationSessionFactoryBean as = (AnnotationSessionFactoryBean) Spring.getInstance().getFactory().getBean("conf");
         System.out.println("Server QSystem started.\n");
-        QLog.l().logger().info("Сервер системы 'Очередь' запущен.");
+        QLog.l().logger().info("Сервер системы 'Очередь' запущен. DB name='" + as.getName() + "' url=" + as.getUrl());
         int pos = 0;
         boolean exit = false;
         // слушаем порт
@@ -379,6 +398,7 @@ public class QServer extends Thread {
         try {
             QLog.l().logger().info("Сохранение состояния.");
             final LinkedList<QCustomer> backup = new LinkedList<>();// создаем список сохраняемых кастомеров
+            final LinkedList<Long> pauses = new LinkedList<>();// создаем список юзеров у которых менопауза
 
             for (QService service : QServiceTree.getInstance().getNodes()) {
                 backup.addAll(service.getClients());
@@ -387,6 +407,9 @@ public class QServer extends Thread {
             for (QUser user : QUserList.getInstance().getItems()) {
                 if (user.getCustomer() != null) {
                     backup.add(user.getCustomer());
+                }
+                if (user.isPause()) {
+                    pauses.add(user.getId());
                 }
             }
             // в темповый файл
@@ -400,7 +423,7 @@ public class QServer extends Thread {
             Gson gson = null;
             try {
                 gson = GsonPool.getInstance().borrowGson();
-                fos.write(gson.toJson(new TempList(backup, QPostponedList.getInstance().getPostponedCustomers())).getBytes("UTF-8"));
+                fos.write(gson.toJson(new TempList(backup, QPostponedList.getInstance().getPostponedCustomers(), pauses)).getBytes("UTF-8"));
                 fos.flush();
                 fos.close();
             } catch (IOException ex) {
@@ -414,7 +437,7 @@ public class QServer extends Thread {
         QLog.l().logger().info("Состояние сохранено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
     }
 
-    static class TempList {
+    static public class TempList {
 
         public TempList() {
         }
@@ -423,12 +446,24 @@ public class QServer extends Thread {
             this.backup = backup;
             this.postponed = postponed;
         }
+
+        public TempList(LinkedList<QCustomer> backup, LinkedList<QCustomer> postponed, LinkedList<Long> pauses) {
+            this.backup = backup;
+            this.postponed = postponed;
+            this.pauses = pauses;
+        }
         @Expose
         @SerializedName("backup")
-        LinkedList<QCustomer> backup;
+        public LinkedList<QCustomer> backup;
         @Expose
         @SerializedName("postponed")
-        LinkedList<QCustomer> postponed;
+        public LinkedList<QCustomer> postponed;
+        @Expose
+        @SerializedName("method")
+        public String method = null;
+        @Expose
+        @SerializedName("pauses")
+        public LinkedList<Long> pauses = null;
     }
 
     /**
@@ -501,6 +536,12 @@ public class QServer extends Thread {
                         QUserList.getInstance().getById(user.getId()).setCustomer(recCustomer);
                         recCustomer.setUser(QUserList.getInstance().getById(user.getId()));
                         QLog.l().logger().debug("Добавили клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к юзеру \"" + user.getName() + "\"");
+                    }
+                }
+                for (long idUser : recList.pauses) {
+                    final QUser user = QUserList.getInstance().getById(idUser);
+                    if (user != null) {
+                        user.setPause(Boolean.TRUE);
                     }
                 }
             } catch (ServerException ex) {

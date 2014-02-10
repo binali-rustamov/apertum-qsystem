@@ -1,27 +1,14 @@
 #!/bin/sh
 
 # init
-function pause(){
-   read -p “$*”
+pause()
+{
+   read -p "$@" nothing
 }
 # other stuff
 
-pause 'Admin tools for change context. Press any key ...'
+pause "Admin tools for changing DB cont. Press any key ..."
 
+java -cp dist/QSystem.jar ru.apertum.qsystem.server.ChangeContext
 
-jar xf lib/qcontext.jar ru/apertum/qsystem/spring/qsContext.xml
-jar xf lib/qcontext.jar ru/apertum/qsystem/spring/spring-beans-3.0.xsd
-
-pause 'Context is open. Press any key ...'
-
-java -cp QSystem.jar ru.apertum.qsystem.server.ChangeContext ru/apertum/qsystem/spring/qsContext.xml
-
-pause 'Context is change. Press any key ...'
-
-jar uf lib/qcontext.jar ru/apertum/qsystem/spring/qsContext.xml
-
-rm -r ru
-
-pause 'Context is saved. Process is finished. Press any key ...'
-
-
+pause "Context is changed. Press any key ..."

@@ -27,5 +27,5 @@ import ru.apertum.qsystem.server.model.QService;
  */
 public interface ISelectNextService extends IExtra {
 
-    public QService select(QCustomer customer, QService before, LinkedList<LinkedList<Long>> setOfServices);
+    public QService select(QCustomer customer, QService before, LinkedList<LinkedList<LinkedList<Long>>> setOfServices);
 }

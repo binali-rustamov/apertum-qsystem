@@ -221,13 +221,16 @@ public class NetCommander {
      * Постановка в очередь.
      *
      * @param netProperty netProperty параметры соединения с сервером.
-     * @param servicesId услуги, в которые пытаемся встать.
+     * @param servicesId услуги, в которые пытаемся встать. Требует уточнения что это за трехмерный массив. 
+     * Это пять списков. Первый это вольнопоследовательные услуги. Остальные четыре это зависимопоследовательные услуги, т.е. пока один не закончится на другой не переходить.
+     * Что такое элемент списка. Это тоже список. Первый элемент это та самая комплексная услуга(ID). А остальные это зависимости, т.е. если есть еще не оказанные услуги
+     * но назначенные, которые в зависимостях, то их надо оказать.
      * @param password пароль того кто пытается выполнить задание.
      * @param priority приоритет.
      * @param inputData
      * @return Созданный кастомер.
      */
-    public static QCustomer standInSetOfServices(INetProperty netProperty, LinkedList<LinkedList<Long>> servicesId, String password, int priority, String inputData) {
+    public static QCustomer standInSetOfServices(INetProperty netProperty, LinkedList<LinkedList<LinkedList<Long>>> servicesId, String password, int priority, String inputData) {
         QLog.l().logger().info("Встать в очередь комплексно.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
@@ -495,8 +498,6 @@ public class NetCommander {
             rpc = gson.fromJson(res, RpcInviteCustomer.class);
         } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
-        } catch (Exception ex) {
-            throw new ClientException("Ошибка при обработке ответа, возможно с библиотеками.\n" + ex.toString());
         } finally {
             GsonPool.getInstance().returnGson(gson);
         }
@@ -1350,7 +1351,8 @@ public class NetCommander {
      *
      * @param netProperty
      * @param userId id юзера который вызывает
-     * @param smartData
+     * @param lock
+     * @return 
      */
     public static boolean setBussy(INetProperty netProperty, long userId, boolean lock) {
         QLog.l().logger().info("Изменение приоритетов услуг оператором.");

@@ -23,6 +23,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -268,7 +269,7 @@ public class QSchedule implements IidGetter, Serializable {
     public void setTime_end_7(Date time_end_7) {
         this.time_end_7 = time_end_7;
     }
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "breaks_id1")
     private QBreaks breaks_1;
 

@@ -501,7 +501,7 @@ public class FWelcome extends javax.swing.JFrame {
             if (!QLog.l().isDemo()) {
                 setUndecorated(true);
                 //setAlwaysOnTop(true);
-                setResizable(false);
+                //setResizable(false);
 
                 // спрячем курсор мыши
                 int[] pixels = new int[16 * 16];

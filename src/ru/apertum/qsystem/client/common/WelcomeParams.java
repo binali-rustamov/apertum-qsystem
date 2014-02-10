@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.Locale;
 import java.util.Properties;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -29,6 +30,7 @@ import javax.print.attribute.standard.MediaPrintableArea;
 import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
+import javax.print.attribute.standard.PrinterName;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
@@ -57,7 +59,8 @@ public class WelcomeParams {
     private static final String LINE_LENGTH = "line_length";
     private static final String SCALE_VERTICAL = "scale_vertical";
     private static final String SCALE_HORIZONTAL = "scale_horizontal";
-    private static final String EXECUTIVE = "ptinter.MediaSizeName.EXECUTIVE";
+    private static final String PRNAME = "printer.Name";
+    private static final String EXECUTIVE = "printer.MediaSizeName.EXECUTIVE";
     private static final String PRINTABLE_AREA = "printer.MediaPrintableArea";
     // параметр размера бумаги. A0 A1 ... A10 B0 B2 ... B10 C0 C1 ... C6. Пустое или неверное значение - отключен
     private static final String MEDIA_SIZE_NAME = "printer.MediaSizeName";
@@ -356,6 +359,9 @@ public class WelcomeParams {
         topSize = Integer.parseInt(settings.getProperty(TOP_SIZE, "0"));
         if ("1".equals(settings.getProperty(EXECUTIVE, "0"))) {
             printAttributeSet.add(MediaSizeName.EXECUTIVE);
+        }
+        if (!"".equals(settings.getProperty(PRNAME, ""))) {
+            printAttributeSet.add(new PrinterName(settings.getProperty(PRNAME, ""), Locale.getDefault()));
         }
         if (!"".equals(settings.getProperty(PRINTABLE_AREA, "")) && settings.getProperty(PRINTABLE_AREA, "").split(",").length == 4) {
             final String[] ss = settings.getProperty(PRINTABLE_AREA, "").split(",");

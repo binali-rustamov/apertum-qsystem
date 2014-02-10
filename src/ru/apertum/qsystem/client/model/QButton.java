@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.ServiceLoader;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -48,14 +49,15 @@ import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.cmd.RpcGetServiceState.ServiceState;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.extra.IWelcome;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.apertum.qsystem.server.model.QService;
 
 /**
- * Сдесь реализован класс кнопки пользователя при выборе услуги.
- * Класс кнопки пользователя при выборе услуги.
- * Кнопка умеет слать задание на сервер для постановки в очередь.
+ * Сдесь реализован класс кнопки пользователя при выборе услуги. Класс кнопки пользователя при выборе услуги. Кнопка умеет слать задание на сервер для
+ * постановки в очередь.
+ *
  * @author Evgeniy Egorov
  */
 public class QButton extends JButton {
@@ -93,14 +95,14 @@ public class QButton extends JButton {
         isActive = true;
         isVisible = true;
     }
-    
+
     public QButton(String resourceName) {
         service = null;
         form = null;
         parent = null;
         isActive = true;
         isVisible = true;
-        
+
         // Нарисуем картинку на кнопке если надо. Загрузить можно из файла или ресурса
         if ("".equals(resourceName)) {
             background = null;
@@ -131,7 +133,7 @@ public class QButton extends JButton {
                 }
             }
         }
-        
+
         //займемся внешним видом
         // либо просто стандартная кнопка, либо картинка на кнопке если она есть
         if (background == null) {
@@ -222,7 +224,7 @@ public class QButton extends JButton {
                             form.clockBack.start();
                         }
                     }
-                    if (service.isLeaf()) {
+                    if (service.isLeaf()) {// отсюда и до конца :)
 
                         //  в зависимости от активности формируем сообщение и шлем запрос на сервер об статистике
                         if (isActive) {
@@ -253,7 +255,6 @@ public class QButton extends JButton {
                                     res.setAuthorizationCustomer(new QAuthorizationCustomer(inputData));
                                 }
 
-
                                 //вешаем заставку
                                 final GregorianCalendar gc_time = new GregorianCalendar();
                                 gc_time.setTime(res.getAdvanceTime());
@@ -281,12 +282,28 @@ public class QButton extends JButton {
                                 return;
                             }
 
+                            // Отсюда действие по нажатия кнопки чтоб просто встать в очередь
                             // Узнать, есть ли информация для прочнения в этой услуге.
                             // Если текст информации не пустой, то показать диалог сэтим текстом
                             // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
                             // если есть текст, то показываем диалог
                             if (service.getPreInfoHtml() != null && !"".equals(service.getPreInfoHtml())) {
-                                if (!FPreInfoDialog.showPreInfoDialog(form, service.getTextToLocale(QService.Field.PRE_INFO_HTML), service.getTextToLocale(QService.Field.PRE_INFO_PRINT_TEXT), true, true, WelcomeParams.getInstance().delayBack * 2)) {
+
+                                // поддержка расширяемости плагинами
+                                // покажим преинфо из плагинов
+                                boolean flag = true;
+                                for (final IWelcome event : ServiceLoader.load(IWelcome.class)) {
+                                    QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+                                    boolean f = false;
+                                    try {
+                                        f = event.showPreInfoDialog(form, FWelcome.netProperty, service.getTextToLocale(QService.Field.PRE_INFO_HTML), service.getTextToLocale(QService.Field.PRE_INFO_PRINT_TEXT), true, true, WelcomeParams.getInstance().delayBack * 2);
+                                    } catch (Throwable tr) {
+                                        QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+                                    }
+                                    flag = flag && f;
+                                }
+
+                                if (!flag || !FPreInfoDialog.showPreInfoDialog(form, service.getTextToLocale(QService.Field.PRE_INFO_HTML), service.getTextToLocale(QService.Field.PRE_INFO_PRINT_TEXT), true, true, WelcomeParams.getInstance().delayBack * 2)) {
                                     // выходим т.к. кастомер отказался продолжать
                                     return;
                                 }
@@ -352,7 +369,23 @@ public class QButton extends JButton {
                         } else {
                             //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
                             if (service.getInput_required()) {
-                                inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION));
+
+                                // поддержка расширяемости плагинами
+                                // запросим ввода данных 
+                                String flag = null;
+                                for (final IWelcome event : ServiceLoader.load(IWelcome.class)) {
+                                    QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+                                    String f = null;
+                                    try {
+                                        f = event.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION));
+                                    } catch (Throwable tr) {
+                                        QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+                                    }
+                                    flag = (f == null ? flag : (flag == null ? f : (flag + " " + f)));
+                                }
+
+                                inputData = (flag == null ? FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION))
+                                        : flag);
                                 if (inputData == null) {
                                     return;
                                 }
@@ -394,7 +427,6 @@ public class QButton extends JButton {
                                     + "<span style='font-size:60.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.your_nom") + "<br></span>"
                                     + "<span style='font-size:130.0pt;color:blue'>" + res.getPrefix() + res.getNumber() + "</span></p>",
                                     "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
-
 
                             QLog.l().logger().info("Печать этикетки.");
 

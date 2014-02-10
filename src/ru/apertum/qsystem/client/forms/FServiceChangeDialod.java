@@ -146,7 +146,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                         rbGongFirstOnly.setSelected(true);
                         break;
                     default:
-                        throw new AssertionError();
+                        rbNoGong.setSelected(true);
                 }
             }
             if (service.getSoundTemplate().length() > 2) {
@@ -173,7 +173,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                         rbNoGo.setSelected(true);
                         break;
                     default:
-                        throw new AssertionError();
+                        rbNoGo.setSelected(true);
                 }
             }
             if (service.getSoundTemplate().length() > 5) {

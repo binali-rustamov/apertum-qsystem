@@ -29,10 +29,9 @@ import ru.apertum.qsystem.server.ServerProps;
 import ru.apertum.qsystem.server.model.QService;
 
 /**
- * Класс проигрывания звуковых ресурсов и файлов.
- * Создает отдельный поток для каждого проигрыша, но игоает синхронизированно.
- * По этому все ресурсы проиграются друг за другом и это не будет тормозить основной поток.
- * Воспроизведение кучи мелких файлов глючит, накладываются др. на др.
+ * Класс проигрывания звуковых ресурсов и файлов. Создает отдельный поток для каждого проигрыша, но игоает синхронизированно. По этому все ресурсы проиграются
+ * друг за другом и это не будет тормозить основной поток. Воспроизведение кучи мелких файлов глючит, накладываются др. на др.
+ *
  * @author Evgeniy Egorov
  */
 public class SoundPlayer implements Runnable {
@@ -47,6 +46,7 @@ public class SoundPlayer implements Runnable {
 
     /**
      * Проиграть звуковой ресурс
+     *
      * @param resourceName имя проигрываемого ресурса
      */
     public static void play(String resourceName) {
@@ -57,6 +57,7 @@ public class SoundPlayer implements Runnable {
 
     /**
      * Проиграть набор звуковых ресурсов
+     *
      * @param resourceList список имен проигрываемых ресурсов
      */
     public static void play(LinkedList<String> resourceList) {
@@ -80,8 +81,10 @@ public class SoundPlayer implements Runnable {
         System.out.println("*****************************************\n");
     }
 
-    /** Asks the user to select a file to play.
-     * @return 
+    /**
+     * Asks the user to select a file to play.
+     *
+     * @return
      */
     public File getFileToPlay() {
         File file = null;
@@ -206,8 +209,9 @@ public class SoundPlayer implements Runnable {
 
     /**
      * Разбить фразу на звуки и сформировать набор файлов для воспроизведения.
+     *
      * @param path путь, где лежать звуковые ресурсы, это могут быть файлы на диске или ресурсы в jar
-     * @param phrase фраза для разбора 
+     * @param phrase фраза для разбора
      * @return список файлов для воспроизведения фразы
      */
     private static LinkedList<String> toSound(String path, String phrase) {
@@ -259,6 +263,7 @@ public class SoundPlayer implements Runnable {
 
     /**
      * Разбить фразу на звуки и сформировать набор файлов для воспроизведения. Упрощенный вариант.
+     *
      * @param path путь, где лежать звуковые ресурсы, это могут быть файлы на диске или ресурсы в jar
      * @param phrase фраза для разбора
      * @return список файлов для воспроизведения фразы
@@ -327,7 +332,6 @@ public class SoundPlayer implements Runnable {
             }
         }
 
-
         //final String is__ru = "й ц у к е н г ш щ з х ъ ф ы в а п р о л д ж э я ч с м и т ь б ю ё ";
         //final String not_ru = "iic u k e n g shghz x zzf yyv a p r o l d jzeeiachs m i t ccb iuio";
         //int pos = is__ru.indexOf(elem.toLowerCase());
@@ -350,8 +354,9 @@ public class SoundPlayer implements Runnable {
 
     /**
      * Проговорить вызов клиента голосом
+     *
      * @param clientNumber номер вызываемого клиента
-     * @param pointNumber  номер кабинета, куда вызвали
+     * @param pointNumber номер кабинета, куда вызвали
      */
     public static void inviteClient(String clientNumber, String pointNumber, boolean isFirst) {
         inviteClient(clientNumber, pointNumber, isFirst, null, null, null);
@@ -359,11 +364,12 @@ public class SoundPlayer implements Runnable {
 
     /**
      * Проговорить вызов клиента голосом
+     *
      * @param clientNumber номер вызываемого клиента
-     * @param pointNumber  номер кабинета, куда вызвали
-     * @param inviteType  Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать
-     * @param voiceType  Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать
-     * @param pointType  Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать 0 - кабинет, 1 - окно, 2 - стойка
+     * @param pointNumber номер кабинета, куда вызвали
+     * @param inviteType Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать
+     * @param voiceType Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать
+     * @param pointType Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать 0 - кабинет, 1 - окно, 2 - стойка
      */
     public static void inviteClient(String clientNumber, String pointNumber, boolean isFirst, Integer inviteType, Integer voiceType, Integer pointType) {
         final int ivt = inviteType == null ? ServerProps.getInstance().getProps().getSound() : inviteType;
@@ -405,10 +411,11 @@ public class SoundPlayer implements Runnable {
 
     /**
      * Проговорить вызов клиента голосом
-     * @param service 
+     *
+     * @param service
      * @param clientNumber номер вызываемого клиента
-     * @param pointNumber  номер кабинета, куда вызвали
-     * @param isFirst 
+     * @param pointNumber номер кабинета, куда вызвали
+     * @param isFirst
      */
     public static void inviteClient(QService service, String clientNumber, String pointNumber, boolean isFirst) {
         // Для начала найдем шаблон
@@ -433,7 +440,7 @@ public class SoundPlayer implements Runnable {
                     gong = 3;
                     break;
                 default:
-                    throw new AssertionError();
+                    gong = 1;
             }
         }
         boolean client = false;
@@ -463,7 +470,7 @@ public class SoundPlayer implements Runnable {
                     go_to = 5;
                     break;
                 default:
-                    throw new AssertionError();
+                    go_to = 5;
             }
         }
         boolean go_num = false;
@@ -486,14 +493,11 @@ public class SoundPlayer implements Runnable {
                 res.addAll(toSoundSimple(path, clientNumber));
             }
             switch (go_to) {
-                case 0:
+                case 1:
                     res.add(path + "tocabinet.wav");
                     break;
-                case 1:
-                    res.add(path + "towindow.wav");
-                    break;
                 case 2:
-                    res.add(path + "tostoika.wav");
+                    res.add(path + "towindow.wav");
                     break;
                 case 3:
                     res.add(path + "tostoika.wav");
@@ -501,10 +505,7 @@ public class SoundPlayer implements Runnable {
                 case 4:
                     res.add(path + "totable.wav");
                     break;
-                case 5:
-                    break;
-                default:
-                    throw new AssertionError();
+
             }
             if (go_num) {
                 res.addAll(toSoundSimple(path, pointNumber));

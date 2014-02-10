@@ -291,6 +291,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
     /**
      * Тут вся иллюминация
+     * @param record
      */
     protected void show(Record record) {
 

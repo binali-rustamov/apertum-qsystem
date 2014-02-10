@@ -205,11 +205,12 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         qPanel2.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 2, resourceMap.getColor("qPanel2.border.matteColor"))); // NOI18N
         qPanel2.setEndColor(resourceMap.getColor("qPanel2.endColor")); // NOI18N
         qPanel2.setEndPoint(new java.awt.Point(0, 100));
-        qPanel2.setGradient(java.lang.Boolean.TRUE);
+        qPanel2.setGradient(true);
         qPanel2.setName("qPanel2"); // NOI18N
         qPanel2.setStartColor(resourceMap.getColor("qPanel2.startColor")); // NOI18N
         qPanel2.setStartPoint(new java.awt.Point(0, 30));
 
+        labelMonday.setFont(resourceMap.getFont("labelMonday.font")); // NOI18N
         labelMonday.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelMonday.setText(resourceMap.getString("labelMonday.text")); // NOI18N
         labelMonday.setName("labelMonday"); // NOI18N
@@ -225,16 +226,19 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
             .addComponent(labelMonday, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
         );
 
+        labelMonday.getAccessibleContext().setAccessibleName(resourceMap.getString("labelMonday.AccessibleContext.accessibleName")); // NOI18N
+
         panelHeader.add(qPanel2);
 
         qPanel3.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 2, resourceMap.getColor("qPanel2.border.matteColor"))); // NOI18N
         qPanel3.setEndColor(resourceMap.getColor("qPanel3.endColor")); // NOI18N
         qPanel3.setEndPoint(new java.awt.Point(0, 100));
-        qPanel3.setGradient(java.lang.Boolean.TRUE);
+        qPanel3.setGradient(true);
         qPanel3.setName("qPanel3"); // NOI18N
         qPanel3.setStartColor(resourceMap.getColor("qPanel2.startColor")); // NOI18N
         qPanel3.setStartPoint(new java.awt.Point(0, 30));
 
+        labelTuesday.setFont(resourceMap.getFont("labelTuesday.font")); // NOI18N
         labelTuesday.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelTuesday.setText(resourceMap.getString("labelTuesday.text")); // NOI18N
         labelTuesday.setName("labelTuesday"); // NOI18N
@@ -250,17 +254,20 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
             .addComponent(labelTuesday, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
         );
 
+        labelTuesday.getAccessibleContext().setAccessibleName(resourceMap.getString("labelTuesday.AccessibleContext.accessibleName")); // NOI18N
+
         panelHeader.add(qPanel3);
 
         qPanel4.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 2, resourceMap.getColor("qPanel2.border.matteColor"))); // NOI18N
         qPanel4.setEnabled(false);
         qPanel4.setEndColor(resourceMap.getColor("qPanel4.endColor")); // NOI18N
         qPanel4.setEndPoint(new java.awt.Point(0, 100));
-        qPanel4.setGradient(java.lang.Boolean.TRUE);
+        qPanel4.setGradient(true);
         qPanel4.setName("qPanel4"); // NOI18N
         qPanel4.setStartColor(resourceMap.getColor("qPanel2.startColor")); // NOI18N
         qPanel4.setStartPoint(new java.awt.Point(0, 30));
 
+        labelWednesday.setFont(resourceMap.getFont("labelWednesday.font")); // NOI18N
         labelWednesday.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelWednesday.setText(resourceMap.getString("labelWednesday.text")); // NOI18N
         labelWednesday.setName("labelWednesday"); // NOI18N
@@ -276,17 +283,20 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
             .addComponent(labelWednesday, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
         );
 
+        labelWednesday.getAccessibleContext().setAccessibleName(resourceMap.getString("labelWednesday.AccessibleContext.accessibleName")); // NOI18N
+
         panelHeader.add(qPanel4);
 
         qPanel5.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 2, resourceMap.getColor("qPanel2.border.matteColor"))); // NOI18N
         qPanel5.setEnabled(false);
         qPanel5.setEndColor(resourceMap.getColor("qPanel5.endColor")); // NOI18N
         qPanel5.setEndPoint(new java.awt.Point(0, 100));
-        qPanel5.setGradient(java.lang.Boolean.TRUE);
+        qPanel5.setGradient(true);
         qPanel5.setName("qPanel5"); // NOI18N
         qPanel5.setStartColor(resourceMap.getColor("qPanel2.startColor")); // NOI18N
         qPanel5.setStartPoint(new java.awt.Point(0, 30));
 
+        labelThursday.setFont(resourceMap.getFont("labelThursday.font")); // NOI18N
         labelThursday.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelThursday.setText(resourceMap.getString("labelThursday.text")); // NOI18N
         labelThursday.setName("labelThursday"); // NOI18N
@@ -302,17 +312,20 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
             .addComponent(labelThursday, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
         );
 
+        labelThursday.getAccessibleContext().setAccessibleName(resourceMap.getString("labelThursday.AccessibleContext.accessibleName")); // NOI18N
+
         panelHeader.add(qPanel5);
 
         qPanel6.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 2, resourceMap.getColor("qPanel2.border.matteColor"))); // NOI18N
         qPanel6.setEnabled(false);
         qPanel6.setEndColor(resourceMap.getColor("qPanel6.endColor")); // NOI18N
         qPanel6.setEndPoint(new java.awt.Point(0, 100));
-        qPanel6.setGradient(java.lang.Boolean.TRUE);
+        qPanel6.setGradient(true);
         qPanel6.setName("qPanel6"); // NOI18N
         qPanel6.setStartColor(resourceMap.getColor("qPanel2.startColor")); // NOI18N
         qPanel6.setStartPoint(new java.awt.Point(0, 30));
 
+        labelFriday.setFont(resourceMap.getFont("labelFriday.font")); // NOI18N
         labelFriday.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelFriday.setText(resourceMap.getString("labelFriday.text")); // NOI18N
         labelFriday.setName("labelFriday"); // NOI18N
@@ -328,16 +341,19 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
             .addComponent(labelFriday, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
         );
 
+        labelFriday.getAccessibleContext().setAccessibleName(resourceMap.getString("labelFriday.AccessibleContext.accessibleName")); // NOI18N
+
         panelHeader.add(qPanel6);
 
         qPanel7.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 2, resourceMap.getColor("qPanel2.border.matteColor"))); // NOI18N
         qPanel7.setEndColor(resourceMap.getColor("qPanel7.endColor")); // NOI18N
         qPanel7.setEndPoint(new java.awt.Point(0, 100));
-        qPanel7.setGradient(java.lang.Boolean.TRUE);
+        qPanel7.setGradient(true);
         qPanel7.setName("qPanel7"); // NOI18N
         qPanel7.setStartColor(resourceMap.getColor("qPanel2.startColor")); // NOI18N
         qPanel7.setStartPoint(new java.awt.Point(0, 30));
 
+        labelSaturday.setFont(resourceMap.getFont("labelSaturday.font")); // NOI18N
         labelSaturday.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelSaturday.setText(resourceMap.getString("labelSaturday.text")); // NOI18N
         labelSaturday.setName("labelSaturday"); // NOI18N
@@ -353,16 +369,19 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
             .addComponent(labelSaturday, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
         );
 
+        labelSaturday.getAccessibleContext().setAccessibleName(resourceMap.getString("labelSaturday.AccessibleContext.accessibleName")); // NOI18N
+
         panelHeader.add(qPanel7);
 
         qPanel8.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 2, resourceMap.getColor("qPanel2.border.matteColor"))); // NOI18N
         qPanel8.setEndColor(resourceMap.getColor("qPanel7.endColor")); // NOI18N
         qPanel8.setEndPoint(new java.awt.Point(0, 100));
-        qPanel8.setGradient(java.lang.Boolean.TRUE);
+        qPanel8.setGradient(true);
         qPanel8.setName("qPanel8"); // NOI18N
         qPanel8.setStartColor(resourceMap.getColor("qPanel2.startColor")); // NOI18N
         qPanel8.setStartPoint(new java.awt.Point(0, 30));
 
+        labelSunday.setFont(resourceMap.getFont("labelSunday.font")); // NOI18N
         labelSunday.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelSunday.setText(resourceMap.getString("labelSunday.text")); // NOI18N
         labelSunday.setName("labelSunday"); // NOI18N
@@ -377,6 +396,8 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
             qPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(labelSunday, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
         );
+
+        labelSunday.getAccessibleContext().setAccessibleName(resourceMap.getString("labelSunday.AccessibleContext.accessibleName")); // NOI18N
 
         panelHeader.add(qPanel8);
 
@@ -510,32 +531,36 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
 
         javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FAdvanceCalendar.class, this);
         buttonClose.setAction(actionMap.get("closeAdvaseForm")); // NOI18N
+        buttonClose.setFont(resourceMap.getFont("buttonClose.font")); // NOI18N
         buttonClose.setIcon(resourceMap.getIcon("buttonClose.icon")); // NOI18N
         buttonClose.setText(resourceMap.getString("buttonClose.text")); // NOI18N
-        buttonClose.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        buttonClose.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(0), javax.swing.BorderFactory.createBevelBorder(0)));
         buttonClose.setFocusPainted(false);
         buttonClose.setName("buttonClose"); // NOI18N
 
         jButton1.setAction(actionMap.get("showBefore")); // NOI18N
+        jButton1.setFont(resourceMap.getFont("jButton1.font")); // NOI18N
         jButton1.setIcon(resourceMap.getIcon("jButton1.icon")); // NOI18N
         jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
         jButton1.setActionCommand(resourceMap.getString("jButton1.actionCommand")); // NOI18N
-        jButton1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton1.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(0), javax.swing.BorderFactory.createBevelBorder(0)));
         jButton1.setFocusPainted(false);
         jButton1.setName("jButton1"); // NOI18N
 
         jButton2.setAction(actionMap.get("setNow")); // NOI18N
+        jButton2.setFont(resourceMap.getFont("jButton2.font")); // NOI18N
         jButton2.setIcon(resourceMap.getIcon("jButton2.icon")); // NOI18N
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
         jButton2.setActionCommand(resourceMap.getString("jButton2.actionCommand")); // NOI18N
-        jButton2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton2.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(0), javax.swing.BorderFactory.createBevelBorder(0)));
         jButton2.setFocusPainted(false);
         jButton2.setName("jButton2"); // NOI18N
 
         jButton3.setAction(actionMap.get("showArter")); // NOI18N
+        jButton3.setFont(resourceMap.getFont("jButton3.font")); // NOI18N
         jButton3.setIcon(resourceMap.getIcon("jButton3.icon")); // NOI18N
         jButton3.setText(resourceMap.getString("jButton3.text")); // NOI18N
-        jButton3.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED)));
+        jButton3.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(0), javax.swing.BorderFactory.createBevelBorder(0)));
         jButton3.setFocusPainted(false);
         jButton3.setName("jButton3"); // NOI18N
 
@@ -766,9 +791,9 @@ public class FAdvanceCalendar extends javax.swing.JDialog {
         if (now.get(GregorianCalendar.DAY_OF_MONTH) == gc.get(GregorianCalendar.DAY_OF_MONTH)
                 && now.get(GregorianCalendar.DAY_OF_WEEK) == gc.get(GregorianCalendar.DAY_OF_WEEK)
                 && now.get(GregorianCalendar.DAY_OF_YEAR) == gc.get(GregorianCalendar.DAY_OF_YEAR)) {
-            label.setText("<html><b><p align=center><span style='font-size:25.0pt;color:red'>" + getNameWeekDay(gc.getTime()) + "<br/></span><span style='font-size:22.0pt;color:red'>" + Uses.format_dd_MMMM.format(gc.getTime()));
+            label.setText("<html><p align=center><span style='font-size:22.0pt;color:red'>" + getNameWeekDay(gc.getTime()) + "<br/></span><span style='font-size:22.0pt;color:red'>" + Uses.format_dd_MMMM.format(gc.getTime()));
         } else {
-            label.setText("<html><b><p align=center><span style='font-size:25.0pt;color:blue'>" + getNameWeekDay(gc.getTime()) + "<br/></span><span style='font-size:18.0pt;color:black'>" + Uses.format_dd_MMMM.format(gc.getTime()));
+            label.setText("<html><p align=center><span style='font-size:22.0pt;color:blue'>" + getNameWeekDay(gc.getTime()) + "<br/></span><span style='font-size:18.0pt;color:black'>" + Uses.format_dd_MMMM.format(gc.getTime()));
         }
     }
 

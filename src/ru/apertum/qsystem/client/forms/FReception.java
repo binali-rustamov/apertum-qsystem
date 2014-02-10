@@ -49,6 +49,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -121,6 +122,8 @@ public class FReception extends javax.swing.JFrame {
 
     /**
      * Creates new form FReception
+     *
+     * @param netProperty
      */
     public FReception(IClientNetProperty netProperty) {
         this.netProperty = netProperty;
@@ -239,9 +242,7 @@ public class FReception extends javax.swing.JFrame {
      */
     private void serviceListChange() {
         final TreePath selectedPath = treeServices.getSelectionPath();
-        if (selectedPath == null) {
-            return;
-        } else {
+        if (selectedPath != null) {
             showServiceInfo((QService) selectedPath.getLastPathComponent());
         }
     }
@@ -548,6 +549,8 @@ public class FReception extends javax.swing.JFrame {
         menuItemStand = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         menuItemAdv = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        menuItemServDisable = new javax.swing.JMenuItem();
         popupLineList = new javax.swing.JPopupMenu();
         menuSetPriority = new javax.swing.JMenuItem();
         popupPostponed = new javax.swing.JPopupMenu();
@@ -642,6 +645,15 @@ public class FReception extends javax.swing.JFrame {
         menuItemAdv.setName("menuItemAdv"); // NOI18N
         popupServiceTree.add(menuItemAdv);
 
+        jSeparator4.setName("jSeparator4"); // NOI18N
+        popupServiceTree.add(jSeparator4);
+
+        menuItemServDisable.setAction(actionMap.get("serviceDisable")); // NOI18N
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FReception.class);
+        menuItemServDisable.setText(resourceMap.getString("menuItemServDisable.text")); // NOI18N
+        menuItemServDisable.setName("menuItemServDisable"); // NOI18N
+        popupServiceTree.add(menuItemServDisable);
+
         popupLineList.setName("popupLineList"); // NOI18N
 
         menuSetPriority.setAction(actionMap.get("setPriority")); // NOI18N
@@ -655,7 +667,6 @@ public class FReception extends javax.swing.JFrame {
         popupPostponed.add(jMenuItem1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getResourceMap(FReception.class);
         setTitle(resourceMap.getString("Form.title")); // NOI18N
         setBackground(resourceMap.getColor("Form.background")); // NOI18N
         setName("Form"); // NOI18N
@@ -1455,7 +1466,6 @@ public class FReception extends javax.swing.JFrame {
             final String allClients = getLocaleMessage("messages.allClients") + ": ";
             //labelResume.setText("<html><span style='color:" + color + "'>" + allClients + inCount + "</span>");
             tempAll = "<span style='color:" + color + "'>" + allClients + inCount + "</span><br>" + tempAll;
-            temp1 = temp1 + allClients + inCount;
 
             // посмотрим, не приехал ли кастомер, который уже вызванный
             // если приехал, то его надо учесть
@@ -1648,9 +1658,7 @@ public class FReception extends javax.swing.JFrame {
     private void treeServicesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeServicesMouseClicked
         if (evt.getClickCount() > 1) {
             final TreePath selectedPath = treeServices.getSelectionPath();
-            if (selectedPath == null) {
-                return;
-            } else {
+            if (selectedPath != null) {
                 tabbedPaneService.setSelectedComponent(panelLineState);
                 refreshLines();
             }
@@ -1708,6 +1716,17 @@ public class FReception extends javax.swing.JFrame {
 
         final boolean res;
         try {
+            try {
+                for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                    //System.out.println(info.getName());
+                        /*Metal Nimbus CDE/Motif Windows   Windows Classic  */
+                    if ("Windows".equals(info.getName())) {
+                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            }
             fReception = new FReception(netProperty);
             Uses.setLocation(fReception);
             res = fReception.load();
@@ -1719,6 +1738,7 @@ public class FReception extends javax.swing.JFrame {
         if (res) {
             java.awt.EventQueue.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         fReception.setVisible(true);
@@ -1795,6 +1815,7 @@ public class FReception extends javax.swing.JFrame {
             return false;
         }
 
+        panelComplexServ.removeAll();
         panelComplexServ.setLayout(new GridLayout(1, 1));
         // в темповый файл
         final File file;
@@ -2078,6 +2099,41 @@ public class FReception extends javax.swing.JFrame {
     public void sendMessage() {
         FMessager.getMessager(this, netProperty.getClientPort(), listUsers.getModel(), treeServices.getModel());
     }
+
+    @Action
+    public void serviceDisable() {
+        final TreePath selectedPath = treeServices.getSelectionPath();
+        if (selectedPath != null) {
+            final QService service = (QService) selectedPath.getLastPathComponent();
+            final String name = (String) JOptionPane.showInputDialog(this,
+                    getLocaleMessage("admin.select_ability.message") + " \"" + service.getName() + "\"",
+                    getLocaleMessage("admin.select_ability.title"),
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    new String[]{getLocaleMessage("admin.service_ability.yes"), getLocaleMessage("admin.service_ability.no")},
+                    null);
+            //Если не выбрали, то выходим
+            if (name != null) {
+                if (name.equalsIgnoreCase(getLocaleMessage("admin.service_ability.yes"))) {
+                    NetCommander.changeTempAvailableService(netProperty, service.getId(), "");
+                } else {
+                    final String mess = (String) JOptionPane.showInputDialog(this,
+                            getLocaleMessage("admin.ability.enter_reason"),
+                            getLocaleMessage("admin.select_ability.title"),
+                            JOptionPane.QUESTION_MESSAGE);
+                    if (mess != null) {
+                        NetCommander.changeTempAvailableService(netProperty, service.getId(), mess);
+                    } else {
+                        return;
+                    }
+                }
+                JOptionPane.showMessageDialog(this,
+                        getLocaleMessage("admin.select_ability.message") + " " + service.getName() + " \"" + name + "\"",
+                        getLocaleMessage("admin.select_ability.title"),
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    }
     private static FReception fReception;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuBar MenuBar;
@@ -2116,6 +2172,7 @@ public class FReception extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
@@ -2141,6 +2198,7 @@ public class FReception extends javax.swing.JFrame {
     private javax.swing.JMenuItem menuItemChangePriority;
     private javax.swing.JMenuItem menuItemCheckTicket;
     private javax.swing.JMenuItem menuItemExit;
+    private javax.swing.JMenuItem menuItemServDisable;
     private javax.swing.JMenuItem menuItemStand;
     private javax.swing.JMenu menuLangs;
     private javax.swing.JMenuItem menuRefreshMainData;

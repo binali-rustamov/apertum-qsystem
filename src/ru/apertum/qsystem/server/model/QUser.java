@@ -58,11 +58,11 @@ public class QUser implements IidGetter, Serializable {
     }
     @Expose
     @SerializedName("id")
-    private Long id;
+    private Long id = new Date().getTime();
 
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    //@GeneratedValue(strategy = GenerationType.AUTO) авто нельзя, т.к. id нужны для формирования дерева
     @Override
     public Long getId() {
         return id;
@@ -111,7 +111,7 @@ public class QUser implements IidGetter, Serializable {
     @SerializedName("is_admin")
     private Boolean adminAccess = false;
 
-    public final void setAdminAccess(Boolean adminAccess) {
+    public void setAdminAccess(Boolean adminAccess) {
         this.adminAccess = adminAccess;
     }
 
@@ -126,7 +126,7 @@ public class QUser implements IidGetter, Serializable {
     @SerializedName("is_report_access")
     private Boolean reportAccess = false;
 
-    public final void setReportAccess(Boolean reportAccess) {
+    public void setReportAccess(Boolean reportAccess) {
         this.reportAccess = reportAccess;
     }
 
@@ -146,7 +146,7 @@ public class QUser implements IidGetter, Serializable {
      * Расшифрует
      * @param password - зашифрованное слово
      */
-    public final void setPassword(String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 
@@ -173,7 +173,7 @@ public class QUser implements IidGetter, Serializable {
     @SerializedName("point")
     private String point;
 
-    public final void setPoint(String point) {
+    public void setPoint(String point) {
         this.point = point;
     }
 
@@ -188,7 +188,7 @@ public class QUser implements IidGetter, Serializable {
     @SerializedName("name")
     private String name;
 
-    public final void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -201,7 +201,7 @@ public class QUser implements IidGetter, Serializable {
     @SerializedName("adress_rs")
     private Integer adressRS;
 
-    public final void setAdressRS(Integer adressRS) {
+    public void setAdressRS(Integer adressRS) {
         this.adressRS = adressRS;
     }
 
@@ -414,6 +414,7 @@ public class QUser implements IidGetter, Serializable {
 
     /**
      * Это чтоб осталась инфа сразу после вызова кастомера. Нужно для нормативов и статистики сиюминутной
+     * @param cust
      */
     public void initCustomer(QCustomer cust) {
         shadow = new Shadow(cust);

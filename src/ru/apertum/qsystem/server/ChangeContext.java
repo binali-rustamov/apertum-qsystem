@@ -16,58 +16,209 @@
  */
 package ru.apertum.qsystem.server;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Scanner;
 import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
+import ru.apertum.qsystem.common.GsonPool;
+import ru.apertum.qsystem.hibernate.SqlServers;
+import ru.apertum.qsystem.hibernate.SqlServers.SqlServer;
 
 /**
- * Утилита изменения Spring-контекста в инсталлированном приложении
- * Класс изменения Spring-контекста в инсталлированном приложении.
- * Консольный классик простого редактирования XML-файла
+ * Утилита изменения Spring-контекста в инсталлированном приложении Класс изменения Spring-контекста в инсталлированном приложении. Консольный классик простого
+ * редактирования XML-файла
+ *
  * @author Evgeniy Egorov
  */
 public class ChangeContext {
 
-    static private HashMap<String, Element> elBeans = new HashMap<>();
-    static private HashMap<String, Element> elProps = new HashMap<>();
+    static public final String filePath = "config/asfb.dat";
 
     public static void main(String args[]) throws DocumentException, IOException {
-        final SAXReader reader = new SAXReader(false);
-        final Element root = reader.read(args[0]).getRootElement();
+        final File conff = new File(filePath);
+        final LinkedList<SqlServer> servs;
+        if (conff.exists()) {
+            String str = "";
+            try (FileInputStream fis = new FileInputStream(conff); Scanner s = new Scanner(new InputStreamReader(fis, "UTF-8"))) {
+                while (s.hasNextLine()) {
+                    final String line = s.nextLine().trim();
+                    str += line;
+                }
+            } catch (IOException ex) {
+                System.err.println(ex);
+                throw new RuntimeException(ex);
+            }
+            Gson gson = GsonPool.getInstance().borrowGson();
+            try {
+                servs = gson.fromJson(str, SqlServers.class).getServers();
+                if (servs == null) {
+                    throw new RuntimeException("File error.");
+                }
+            } catch (JsonSyntaxException ex) {
+                throw new RuntimeException("Data error. " + ex.toString());
+            } finally {
+                GsonPool.getInstance().returnGson(gson);
+            }
+        } else {
+            servs = new LinkedList<>();
+        }
+
         String str = "asd";
         while (!"".equals(str)) {
-            str = getBeans(root);
-            final Element bean = elBeans.get(str);
-            if (bean != null) {
-                str = "asd";
-                // редактируем бин.
-                while (!"".equals(str)) {
-                    str = getBean(bean);
-                    final Element prop = elProps.get(str);
-                    if (prop != null) {
-                        // редактируем проперти.
-                        System.out.println();
-                        System.out.println(prop.attributeValue("index") == null ? "property[" + prop.attributeValue("name") + "]" : "constructor-arg[" + prop.attributeValue("index") + "]");
-                        System.out.println("Old value: " + prop.attributeValue("value"));
-                        System.out.print("New value: ");
-                        prop.addAttribute("value", read());
-                    }
+            System.out.println();
+            System.out.println();
+
+            if (servs.size() == 0) {
+                System.out.println("No servers.");
+            } else {
+                System.out.println("Servers:");
+                int i = 0;
+                for (SqlServer ser : servs) {
+                    System.out.println((++i) + " " + ser);
                 }
-                str = "asd";
+                System.out.println("");
+            }
+
+            if (servs.size() != 0) {
+
+                //System.out.println("Press '+' for create DB server");
+                //System.out.println("Press '-' for remove DB server");
+                System.out.println("Press 'm' for select main DB server");
+                System.out.println("Press 'c' for select current DB server");
+                System.out.print("Press number for edit DB server(enter - exit):");
+                str = read();
+                /*
+                 if ("+".equals(str)) {
+                 servs.add(new SqlServer("root", "root", "jdbc:mysql://127.0.0.1/qsystem?autoReconnect=true&amp;characterEncoding=UTF-8", false, false));
+                 }
+                 if ("-".equals(str)) {
+                 System.out.println("");
+                 System.out.println("Choose number for removing('enter' for cancel): ");
+                 int i = 0;
+                 for (SqlServer ser : servs) {
+                 System.out.println("  " + (++i) + "  " + ser);
+                 }
+                 System.out.print("Removing server:");
+                 str = read();
+                 if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= servs.size()) {
+                 servs.remove(Integer.parseInt(str) - 1);
+                 }
+                 str = "-";
+                 }
+                 */
+                if ("m".equals(str)) {
+                    System.out.println("");
+                    System.out.println("Choose number for main('enter' for cancel): ");
+                    int i = 0;
+                    for (SqlServer ser : servs) {
+                        System.out.println("  " + (++i) + "  " + ser);
+                    }
+                    System.out.print("Main server:");
+                    str = read();
+                    if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= servs.size()) {
+                        for (SqlServer ser : servs) {
+                            ser.setMain(Boolean.FALSE);
+                        }
+                        servs.get(Integer.parseInt(str) - 1).setMain(Boolean.TRUE);
+                    }
+                    str = "m";
+                }
+                if ("c".equals(str)) {
+                    System.out.println("");
+                    System.out.println("Choose number for current('enter' for cancel): ");
+                    int i = 0;
+                    for (SqlServer ser : servs) {
+                        System.out.println("  " + (++i) + "  " + ser);
+                    }
+                    System.out.print("Current server:");
+                    str = read();
+                    if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= servs.size()) {
+                        for (SqlServer ser : servs) {
+                            ser.setCurrent(Boolean.FALSE);
+                        }
+                        servs.get(Integer.parseInt(str) - 1).setCurrent(Boolean.TRUE);
+                    }
+                    str = "c";
+                }
+                if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= servs.size()) {
+                    final SqlServer ser = servs.get(Integer.parseInt(str) - 1);
+                    String a = null;
+                    if (ser.getUrl().indexOf("//") > -1 && ser.getUrl().indexOf("/", ser.getUrl().indexOf("//")) > -1) {
+                        a = ser.getUrl().substring(ser.getUrl().indexOf("//") + 2, ser.getUrl().indexOf("/", ser.getUrl().indexOf("//") + 2));
+                    }
+                    System.out.println("");
+                    System.out.println("");
+                    System.out.println("Choose number for edit('enter' for cancel): ");
+                    System.out.println("  1 user=" + ser.getUser());
+                    System.out.println("  2 password=" + ser.getPassword());
+                    System.out.println("  3 url=" + ser.getUrl());
+                    if (a != null) {
+                        System.out.println("  4 adress=" + a);
+                    }
+                    System.out.print("Parameter for edit:");
+                    str = read();
+                    if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= 4) {
+                        switch (Integer.parseInt(str)) {
+                            case 1:
+                                System.out.println("User");
+                                System.out.println("Old value: " + ser.getUser());
+                                System.out.print("New value: ");
+                                ser.setUser(read());
+                                break;
+                            case 2:
+                                System.out.println("Password");
+                                System.out.println("Old value: " + ser.getPassword());
+                                System.out.print("New value: ");
+                                ser.setPassword(read());
+                                break;
+                            case 3:
+                                System.out.println("URL");
+                                System.out.println("Old value: " + ser.getUrl());
+                                System.out.print("New value: ");
+                                ser.setUrl(read());
+                                break;
+                            case 4:
+                                if (a != null) {
+                                    System.out.println("Adress");
+                                    System.out.println("Old value: " + a);
+                                    System.out.print("New value: ");
+                                    ser.setUrl(ser.getUrl().replace(a, read()));
+                                }
+                                break;
+                        }
+                    }
+                    str = "c";
+                }
+
+            } else {
+                System.out.print("Press '+' for create first DB server(enter - exit):");
+                str = read();
+                if ("+".equals(str)) {
+                    System.out.print("Enter a name of the new DB server:");
+                    str = read();
+                    servs.add(new SqlServer(str, "root", "root", "jdbc:mysql://127.0.0.1/qsystem?autoReconnect=true&amp;characterEncoding=UTF-8", false, false));
+                }
             }
         }
+
         System.out.println();
         System.out.print("Save context(1 - yes, any key - no): ");
         if ("1".equals(read())) {
-            try (FileOutputStream fos = new FileOutputStream(args[0])) {
-                //fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\"\n   \"spring-beans-2.0.dtd\">\n" + root.asXML()).getBytes("UTF-8"));
-                fos.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + root.asXML()).getBytes("UTF-8"));
+            try (FileOutputStream fos = new FileOutputStream(filePath)) {
+                final String message;
+                Gson gson = GsonPool.getInstance().borrowGson();
+                try {
+                    message = gson.toJson(new SqlServers(servs));
+                } finally {
+                    GsonPool.getInstance().returnGson(gson);
+                }
+                fos.write(message.getBytes("UTF-8"));
                 fos.flush();
             }
             System.out.println("Save and Exit");
@@ -78,60 +229,11 @@ public class ChangeContext {
 
     /**
      * Читаем введеную строку в консоли
+     *
      * @return введеная строка
      */
     private static String read() {
         Scanner d = new Scanner(new InputStreamReader(System.in));
         return d.nextLine();
-    }
-
-    /**
-     * Вывод списка обнаруженных бинов и выбор бина из списка для редактирования.
-     * @param root корень для поиска бинов
-     * @return введеный номер бина, по пустой строки выход
-     */
-    private static String getBeans(Element root) {
-        System.out.println();
-        System.out.println("===========================");
-        System.out.println("List of avalable beans");
-        System.out.println();
-        elBeans.clear();
-        List beans = root.elements("bean");
-        int i = 1;
-        for (Object o : beans) {
-            final Element bean = (Element) o;
-            elBeans.put(String.valueOf(i), bean);
-            System.out.println("" + (i++) + " - " + bean.attributeValue("id"));
-        }
-        System.out.print("Choose the element(enter - exit): ");
-        return read();
-    }
-
-    /**
-     * Вывод списка обнаруженных параметров бина и выбор одного параметра из списка для редактирования.
-     * @param bean бин для редактированя
-     * @return введеный номер параметра, по пустой строки выход
-     */
-    private static String getBean(Element bean) {
-        System.out.println();
-        System.out.println("===========================");
-        System.out.println("Edit bean \"" + bean.attributeValue("id") + "\"");
-        System.out.println();
-        elProps.clear();
-        int i = 1;
-        List params = bean.elements("constructor-arg");
-        for (Object o : params) {
-            final Element param = (Element) o;
-            elProps.put(String.valueOf(i), param);
-            System.out.println("" + (i++) + " - constructor-arg index=\"" + param.attributeValue("index") + "\" value=\"" + param.attributeValue("value") + "\"");
-        }
-        params = bean.elements("property");
-        for (Object o : params) {
-            final Element param = (Element) o;
-            elProps.put(String.valueOf(i), param);
-            System.out.println("" + (i++) + " - property name=\"" + param.attributeValue("name") + "\" value=\"" + param.attributeValue("value") + "\"");
-        }
-        System.out.print("Choose the property(enter - return from property): ");
-        return read();
     }
 }

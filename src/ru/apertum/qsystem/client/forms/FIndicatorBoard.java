@@ -54,6 +54,7 @@ import ru.apertum.qsystem.common.model.ATalkingClock;
 
 /**
  * Created on 22 Сентябрь 2008 г., 14:27
+ *
  * @author Evgeniy Egorov
  */
 public class FIndicatorBoard extends javax.swing.JFrame {
@@ -80,8 +81,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     private static boolean isMain = true;
 
     /**
-     * Получить форму табло. Получаем главное табло.
-     * Если требуется получить с указанием типа то использовать public static FIndicatorBoard getIndicatorBoard(Element rootParams, boolean isMain)
+     * Получить форму табло. Получаем главное табло. Если требуется получить с
+     * указанием типа то использовать public static FIndicatorBoard
+     * getIndicatorBoard(Element rootParams, boolean isMain)
+     *
      * @param rootParams параметры табло.
      * @return
      */
@@ -98,8 +101,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     }
 
     /**
-     * Получить форму табло. Получаем главное табло.
-     * Вызов этого метода создает новый объект. не использовать при одиночном табло. сделано для зонального.
+     * Получить форму табло. Получаем главное табло. Вызов этого метода создает
+     * новый объект. не использовать при одиночном табло. сделано для
+     * зонального.
+     *
      * @param rootParams параметры табло.
      * @param isDebug
      * @return
@@ -118,6 +123,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
     /**
      * Получить форму табло.
+     *
      * @param rootParams параметры табло.
      * @param isMain режим. Главное или клиентское
      * @return
@@ -133,6 +139,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
     /**
      * Конструктор формы с указанием количества строк на табло.
+     *
      * @param configFilePath файл конфигурации табло.
      */
     private FIndicatorBoard(Element rootParams, boolean isDebug) {
@@ -187,17 +194,18 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         // Определим форму нв монитор
         setLocation(x, y);
         setAlwaysOnTop(!isDebug);
-        setResizable(isDebug);
+        // setResizable(isDebug);
         // Отрехтуем форму в зависимости от режима.
         if (!isDebug) {
 
             setAlwaysOnTop(true);
-            setResizable(false);
+            //   setResizable(false);
             // спрячем курсор мыши
             int[] pixels = new int[16 * 16];
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
             Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "invisibleCursor");
             setCursor(transparentCursor);
+            setBounds(0, 0, 200, 300);
             addWindowListener(new WindowAdapter() {
 
                 @Override
@@ -450,7 +458,6 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             left = new JLabel();
             final Font font = new Font(left.getFont().getName(), left.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_LINE).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
 
-
             if (isMain && extColPosition > 0) {
                 ext = new JLabel();
                 ext.setFont(font);
@@ -467,11 +474,9 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             setLayout(new GridLayout(1, isMain ? (extColPosition > 0 ? 3 : 2) : 1, 0, 0));
             setBounds(0, 0, 100, 100);
 
-
             if (isMain && extColPosition == 1) {
                 add(ext);
             }
-
 
             left.setFont(font);
             left.setBackground(bgColor);
@@ -536,7 +541,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             }
         }
         /**
-         * blinkCount 0 - постоянное мигание, -1 не мигает. число - количество миганий
+         * blinkCount 0 - постоянное мигание, -1 не мигает. число - количество
+         * миганий
          */
         int blinkCount = -1;
 
@@ -687,7 +693,6 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                 JLabel lab_cap_l = new JLabel();
                 final Font font_cap = new Font(lab_cap_l.getFont().getName(), lab_cap_l.getFont().getStyle(), Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)));
 
-
                 JLabel lab_cap_ext = new JLabel();
                 if (extColPosition > 0) {
                     lab_cap_ext = new JLabel();
@@ -757,11 +762,13 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
     /**
      * Метод вывода инфы на табло.
+     *
      * @param index номер строки.
      * @param number номер клиента - часть выводимого текста
      * @param point пункт куда позвали клиента - часть выводимого текста
      * @param ext_data Третья колонка
-     * @param blinkCount 0 - постоянное мигание, -1 не мигает. число - количество миганий
+     * @param blinkCount 0 - постоянное мигание, -1 не мигает. число -
+     * количество миганий
      */
     public void printRecord(int index, String number, String point, String ext_data, int blinkCount) {
         if (index < getLinesCount()) {
@@ -782,6 +789,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
     /**
      * Включение/выключение звука видеородиков на табло
+     *
      * @param mute наличие звука в роликах
      */
     public void setMute(boolean mute) {
@@ -801,10 +809,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         panelDown.closeVideo();
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

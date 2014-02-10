@@ -59,7 +59,7 @@ public class BrowserFX extends JPanel {
         });
     }
 
-    public void load(final String url) {
+    private void waitBrowser() {
         int k = 0;
         while ((bro == null || bro.getWebEngine() == null) && k < 50) {
             k++;
@@ -71,11 +71,36 @@ public class BrowserFX extends JPanel {
         if (bro == null) {
             throw new ClientException("Browser = NULL");
         }
+    }
+
+    public void load(final String url) {
+        waitBrowser();
         Platform.runLater(new Runnable() {
 
             @Override
             public void run() {
                 bro.load(url);
+            }
+        });
+    }
+    public void loadContent(final String cnt) {
+        waitBrowser();
+        Platform.runLater(new Runnable() {
+
+            @Override
+            public void run() {
+                bro.loadContent(cnt);
+            }
+        });
+    }
+    
+    public void loadContent(final String cnt, final String str) {
+        waitBrowser();
+        Platform.runLater(new Runnable() {
+
+            @Override
+            public void run() {
+                bro.loadContent(cnt, str);
             }
         });
     }
@@ -105,6 +130,14 @@ public class BrowserFX extends JPanel {
 
         public void load(String url) {
             webEngine.load(url);
+        }
+
+        public void loadContent(String cnt) {
+            webEngine.loadContent(cnt);
+        }
+
+        public void loadContent(String cnt, String str) {
+            webEngine.loadContent(cnt, str);
         }
 
         @Override

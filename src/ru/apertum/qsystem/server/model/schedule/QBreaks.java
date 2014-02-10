@@ -65,7 +65,7 @@ public class QBreaks implements IidGetter, Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "breaks_id")
     private Set<QBreak> breaks = new HashSet<>();
 

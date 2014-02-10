@@ -233,9 +233,9 @@ public final class Executer {
 
             // дефлотный выбор следующей услуги
             if (serviceID == null) {
-                for (LinkedList<Long> ids : cmdParams.complexId) {
-                    for (Long id : ids) {
-                        serviceID = id;
+                for (LinkedList<LinkedList<Long>> ids : cmdParams.complexId) {
+                    for (LinkedList<Long> id : ids) {
+                        serviceID = id.getFirst();
                         ids.remove(id);
                         break;
                     }
@@ -245,11 +245,18 @@ public final class Executer {
                 }
             } else {
                 // подотрем выбраную услугу
-                for (LinkedList<Long> ids : cmdParams.complexId) {
-                    for (Long id : ids) {
-                        if (serviceID == id) {
+                for (LinkedList<LinkedList<Long>> ids : cmdParams.complexId) {
+                    for (LinkedList<Long> id : ids) {
+                        if (serviceID.equals(id.getFirst())) {
                             ids.remove(id);
                             break;
+                        } else {
+                            for (Long long1 : id) {
+                                if (serviceID.equals(long1)) {
+                                    id.remove(long1);
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -519,10 +526,11 @@ public final class Executer {
             today.set(GregorianCalendar.HOUR_OF_DAY, 24);
             dc.add(Restrictions.between("advanceTime", today_m, today.getTime()));
             dc.add(Restrictions.eq("service", service));
-            final Integer cnt = (Integer) (Spring.getInstance().getHt().findByCriteria(dc).get(0));
-            cntm.put(service, cnt);
-            QLog.l().logger().debug("Посмотрели сколько предварительных записалось в " + service.getName() + ". Их " + cnt);
-            return cnt;
+            final Long cnt = (Long) (Spring.getInstance().getHt().findByCriteria(dc).get(0));
+            final int i = cnt.intValue();
+            cntm.put(service, i);
+            QLog.l().logger().debug("Посмотрели сколько предварительных записалось в " + service.getName() + ". Их " + i);
+            return i;
         }
 
         @Override
@@ -1098,15 +1106,15 @@ public final class Executer {
                 // если нет то дефолтная проводочка в следующую услугу.
                 if (customer.getState() == CustomerState.STATE_FINISH && customer.getComplexId() != null) {
                     int len = 0;
-                    for (LinkedList<Long> li : customer.getComplexId()) {
+                    for (LinkedList<LinkedList<Long>> li : customer.getComplexId()) {
                         len += li.size();
                     }
                     if (len != 0) {
                         QLog.l().logger().debug("Дефолтная проводка по комплексным услугам. Омталось " + len);
                         Long serviceID = null;
-                        for (LinkedList<Long> ids : customer.getComplexId()) {
-                            for (Long id : ids) {
-                                serviceID = id;
+                        for (LinkedList<LinkedList<Long>> ids : customer.getComplexId()) {
+                            for (LinkedList<Long> id : ids) {
+                                serviceID = id.getFirst();
                                 ids.remove(id);
                                 break;
                             }
@@ -1280,6 +1288,8 @@ public final class Executer {
             }
             final QService service = QServiceTree.getInstance().getById(cmdParams.serviceId);
             service.setTempReasonUnavailable(cmdParams.textData);
+            QLog.l().logger().trace("Изменена доступность для услуги \"" + service.getName() + "\" - "
+                    + (cmdParams.textData == null || cmdParams.textData.isEmpty() ? "РАБОТАЕТ" : ("не работает, причина '" + cmdParams.textData + "'")));
             return new JsonRPC20OK();
         }
     };

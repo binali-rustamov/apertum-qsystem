@@ -17,13 +17,19 @@
 package ru.apertum.qsystem.server;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.DetachedCriteria;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.orm.hibernate3.HibernateTransactionManager;
+import org.springframework.orm.hibernate4.HibernateTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
@@ -59,15 +65,8 @@ public class Spring {
     }
 
     /**
-     * Для выборки данных из БД
-     * @return
-     */
-    public HibernateTemplate getHt() {
-        return (HibernateTemplate) factory.getBean("hibernateTemplate");
-    }
-
-    /**
      * Для транзакций через передачу на выполнениее класса с методом где реализована работа с БД
+     *
      * @return
      */
     public TransactionTemplate getTt() {
@@ -76,6 +75,7 @@ public class Spring {
 
     /**
      * Для транзакций обычным образом с открытием именованной транзакции
+     *
      * @return
      */
     public HibernateTransactionManager getTxManager() {
@@ -112,5 +112,96 @@ public class Spring {
     private static class SpringHolder {
 
         private static final Spring INSTANCE = new Spring();
+    }
+
+    public Spring getHt() {
+        return this;
+    }
+
+    public void saveAll(Collection list) {
+        final Session ses = getTxManager().getSessionFactory().getCurrentSession();
+        for (Object object : list) {
+            ses.save(object);
+        }
+        ses.flush();
+    }
+
+    public void saveOrUpdateAll(Collection list) {
+        final Session ses = getTxManager().getSessionFactory().getCurrentSession();
+        for (Object object : list) {
+            ses.saveOrUpdate(object);
+        }
+        ses.flush();
+    }
+
+    public void saveOrUpdate(Object obj) {
+        final Session ses = getTxManager().getSessionFactory().getCurrentSession();
+        ses.saveOrUpdate(obj);
+        ses.flush();
+    }
+
+    public void deleteAll(Collection list) {
+        final Session ses = getTxManager().getSessionFactory().getCurrentSession();
+        for (Object object : list) {
+            ses.delete(object);
+        }
+        ses.flush();
+    }
+
+    public void delete(Object obj) {
+        final Session ses = getTxManager().getSessionFactory().getCurrentSession();
+        ses.delete(obj);
+        ses.flush();
+    }
+
+    public List loadAll(Class clazz) {
+        final Session ses = getTxManager().getSessionFactory().openSession();
+        try {
+            return ses.createCriteria(clazz).list();
+        } finally {
+            ses.close();
+        }
+    }
+
+    public void load(Object obj, Serializable srlzbl) {
+        final Session ses = getTxManager().getSessionFactory().openSession();
+        try {
+            ses.load(obj, srlzbl);
+        } finally {
+            ses.close();
+        }
+    }
+
+    public List findByCriteria(DetachedCriteria dCriteria) {
+        List list;
+        final Session ses = getTxManager().getSessionFactory().openSession();
+        try {
+            list = dCriteria.getExecutableCriteria(ses).list();
+        } finally {
+            ses.close();
+        }
+        return list;
+    }
+
+    public <T> T get(Class<T> clazz, Serializable srlzbl) {
+        final Session ses = getTxManager().getSessionFactory().openSession();
+        try {
+            return (T) ses.get(clazz, srlzbl);
+        } finally {
+            ses.close();
+        }
+    }
+
+    public List find(String hql) {
+        final Session ses = getTxManager().getSessionFactory().openSession();
+        try {
+            return ses.createQuery(hql).list();
+        } finally {
+            ses.close();
+        }
+    }
+
+    public SessionFactory getSessionFactory() {
+        return getTxManager().getSessionFactory();
     }
 }

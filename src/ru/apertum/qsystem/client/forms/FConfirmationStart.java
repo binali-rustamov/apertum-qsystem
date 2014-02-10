@@ -24,7 +24,6 @@ import javax.swing.JFrame;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
-import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.common.WelcomeParams;
 import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;

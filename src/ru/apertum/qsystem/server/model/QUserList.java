@@ -19,6 +19,7 @@ package ru.apertum.qsystem.server.model;
 import java.util.Date;
 import java.util.LinkedList;
 import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Property;
 import ru.apertum.qsystem.server.Spring;
@@ -65,9 +66,10 @@ public class QUserList extends ATListModel<QUser> {
         }
         Spring.getInstance().getHt().saveOrUpdateAll(deleted);
         deleted.clear();
-        Spring.getInstance().getHt().saveOrUpdateAll(getItems());
+        
         for (QUser qUser : getItems()) {
             qUser.savePlan();
-        }
+        } 
+        Spring.getInstance().getHt().saveOrUpdateAll(getItems());
     }
 }

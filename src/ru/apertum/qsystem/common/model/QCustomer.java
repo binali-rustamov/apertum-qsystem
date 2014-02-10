@@ -535,14 +535,14 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
 
     @Expose
     @SerializedName("complex_id")
-    public LinkedList<LinkedList<Long>> complexId = new LinkedList<>();
+    public LinkedList<LinkedList<LinkedList<Long>>> complexId = new LinkedList<>();
 
     @Transient
-    public LinkedList<LinkedList<Long>> getComplexId() {
+    public LinkedList<LinkedList<LinkedList<Long>>> getComplexId() {
         return complexId;
     }
 
-    public void setComplexId(LinkedList<LinkedList<Long>> complexId) {
+    public void setComplexId(LinkedList<LinkedList<LinkedList<Long>>> complexId) {
         this.complexId = complexId;
     }
 
