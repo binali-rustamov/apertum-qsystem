@@ -85,7 +85,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`schedule` (
     REFERENCES `qsystem`.`breaks` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB
+ENGINE = InnoDB, 
 COMMENT = 'Справочник расписаний для услуг' ;
 
 CREATE INDEX `idx_schedule_breaks1` ON `qsystem`.`schedule` (`breaks_id1` ASC) ;
@@ -566,33 +566,6 @@ CREATE INDEX `idx_calendar_out_days_calendar` ON `qsystem`.`calendar_out_days` (
 
 
 -- -----------------------------------------------------
--- Table `qsystem`.`users_services_users`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `qsystem`.`users_services_users` ;
-
-CREATE  TABLE IF NOT EXISTS `qsystem`.`users_services_users` (
-  `planServices_id` BIGINT NOT NULL ,
-  `users_id` BIGINT NOT NULL ,
-  PRIMARY KEY (`planServices_id`) ,
-  CONSTRAINT `fk_planserv`
-    FOREIGN KEY (`planServices_id` )
-    REFERENCES `qsystem`.`services_users` (`id` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_user`
-    FOREIGN KEY (`users_id` )
-    REFERENCES `qsystem`.`users` (`id` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB, 
-COMMENT = 'Услуги юзеров с приоритетами.' ;
-
-CREATE INDEX `idx_planserv` ON `qsystem`.`users_services_users` (`planServices_id` ASC) ;
-
-CREATE INDEX `idx_user` ON `qsystem`.`users_services_users` (`users_id` ASC) ;
-
-
--- -----------------------------------------------------
 -- Table `qsystem`.`break`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `qsystem`.`break` ;
@@ -839,15 +812,6 @@ COMMIT;
 START TRANSACTION;
 USE `qsystem`;
 INSERT INTO `qsystem`.`calendar_out_days` (`id`, `out_day`, `calendar_id`) VALUES (1, '2010-01-01', 1);
-
-COMMIT;
-
--- -----------------------------------------------------
--- Data for table `qsystem`.`users_services_users`
--- -----------------------------------------------------
-START TRANSACTION;
-USE `qsystem`;
-INSERT INTO `qsystem`.`users_services_users` (`planServices_id`, `users_id`) VALUES (1, 2);
 
 COMMIT;
 

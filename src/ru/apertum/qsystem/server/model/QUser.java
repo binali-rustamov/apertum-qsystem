@@ -23,11 +23,13 @@ import java.util.Date;
 import java.util.LinkedList;
 import javax.persistence.Id;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -38,8 +40,8 @@ import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.Spring;
 
 /**
- * Это пользователь. По большому счету роль и пользователь совпадают в системе.
- * Класс пользователя системы.
+ * Это пользователь. По большому счету роль и пользователь совпадают в системе. Класс пользователя системы.
+ *
  * @author Evgeniy Egorov
  */
 @Entity
@@ -58,11 +60,11 @@ public class QUser implements IidGetter, Serializable {
     }
     @Expose
     @SerializedName("id")
-    private Long id = new Date().getTime();
+    private Long id;
 
     @Id
     @Column(name = "id")
-    //@GeneratedValue(strategy = GenerationType.AUTO) авто нельзя, т.к. id нужны для формирования дерева
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Override
     public Long getId() {
         return id;
@@ -86,11 +88,7 @@ public class QUser implements IidGetter, Serializable {
         this.deleted = deleted;
     }
     /**
-     * Удаленный или нет.
-     * Нельзя их из базы гасить чтоб констрейнты не поехали.
-     * 0 - удаленный
-     * 1 - действующий
-     * Только для БД.
+     * Удаленный или нет. Нельзя их из базы гасить чтоб констрейнты не поехали. 0 - удаленный 1 - действующий Только для БД.
      */
     @Expose
     @SerializedName("enable")
@@ -135,8 +133,7 @@ public class QUser implements IidGetter, Serializable {
         return reportAccess;
     }
     /**
-     * Пароль пользователя. В программе хранится открыто.
-     * В базе и xml зашифрован.
+     * Пароль пользователя. В программе хранится открыто. В базе и xml зашифрован.
      */
     @Expose
     @SerializedName("pass")
@@ -144,6 +141,7 @@ public class QUser implements IidGetter, Serializable {
 
     /**
      * Расшифрует
+     *
      * @param password - зашифрованное слово
      */
     public void setPassword(String password) {
@@ -152,6 +150,7 @@ public class QUser implements IidGetter, Serializable {
 
     /**
      * Зашифрует
+     *
      * @return пароль в зашифрованном виде.
      */
     @Column(name = "password")
@@ -225,9 +224,7 @@ public class QUser implements IidGetter, Serializable {
     //******************************************************************************************************************
     //************************************** Услуги юзера **************************************************************
     /**
-     * Множество услуг, которые обрабатывает юзер.
-     * По наименованию услуги получаем Класс - описалово участия юзера в этой услуге/
-     * Имя услуги -> IProperty
+     * Множество услуг, которые обрабатывает юзер. По наименованию услуги получаем Класс - описалово участия юзера в этой услуге/ Имя услуги -> IProperty
      */
     //private QPlanServiceList serviceList = new QPlanServiceList();
     @Expose
@@ -239,7 +236,9 @@ public class QUser implements IidGetter, Serializable {
         planServiceList = new QPlanServiceList(planServices);
     }
 
-    @OneToMany(fetch = FetchType.EAGER)
+    //@OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @JoinColumn(name = "user_id", insertable = false, nullable = false, updatable = false)
     public List<QPlanService> getPlanServices() {
         return planServices;
     }
@@ -247,6 +246,7 @@ public class QUser implements IidGetter, Serializable {
 
     /**
      * Только для отображения в админке в виде списка
+     *
      * @return
      */
     @Transient
@@ -269,6 +269,7 @@ public class QUser implements IidGetter, Serializable {
 
     /**
      * Найти сервис из списка обслуживаемых юзером.
+     *
      * @param serviceId id искомого сервиса
      * @return
      */
@@ -283,6 +284,7 @@ public class QUser implements IidGetter, Serializable {
 
     /**
      * Найти сервис из списка обслуживаемых юзером.
+     *
      * @param service искомый сервис.
      * @return
      */
@@ -291,8 +293,8 @@ public class QUser implements IidGetter, Serializable {
     }
 
     /**
-     * Добавить сервис в список обслуживаемых юзером.
-     * Помнить про ДБ.
+     * Добавить сервис в список обслуживаемых юзером. Помнить про ДБ.
+     *
      * @param service добавляемый сервис.
      */
     public void addPlanService(QService service) {
@@ -302,8 +304,8 @@ public class QUser implements IidGetter, Serializable {
     }
 
     /**
-     * Добавить сервис в список обслуживаемых юзером использую параметры.
-     * Используется при добавлении на горячую.
+     * Добавить сервис в список обслуживаемых юзером использую параметры. Используется при добавлении на горячую.
+     *
      * @param service добавляемый сервис.
      * @param coefficient приоритет обработки
      */
@@ -315,8 +317,9 @@ public class QUser implements IidGetter, Serializable {
 
     /**
      * Удалить сервис из списка обслуживаемых юзером.
+     *
      * @param serviceId удаляемый сервис.
-     * @return 
+     * @return
      */
     public QPlanService deletePlanService(long serviceId) {
         for (QPlanService qPlanService : planServices) {
@@ -360,6 +363,7 @@ public class QUser implements IidGetter, Serializable {
 
     /**
      * Количество услуг, которые обрабатывает юзер. // едет на коиента при логине
+     *
      * @return
      */
     @Transient
@@ -367,11 +371,9 @@ public class QUser implements IidGetter, Serializable {
         return servicesCnt;
     }
     /**
-     * Customer, который попал на обработку к этому юзеру.
-     * При вызове следующего, первый в очереди кастомер, выдерается из этой очереди совсем и
-     * попадает сюда. Сдесь он живет и переживает все интерпритации, которые с ним делает юзер.
-     * При редиректе в другую очередь юзером, данный кастомер отправляется в другую очередь,
-     * возможно, с другим приоритетом, а эта ссылка становится null.
+     * Customer, который попал на обработку к этому юзеру. При вызове следующего, первый в очереди кастомер, выдерается из этой очереди совсем и попадает сюда.
+     * Сдесь он живет и переживает все интерпритации, которые с ним делает юзер. При редиректе в другую очередь юзером, данный кастомер отправляется в другую
+     * очередь, возможно, с другим приоритетом, а эта ссылка становится null.
      */
     private QCustomer customer = null;
 
@@ -414,6 +416,7 @@ public class QUser implements IidGetter, Serializable {
 
     /**
      * Это чтоб осталась инфа сразу после вызова кастомера. Нужно для нормативов и статистики сиюминутной
+     *
      * @param cust
      */
     public void initCustomer(QCustomer cust) {

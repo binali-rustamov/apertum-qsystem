@@ -19,14 +19,13 @@ package ru.apertum.qsystem.server.model;
 import java.util.Date;
 import java.util.LinkedList;
 import org.hibernate.Criteria;
-import org.hibernate.Session;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Property;
 import ru.apertum.qsystem.server.Spring;
 
 /**
- * Список пользователей системы
- * Класс, управляющий пользователями системы.
+ * Список пользователей системы Класс, управляющий пользователями системы.
+ *
  * @author Evgeniy Egorov
  */
 public class QUserList extends ATListModel<QUser> {
@@ -39,7 +38,7 @@ public class QUserList extends ATListModel<QUser> {
     protected LinkedList<QUser> load() {
         final LinkedList<QUser> users = new LinkedList<>(
                 Spring.getInstance().getHt().findByCriteria(
-                DetachedCriteria.forClass(QUser.class).add(Property.forName("deleted").isNull()).setResultTransformer((Criteria.DISTINCT_ROOT_ENTITY))));
+                        DetachedCriteria.forClass(QUser.class).add(Property.forName("deleted").isNull()).setResultTransformer((Criteria.DISTINCT_ROOT_ENTITY))));
         // если этого не проделать, то параметр количества привязанных услуг к юзеру будет пустым после рестарта сервера из админки
         for (QUser qUser : users) {
             qUser.setServicesCnt(qUser.getPlanServiceList().getSize());
@@ -66,10 +65,12 @@ public class QUserList extends ATListModel<QUser> {
         }
         Spring.getInstance().getHt().saveOrUpdateAll(deleted);
         deleted.clear();
-        
-        for (QUser qUser : getItems()) {
-            qUser.savePlan();
-        } 
+        /*
+         for (QUser qUser : getItems()) {
+         qUser.savePlan();
+         } 
+         */
+        // плансервисам нул воткнуть при уладении в юзера
         Spring.getInstance().getHt().saveOrUpdateAll(getItems());
     }
 }

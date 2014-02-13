@@ -4,10 +4,10 @@
         <file>
             <url>src/ru/apertum/qsystem/server/controller/Executer.java</url>
             <line>499</line>
-            <line>1315</line>
+            <line>1317</line>
         </file>
     </editor-bookmarks>
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="14">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="18">
         <file>
             <url>src/ru/apertum/qsystem/server/controller/Executer.java</url>
             <bookmark id="7">
@@ -22,12 +22,12 @@
             </bookmark>
             <bookmark id="1">
                 <name/>
-                <line>272</line>
+                <line>279</line>
                 <key/>
             </bookmark>
             <bookmark id="10">
                 <name/>
-                <line>1042</line>
+                <line>1050</line>
                 <key/>
             </bookmark>
         </file>
@@ -35,12 +35,12 @@
             <url>src/ru/apertum/qsystem/client/forms/PComplexService.java</url>
             <bookmark id="13">
                 <name/>
-                <line>819</line>
+                <line>1022</line>
                 <key/>
             </bookmark>
             <bookmark id="14">
                 <name/>
-                <line>972</line>
+                <line>1175</line>
                 <key/>
             </bookmark>
         </file>
@@ -53,12 +53,28 @@
             </bookmark>
             <bookmark id="9">
                 <name/>
-                <line>229</line>
+                <line>232</line>
                 <key/>
             </bookmark>
             <bookmark id="5">
                 <name/>
-                <line>592</line>
+                <line>593</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/common/VideoPlayer.java</url>
+            <bookmark id="17">
+                <name/>
+                <line>209</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/common/SoundPlayer.java</url>
+            <bookmark id="15">
+                <name/>
+                <line>472</line>
                 <key/>
             </bookmark>
         </file>
@@ -70,18 +86,34 @@
                 <key/>
             </bookmark>
         </file>
+        <file>
+            <url>src/ru/apertum/qsystem/client/forms/FServiceChangeDialod.java</url>
+            <bookmark id="16">
+                <name/>
+                <line>175</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/client/forms/FReception.java</url>
+            <bookmark id="18">
+                <name/>
+                <line>1812</line>
+                <key/>
+            </bookmark>
+        </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/client/forms/FClient.java</file>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/model/ATListModel.java</file>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/controller/Executer.java</file>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/hibernate/AnnotationSessionFactoryBean.java</file>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/client/model/QTray.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/model/QService.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/model/QPlanServiceList.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/model/QServiceLang.java</file>
             <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/Spring.java</file>
-            <file>file:/E:/WORK/apertum-qsystem/ivy.xml</file>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/model/schedule/QBreaksList.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/model/QPlanService.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/model/QUser.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/common/version.properties</file>
             <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/client/forms/FAdmin.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/model/QUserList.java</file>
         </group>
     </open-files>
 </project-private>
