@@ -1,21 +1,21 @@
-1. Debian 7 install Java Oracle 1.7 via apt-get
+ï»¿1. Debian 7 install Java Oracle 1.7 via apt-get
 
 
 
-îòêðûòü òåðìèíàë ñ root ïðàâàìè è ïîåõàëè
+Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚ÑŒ Ñ‚ÐµÑ€Ð¼Ð¸Ð½Ð°Ð» Ñ root Ð¿Ñ€Ð°Ð²Ð°Ð¼Ð¸ Ð¸ Ð¿Ð¾ÐµÑ…Ð°Ð»Ð¸
 
-ïðîâåðèì òåêóùóþ âåðñèþ Java:
+Ð¿Ñ€Ð¾Ð²ÐµÑ€Ð¸Ð¼ Ñ‚ÐµÐºÑƒÑ‰ÑƒÑŽ Ð²ÐµÑ€ÑÐ¸ÑŽ Java:
 
 java -version
 
-åñëè òàì íà÷íåò ãóëÿòü êàêîé-íèêàêîé Openjdk èëè ïðåäûäóùèå óñòàíîâêè, òî îò íèõ íóæíî èçáàâèòñÿ. Â ñëó÷àå ñ OpenJDK ýòî äåëàåòñÿ êîìàíäîé:
+ÐµÑÐ»Ð¸ Ñ‚Ð°Ð¼ Ð½Ð°Ñ‡Ð½ÐµÑ‚ Ð³ÑƒÐ»ÑÑ‚ÑŒ ÐºÐ°ÐºÐ¾Ð¹-Ð½Ð¸ÐºÐ°ÐºÐ¾Ð¹ Openjdk Ð¸Ð»Ð¸ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰Ð¸Ðµ ÑƒÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ¸, Ñ‚Ð¾ Ð¾Ñ‚ Ð½Ð¸Ñ… Ð½ÑƒÐ¶Ð½Ð¾ Ð¸Ð·Ð±Ð°Ð²Ð¸Ñ‚ÑÑ. Ð’ ÑÐ»ÑƒÑ‡Ð°Ðµ Ñ OpenJDK ÑÑ‚Ð¾ Ð´ÐµÐ»Ð°ÐµÑ‚ÑÑ ÐºÐ¾Ð¼Ð°Ð½Ð´Ð¾Ð¹:
 
 sudo apt-get remove openjdk*
 
 
-Òåïåðü íåïîñðåäñòâåííî óñòàíîâêà:
+Ð¢ÐµÐ¿ÐµÑ€ÑŒ Ð½ÐµÐ¿Ð¾ÑÑ€ÐµÐ´ÑÑ‚Ð²ÐµÐ½Ð½Ð¾ ÑƒÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ°:
 
-Ïðîñòî áåñõèòðîñòíî âûïîëíèòü 5 êîìàíä ïðîñòûì êîïèïàñòîì îòñþäà:
+ÐŸÑ€Ð¾ÑÑ‚Ð¾ Ð±ÐµÑÑ…Ð¸Ñ‚Ñ€Ð¾ÑÑ‚Ð½Ð¾ Ð²Ñ‹Ð¿Ð¾Ð»Ð½Ð¸Ñ‚ÑŒ 5 ÐºÐ¾Ð¼Ð°Ð½Ð´ Ð¿Ñ€Ð¾ÑÑ‚Ñ‹Ð¼ ÐºÐ¾Ð¿Ð¸Ð¿Ð°ÑÑ‚Ð¾Ð¼ Ð¾Ñ‚ÑÑŽÐ´Ð°:
 
  echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a /etc/apt/sources.list  
  echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a /etc/apt/sources.list  
@@ -23,25 +23,25 @@ sudo apt-get remove openjdk*
  apt-get update  
  apt-get install oracle-java7-installer  
  
-Ýòîãî â ïðèíöèïå äîñòàòî÷íî åñëè ñòàâèòå ñ íóëÿ.
+Ð­Ñ‚Ð¾Ð³Ð¾ Ð² Ð¿Ñ€Ð¸Ð½Ñ†Ð¸Ð¿Ðµ Ð´Ð¾ÑÑ‚Ð°Ñ‚Ð¾Ñ‡Ð½Ð¾ ÐµÑÐ»Ð¸ ÑÑ‚Ð°Ð²Ð¸Ñ‚Ðµ Ñ Ð½ÑƒÐ»Ñ.
 
-äëÿ óñòàíîâêè 6 âåðñèè:
+Ð´Ð»Ñ ÑƒÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ¸ 6 Ð²ÐµÑ€ÑÐ¸Ð¸:
 sudo apt-get install oracle-java6-installer
 
-äëÿ óñòàíîâêè 8 âåðñèè:
+Ð´Ð»Ñ ÑƒÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ¸ 8 Ð²ÐµÑ€ÑÐ¸Ð¸:
 sudo apt-get install oracle-java8-installer
 
-!!!Ïåðåä óñòàíîâêîé îáÿçàòåëüíî íóæíî ñîãëàñèòñÿ ñ ëèöåíçèîííûì ñîãëàøåíèåì.!!!
+!!!ÐŸÐµÑ€ÐµÐ´ ÑƒÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ¾Ð¹ Ð¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð¾ Ð½ÑƒÐ¶Ð½Ð¾ ÑÐ¾Ð³Ð»Ð°ÑÐ¸Ñ‚ÑÑ Ñ Ð»Ð¸Ñ†ÐµÐ½Ð·Ð¸Ð¾Ð½Ð½Ñ‹Ð¼ ÑÐ¾Ð³Ð»Ð°ÑˆÐµÐ½Ð¸ÐµÐ¼.!!!
 
-óñòàíàâëèâàåò êàê îñíîâíóþ jvm â ñèñòåìå  è íàñòðàèâàåò îêðóæåíèå:
+ÑƒÑÑ‚Ð°Ð½Ð°Ð²Ð»Ð¸Ð²Ð°ÐµÑ‚ ÐºÐ°Ðº Ð¾ÑÐ½Ð¾Ð²Ð½ÑƒÑŽ jvm Ð² ÑÐ¸ÑÑ‚ÐµÐ¼Ðµ  Ð¸ Ð½Ð°ÑÑ‚Ñ€Ð°Ð¸Ð²Ð°ÐµÑ‚ Ð¾ÐºÑ€ÑƒÐ¶ÐµÐ½Ð¸Ðµ:
 
 sudo apt-get install oracle-java7-set-default 
 
-ïðîâåðèì âñå ëè âûøëî ó íàñ óäà÷íî:
+Ð¿Ñ€Ð¾Ð²ÐµÑ€Ð¸Ð¼ Ð²ÑÐµ Ð»Ð¸ Ð²Ñ‹ÑˆÐ»Ð¾ Ñƒ Ð½Ð°Ñ ÑƒÐ´Ð°Ñ‡Ð½Ð¾:
 
 java -version
 
-äîëæíî áûòü ÷òî-òî âðîäå:
+Ð´Ð¾Ð»Ð¶Ð½Ð¾ Ð±Ñ‹Ñ‚ÑŒ Ñ‡Ñ‚Ð¾-Ñ‚Ð¾ Ð²Ñ€Ð¾Ð´Ðµ:
 
 java version "1.7.0_45"
 Java(TM) SE Runtime Environment (build 1.7.0_45-b18)
@@ -55,19 +55,19 @@ Switch to user 'root' and get GlassFish
 sudo -i
 cd /srv
 # You may or may not need to set the environment variable http_proxy first.
-wget http://dlc.sun.com.edgesuite.net/glassfish/4.0/release/glassfish-4.0.zip  # Ñêà÷àëè àðõèâ÷èê
-unzip glassfish-4.0.zip      # ðàñïîêîâàëè àðõèâ÷èê This creates /srv/glassfish4/*
+wget http://dlc.sun.com.edgesuite.net/glassfish/4.0/release/glassfish-4.0.zip  # Ð¡ÐºÐ°Ñ‡Ð°Ð»Ð¸ Ð°Ñ€Ñ…Ð¸Ð²Ñ‡Ð¸Ðº
+unzip glassfish-4.0.zip      # Ñ€Ð°ÑÐ¿Ð¾ÐºÐ¾Ð²Ð°Ð»Ð¸ Ð°Ñ€Ñ…Ð¸Ð²Ñ‡Ð¸Ðº This creates /srv/glassfish4/*
 
 
-3. Òóò âñÿêàÿ áîòâà, êîòîðàÿ íå äàåò âîéòè â àäìèíêó è ïðî÷èå òðàáëû ïðè ýòîì.
-Âñå ïðîñòî:
--àäìèíó çàäàòü ïàðîëü
--àäìèíó ðàçðåøèòü áûòü ñåêóðíûì
--ðåáóò ãëàñôèøà.
-Òåïåðü â àäìèíêó íå çàéäåì ò.ê. ïàðîëü ïóñò, à ñ òàêèì ïàðîëåì òîëüêî ëîêàëüíî. Çàïóñòèì GF4 ./startserv
+3. Ð¢ÑƒÑ‚ Ð²ÑÑÐºÐ°Ñ Ð±Ð¾Ñ‚Ð²Ð°, ÐºÐ¾Ñ‚Ð¾Ñ€Ð°Ñ Ð½Ðµ Ð´Ð°ÐµÑ‚ Ð²Ð¾Ð¹Ñ‚Ð¸ Ð² Ð°Ð´Ð¼Ð¸Ð½ÐºÑƒ Ð¸ Ð¿Ñ€Ð¾Ñ‡Ð¸Ðµ Ñ‚Ñ€Ð°Ð±Ð»Ñ‹ Ð¿Ñ€Ð¸ ÑÑ‚Ð¾Ð¼.
+Ð’ÑÐµ Ð¿Ñ€Ð¾ÑÑ‚Ð¾:
+-Ð°Ð´Ð¼Ð¸Ð½Ñƒ Ð·Ð°Ð´Ð°Ñ‚ÑŒ Ð¿Ð°Ñ€Ð¾Ð»ÑŒ
+-Ð°Ð´Ð¼Ð¸Ð½Ñƒ Ñ€Ð°Ð·Ñ€ÐµÑˆÐ¸Ñ‚ÑŒ Ð±Ñ‹Ñ‚ÑŒ ÑÐµÐºÑƒÑ€Ð½Ñ‹Ð¼
+-Ñ€ÐµÐ±ÑƒÑ‚ Ð³Ð»Ð°ÑÑ„Ð¸ÑˆÐ°.
+Ð¢ÐµÐ¿ÐµÑ€ÑŒ Ð² Ð°Ð´Ð¼Ð¸Ð½ÐºÑƒ Ð½Ðµ Ð·Ð°Ð¹Ð´ÐµÐ¼ Ñ‚.Ðº. Ð¿Ð°Ñ€Ð¾Ð»ÑŒ Ð¿ÑƒÑÑ‚, Ð° Ñ Ñ‚Ð°ÐºÐ¸Ð¼ Ð¿Ð°Ñ€Ð¾Ð»ÐµÐ¼ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð»Ð¾ÐºÐ°Ð»ÑŒÐ½Ð¾. Ð—Ð°Ð¿ÑƒÑÑ‚Ð¸Ð¼ GF4 ./startserv
 
 Q: When I try to login to Glassfish administration application, it says "Secure Admin must be enabled to access the DAS remotely"
-A: Âêëþ÷èì âîçìîæíîñòü ñåêüþðíîãî àäìèíà, íî ïàðîëü ïðåäâàðèòåëüíî ñìåíèì. You can enable remote access with the following command:
+A: Ð’ÐºÐ»ÑŽÑ‡Ð¸Ð¼ Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑ‚ÑŒ ÑÐµÐºÑŒÑŽÑ€Ð½Ð¾Ð³Ð¾ Ð°Ð´Ð¼Ð¸Ð½Ð°, Ð½Ð¾ Ð¿Ð°Ñ€Ð¾Ð»ÑŒ Ð¿Ñ€ÐµÐ´Ð²Ð°Ñ€Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾ ÑÐ¼ÐµÐ½Ð¸Ð¼. You can enable remote access with the following command:
 asadmin --host www.yourdomain.com --port 4848 enable-secure-admin
 Then stop/start glassfish immediately after enabling secure admin.
 In case your private Glassfish runs on shared server you will need to use your custom port (assume 15123 for the example) in asadmin command. Check Java Control Panel for your Glassfish console port. Use the port with your asadmin commands. The below was tested with Glassfish 3.1.2 and 4.0.
@@ -77,7 +77,7 @@ remote failure: At least one admin user has an empty password, which secure admi
 Command enable-secure-admin failed.
 Set the password as prompted
 
-Âîò òàê ìû àäìèíó ñìåíèì ïàðîëü
+Ð’Ð¾Ñ‚ Ñ‚Ð°Ðº Ð¼Ñ‹ Ð°Ð´Ð¼Ð¸Ð½Ñƒ ÑÐ¼ÐµÐ½Ð¸Ð¼ Ð¿Ð°Ñ€Ð¾Ð»ÑŒ
 [~]# asadmin --port 15123 change-admin-password
 Enter admin user name [default: admin]> 
 Enter admin password> 
