@@ -71,6 +71,7 @@ import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfService;
 import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfSituation;
 import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.IClientNetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.extra.IStartClient;
@@ -199,8 +200,7 @@ public final class FClient extends javax.swing.JFrame {
         Long rs = new Long(-1);
         if (customer.getService().getResult_required()) {
             getResults();
-            Object res = null;
-            res = JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
+            Object res = JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
             rs = res == null ? null : results.get((String) res);
         }
         return rs;
@@ -248,6 +248,7 @@ public final class FClient extends javax.swing.JFrame {
                     try {
                         w = new PrintWriter(new BufferedWriter(new FileWriter(Uses.TEMP_FOLDER + File.separator + "pipe")), true);
                     } catch (IOException ex) {
+                        throw new ServerException(ex);
                     }
                     w.println("" + new Date().getTime() + "^");
                 }
@@ -522,7 +523,7 @@ public final class FClient extends javax.swing.JFrame {
             }
         });
         menuBar.add(ch);
-        
+
         Font f = new Font("Time New Roman", 0, 16);
         labelMotiv.setFont(f);
         labelMotiv.setForeground(new Color(0, 150, 0));
@@ -583,6 +584,10 @@ public final class FClient extends javax.swing.JFrame {
             labelMotiv.setForeground(tt < t1 ? new Color(0, 150, 0) : (tt > t2 ? new Color(200, 0, 0) : new Color(90, 0, 230)));
             final String tts = prob + action + "  " + tt / 1000 / 60 + ":" + (tt / 1000) % 60;
             labelMotiv.setText(tts.substring(tts.length() - 26));
+            // тут типа костылик для автообновления. удп у них видите ли не доходят! Лохи криворукие! Раз в три минуты если давно не обновлялось...
+            if (new Date().getTime() - refreshTime > 3 * 60 * 1000) {
+                refreshClient();
+            }
         }
     }
 
@@ -611,7 +616,7 @@ public final class FClient extends javax.swing.JFrame {
                         try {
                             indicatorBoard.setIconImage(ImageIO.read(FIndicatorBoard.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
                         } catch (IOException ex) {
-                            System.err.println(ex);
+                            throw new ServerException(ex);
                         }
                         indicatorBoard.toPosition(QLog.l().isDebug(), Integer.parseInt(root.attributeValue("x")), Integer.parseInt(root.attributeValue("y")));
                         indicatorBoard.setVisible(true);
@@ -632,6 +637,8 @@ public final class FClient extends javax.swing.JFrame {
     }
     private SelfSituation plan;
 
+    private long refreshTime = 0;
+
     /**
      * Определяет какова ситуация в очереди к пользователю.
      *
@@ -639,6 +646,7 @@ public final class FClient extends javax.swing.JFrame {
      */
     protected void setSituation(SelfSituation plan) {
         QLog.l().logger().trace("Обновляем видимую ситуацию.");
+        refreshTime = new Date().getTime();
         this.plan = plan;
         /**
          * На первую закладку.
@@ -794,6 +802,8 @@ public final class FClient extends javax.swing.JFrame {
         end(start);
     }
 
+    private boolean fkill = false;
+
     /**
      * Действие по нажатию кнопки "Отклонить"
      *
@@ -801,6 +811,27 @@ public final class FClient extends javax.swing.JFrame {
      */
     @Action
     public void killCustomer(ActionEvent evt) {
+        if (customer.getService().getExpectation() != 0 && (new Date().getTime() - customer.getStandTime().getTime()) / 1000 / 60 < customer.getService().getExpectation()) {
+            if (fkill) {
+                if (JOptionPane.showConfirmDialog(this,
+                        getLocaleMessage("messages.expectationl.ask") + " " + customer.getService().getExpectation() + " " + getLocaleMessage("fclient.min")
+                        + ".\n\n                                                   " + getLocaleMessage("message.expectation.chance"),
+                        getLocaleMessage("messages.expectationl.caption"),
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE) == 0) {
+                    return;
+                }
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        getLocaleMessage("messages.expectationl.ask") + " " + customer.getService().getExpectation() + " " + getLocaleMessage("fclient.min"),
+                        getLocaleMessage("messages.expectationl.caption"),
+                        JOptionPane.INFORMATION_MESSAGE);
+                fkill = true;
+                return;
+            }
+
+        }
+        fkill = false;
         final long start = go();
         // Уточним намерения
         if (JOptionPane.showConfirmDialog(this,

@@ -560,7 +560,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonInfo.setVisible(WelcomeParams.getInstance().info);
         buttonResponse.setVisible(WelcomeParams.getInstance().response);
         buttonAdvance.setVisible(WelcomeParams.getInstance().advance);
-        buttonStandAdvance.setVisible(WelcomeParams.getInstance().advance);
+        buttonStandAdvance.setVisible(WelcomeParams.getInstance().standAdvance);
         panelLngs.setVisible(Locales.getInstance().isWelcomeMultylangs());
         if (Locales.getInstance().isWelcomeMultylangs()) {
             FlowLayout la = new FlowLayout(Locales.getInstance().getMultylangsPosition(), 50, 10);
@@ -1331,7 +1331,7 @@ public class FWelcome extends javax.swing.JFrame {
         buttonBack.setVisible(visible && current != root);
         buttonToBegin.setVisible(visible && current != root);
 
-        buttonStandAdvance.setVisible(WelcomeParams.getInstance().advance && visible);
+        buttonStandAdvance.setVisible(WelcomeParams.getInstance().standAdvance && visible);
         buttonAdvance.setVisible(WelcomeParams.getInstance().advance && visible);
 
         buttonInfo.setVisible(WelcomeParams.getInstance().info && visible);

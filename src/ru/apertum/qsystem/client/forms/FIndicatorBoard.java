@@ -205,7 +205,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
             Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "invisibleCursor");
             setCursor(transparentCursor);
-            setBounds(0, 0, 200, 300);
+            setBounds(x, y, 200, 300);
             addWindowListener(new WindowAdapter() {
 
                 @Override

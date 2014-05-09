@@ -45,10 +45,9 @@ import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.net.NetUtil;
 
 /**
- * Базовый класс генераторов отчетов.
- * сам себя складывает в HashMap<String, IGenerator> generators.
- * Для получения отчета генератор использует методы интерфейса IFormirovator.
- * метод process генерирует отчет.
+ * Базовый класс генераторов отчетов. сам себя складывает в HashMap<String, IGenerator> generators. Для получения отчета генератор использует методы интерфейса
+ * IFormirovator. метод process генерирует отчет.
+ *
  * @author Evgeniy Egorov
  */
 @MappedSuperclass
@@ -89,6 +88,7 @@ public abstract class AGenerator implements IGenerator {
 
     /**
      * Абстрактный метод формирования данных отчета.
+     *
      * @param request
      * @return
      */
@@ -96,6 +96,7 @@ public abstract class AGenerator implements IGenerator {
 
     /**
      * Абстрактный метод формирования параметров для отчета.
+     *
      * @param request
      * @return
      */
@@ -103,15 +104,16 @@ public abstract class AGenerator implements IGenerator {
 
     /**
      * Метод получения коннекта к базе если отчет строится через коннект.
+     *
      * @param request
      * @return коннект соединения к базе или null.
      */
     abstract protected Connection getConnection(HttpRequest request);
 
     /**
-     * Абстрактный метод выполнения неких действия для подготовки данных отчета.
-     * Если он возвращает заполненный массив байт, то его нужно отдать клиенту,
-     * иначе если null то продолжаем генерировать отчет.
+     * Абстрактный метод выполнения неких действия для подготовки данных отчета. Если он возвращает заполненный массив байт, то его нужно отдать клиенту, иначе
+     * если null то продолжаем генерировать отчет.
+     *
      * @param request
      * @return массив байт для выдачи на клиента. Может быть null если выдовать ничего не надо.
      */
@@ -119,6 +121,7 @@ public abstract class AGenerator implements IGenerator {
 
     /**
      * Сформируем диалог дл ввода параметров
+     *
      * @param request
      * @param errorMessage сообщение об ощибке предыдущего ввода, иначе null
      * @return
@@ -127,6 +130,7 @@ public abstract class AGenerator implements IGenerator {
 
     /**
      * Проверка параметров если они были введены
+     *
      * @param request
      * @param params параметры из request
      * @return сообщение об ошибке если была, иначе null
@@ -134,8 +138,8 @@ public abstract class AGenerator implements IGenerator {
     abstract protected String validate(HttpRequest request, HashMap<String, String> params);
 
     /**
-     * Метод получения документа-отчета или другого какого документа в виде массива байт.
-     * Сдесь испольщуем методы интерфейса IFormirovator для получения отчета.
+     * Метод получения документа-отчета или другого какого документа в виде массива байт. Сдесь испольщуем методы интерфейса IFormirovator для получения отчета.
+     *
      * @param request ? какого формата отчет хотим получить(html, pdf, rtf)
      * @return данные документа.
      */
@@ -186,7 +190,6 @@ public abstract class AGenerator implements IGenerator {
         // Компиляция отчета, попробуем без компиляции, есть же уже откампиленные
         //InputStream is = getClass().getResourceAsStream(template);
         //JasperReport jasperReport = JasperCompileManager.compileReport(is);
-
         // Получение готового к экспорту отчета
         //JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, hm, xmlDataSource); - это вариант с предкампиляцией
         // это тип полученных данных, пойдет в http заголовок
@@ -218,6 +221,10 @@ public abstract class AGenerator implements IGenerator {
             int dot = subject.lastIndexOf(".");
             final String format = subject.substring(dot + 1);
 
+            final File ff = new File(Uses.TEMP_FOLDER);
+            if (!ff.exists()) {
+                ff.mkdir();
+            }
             if (Uses.REPORT_FORMAT_HTML.equalsIgnoreCase(format)) {
                 final JRHtmlExporter exporter = new JRHtmlExporter();
                 exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
@@ -238,7 +245,7 @@ public abstract class AGenerator implements IGenerator {
                 result = buf.toString().replaceAll("nullpx", "resources/px").replaceFirst("<body text=\"#000000\"", "<body text=\"#000000\"  background=\"resources/fp.png\" bgproperties=\"fixed\"").replaceAll("bgcolor=\"white\"", "bgcolor=\"CCDDEE\"").replaceAll("nullimg_", "img_").getBytes("UTF-8");
                 dataType = "text/html";
             } else if (Uses.REPORT_FORMAT_RTF.equalsIgnoreCase(format)) {
-                final JRRtfExporter exporter = new JRRtfExporter(); 
+                final JRRtfExporter exporter = new JRRtfExporter();
                 exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, baos);
@@ -247,14 +254,14 @@ public abstract class AGenerator implements IGenerator {
                 dataType = "application/rtf";
             } else if (Uses.REPORT_FORMAT_XLSX.equalsIgnoreCase(format)) {
                 //final JROdsExporter exporter = new JROdsExporter(); 
-                final JRXlsxExporter exporter = new JRXlsxExporter(); 
+                final JRXlsxExporter exporter = new JRXlsxExporter();
                 exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, baos);
                 exporter.exportReport();
                 result = baos.toByteArray();
                 //dataType = "application/ods";    
-                dataType = "application/xlsx";    
+                dataType = "application/xlsx";
             } else if (Uses.REPORT_FORMAT_PDF.equalsIgnoreCase(format)) {
                 // создадим файл со шрифтами если его нет
                 final File f = new File("tahoma.ttf");
@@ -281,8 +288,8 @@ public abstract class AGenerator implements IGenerator {
     }
 
     /**
-     * Метод генерации PDF-отчетов через файл.
-     * Вынесен в отдельный метод для синхронизации.
+     * Метод генерации PDF-отчетов через файл. Вынесен в отдельный метод для синхронизации.
+     *
      * @param jasperPrint этот готовый отчет и экспортим в PDF
      * @return возвращает готовый отчет в виде массива байт
      * @throws net.sf.jasperreports.engine.JRException

@@ -41,6 +41,11 @@ public class AuthorizedClientsPeriodServices extends AFormirovator {
      * Метод формирования параметров для отчета.
      * В отчет нужно передать некие параметры. Они упаковываются в Мар.
      * Если параметры не нужны, то сформировать пустой Мар.
+     * @param driverClassName
+     * @param url
+     * @param username
+     * @param password
+     * @param request
      * @return
      */
     @Override
@@ -55,6 +60,11 @@ public class AuthorizedClientsPeriodServices extends AFormirovator {
     /**
      * Метод получения коннекта к базе если отчет строится через коннект.
      * Если отчет строится не через коннект, а формироватором, то выдать null.
+     * @param driverClassName
+     * @param url
+     * @param username
+     * @param password
+     * @param request
      * @return коннект соединения к базе или null.
      */
     @Override

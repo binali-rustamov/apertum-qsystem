@@ -201,6 +201,7 @@ public final class Uses {
     public static final String TASK_STAND_COMPLEX = "Поставить в несколько очередей";
     public static final String TASK_ADVANCE_STAND_IN = "Поставить в очередь предварительно";
     public static final String TASK_ADVANCE_CHECK_AND_STAND = "Поставить предварительно записанного";
+    public static final String TASK_REMOVE_ADVANCE_CUSTOMER = "Удалить предварительно записанного";
     public static final String TASK_REDIRECT_CUSTOMER = "Переадресовать клиента к другой услуге";
     public static final String TASK_GET_SERVICES = "Получить перечень услуг";
     public static final String TASK_ABOUT_SERVICE = "Получить описание услуги";

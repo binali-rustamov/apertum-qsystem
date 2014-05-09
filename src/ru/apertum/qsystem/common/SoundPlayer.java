@@ -318,7 +318,7 @@ public class SoundPlayer implements Runnable {
                     while ((line = br.readLine()) != null) {
                         line = (f ? line.substring(1) : line);
                         f = false;
-                        System.out.println(line);
+                        //System.out.println(line);
                         String[] ss = line.split("=");
                         if (ss[0].startsWith("pref")) {
                             preffix = ss[1];

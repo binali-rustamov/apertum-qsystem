@@ -516,6 +516,7 @@ public class FAdmin extends javax.swing.JFrame {
             jMenuBar1.add(menu, 4);
             jMenuBar1.add(new JLabel("<html><span style='font-size:13.0pt;color:red'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  [" + as.getName() + "]"));
         }
+        comboBoxVoices.setVisible(false);
     }
 
     /**
@@ -1086,12 +1087,12 @@ public class FAdmin extends javax.swing.JFrame {
                             String inputLine;
                             while ((inputLine = in.readLine()) != null) {
                                 result += inputLine;
+                                }
                             }
                         }
-                    }
                     conn.disconnect();
                 } catch (Exception e) {
-                    System.err.println("Pager not enabled.");
+                    System.err.println("Pager not enabled. " + e);
                     return;
                 }
                 final Gson gson = GsonPool.getInstance().borrowGson();
@@ -1102,7 +1103,7 @@ public class FAdmin extends javax.swing.JFrame {
                         forPager.start();
                     }
                 } catch (Exception e) {
-                    System.err.println("Pager not enabled but working.");
+                    System.err.println("Pager not enabled but working. " + e);
                     return;
                 } finally {
                     GsonPool.getInstance().returnGson(gson);
@@ -1346,8 +1347,12 @@ public class FAdmin extends javax.swing.JFrame {
         newService.setName(serviceName);
         newService.setDescription(serviceName);
         newService.setStatus(1);
+        newService.setSoundTemplate("021111");
         newService.setAdvanceTimePeriod(60);
         newService.setCalendar(QCalendarList.getInstance().getById(1));
+        if(QScheduleList.getInstance().getSize()!=0){
+            newService.setSchedule(QScheduleList.getInstance().getElementAt(0));
+        }
         newService.setButtonText("<html><b><p align=center><span style='font-size:20.0pt;color:red'>" + serviceName + "</span></b>");
         //проставим букавку
         newService.setPrefix("A");
@@ -3843,6 +3848,7 @@ public class FAdmin extends javax.swing.JFrame {
         comboBoxVoices.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Даша", "Алёна", "Николай", "Ольга" }));
         comboBoxVoices.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("comboBoxVoices.border.title"))); // NOI18N
         comboBoxVoices.setEnabled(false);
+        comboBoxVoices.setFocusable(false);
         comboBoxVoices.setName("comboBoxVoices"); // NOI18N
 
         buttonGroupVoice.add(rbNotificationGongOrVoice);
@@ -3861,17 +3867,15 @@ public class FAdmin extends javax.swing.JFrame {
             .addGroup(jPanel21Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(comboBoxVoices, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel21Layout.createSequentialGroup()
                             .addComponent(rbNotificationGongVoice)
                             .addContainerGap())
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(rbNotificationNo)
                             .addComponent(rbNotificationGong)
-                            .addComponent(rbNotificationGongOrVoice)))
-                    .addGroup(jPanel21Layout.createSequentialGroup()
-                        .addComponent(comboBoxVoices, 0, 149, Short.MAX_VALUE)
-                        .addContainerGap())))
+                            .addComponent(rbNotificationGongOrVoice)))))
         );
         jPanel21Layout.setVerticalGroup(
             jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3884,8 +3888,8 @@ public class FAdmin extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(rbNotificationGongVoice)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboBoxVoices, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(comboBoxVoices, javax.swing.GroupLayout.PREFERRED_SIZE, 25, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N

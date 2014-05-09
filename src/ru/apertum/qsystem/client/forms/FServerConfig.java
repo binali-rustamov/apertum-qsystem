@@ -36,7 +36,6 @@ import javax.swing.JOptionPane;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.dom4j.Element;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.common.Uses;
@@ -64,7 +63,6 @@ public class FServerConfig extends javax.swing.JFrame {
         }
         return localeMap.getString(key);
     }
-    private Element root = null;
 
     /**
      * Creates new form FServerConfig
@@ -539,14 +537,12 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
     }//GEN-LAST:event_buttonSaveServerActionPerformed
 
     private void miAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miAddActionPerformed
-        if (listServs.getModel().getSize() < 1 || ide) {
-            final String inputData = (String) JOptionPane.showInputDialog(this, "Название нового сервера:", "Добавление нового сервера БД", 3);
-            if (inputData == null || inputData.isEmpty()) {
-                return;
-            }
-            ((DefaultListModel) (listServs.getModel())).addElement(new SqlServer(inputData, "root", "root", "jdbc:mysql://127.0.0.1/qsystem?autoReconnect=true&amp;characterEncoding=UTF-8", false, false));
-            listServs.setSelectedIndex(listServs.getModel().getSize() - 1);
+        final String inputData = (String) JOptionPane.showInputDialog(this, "Название нового сервера:", "Добавление нового сервера БД", 3);
+        if (inputData == null || inputData.isEmpty()) {
+            return;
         }
+        ((DefaultListModel) (listServs.getModel())).addElement(new SqlServer(inputData, "root", "root", "jdbc:mysql://127.0.0.1/qsystem?autoReconnect=true&amp;characterEncoding=UTF-8", false, false));
+        listServs.setSelectedIndex(listServs.getModel().getSize() - 1);
     }//GEN-LAST:event_miAddActionPerformed
 
     private void miRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRemoveActionPerformed

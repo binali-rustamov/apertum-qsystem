@@ -87,31 +87,31 @@ public class ChangeContext {
 
             if (servs.size() != 0) {
 
-                //System.out.println("Press '+' for create DB server");
-                //System.out.println("Press '-' for remove DB server");
+                System.out.println("Press '+' for create DB server");
+                System.out.println("Press '-' for remove DB server");
                 System.out.println("Press 'm' for select main DB server");
                 System.out.println("Press 'c' for select current DB server");
                 System.out.print("Press number for edit DB server(enter - exit):");
                 str = read();
-                /*
-                 if ("+".equals(str)) {
-                 servs.add(new SqlServer("root", "root", "jdbc:mysql://127.0.0.1/qsystem?autoReconnect=true&amp;characterEncoding=UTF-8", false, false));
-                 }
-                 if ("-".equals(str)) {
-                 System.out.println("");
-                 System.out.println("Choose number for removing('enter' for cancel): ");
-                 int i = 0;
-                 for (SqlServer ser : servs) {
-                 System.out.println("  " + (++i) + "  " + ser);
-                 }
-                 System.out.print("Removing server:");
-                 str = read();
-                 if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= servs.size()) {
-                 servs.remove(Integer.parseInt(str) - 1);
-                 }
-                 str = "-";
-                 }
-                 */
+
+                if ("+".equals(str)) {
+                    servs.add(new SqlServer("serverDB_" + servs.size(), "root", "root", "jdbc:mysql://127.0.0.1/qsystem?autoReconnect=true&amp;characterEncoding=UTF-8", false, false));
+                }
+                if ("-".equals(str)) {
+                    System.out.println("");
+                    System.out.println("Choose number for removing('enter' for cancel): ");
+                    int i = 0;
+                    for (SqlServer ser : servs) {
+                        System.out.println("  " + (++i) + "  " + ser);
+                    }
+                    System.out.print("Removing server:");
+                    str = read();
+                    if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= servs.size()) {
+                        servs.remove(Integer.parseInt(str) - 1);
+                    }
+                    str = "-";
+                }
+
                 if ("m".equals(str)) {
                     System.out.println("");
                     System.out.println("Choose number for main('enter' for cancel): ");

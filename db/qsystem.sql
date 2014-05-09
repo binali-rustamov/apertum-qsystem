@@ -85,7 +85,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`schedule` (
     REFERENCES `qsystem`.`breaks` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB, 
+ENGINE = InnoDB
 COMMENT = 'Справочник расписаний для услуг' ;
 
 CREATE INDEX `idx_schedule_breaks1` ON `qsystem`.`schedule` (`breaks_id1` ASC) ;
@@ -152,6 +152,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`services` (
   `deleted` DATE NULL COMMENT 'признак удаления с проставленим даты' ,
   `duration` INT NOT NULL DEFAULT '1' COMMENT 'Норматив. Среднее время оказания этой услуги.  Пока для маршрутизации при медосмотре' ,
   `sound_template` VARCHAR(45) NULL COMMENT 'шаблон звукового приглашения. null или 0... - использовать родительский.' ,
+  `expectation` INT NOT NULL DEFAULT 0 COMMENT 'Время обязательного ожидания посетителя' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_servises_parent_id_servises_id`
     FOREIGN KEY (`prent_id` )
@@ -270,6 +271,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`clients` (
   `clients_authorization_id` BIGINT NULL DEFAULT NULL COMMENT 'Определено если клиент авторизовался' ,
   `result_id` BIGINT NULL DEFAULT NULL COMMENT 'Если выбрали результат работы' ,
   `input_data` VARCHAR(150) NOT NULL DEFAULT '' COMMENT 'Введенные данные пользователем' ,
+  `state_in` INT NOT NULL DEFAULT 0 COMMENT 'клиент перешел в это состояние.' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_сlients_service_id_services_id`
     FOREIGN KEY (`service_id` )
@@ -380,6 +382,7 @@ CREATE  TABLE IF NOT EXISTS `qsystem`.`statistic` (
   `client_stand_time` DATETIME NOT NULL COMMENT 'Время постановки кастомера в очередь' ,
   `user_work_period` INT NOT NULL COMMENT 'Время работы пользователя с клиентом в минутах.' ,
   `client_wait_period` INT NOT NULL COMMENT 'Время ожидания в минутах. Определяется триггером.' ,
+  `state_in` INT NOT NULL DEFAULT 0 COMMENT 'Клиент перешел в это состояние' ,
   PRIMARY KEY (`id`) ,
   CONSTRAINT `fk_work_user_id_users_id`
     FOREIGN KEY (`user_id` )
@@ -646,9 +649,9 @@ BEGIN
     SET @finish_start= TIMEDIFF(NEW.finish_time, NEW.start_time);
     SET @start_starnd = TIMEDIFF(NEW.start_time, NEW.stand_time);
     INSERT
-        INTO statistic(results_id, user_id, client_id, service_id, user_start_time, user_finish_time, client_stand_time, user_work_period, client_wait_period) 
+        INTO statistic(state_in, results_id, user_id, client_id, service_id, user_start_time, user_finish_time, client_stand_time, user_work_period, client_wait_period) 
     VALUES
-        (NEW.result_id, NEW.user_id, NEW.id, NEW.service_id, NEW.start_time, NEW.finish_time, NEW.stand_time, 
+        (NEW.state_in, NEW.result_id, NEW.user_id, NEW.id, NEW.service_id, NEW.start_time, NEW.finish_time, NEW.stand_time, 
         round(
                 (HOUR(@finish_start) * 60 * 60 +
                  MINUTE(@finish_start) * 60 +
@@ -673,9 +676,9 @@ BEGIN
     SET @finish_start= TIMEDIFF(NEW.finish_time, NEW.start_time);
     SET @start_starnd = TIMEDIFF(NEW.start_time, NEW.stand_time);
     INSERT
-        INTO statistic(results_id, user_id, client_id, service_id, user_start_time, user_finish_time, client_stand_time, user_work_period, client_wait_period) 
+        INTO statistic(state_in, results_id, user_id, client_id, service_id, user_start_time, user_finish_time, client_stand_time, user_work_period, client_wait_period) 
     VALUES
-        (NEW.result_id, NEW.user_id, NEW.id, NEW.service_id, NEW.start_time, NEW.finish_time, NEW.stand_time, 
+        (NEW.state_in, NEW.result_id, NEW.user_id, NEW.id, NEW.service_id, NEW.start_time, NEW.finish_time, NEW.stand_time, 
         round(
                 (HOUR(@finish_start) * 60 * 60 +
                  MINUTE(@finish_start) * 60 +
@@ -719,8 +722,8 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`, `seq_id`, `but_x`, `but_y`, `but_b`, `but_h`, `deleted`, `duration`, `sound_template`) VALUES (1, 'Дерево услуг', 'Дерево услуг', '-', '<html><p align=center><span style=\'font-size:55.0;color:#DC143C\'>Система управления очередью</span><br><span style=\'font-size:45.0;color:#DC143C\'><i>выберите требуемую услугу</i>', 1, 1, NULL, 0, 0, 1, 14, 60, NULL, 0, '', 0, NULL, '', '', 0, NULL, 0, 100, 100, 200, 100, NULL, 1, '120050');
-INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`, `seq_id`, `but_x`, `but_y`, `but_b`, `but_h`, `deleted`, `duration`, `sound_template`) VALUES (2, 'Услуга', 'Описание услуги', 'А', '<html><b><p align=center><span style=\'font-size:20.0pt;color:blue\'>Некая услуга', 1, 1, 1, 0, 0, 1, 14, 60, 1, 0, '', 0, 1, '', '', 0, NULL, 0, 100, 100, 200, 100, NULL, 1, NULL);
+INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`, `seq_id`, `but_x`, `but_y`, `but_b`, `but_h`, `deleted`, `duration`, `sound_template`, `expectation`) VALUES (1, 'Дерево услуг', 'Дерево услуг', '-', '<html><p align=center><span style=\'font-size:55.0;color:#DC143C\'>Система управления очередью</span><br><span style=\'font-size:45.0;color:#DC143C\'><i>выберите требуемую услугу</i>', 1, 1, NULL, 0, 0, 1, 14, 60, NULL, 0, '', 0, NULL, '', '', 0, NULL, 0, 100, 100, 200, 100, NULL, 1, '121111', 0);
+INSERT INTO `qsystem`.`services` (`id`, `name`, `description`, `service_prefix`, `button_text`, `status`, `enable`, `prent_id`, `day_limit`, `person_day_limit`, `advance_limit`, `advance_limit_period`, `advance_time_period`, `schedule_id`, `input_required`, `input_caption`, `result_required`, `calendar_id`, `pre_info_html`, `pre_info_print_text`, `point`, `ticket_text`, `seq_id`, `but_x`, `but_y`, `but_b`, `but_h`, `deleted`, `duration`, `sound_template`, `expectation`) VALUES (2, 'Услуга', 'Описание услуги', 'А', '<html><b><p align=center><span style=\'font-size:20.0pt;color:blue\'>Некая услуга', 1, 1, 1, 0, 0, 1, 14, 60, 1, 0, '', 0, 1, '', '', 0, NULL, 0, 100, 100, 200, 100, NULL, 1, '021111', 0);
 
 COMMIT;
 
@@ -749,7 +752,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `qsystem`;
-INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`, `limit_recall`, `button_free_design`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '2.5', 1, 999, 0, 0, 1, -1, '', '127.0.0.1', 27007, 0, 0, 0, 0);
+INSERT INTO `qsystem`.`net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`, `limit_recall`, `button_free_design`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '2.6', 1, 999, 0, 0, 1, -1, '', '127.0.0.1', 27007, 0, 0, 0, 0);
 
 COMMIT;
 
@@ -781,6 +784,7 @@ INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) 
 INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (12, 'Отчет предварительно зарегистрированных клиентов по услуге на дату', 'ru.apertum.qsystem.reports.formirovators.DistributionMedDayServices', '/ru/apertum/qsystem/reports/templates/DistributionMedDayServices.jasper', 'distribution_med_services');
 INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (13, 'Отчет по авторизованным персонам за период для пользователя', 'ru.apertum.qsystem.reports.formirovators.AuthorizedClientsPeriodUsers', '/ru/apertum/qsystem/reports/templates/AuthorizedClientsPeriodUsers.jasper', 'authorized_clients_period_users');
 INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (14, 'Отчет по авторизованным персонам за период для услуги', 'ru.apertum.qsystem.reports.formirovators.AuthorizedClientsPeriodServices', '/ru/apertum/qsystem/reports/templates/AuthorizedClientsPeriodServices.jasper', 'authorized_clients_period_services');
+INSERT INTO `qsystem`.`reports` (`id`, `name`, `className`, `template`, `href`) VALUES (15, 'Отчет по результатам работы за период в разрезе услуг', 'ru.apertum.qsystem.reports.formirovators.ResultStateServices', '/ru/apertum/qsystem/reports/templates/resultStateServicesPeriod.jasper', 'result_state_services');
 
 COMMIT;
 

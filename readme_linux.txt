@@ -1,5 +1,8 @@
 ﻿1. Debian 7 install Java Oracle 1.7 via apt-get
 
+установим часовой пояс dpkg-reconfigure tzdata
+проверим время date
+
 
 
 открыть терминал с root правами и поехали
@@ -96,3 +99,6 @@ And restart default domain
 [~]# asadmin --port 15123 restart-domain
 Successfully restarted the domain
 Access your Glassfish console URL this time over SSL (so accept certificate mismatch warning in your browser e.g. 'this connection is untrusted' in Firefox) and login with the credentials you set. Glassfish Admin console URL is also shown in Java Control Panel.
+
+
+Спецзаметка:  как решать проблему с включением блокировки єкрана в линукс http://www.linuxrussia.com/2013/05/caffeine-ubuntu.html

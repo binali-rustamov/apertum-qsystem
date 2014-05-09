@@ -83,6 +83,7 @@ public class WelcomeParams {
     private static final String INFO_BUTTON = "info_button";// кнопка информационной системы на пункте регистрации
     private static final String RESPONSE_BUTTON = "response_button";// - кнопка обратной связи на пункте регистрации
     private static final String ADVANCE_BUTTON = "advance_button";// - кнопка предварительной записи на пункте регистрации
+    private static final String STAND_ADVANCE_BUTTON = "stand_advance_button";// - присутствие кнопки предварительной записи на пункте регистрации (0/1)
     private static final String NUMERIC_KEYBOARD = "numeric_keyboard";// - цифровая клавиатура при вводе юзерской инфы
     private static final String ALPHABETIC_KEYBOARD = "alphabetic_keyboard";// - буквенная клавиатура при вводе юзерской инфы
     private static final String SPEC_KEYBOARD = "spec_keyboard";// - буквенная клавиатура при вводе юзерской инфы
@@ -113,6 +114,7 @@ public class WelcomeParams {
     public boolean info = true; // кнопка информационной системы на пункте регистрации
     public boolean response = true; // - кнопка обратной связи на пункте регистрации
     public boolean advance = true; // - кнопка предварительной записи на пункте регистрации
+    public boolean standAdvance = true; // присутствие кнопки предварительной записи на пункте регистрации (0/1)
     public int logoLeft = 50; // Отступ печати логотипа слева
     public int logoTop = -5; // Отступ печати логотипа сверху
     public String logoImg = "/ru/apertum/qsystem/client/forms/resources/logo_ticket.png"; // логотип сверху
@@ -198,6 +200,7 @@ public class WelcomeParams {
         info = "1".equals(settings.getProperty(INFO_BUTTON)) || "true".equals(settings.getProperty(INFO_BUTTON)); // кнопка информационной системы на пункте регистрации
         response = "1".equals(settings.getProperty(RESPONSE_BUTTON)) || "true".equals(settings.getProperty(RESPONSE_BUTTON)); // - кнопка обратной связи на пункте регистрации
         advance = "1".equals(settings.getProperty(ADVANCE_BUTTON)) || "true".equals(settings.getProperty(ADVANCE_BUTTON)); // - кнопка предварительной записи на пункте регистрации
+        standAdvance = "1".equals(settings.getProperty(STAND_ADVANCE_BUTTON)) || "true".equals(settings.getProperty(STAND_ADVANCE_BUTTON)); // присутствие кнопки предварительной записи на пункте регистрации (0/1)
 
         numeric_keyboard = !settings.containsKey(NUMERIC_KEYBOARD) || "1".equals(settings.getProperty(NUMERIC_KEYBOARD)) || "true".equals(settings.getProperty(NUMERIC_KEYBOARD)); // - цифровая клавиатура при вводе юзерской инфы
         alphabetic_keyboard = !settings.containsKey(ALPHABETIC_KEYBOARD) || "1".equals(settings.getProperty(ALPHABETIC_KEYBOARD)) || "true".equals(settings.getProperty(ALPHABETIC_KEYBOARD));// - буквенная клавиатура при вводе юзерской инфы

@@ -34,6 +34,7 @@ import ru.apertum.qsystem.common.cmd.CmdParams;
 import ru.apertum.qsystem.common.cmd.AJsonRPC20;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.cmd.JsonRPC20Error;
+import ru.apertum.qsystem.common.cmd.JsonRPC20OK;
 import ru.apertum.qsystem.common.cmd.RpcBanList;
 import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
@@ -963,6 +964,36 @@ public class NetCommander {
         final RpcStandInService rpc;
         try {
             rpc = gson.fromJson(res, RpcStandInService.class);
+        } catch (JsonSyntaxException ex) {
+            throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        return rpc;
+    }
+    
+    /**
+     * Удаление предварительной записи в очередь.
+     *
+     * @param netProperty netProperty параметры соединения с сервером.
+     * @param advanceID идентификатор предварительно записанного.
+     * @return XML-ответ.
+     */
+    public static JsonRPC20OK removeAdvancedCustomer(INetProperty netProperty, Long advanceID) {
+        QLog.l().logger().info("Удаление предварительно записанных в очередь.");
+        // загрузим ответ
+        final CmdParams params = new CmdParams();
+        params.customerId = advanceID;
+        final String res;
+        try {
+            res = send(netProperty, Uses.TASK_REMOVE_ADVANCE_CUSTOMER, params);
+        } catch (QException e) {// вывод исключений
+            throw new ClientException("Невозможно получить ответ от сервера. " + e.toString());
+        }
+        final Gson gson = GsonPool.getInstance().borrowGson();
+        final JsonRPC20OK rpc;
+        try {
+            rpc = gson.fromJson(res, JsonRPC20OK.class);
         } catch (JsonSyntaxException ex) {
             throw new ClientException("Не возможно интерпритировать ответ.\n" + ex.toString());
         } finally {

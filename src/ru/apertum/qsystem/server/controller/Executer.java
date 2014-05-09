@@ -43,6 +43,7 @@ import ru.apertum.qsystem.common.cmd.CmdParams;
 import ru.apertum.qsystem.common.cmd.AJsonRPC20;
 import ru.apertum.qsystem.common.cmd.JsonRPC20;
 import ru.apertum.qsystem.common.cmd.JsonRPC20Error;
+import static ru.apertum.qsystem.common.cmd.JsonRPC20Error.ErrorRPC.*;
 import ru.apertum.qsystem.common.cmd.JsonRPC20OK;
 import ru.apertum.qsystem.common.cmd.RpcGetAdvanceCustomer;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices;
@@ -331,7 +332,7 @@ public final class Executer {
                     }
                     // учтем приоритетность кастомеров и приоритетность очередей для юзера в которые они стоят
                     final Integer prior = plan.getCoefficient();
-                    if (prior > servPriority || (prior == servPriority && customer.compareTo(cust) == 1)) {
+                    if (prior > servPriority || (prior == servPriority && customer != null && customer.compareTo(cust) == 1)) {
                         servPriority = prior;
                         customer = cust;
                     }
@@ -486,7 +487,11 @@ public final class Executer {
             }
             // Если лимит количества подобных введенных данных кастомерами в день достигнут
             final QService srv = QServiceTree.getInstance().getById(cmdParams.serviceId);
-            return new RpcGetInt(srv.isLimitPersonPerDayOver(cmdParams.textData) ? 1 : 0);
+            try {
+                return new RpcGetInt(srv.isLimitPersonPerDayOver(cmdParams.textData) ? 1 : 0);
+            } catch (Exception ex) {
+                throw new ServerException("Подохло что-то при определении ограничения.", ex);
+            }
         }
     };
     /**
@@ -1098,7 +1103,7 @@ public final class Executer {
                 customer.setFinishTime(new Date());
                 // кастомер переходит в состояние "Завершенности", но не "мертвости"
                 customer.setState(CustomerState.STATE_FINISH);
-                // дело такое, кастомер может идти по списку услуг, т.е. есть набор услуг, юзер завершает работу, а сстема его ведет по списку услуг
+                // дело такое, кастомер может идти по списку услуг, т.е. есть набор услуг, юзер завершает работу, а система его ведет по списку услуг
                 // тут посмотрим может его уже провели по списку комплексных услуг, если у него вообще они были
                 // если провели то у него статус другой STATE_WAIT_COMPLEX_SERVICE
                 // если нет, то статус STATE_FINISH и список в комплексных не пуст
@@ -1128,6 +1133,15 @@ public final class Executer {
                         customer.setState(CustomerState.STATE_WAIT_COMPLEX_SERVICE);
                     }
                 }
+                // если же всетаки проводка по этапу, то оповестить следующих юзеров что к ним пришел
+                if (customer.getState() == CustomerState.STATE_WAIT_COMPLEX_SERVICE) {
+                    //разослать оповещение о том, что появился посетитель после редиректа
+                    //рассылаем широковещетельно по UDP на определенный порт
+                    Uses.sendUDPBroadcast(customer.getService().getId().toString(), ServerProps.getInstance().getProps().getClientPort());
+                    QLog.l().logger().info("Клиент \"" + customer.getPrefix() + customer.getNumber() + "\" проведен по этапу к услуге \"" + customer.getService().getName() + "\"");
+
+                }
+
             }
             try {
                 user.setCustomer(null);//бобик сдох и медальки не осталось
@@ -1815,16 +1829,12 @@ public final class Executer {
                 return new RpcStandInService(null, "Не верный номер предварительной записи.");
             }
             final GregorianCalendar gc = new GregorianCalendar();
-            if (advCust != null) {
-                gc.setTime(advCust.getAdvanceTime());
-                gc.set(GregorianCalendar.HOUR_OF_DAY, gc.get(GregorianCalendar.HOUR_OF_DAY) - 1);
-            }
+            gc.setTime(advCust.getAdvanceTime());
+            gc.set(GregorianCalendar.HOUR_OF_DAY, gc.get(GregorianCalendar.HOUR_OF_DAY) - 1);
             final GregorianCalendar gc1 = new GregorianCalendar();
-            if (advCust != null) {
-                gc1.setTime(advCust.getAdvanceTime());
-                gc1.set(GregorianCalendar.MINUTE, gc1.get(GregorianCalendar.MINUTE) + 20);
-            }
-            if (advCust != null && new Date().before(gc1.getTime()) && new Date().after(gc.getTime())) {
+            gc1.setTime(advCust.getAdvanceTime());
+            gc1.set(GregorianCalendar.MINUTE, gc1.get(GregorianCalendar.MINUTE) + 20);
+            if (new Date().before(gc1.getTime()) && new Date().after(gc.getTime())) {
                 // Ставим кастомера
                 //трем запись в таблице предварительных записей
 
@@ -1852,19 +1862,49 @@ public final class Executer {
                 txtCustomer.getResult().setInput_data(advCust.getInputData());
                 return txtCustomer;
             } else {
-                String answer;
-                if (advCust == null) {
-                    QLog.l().logger().trace("Не найдена предварительная запись по введеному коду ID = " + cmdParams.customerId);
-                    answer = "Не найдена предварительная запись по введеному коду";
-                } else {
-                    QLog.l().logger().trace("Предварительно записанный клиент пришел не в свое время");
-                    answer = "Предварительно записанный клиент пришел не в свое время";
-                }
+                String answer = "Предварительно записанный клиент пришел не в свое время";
+                QLog.l().logger().trace(answer);
                 // Шлем отказ
                 return new RpcStandInService(null, answer);
             }
         }
     };
+
+    /**
+     * Удалить предварительно записанного кастомера
+     */
+    final Task removeAdvanceCustomer = new Task(Uses.TASK_REMOVE_ADVANCE_CUSTOMER) {
+
+        @Override
+        public JsonRPC20OK process(CmdParams cmdParams, String ipAdress, byte[] IP) {
+            super.process(cmdParams, ipAdress, IP);
+
+            // Вытащим из базы предварительного кастомера
+            final QAdvanceCustomer advCust = Spring.getInstance().getHt().get(QAdvanceCustomer.class, cmdParams.customerId);
+            if (advCust == null || advCust.getId() == null || advCust.getAdvanceTime() == null) {
+                QLog.l().logger().debug("не найден клиент по его ID=" + cmdParams.customerId);
+                // Шлем отказ
+                return new JsonRPC20OK(ADVANCED_NOT_FOUND);
+            }
+            //трем запись в таблице предварительных записей
+            Spring.getInstance().getTt().execute(new TransactionCallbackWithoutResult() {
+
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus status) {
+                    try {
+                        Spring.getInstance().getHt().delete(advCust);
+                        QLog.l().logger().debug("Удалили предварителньную запись о кастомере.");
+                    } catch (Exception ex) {
+                        status.setRollbackOnly();
+                        throw new ServerException("Ошибка при удалении \n" + ex.toString() + "\n" + ex.getStackTrace());
+                    }
+                }
+            });
+            return new JsonRPC20OK();
+        }
+
+    };
+
     /**
      * Получение списка отзывов.
      */
@@ -1980,17 +2020,25 @@ public final class Executer {
             super.process(cmdParams, ipAdress, IP);
             final String num = cmdParams.clientAuthId.trim().toUpperCase();
             String s = "";
-            if (killedCustomers.get(num) != null) {
-                s = "Клиент с номером \"" + num + "\" удален по неявке в " + Uses.format_for_label.format(killedCustomers.get(num));
-            } else {
-                for (QService service : QServiceTree.getInstance().getNodes()) {
-                    for (QCustomer customer : service.getClients()) {
-                        if (num.equalsIgnoreCase(customer.getFullNumber())) {
-                            s = "Клиент с номером \"" + num + "\" стоит в очереди для получения услуги \"" + service.getName() + "\".";
-                            break;
-                        }
+            for (QService service : QServiceTree.getInstance().getNodes()) {
+                for (QCustomer customer : service.getClients()) {
+                    if (num.equalsIgnoreCase(customer.getFullNumber())) {
+                        s = "Клиент с номером \"" + num + "\" стоит в очереди для получения услуги \"" + service.getName() + "\".";
+                        break;
                     }
                 }
+            }
+            if ("".equals(s)) {
+                for (QCustomer customer : QPostponedList.getInstance().getPostponedCustomers()) {
+                    if (num.equalsIgnoreCase(customer.getFullNumber())) {
+                        s = "Клиент с номером \"" + num + "\" находится в списке временно отложенных.";
+                        break;
+                    }
+                }
+            }
+
+            if ("".equals(s) && killedCustomers.get(num) != null) {
+                s = "Клиент с номером \"" + num + "\" удален по неявке в " + Uses.format_for_label.format(killedCustomers.get(num));
             }
             return new RpcGetSrt("".equals(s) ? "Клиент по введенному номеру \"" + num + "\" не найден в списке удаленных по неявке или стоящих в очереди." : s);
         }

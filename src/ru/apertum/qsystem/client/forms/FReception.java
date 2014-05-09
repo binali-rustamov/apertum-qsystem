@@ -74,6 +74,7 @@ import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.cmd.JsonRPC20OK;
 import ru.apertum.qsystem.common.cmd.RpcGetAllServices.ServicesForWelcome;
 import ru.apertum.qsystem.common.cmd.RpcGetGridOfDay;
 import ru.apertum.qsystem.common.cmd.RpcGetGridOfDay.AdvTime;
@@ -84,6 +85,7 @@ import ru.apertum.qsystem.common.cmd.RpcGetServerState.ServiceInfo;
 import ru.apertum.qsystem.common.cmd.RpcGetServiceState.ServiceState;
 import ru.apertum.qsystem.common.cmd.RpcStandInService;
 import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.common.exceptions.QException;
 import ru.apertum.qsystem.common.model.IClientNetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.ATListModel;
@@ -594,6 +596,7 @@ public class FReception extends javax.swing.JFrame {
         tablePreReg = new javax.swing.JTable();
         checkBoxPrintAdvTicket = new javax.swing.JCheckBox();
         labelPreDate = new javax.swing.JLabel();
+        buttonRemoveAdvanceCustomer = new javax.swing.JButton();
         jPanel8 = new javax.swing.JPanel();
         jSplitPane2 = new javax.swing.JSplitPane();
         jPanel9 = new javax.swing.JPanel();
@@ -1024,6 +1027,14 @@ public class FReception extends javax.swing.JFrame {
         labelPreDate.setText(resourceMap.getString("labelPreDate.text")); // NOI18N
         labelPreDate.setName("labelPreDate"); // NOI18N
 
+        buttonRemoveAdvanceCustomer.setText(resourceMap.getString("buttonRemoveAdvanceCustomer.text")); // NOI18N
+        buttonRemoveAdvanceCustomer.setName("buttonRemoveAdvanceCustomer"); // NOI18N
+        buttonRemoveAdvanceCustomer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRemoveAdvanceCustomerActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelPreregLayout = new javax.swing.GroupLayout(panelPrereg);
         panelPrereg.setLayout(panelPreregLayout);
         panelPreregLayout.setHorizontalGroup(
@@ -1031,31 +1042,36 @@ public class FReception extends javax.swing.JFrame {
             .addComponent(panelTreeCmbx, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelPreregLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(calPrereg, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(checkBoxPrintAdvTicket))
+                .addComponent(calPrereg, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelPreregLayout.createSequentialGroup()
                         .addComponent(labelPreDate)
                         .addContainerGap())
                     .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelPreregLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(checkBoxPrintAdvTicket)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 539, Short.MAX_VALUE)
+                .addComponent(buttonRemoveAdvanceCustomer)
+                .addContainerGap())
         );
         panelPreregLayout.setVerticalGroup(
             panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelPreregLayout.createSequentialGroup()
                 .addComponent(panelTreeCmbx, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(calPrereg, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(panelPreregLayout.createSequentialGroup()
-                        .addComponent(calPrereg, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 193, Short.MAX_VALUE)
-                        .addComponent(checkBoxPrintAdvTicket)
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelPreregLayout.createSequentialGroup()
                         .addComponent(labelPreDate)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))))
+                        .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(buttonRemoveAdvanceCustomer)
+                            .addComponent(checkBoxPrintAdvTicket))
+                        .addContainerGap())))
         );
 
         tabsPane.addTab(resourceMap.getString("panelPrereg.TabConstraints.tabTitle"), panelPrereg); // NOI18N
@@ -1683,6 +1699,41 @@ public class FReception extends javax.swing.JFrame {
             buttonRefreshUserActionPerformed(null);
         }
     }//GEN-LAST:event_tableUsersMonMouseClicked
+
+    private void buttonRemoveAdvanceCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveAdvanceCustomerActionPerformed
+        if (tablePreReg.getSelectedRow() >= 0) {
+            final FirstPreCell fc = (FirstPreCell) tablePreReg.getValueAt(tablePreReg.getSelectedRow(), 0);
+            final GregorianCalendar gc = new GregorianCalendar();
+            gc.add(GregorianCalendar.HOUR_OF_DAY, 1);
+            if (fc.getDate().before(gc.getTime())) {
+                return;
+            }
+
+            if (fc.getAcust().getAdvanceTime() == null) {
+                
+            } else {
+                if (0 == JOptionPane.showConfirmDialog(this, "Удалить предварительную запись " + fc.getAcust().getId() + " ко времени "  + fc + " безвозвратно?", getLocaleMessage("pre.reg.2"), JOptionPane.YES_NO_OPTION)) {
+                    
+
+                    final JsonRPC20OK res = NetCommander.removeAdvancedCustomer(netProperty, fc.getAcust().getId());
+
+                    if (res != null) {
+
+                        if (res.getResult() == 1) {// костыль. тут приедет ID отказа
+                            QLog.l().logger().info("Удалили предваоительного " + fc.getAcust().getId() + " на " + fc);
+                            
+                            preRegChange(true);
+                            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.client_adv_remove.msg_3"), getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Не найдена предварительная запись по номеру " + fc.getAcust().getId(), getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                    
+
+                }
+            }
+        }
+    }//GEN-LAST:event_buttonRemoveAdvanceCustomerActionPerformed
     static PropertiesConfiguration config;
 
     /**
@@ -1986,7 +2037,7 @@ public class FReception extends javax.swing.JFrame {
             final ServiceState customers;
             try {
                 customers = NetCommander.getServiceConsistency(netProperty, service.getId());
-            } catch (Exception ex) {
+            } catch (QException ex) {
                 throw new ClientException(getLocaleMessage("admin.print_ticket_error") + " " + ex);
             }
             final ATListModel<QCustomer> lm = new ATListModel<QCustomer>() {
@@ -2141,6 +2192,7 @@ public class FReception extends javax.swing.JFrame {
     private javax.swing.JButton buttonRefreshMainData;
     private javax.swing.JButton buttonRefreshPostponed;
     private javax.swing.JButton buttonRefreshUser;
+    private javax.swing.JButton buttonRemoveAdvanceCustomer;
     private com.toedter.calendar.JCalendar calPrereg;
     private javax.swing.JCheckBox checkBoxPrintAdvTicket;
     private javax.swing.JButton jButton1;

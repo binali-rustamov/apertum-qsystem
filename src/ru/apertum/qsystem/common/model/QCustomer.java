@@ -103,6 +103,18 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     public int getNumber() {
         return number;
     }
+
+    private Integer stateIn;
+
+    @Column(name = "state_in")
+    public Integer getStateIn() {
+        return stateIn;
+    }
+
+    public void setStateIn(Integer stateIn) {
+        this.stateIn = stateIn;
+    }
+    
     /**
      * АТРИБУТЫ "ОЧЕРЕДНИКА" состояние кастомера, именно по нему система знает что сейчас происходит с кастомером Это состояние менять только если кастомер уже
      * готов к этому и все другие параметры у него заполнены. Если данные пишутся в БД, то только по состоянию завершенности обработки над ним. Так что если
@@ -128,6 +140,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
      */
     public void setState(CustomerState state, Long newServiceId) {
         this.state = state;
+        stateIn = state.ordinal();
 
         // можно будет следить за тенью кастомера у юзера и за его изменениями
         if (getUser() != null) {
@@ -138,6 +151,11 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
             case STATE_DEAD:
                 QLog.l().logger().debug("Статус: Кастомер с номером \"" + getPrefix() + getNumber() + "\" идет домой по неявке");
                 getUser().getPlanService(getService()).inkKilled();
+                // хер с ним, сохраним чтоб потом почекать неподошедших. сохраним кастомера в базе
+                // только финиш_тайм надо проставить, хер сним, и старт_тайм тоже, ядренбатон
+                setStartTime(new Date());
+                setFinishTime(new Date());
+                saveToSelfDB();
                 break;
             case STATE_WAIT:
                 QLog.l().logger().debug("Статус: Кастомер пришел и ждет с номером \"" + getPrefix() + getNumber() + "\"");
@@ -147,7 +165,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
                 break;
             case STATE_WAIT_COMPLEX_SERVICE:
                 QLog.l().logger().debug("Статус: Кастомер был опять поставлен в очередь т.к. услуга комплекстая и ждет с номером \"" + getPrefix() + getNumber() + "\"");
-                break;    
+                break;
             case STATE_INVITED:
                 QLog.l().logger().debug("Статус: Пригласили кастомера с номером \"" + getPrefix() + getNumber() + "\"");
                 break;

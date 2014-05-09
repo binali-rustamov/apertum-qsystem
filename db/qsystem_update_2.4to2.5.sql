@@ -4,7 +4,7 @@ SET AUTOCOMMIT=0;
 -- -----------------------------------------------------
 -- Table `qsystem`.`services`
 -- -----------------------------------------------------
-
+delete from  `services` where `deleted` is not null;
 ALTER TABLE `services` ADD `duration` INT NOT NULL DEFAULT '1' COMMENT 'Норматив. Среднее время оказания этой услуги.  Пока для маршрутизации при медосмотре' ;
 ALTER TABLE `services` ADD `sound_template` VARCHAR(45) NULL COMMENT 'шаблон звукового приглашения. null или 0... - использовать родительский.';
 

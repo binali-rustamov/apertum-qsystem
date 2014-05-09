@@ -776,10 +776,7 @@
                   <Component id="panelTreeCmbx" alignment="1" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="calPrereg" min="-2" pref="250" max="-2" attributes="0"/>
-                          <Component id="checkBoxPrintAdvTicket" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="calPrereg" min="-2" pref="250" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
@@ -789,6 +786,13 @@
                           <Component id="jScrollPane10" pref="629" max="32767" attributes="0"/>
                       </Group>
                   </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="checkBoxPrintAdvTicket" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="539" max="32767" attributes="0"/>
+                      <Component id="buttonRemoveAdvanceCustomer" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -796,17 +800,18 @@
                   <Group type="102" attributes="0">
                       <Component id="panelTreeCmbx" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="calPrereg" min="-2" pref="250" max="-2" attributes="0"/>
-                              <EmptySpace pref="193" max="32767" attributes="0"/>
-                              <Component id="checkBoxPrintAdvTicket" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="calPrereg" alignment="0" min="-2" pref="250" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="labelPreDate" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane10" pref="442" max="32767" attributes="0"/>
+                              <Component id="jScrollPane10" pref="402" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="buttonRemoveAdvanceCustomer" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="checkBoxPrintAdvTicket" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -908,6 +913,15 @@
                 <Property name="text" type="java.lang.String" resourceKey="labelPreDate.text"/>
                 <Property name="name" type="java.lang.String" value="labelPreDate" noResource="true"/>
               </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="buttonRemoveAdvanceCustomer">
+              <Properties>
+                <Property name="text" type="java.lang.String" resourceKey="buttonRemoveAdvanceCustomer.text"/>
+                <Property name="name" type="java.lang.String" value="buttonRemoveAdvanceCustomer" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonRemoveAdvanceCustomerActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

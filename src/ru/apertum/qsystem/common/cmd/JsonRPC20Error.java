@@ -32,6 +32,7 @@ public class JsonRPC20Error extends AJsonRPC20 {
         public static final Integer UNKNOWN_ERROR = -1;
         public static final Integer RESPONCE_NOT_SAVE = 2;
         public static final Integer POSTPONED_NOT_FOUND = 3;
+        public static final Integer ADVANCED_NOT_FOUND = 4;
 
         public static final class ErrorCode {
 
@@ -45,6 +46,7 @@ public class JsonRPC20Error extends AJsonRPC20 {
                 MESSAGE.put(UNKNOWN_ERROR, "Unknown error.");
                 MESSAGE.put(RESPONCE_NOT_SAVE, "Не сохранили отзыв в базе.");
                 MESSAGE.put(POSTPONED_NOT_FOUND, "Отложенный пользователь не найден по его ID.");
+                MESSAGE.put(ADVANCED_NOT_FOUND, "Не верный номер предварительной записи.");
             }
         }
 

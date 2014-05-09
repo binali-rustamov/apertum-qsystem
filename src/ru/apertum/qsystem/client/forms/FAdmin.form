@@ -3733,10 +3733,11 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="103" alignment="1" groupAlignment="0" attributes="0">
+                                      <Component id="comboBoxVoices" alignment="0" min="-2" pref="132" max="-2" attributes="1"/>
+                                      <Group type="103" alignment="0" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
                                               <Component id="rbNotificationGongVoice" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
@@ -3746,10 +3747,6 @@
                                               <Component id="rbNotificationGong" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="rbNotificationGongOrVoice" alignment="0" min="-2" max="-2" attributes="1"/>
                                           </Group>
-                                      </Group>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="comboBoxVoices" pref="149" max="32767" attributes="1"/>
-                                          <EmptySpace max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -3766,8 +3763,8 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="rbNotificationGongVoice" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="comboBoxVoices" min="-2" pref="25" max="-2" attributes="0"/>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <Component id="comboBoxVoices" pref="25" max="32767" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -3827,6 +3824,7 @@
                               </Border>
                             </Property>
                             <Property name="enabled" type="boolean" value="false"/>
+                            <Property name="focusable" type="boolean" value="false"/>
                             <Property name="name" type="java.lang.String" value="comboBoxVoices" noResource="true"/>
                           </Properties>
                         </Component>

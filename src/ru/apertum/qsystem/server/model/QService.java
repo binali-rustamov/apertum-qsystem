@@ -168,6 +168,22 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     }
 
     /**
+     * Время обязательного ожидания посетителя.
+     */
+    @Column(name = "expectation")
+    @Expose
+    @SerializedName("exp")
+    private Integer expectation = 0;
+
+    public Integer getExpectation() {
+        return expectation;
+    }
+
+    public void setExpectation(Integer expectation) {
+        this.expectation = expectation;
+    }
+
+    /**
      * шаблон звукового приглашения. null или 0... - использовать родительский. Далее что играем а что нет.
      */
     @Column(name = "sound_template")
@@ -508,11 +524,17 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         final Date start = gc.getTime();
         gc.add(GregorianCalendar.DAY_OF_YEAR, 1);
         final Date finish = gc.getTime();
+        QLog.l().logger().trace("FROM QCustomer a WHERE "
+                + " start_time >'" + Uses.format_for_rep.format(start) + "' "
+                + " and start_time <= '" + Uses.format_for_rep.format(finish) + "' "
+                + " and  input_data = '" + data + "' "
+                + " and service_id = " + getId());
         final List<QCustomer> custs = Spring.getInstance().getHt().find("FROM QCustomer a WHERE "
                 + " start_time >'" + Uses.format_for_rep.format(start) + "' "
                 + " and start_time <= '" + Uses.format_for_rep.format(finish) + "' "
                 + " and  input_data = '" + data + "' "
                 + " and service_id = " + getId());
+        QLog.l().logger().trace("Загрузили уже обработанных кастомеров с такими же данными \"" + data + "\". Их " + (cnt + custs.size()));
         return cnt + custs.size();
     }
 

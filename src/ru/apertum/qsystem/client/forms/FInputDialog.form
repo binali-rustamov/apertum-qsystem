@@ -1618,10 +1618,10 @@
                     <Property name="rows" type="int" value="1"/>
                   </Layout>
                   <SubComponents>
-                    <Component class="javax.swing.JButton" name="buttonSpace">
+                    <Component class="javax.swing.JButton" name="buttonSpaceV">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" resourceKey="buttonSpace.font"/>
-                        <Property name="text" type="java.lang.String" resourceKey="buttonSpace.text"/>
+                        <Property name="font" type="java.awt.Font" resourceKey="buttonSpaceV.font"/>
+                        <Property name="text" type="java.lang.String" resourceKey="buttonSpaceV.text"/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
                             <CompoundBorder>
@@ -1635,7 +1635,7 @@
                           </Border>
                         </Property>
                         <Property name="focusPainted" type="boolean" value="false"/>
-                        <Property name="name" type="java.lang.String" value="buttonSpace" noResource="true"/>
+                        <Property name="name" type="java.lang.String" value="buttonSpaceV" noResource="true"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonClickNumeric"/>
