@@ -31,11 +31,14 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.common.Uses;
@@ -134,6 +137,27 @@ public class FServerConfig extends javax.swing.JFrame {
         if (servs.size() > 0) {
             listServs.setSelectedIndex(0);
         }
+        
+        int ii = 1;
+        final ButtonGroup bg = new ButtonGroup();
+        final String currLng = Locales.getInstance().getLangCurrName();
+        for (String lng : Locales.getInstance().getAvailableLocales()) {
+            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FServerConfig.class, this).get("setCurrentLang"));
+            bg.add(item);
+            item.setSelected(lng.equals(currLng));
+            item.setText(lng); // NOI18N
+            item.setName("QRadioButtonMenuItem" + (ii++)); // NOI18N
+            menuLangs.add(item);
+        }
+    }
+    
+    @Action
+    public void setCurrentLang() {
+        for (int i = 0; i < menuLangs.getItemCount(); i++) {
+            if (((JRadioButtonMenuItem) menuLangs.getItem(i)).isSelected()) {
+                Locales.getInstance().setLangCurrent(((JRadioButtonMenuItem) menuLangs.getItem(i)).getText());
+            }
+        }
     }
 
     /**
@@ -169,6 +193,9 @@ public class FServerConfig extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        menuLangs = new javax.swing.JMenu();
 
         popListServs.setName("popListServs"); // NOI18N
 
@@ -394,6 +421,19 @@ public class FServerConfig extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        jMenuBar1.setName("jMenuBar1"); // NOI18N
+
+        jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
+        jMenu1.setName("jMenu1"); // NOI18N
+
+        menuLangs.setText(resourceMap.getString("menuLangs.text")); // NOI18N
+        menuLangs.setName("menuLangs"); // NOI18N
+        jMenu1.add(menuLangs);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -467,7 +507,7 @@ private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                 con.close();
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog2.title") + ".\nНомер ошибки: " + ex.getSQLState() + "\n" + ex, getLocaleMessage("servercfg.dialog2.caption"), JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog2.title") + ".\nError: " + ex.getSQLState() + "\n" + ex, getLocaleMessage("servercfg.dialog2.caption"), JOptionPane.WARNING_MESSAGE);
             throw new RuntimeException(getLocaleMessage("servercfg.bd.fail"), ex);
         } finally {
             //cpds.close();
@@ -506,12 +546,11 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
             String url = ser.getUrl();
             int st = url.indexOf("://") + 3; // начало адреса   jdbc:mysql://localhost/qsystem?autoReconnect
             int ssh = url.indexOf("/", st);
-            int ask = url.indexOf("?", st);
             url = url.replace(url.substring(st, ssh), textFieldServerAdress.getText());
 
             st = url.indexOf("://") + 3; // начало адреса   jdbc:mysql://localhost/qsystem?autoReconnect
             ssh = url.indexOf("/", st);
-            ask = url.indexOf("?", st);
+            int ask = url.indexOf("?", st);
             url = url.replace((ask == -1 ? url.substring(ssh + 1) : url.substring(ssh + 1, ask)), textFieldBaseName.getText());
 
             ser.setUrl(url);
@@ -537,7 +576,7 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
     }//GEN-LAST:event_buttonSaveServerActionPerformed
 
     private void miAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miAddActionPerformed
-        final String inputData = (String) JOptionPane.showInputDialog(this, "Название нового сервера:", "Добавление нового сервера БД", 3);
+        final String inputData = (String) JOptionPane.showInputDialog(this, getLocaleMessage("name.new.server"), getLocaleMessage("addind.server"), 3);
         if (inputData == null || inputData.isEmpty()) {
             return;
         }
@@ -626,11 +665,14 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JList listServs;
+    private javax.swing.JMenu menuLangs;
     private javax.swing.JMenuItem miAdd;
     private javax.swing.JMenuItem miRemove;
     private javax.swing.JPanel panelParams;

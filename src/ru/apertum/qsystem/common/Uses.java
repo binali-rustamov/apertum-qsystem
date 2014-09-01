@@ -22,8 +22,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
 import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -50,6 +53,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,14 +86,27 @@ public final class Uses {
     public static final int PRIORITY_HI = 2;
     public static final int PRIORITY_VIP = 3;
     public static final int[] PRIORITYS = {PRIORITY_LOW, PRIORITY_NORMAL, PRIORITY_HI, PRIORITY_VIP};
-    public static final LinkedHashMap<Integer, String> PRIORITYS_WORD = new LinkedHashMap<>();
+    private static final LinkedHashMap<Integer, String> PRIORITYS_WORD = new LinkedHashMap<>();
+    public static LinkedHashMap<Integer, String> get_PRIORITYS_WORD(){
+        PRIORITYS_WORD.put(PRIORITY_LOW, FServicePriority.getLocaleMessage("client.priority.low"));
+        PRIORITYS_WORD.put(PRIORITY_NORMAL, FServicePriority.getLocaleMessage("client.priority.standard"));
+        PRIORITYS_WORD.put(PRIORITY_HI, FServicePriority.getLocaleMessage("client.priority.hi"));
+        PRIORITYS_WORD.put(PRIORITY_VIP, FServicePriority.getLocaleMessage("client.priority.vip"));
+        return PRIORITYS_WORD;
+    }
     // значения приоритета обрабатываемых услуг для юзера
     public static final int SERVICE_EXCLUDE = -1;
     public static final int SERVICE_REMAINS = 0;
     public static final int SERVICE_NORMAL = 1;
     public static final int SERVICE_VIP = 2;
     public static final int[] SERVICE_PRIORITYS = {SERVICE_EXCLUDE, SERVICE_REMAINS, SERVICE_NORMAL, SERVICE_VIP};
-    public static final LinkedHashMap<Integer, String> COEFF_WORD = new LinkedHashMap<>();
+    private static final LinkedHashMap<Integer, String> COEFF_WORD = new LinkedHashMap<>();
+    public static LinkedHashMap<Integer, String> get_COEFF_WORD(){
+        COEFF_WORD.put(SERVICE_REMAINS, FServicePriority.getLocaleMessage("service.priority.low"));
+        COEFF_WORD.put(SERVICE_NORMAL, FServicePriority.getLocaleMessage("service.priority.basic"));
+        COEFF_WORD.put(SERVICE_VIP, FServicePriority.getLocaleMessage("service.priority.vip"));
+        return COEFF_WORD;
+    }
     // Наименования тегов и атрибутов в протоколах XML по статистике
     public static final String TAG_REP_STATISTIC = "Статистика";
     public static final String TAG_REP_PARAM_COUNT = "Знаменатель";
@@ -140,6 +157,7 @@ public final class Uses {
     public static final String TAG_BOARD_VALUE = "Значение";
     public static final String TAG_BOARD_TYPE = "Тип";
     // имена параметров для табло 
+    public static final String TAG_BOARD_MONITOR = "Номер дополнительного монитора для табло";
     public static final String TAG_BOARD_LINES_COUNT = "Количество строк на табло";
     public static final String TAG_BOARD_COLS_COUNT = "Количество столбцов на табло";
     public static final String TAG_BOARD_DELAY_VISIBLE = "Минимальное время индикации на табло";
@@ -348,6 +366,7 @@ public final class Uses {
      * Формат даты./2009 январь 26 16:10:41
      */
     public final static DateFormat format_for_label = new SimpleDateFormat("dd MMMM HH.mm.ss");
+    public final static DateFormat format_for_label2 = new SimpleDateFormat("dd MMMM HH.mm:ss");
     public final static DateFormat format_for_print = new SimpleDateFormat("dd MMMM HH:mm");
     /**
      * Временная папка для файлов сохранения состояния для помехоустойчивости
@@ -654,8 +673,8 @@ public final class Uses {
      * @param component это окно и будем центрировать
      */
     public static void setLocation(Component component) {
-        final Toolkit kit = Toolkit.getDefaultToolkit();
-        component.setLocation((Math.round(kit.getScreenSize().width - component.getWidth()) / 2), (Math.round(kit.getScreenSize().height - component.getHeight()) / 2));
+        component.setLocation((Math.round(firstMonitor.getDefaultConfiguration().getBounds().width - component.getWidth()) / 2),
+                (Math.round(firstMonitor.getDefaultConfiguration().getBounds().height - component.getHeight()) / 2));
     }
 
     /**
@@ -664,22 +683,42 @@ public final class Uses {
      * @param component это окно и будем растягивать
      */
     public static void setFullSize(Component component) {
-        final Toolkit kit = Toolkit.getDefaultToolkit();
-        component.setBounds(0, 0, kit.getScreenSize().width, kit.getScreenSize().height);
+        component.setBounds(0, 0, firstMonitor.getDefaultConfiguration().getBounds().width, firstMonitor.getDefaultConfiguration().getBounds().height);
     }
+
+    /**
+     * mointors
+     */
+    public static final HashMap<Integer, Rectangle> displays = new HashMap<>();
+    public static GraphicsDevice firstMonitor = null;
 
     static {
         /**
          * Инициализация
          */
-        COEFF_WORD.put(SERVICE_REMAINS, FServicePriority.getLocaleMessage("service.priority.low"));
-        COEFF_WORD.put(SERVICE_NORMAL, FServicePriority.getLocaleMessage("service.priority.basic"));
-        COEFF_WORD.put(SERVICE_VIP, FServicePriority.getLocaleMessage("service.priority.vip"));
-
-        PRIORITYS_WORD.put(PRIORITY_LOW, "Низкий");
-        PRIORITYS_WORD.put(PRIORITY_NORMAL, "Нормальный");
-        PRIORITYS_WORD.put(PRIORITY_HI, "Повышенный");
-        PRIORITYS_WORD.put(PRIORITY_VIP, "V.I.P");
+        GraphicsDevice[] screenDevices = null;
+        try {
+            screenDevices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+        } catch (HeadlessException th) {
+            System.out.println("No screen Devices");
+        }
+        if (screenDevices != null && screenDevices.length > 0) {
+            firstMonitor = screenDevices[0];
+            int i = 1;
+            for (GraphicsDevice graphicsDevice : screenDevices) {
+                System.out.println("monitor " + i + "; graphicsDevice = " + graphicsDevice.getIDstring() + " " + graphicsDevice.toString()
+                        + "; height, width = " + graphicsDevice.getDefaultConfiguration().getBounds().height + "x" + graphicsDevice.getDefaultConfiguration().getBounds().width
+                        + "; Coloreness = " + graphicsDevice.getDisplayMode().getBitDepth()
+                        + "; RefreshRate = " + graphicsDevice.getDisplayMode().getRefreshRate()
+                        + "; Origin(x, y) = " + graphicsDevice.getDefaultConfiguration().getBounds().x
+                        + "-" + graphicsDevice.getDefaultConfiguration().getBounds().y);
+                displays.put(i++, graphicsDevice.getDefaultConfiguration().getBounds());
+                if (graphicsDevice.getDefaultConfiguration().getBounds().x == 0
+                        && graphicsDevice.getDefaultConfiguration().getBounds().y == 0) {
+                    firstMonitor = graphicsDevice;
+                }
+            }
+        }
     }
 
     /**
@@ -848,12 +887,9 @@ public final class Uses {
     }
     private static ResourceMap localeMap = null;
 
-    public static String
-            getLocaleMessage(String key) {
+    public static String getLocaleMessage(String key) {
         if (localeMap == null) {
-            localeMap = Application.getInstance(QSystem.class
-            ).getContext().getResourceMap(Uses.class
-            );
+            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(Uses.class);
         }
         return localeMap.getString(key);
     }

@@ -4,6 +4,7 @@
  */
 package ru.apertum.qsystem.ub485.core;
 
+import java.io.UnsupportedEncodingException;
 import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.common.model.QCustomer;
@@ -43,7 +44,7 @@ public class ButtonDevice extends Object {
         this.addres = addres;
         this.userId = userId;
         this.redirectServiceId = redirectServiceId;
-        this.redirect = redirectServiceId != null && redirectServiceId.longValue() != 0;
+        this.redirect = redirectServiceId != null && redirectServiceId != 0;
 
         mess[0] = 1;
         mess[1] = addres;
@@ -130,6 +131,27 @@ public class ButtonDevice extends Object {
                 System.out.println("inv ** 3");
                 user.getShadow().setOldNom(cust.getNumber());
                 System.out.println("inv ** 4");
+
+                //добавляем табло на пульте
+                byte[] bytes = mess;
+                try {
+                    bytes = ("123" + cust.getFullNumber() + "7").getBytes("cp1251");
+                } catch (UnsupportedEncodingException ex) {
+                    System.err.println("!!! ERROR !!! " + ex);
+                }
+                bytes[0] = 1;
+                bytes[1] = addres;
+                bytes[bytes.length - 1] = 7;
+                //mess[0] = 0x01; // начало
+                //mess[10] = 0x07; // конец
+                //mess[1] = addr.addres; // адрес
+                bytes[2] = 0x21;//0x20; // мигание Режим мигания: 0x20 – не мигает; 0x21 – мигает постоянно; 0x22…0x7F – мигает  (N-0x21) раз.
+                UBForm.sendToDevice(bytes);
+                try {
+                    Thread.sleep(150);
+                } catch (InterruptedException ex) {
+                }
+
                 //ответ о результате на кнопку
                 mess[2] = 0x36; // – мигает Зеленый (500 мс);
                 UBForm.sendToDevice(mess);
@@ -143,7 +165,7 @@ public class ButtonDevice extends Object {
             System.out.println("inv ** 8");
             return;
         }
-        
+
         // повторный вызов
         if ((user != null && user.getShadow() != null && user.getShadow().getCustomerState() != null)
                 && (user.getShadow().getCustomerState() == CustomerState.STATE_INVITED || user.getShadow().getCustomerState() == CustomerState.STATE_INVITED_SECONDARY)
@@ -165,6 +187,26 @@ public class ButtonDevice extends Object {
             System.out.println("--1\n");
             user.getShadow().setCustomerState(CustomerState.STATE_WORK);
             System.out.println("--2\n");
+
+            //добавляем табло на пульте
+            byte[] bytes = mess;
+            try {
+                bytes = ("123" + user.getShadow().getOldCostomer().getFullNumber() + "7").getBytes("cp1251");
+            } catch (UnsupportedEncodingException ex) {
+                System.err.println("!!! ERROR !!! " + ex);
+            }
+            bytes[0] = 1;
+            bytes[1] = addres;
+            bytes[bytes.length - 1] = 7;
+            //mess[0] = 0x01; // начало
+            //mess[10] = 0x07; // конец
+            //mess[1] = addr.addres; // адрес
+            bytes[2] = 0x20;//0x20; // мигание Режим мигания: 0x20 – не мигает; 0x21 – мигает постоянно; 0x22…0x7F – мигает  (N-0x21) раз.
+            try {
+                Thread.sleep(150);
+            } catch (InterruptedException ex) {
+            }
+
             //ответ о результате на кнопку
             mess[2] = 0x32; //– включен Зеленый;
             System.out.println("--3\n");
@@ -272,6 +314,26 @@ public class ButtonDevice extends Object {
 
     private void lightDown() {
         System.out.println("lightDown()");
+
+        //добавляем табло на пульте
+        byte[] bytes = mess;
+        try {
+            bytes = ("123    7").getBytes("cp1251");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("!!! ERROR !!! " + ex);
+        }
+        bytes[0] = 1;
+        bytes[1] = addres;
+        bytes[bytes.length - 1] = 7;
+        //mess[0] = 0x01; // начало
+        //mess[10] = 0x07; // конец
+        //mess[1] = addr.addres; // адрес
+        bytes[2] = 0x20;//0x20; // мигание Режим мигания: 0x20 – не мигает; 0x21 – мигает постоянно; 0x22…0x7F – мигает  (N-0x21) раз.
+        try {
+            Thread.sleep(150);
+        } catch (InterruptedException ex) {
+        }
+
         mess[2] = 0x30;// – светодиод погашен;
         UBForm.sendToDevice(mess);
     }

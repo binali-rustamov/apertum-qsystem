@@ -33,7 +33,9 @@
 
           <echo message="Make system ZIP ..."/>
           <zip destfile="building/qsystem-${version}.zip">
-               <fileset dir="" includes="readme.txt"/>
+               <fileset dir="" includes="readme_rus.txt"/>
+               <fileset dir="" includes="readme_eng.txt"/>
+               <fileset dir="" includes="readme_spa.txt"/>
                <fileset dir="installation" includes="install.jar"/>
                <fileset dir="installation/resource/txt" includes="install.bat"/>
                <fileset dir="installation/resource/txt" includes="install.sh"/>

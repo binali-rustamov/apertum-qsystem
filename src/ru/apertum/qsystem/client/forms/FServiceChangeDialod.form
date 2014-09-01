@@ -75,8 +75,8 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                          <Component id="comboBoxEnabled" min="-2" pref="91" max="-2" attributes="0"/>
-                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="comboBoxEnabled" min="-2" pref="180" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel21" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="textFieldPrefix" min="-2" pref="33" max="-2" attributes="0"/>
@@ -90,17 +90,17 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabel22" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="textFieldServiceName" pref="600" max="32767" attributes="0"/>
+                          <Component id="textFieldServiceName" pref="676" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Component id="jLabel23" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                          <Component id="textFieldServiceDescript" pref="624" max="32767" attributes="0"/>
+                          <Component id="textFieldServiceDescript" pref="700" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
-              <Component id="jTabbedPane1" alignment="0" pref="703" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" alignment="0" pref="779" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -136,14 +136,18 @@
         <Component class="javax.swing.JComboBox" name="comboBoxEnabled">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="3">
+              <StringArray count="4">
                 <StringItem index="0" value="&#x410;&#x43a;&#x442;&#x438;&#x432;&#x43d;&#x430;"/>
                 <StringItem index="1" value="&#x41d;&#x435;&#x430;&#x43a;&#x442;&#x438;&#x432;&#x43d;&#x430;"/>
                 <StringItem index="2" value="&#x41d;&#x435;&#x432;&#x438;&#x434;&#x438;&#x43c;&#x430;"/>
+                <StringItem index="3" value="&#x422;&#x43e;&#x43b;&#x44c;&#x43a;&#x43e; &#x43f;&#x440;&#x435;&#x434;&#x432;&#x430;&#x440;&#x438;&#x442;&#x435;&#x43b;&#x44c;&#x43d;&#x430;&#x44f; &#x437;&#x430;&#x43f;&#x438;&#x441;&#x44c;"/>
               </StringArray>
             </Property>
             <Property name="name" type="java.lang.String" value="comboBoxEnabled" noResource="true"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="comboBoxEnabled.setModel(new javax.swing.DefaultComboBoxModel(new String[] { getLocaleMessage(&quot;active&quot;), getLocaleMessage(&quot;notActive&quot;), getLocaleMessage(&quot;invisible&quot;), getLocaleMessage(&quot;forPrereg&quot;) }));"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel21">
           <Properties>
@@ -258,7 +262,7 @@
                                       <Component id="jLabel20" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel25" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="415" max="32767" attributes="0"/>
+                                  <EmptySpace pref="491" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -266,7 +270,7 @@
                                       <Group type="102" alignment="0" attributes="0">
                                           <EmptySpace min="21" pref="21" max="21" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="textFieldInputCaption" alignment="1" pref="649" max="32767" attributes="0"/>
+                                              <Component id="textFieldInputCaption" alignment="1" pref="725" max="32767" attributes="0"/>
                                               <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Group type="102" alignment="0" attributes="0">
                                                   <Component id="labelLimitForOnePerson" min="-2" max="-2" attributes="0"/>
@@ -278,17 +282,17 @@
                                       <Group type="102" alignment="1" attributes="0">
                                           <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="comboBoxSchedule" pref="600" max="32767" attributes="1"/>
+                                          <Component id="comboBoxSchedule" pref="676" max="32767" attributes="1"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="comboBoxCalendar" pref="610" max="32767" attributes="1"/>
+                                          <Component id="comboBoxCalendar" pref="686" max="32767" attributes="1"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="textFieldTicketText" pref="583" max="32767" attributes="1"/>
+                                          <Component id="textFieldTicketText" pref="659" max="32767" attributes="1"/>
                                       </Group>
                                   </Group>
                                   <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
@@ -583,7 +587,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jLabel24" min="-2" max="-2" attributes="0"/>
-                              <Component id="jSplitPane2" pref="565" max="32767" attributes="0"/>
+                              <Component id="jSplitPane2" pref="641" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jPanel6" min="-2" max="-2" attributes="0"/>
@@ -665,6 +669,7 @@
                         <Component class="javax.swing.JTextArea" name="textAreaButtonCaption">
                           <Properties>
                             <Property name="columns" type="int" value="20"/>
+                            <Property name="font" type="java.awt.Font" resourceKey="textAreaButtonCaption.font"/>
                             <Property name="rows" type="int" value="5"/>
                             <Property name="text" type="java.lang.String" resourceKey="textAreaButtonCaption.text"/>
                             <Property name="name" type="java.lang.String" value="textAreaButtonCaption" noResource="true"/>
@@ -817,7 +822,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jSplitPane3" pref="678" max="32767" attributes="0"/>
+                          <Component id="jSplitPane3" pref="754" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -878,9 +883,9 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="425" max="32767" attributes="0"/>
+                                      <EmptySpace pref="501" max="32767" attributes="0"/>
                                   </Group>
-                                  <Component id="jScrollPane3" alignment="0" pref="674" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane3" alignment="0" pref="750" max="32767" attributes="0"/>
                               </Group>
                             </DimensionLayout>
                             <DimensionLayout dim="1">
@@ -913,6 +918,7 @@
                                 <Component class="javax.swing.JTextArea" name="textAreaTextPrint">
                                   <Properties>
                                     <Property name="columns" type="int" value="20"/>
+                                    <Property name="font" type="java.awt.Font" resourceKey="textAreaTextPrint.font"/>
                                     <Property name="rows" type="int" value="5"/>
                                     <Property name="name" type="java.lang.String" value="textAreaTextPrint" noResource="true"/>
                                   </Properties>
@@ -936,9 +942,9 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="472" max="32767" attributes="0"/>
+                                      <EmptySpace pref="548" max="32767" attributes="0"/>
                                   </Group>
-                                  <Component id="jScrollPane2" alignment="0" pref="674" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane2" alignment="0" pref="750" max="32767" attributes="0"/>
                               </Group>
                             </DimensionLayout>
                             <DimensionLayout dim="1">
@@ -971,6 +977,7 @@
                                 <Component class="javax.swing.JTextArea" name="textAreaInfoHtml">
                                   <Properties>
                                     <Property name="columns" type="int" value="20"/>
+                                    <Property name="font" type="java.awt.Font" resourceKey="textAreaInfoHtml.font"/>
                                     <Property name="rows" type="int" value="5"/>
                                     <Property name="name" type="java.lang.String" value="textAreaInfoHtml" noResource="true"/>
                                   </Properties>
@@ -1078,7 +1085,7 @@
                               <Component id="jPanel10" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="cbGoNumber" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="102" max="32767" attributes="0"/>
+                              <EmptySpace pref="178" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1323,7 +1330,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace pref="519" max="32767" attributes="0"/>
+                  <EmptySpace pref="595" max="32767" attributes="0"/>
                   <Component id="buttonSave" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="buttonCancel" min="-2" max="-2" attributes="0"/>

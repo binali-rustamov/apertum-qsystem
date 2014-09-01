@@ -1,2 +1,2 @@
 #!/bin/sh
-java -cp dist/QSystem.jar ru.apertum.qsystem.client.forms.FReceprion -sport $serverPort -cport $clientPort -s $serverAdress
+java -cp dist/QSystem.jar ru.apertum.qsystem.client.forms.FReception -sport $serverPort -cport $clientPort -s $serverAdress

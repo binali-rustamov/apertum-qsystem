@@ -24,8 +24,10 @@ import java.util.HashMap;
 import net.sf.jasperreports.engine.JRDataSource;
 import org.apache.http.HttpRequest;
 import ru.apertum.qsystem.client.forms.FAbout;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.common.Uses;
+import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ReportException;
+import ru.apertum.qsystem.reports.common.RepResBundle;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.model.AGenerator;
 import ru.apertum.qsystem.reports.model.QReportsList;
@@ -67,10 +69,13 @@ public class ReportsList extends AGenerator {
         final InputStream inStream = getClass().getResourceAsStream(res);
         byte[] result = null;
         try {
-            result = Uses.readInputStream(inStream);
+            result = RepResBundle.getInstance().prepareString(
+                    new String(Uses.readInputStream(inStream), "UTF-8")).
+                    replaceFirst(Uses.ANCHOR_PROJECT_NAME_FOR_REPORT, Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF())).
+                    getBytes("UTF-8");
             if ("/ru/apertum/qsystem/reports/web/reportList.html".equals(res)) {
                 // добавим список аналитических отчетов
-                result = new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_REPORT_LIST, QReportsList.getInstance().getHtmlRepList()).replaceFirst(Uses.ANCHOR_PROJECT_NAME_FOR_REPORT, Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF())).getBytes("UTF-8");
+                result = new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_REPORT_LIST, QReportsList.getInstance().getHtmlRepList()).getBytes("UTF-8");
                 // Добавим кукисы сессии
                 //<META HTTP-EQUIV="Set-Cookie" CONTENT="NAME=value; EXPIRES=date; DOMAIN=domain_name; PATH=path; SECURE">
                 final String coocie = "<META HTTP-EQUIV=\"Set-Cookie\" CONTENT=\"username=" + URLEncoder.encode(usr, "utf-8") + "\">\n<META HTTP-EQUIV=\"Set-Cookie\" CONTENT=\"password=" + URLEncoder.encode(pwd, "utf-8") + "\">";

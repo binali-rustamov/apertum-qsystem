@@ -44,6 +44,14 @@
         <field type="check" variable="multylangs">
             <spec txt="Multylangual registration point" id="multylng" true="1" false="0" set="false"/>
         </field>
+		
+		<field type="check" variable="serverboard">
+            <spec txt="Show main board" id="serverboard" true="1" false="0" set="true"/>
+        </field>
+		
+		<field type="check" variable="clientboard">
+            <spec txt="Show operator's board" id="clientboard" true="1" false="0" set="true"/>
+        </field>
 
     </panel>
 </userInput>

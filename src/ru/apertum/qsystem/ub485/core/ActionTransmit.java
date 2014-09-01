@@ -34,7 +34,7 @@ public class ActionTransmit implements Runnable {
             }
             dev.doAction(bytes[2]);
         } else {
-            System.err.println("Collision! Package lenght not 4 bytes.");
+            System.err.println("Collision! Package lenght is not 4 bytes.");
         }
     }
 }

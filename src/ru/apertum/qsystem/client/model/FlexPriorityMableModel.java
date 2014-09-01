@@ -60,7 +60,7 @@ public class FlexPriorityMableModel extends AbstractTableModel {
                         services.put(rowIndex, service);
                         return service.getServiceName();
                     case 1:
-                        return Uses.COEFF_WORD.get(service.getPriority());
+                        return Uses.get_COEFF_WORD().get(service.getPriority());
                     /*
                     switch (service.getPriority()) {
                     case -1:
@@ -88,11 +88,11 @@ public class FlexPriorityMableModel extends AbstractTableModel {
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         int res = 1;
 
-        if (Uses.COEFF_WORD.get(Uses.SERVICE_REMAINS).equalsIgnoreCase((String) aValue)) {
+        if (Uses.get_COEFF_WORD().get(Uses.SERVICE_REMAINS).equalsIgnoreCase((String) aValue)) {
             res = Uses.SERVICE_REMAINS;
-        } else if (Uses.COEFF_WORD.get(Uses.SERVICE_NORMAL).equalsIgnoreCase((String) aValue)) {
+        } else if (Uses.get_COEFF_WORD().get(Uses.SERVICE_NORMAL).equalsIgnoreCase((String) aValue)) {
             res = Uses.SERVICE_NORMAL;
-        } else if (Uses.COEFF_WORD.get(Uses.SERVICE_VIP).equalsIgnoreCase((String) aValue)) {
+        } else if (Uses.get_COEFF_WORD().get(Uses.SERVICE_VIP).equalsIgnoreCase((String) aValue)) {
             res = Uses.SERVICE_VIP;
         } else {
             throw new AssertionError();

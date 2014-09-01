@@ -36,6 +36,7 @@ import org.apache.http.protocol.HttpRequestHandler;
 import ru.apertum.qsystem.client.forms.FAbout;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
+import ru.apertum.qsystem.reports.common.RepResBundle;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.model.QReportsList;
 
@@ -140,7 +141,10 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
                 try {
                     result = new Response(Uses.readInputStream(inStream));
                     if ("/login.html".equals(subject)) {
-                        result.setData(new String(result.getData(), "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, QReportsList.getInstance().getHtmlUsersList()).replaceFirst(Uses.ANCHOR_PROJECT_NAME_FOR_REPORT, Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF())).getBytes("UTF-8")); //"Cp1251"
+                        result.setData(RepResBundle.getInstance().prepareString(new String(result.getData(), "UTF-8")).
+                                replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, QReportsList.getInstance().getHtmlUsersList()).
+                                replaceFirst(Uses.ANCHOR_PROJECT_NAME_FOR_REPORT, Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF())).
+                                getBytes("UTF-8")); //"Cp1251"
                     }
                 } catch (IOException ex) {
                     QLog.l().logRep().error("Ошибка чтения ресурса. " + ex);

@@ -1204,10 +1204,9 @@ public final class Executer {
                 if (cmdParams.requestBack) { // требует ли возврата в прежнюю очередь
                     customer.addServiceForBack(oldService);
                 }
-            } else {
-                // только что встал типо
-                customer.setStandTime(new Date());
             }
+            // только что встал типо
+            customer.setStandTime(new Date());
             //С НАЧАЛА ПОДОТРЕМ ПОТОМ ПЕРЕСТАВИМ!!!
             //с новым приоритетом ставим в новую очередь, приоритет должет
             //позволить вызваться ему сразу за обрабатываемыми кастомерами
@@ -1869,7 +1868,6 @@ public final class Executer {
             }
         }
     };
-
     /**
      * Удалить предварительно записанного кастомера
      */
@@ -1902,9 +1900,7 @@ public final class Executer {
             });
             return new JsonRPC20OK();
         }
-
     };
-
     /**
      * Получение списка отзывов.
      */
@@ -2011,14 +2007,14 @@ public final class Executer {
         }
     };
     /**
-     * Изменение приоритета кастомеру
+     * Проверить номер кастомера
      */
     final Task checkCustomerNumber = new Task(Uses.TASK_CHECK_CUSTOMER_NUMBER) {
 
         @Override
         public RpcGetSrt process(final CmdParams cmdParams, String ipAdress, byte[] IP) {
             super.process(cmdParams, ipAdress, IP);
-            final String num = cmdParams.clientAuthId.trim().toUpperCase();
+            final String num = cmdParams.clientAuthId.trim().replaceAll("-", "").replaceAll(" ", "").toUpperCase();
             String s = "";
             for (QService service : QServiceTree.getInstance().getNodes()) {
                 for (QCustomer customer : service.getClients()) {
@@ -2032,6 +2028,15 @@ public final class Executer {
                 for (QCustomer customer : QPostponedList.getInstance().getPostponedCustomers()) {
                     if (num.equalsIgnoreCase(customer.getFullNumber())) {
                         s = "Клиент с номером \"" + num + "\" находится в списке временно отложенных.";
+                        break;
+                    }
+                }
+            }
+
+            if ("".equals(s)) {
+                for (QUser user : QUserList.getInstance().getItems()) {
+                    if (user.getCustomer() != null && num.equalsIgnoreCase(user.getCustomer().getFullNumber())) {
+                        s = "Клиент с номером \"" + num + "\" обслуживается у оператора \"" + user.getName() + "\".";
                         break;
                     }
                 }

@@ -254,7 +254,7 @@ public class RunningLabel extends JLabel implements Serializable {
             }
             return sdf.format(new Date());
         } else {
-            return Uses.format_for_label.format(new Date());
+            return Uses.format_for_label2.format(new Date());
         }
     }
 

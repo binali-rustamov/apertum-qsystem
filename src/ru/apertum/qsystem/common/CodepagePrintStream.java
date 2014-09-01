@@ -22,6 +22,7 @@ package ru.apertum.qsystem.common;
  * Copyright (C) 1998-2000 COMITA Ltd. All Rights Reserved.
  */
 import java.io.*;
+import java.util.Arrays;
 
 /**
  * Класс реализует методы PrintStream с возможностью работы в нужной кодировке.
@@ -284,7 +285,7 @@ public class CodepagePrintStream extends PrintStream {
      * Print a boolean value.  The string produced by <code>{@link
      * java.lang.String#valueOf(boolean)} is translated into bytes according to
      * the platform's default character encoding, and these bytes are written
-     * in exactly the manner of the <code>{@link #write(int)} method.
+     * in exactly the manner of the </code>{@link #write(int)} method.
      *
      * @param      b   The <code>boolean</code> to be printed
      */
@@ -296,7 +297,7 @@ public class CodepagePrintStream extends PrintStream {
     /**
      * Print a character.  The character is translated into one or more bytes
      * according to the platform's default character encoding, and these bytes
-     * are written in exactly the manner of the <code>{@link #write(int)}
+     * are written in exactly the manner of the {@link #write(int)}
      * method.
      *
      * @param      c   The <code>char</code> to be printed
@@ -310,7 +311,7 @@ public class CodepagePrintStream extends PrintStream {
      * Print an integer.  The string produced by <code>{@link
      * java.lang.String#valueOf(int)} is translated into bytes according to the
      * platform's default character encoding, and these bytes are written in
-     * exactly the manner of the <code>{@link #write(int)} method.
+     * exactly the manner of the </code>{@link #write(int)} method.
      *
      * @param      i   The <code>int</code> to be printed
      */
@@ -323,7 +324,7 @@ public class CodepagePrintStream extends PrintStream {
      * Print a long integer.  The string produced by <code>{@link
      * java.lang.String#valueOf(long)} is translated into bytes according to
      * the platform's default character encoding, and these bytes are written
-     * in exactly the manner of the <code>{@link #write(int)} method.
+     * in exactly the manner of the </code>{@link #write(int)} method.
      *
      * @param      l   The <code>long</code> to be printed
      */
@@ -336,7 +337,7 @@ public class CodepagePrintStream extends PrintStream {
      * Print a floating-point number.  The string produced by <code>{@link
      * java.lang.String#valueOf(float)} is translated into bytes according to
      * the platform's default character encoding, and these bytes are written
-     * in exactly the manner of the <code>{@link #write(int)} method.
+     * in exactly the manner of the </code>{@link #write(int)} method.
      *
      * @param      f   The <code>float</code> to be printed
      */
@@ -349,7 +350,7 @@ public class CodepagePrintStream extends PrintStream {
      * Print a double-precision floating-point number.  The string produced by
      * <code>{@link java.lang.String#valueOf(double)} is translated into bytes
      * according to the platform's default character encoding, and these bytes
-     * are written in exactly the manner of the <code>{@link #write(int)}
+     * are written in exactly the manner of the </code>{@link #write(int)}
      * method.
      *
      * @param      d   The <code>double</code> to be printed
@@ -362,7 +363,7 @@ public class CodepagePrintStream extends PrintStream {
     /**
      * Print an array of characters.  The characters are converted into bytes
      * according to the platform's default character encoding, and these bytes
-     * are written in exactly the manner of the <code>{@link #write(int)}
+     * are written in exactly the manner of the {@link #write(int)}
      * method.
      *
      * @param      s   The array of chars to be printed
@@ -379,7 +380,7 @@ public class CodepagePrintStream extends PrintStream {
      * <code>"null"</code> is printed.  Otherwise, the string's characters are
      * converted into bytes according to the platform's default character
      * encoding, and these bytes are written in exactly the manner of the
-     * <code>{@link #write(int)} method.
+     * {@link #write(int)} method.
      *
      * @param      s   The <code>String</code> to be printed
      */
@@ -395,7 +396,7 @@ public class CodepagePrintStream extends PrintStream {
      * Print an object.  The string produced by the <code>{@link
      * java.lang.String#valueOf(Object)} method is translated into bytes
      * according to the platform's default character encoding, and these bytes
-     * are written in exactly the manner of the <code>{@link #write(int)}
+     * are written in exactly the manner of the </code>{@link #write(int)}
      * method.
      *
      * @param      obj   The <code>Object</code> to be printed
@@ -419,7 +420,7 @@ public class CodepagePrintStream extends PrintStream {
 
     /**
      * Print a boolean and then terminate the line.  This method behaves as
-     * though it invokes <code>{@link #print(boolean)} and then <code>{@link
+     * though it invokes <code>{@link #print(boolean)} and then {@link
      * #println()}</code>.
      */
     @Override
@@ -432,7 +433,7 @@ public class CodepagePrintStream extends PrintStream {
 
     /**
      * Print a character and then terminate the line.  This method behaves as
-     * though it invokes <code>{@link #print(char)} and then <code>{@link
+     * though it invokes <code>{@link #print(char)} and then {@link
      * #println()}</code>.
      */
     @Override
@@ -445,7 +446,7 @@ public class CodepagePrintStream extends PrintStream {
 
     /**
      * Print an integer and then terminate the line.  This method behaves as
-     * though it invokes <code>{@link #print(int)} and then <code>{@link
+     * though it invokes <code>{@link #print(int)} and then {@link
      * #println()}</code>.
      */
     @Override
@@ -458,7 +459,7 @@ public class CodepagePrintStream extends PrintStream {
 
     /**
      * Print a long and then terminate the line.  This method behaves as
-     * though it invokes <code>{@link #print(long)} and then <code>{@link
+     * though it invokes {@link #print(long)} and then <code>{@link
      * #println()}</code>.
      */
     @Override
@@ -471,7 +472,7 @@ public class CodepagePrintStream extends PrintStream {
 
     /**
      * Print a float and then terminate the line.  This method behaves as
-     * though it invokes <code>{@link #print(float)} and then <code>{@link
+     * though it invokes {@link #print(float)} and then <code>{@link
      * #println()}</code>.
      */
     @Override
@@ -484,7 +485,7 @@ public class CodepagePrintStream extends PrintStream {
 
     /**
      * Print a double and then terminate the line.  This method behaves as
-     * though it invokes <code>{@link #print(double)} and then <code>{@link
+     * though it invokes {@link #print(double)} and then <code>{@link
      * #println()}</code>.
      */
     @Override
@@ -497,20 +498,20 @@ public class CodepagePrintStream extends PrintStream {
 
     /**
      * Print an array of characters and then terminate the line.  This method
-     * behaves as though it invokes <code>{@link #print(char[])} and then
+     * behaves as though it invokes {@link #print(char[])} and then
      * <code>{@link #println()}</code>.
      */
     @Override
     public void println(char x[]) {
         synchronized (this) {
-            print(x);
+            print(Arrays.toString(x));
             newLine();
         }
     }
 
     /**
      * Print a String and then terminate the line.  This method behaves as
-     * though it invokes <code>{@link #print(String)} and then <code>{@link
+     * though it invokes {@link #print(String)} and then <code>{@link
      * #println()}</code>.
      */
     @Override
@@ -523,7 +524,7 @@ public class CodepagePrintStream extends PrintStream {
 
     /**
      * Print an Object and then terminate the line.  This method behaves as
-     * though it invokes <code>{@link #print(Object)} and then <code>{@link
+     * though it invokes {@link #print(Object)} and then <code>{@link
      * #println()}</code>.
      */
     @Override

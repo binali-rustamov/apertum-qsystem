@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="statisticServicesPeriod" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4bdbc39e-f3a1-463c-bfbc-10a01307491f">
-	<property name="ireport.zoom" value="1.0"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="statisticServicesPeriod" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="ru/apertum/qsystem/reports/templates/statisticUsersPeriod" uuid="4bdbc39e-f3a1-463c-bfbc-10a01307491f">
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="sd" class="java.util.Date"/>
@@ -37,26 +37,26 @@ GROUP BY
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<title>
-		<band height="67">
+		<band height="65">
 			<line>
 				<reportElement uuid="e513ede9-fa73-4ca8-8d1b-8f5f3c3ca489" x="0" y="8" width="555" height="1"/>
 			</line>
 			<line>
 				<reportElement uuid="c314eec4-b4f6-4c6b-b167-9a062836985f" positionType="FixRelativeToBottom" x="0" y="61" width="555" height="1"/>
 			</line>
-			<staticText>
-				<reportElement uuid="79d3a9e3-2aa2-44c8-8ddb-84304c775aac" x="1" y="9" width="551" height="26"/>
-				<textElement textAlignment="Center">
-					<font size="18" isBold="true" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
-				</textElement>
-				<text><![CDATA[Статистический отчет в разрезе персонала за период]]></text>
-			</staticText>
 			<textField pattern="">
 				<reportElement uuid="69053225-d767-4835-b619-a4e0ef77525c" x="1" y="35" width="551" height="24"/>
 				<textElement textAlignment="Center">
 					<font fontName="SansSerif" size="18" isBold="true" isUnderline="false" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["с даты " + (new java.text.SimpleDateFormat("dd.MM.yyyy")).format($P{sd}) + " по дату " + (new java.text.SimpleDateFormat("dd.MM.yyyy")).format($P{ed})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{from_date}+" " + (new java.text.SimpleDateFormat("dd.MM.yyyy")).format($P{sd}) + " "+$R{to_date}+" " + (new java.text.SimpleDateFormat("dd.MM.yyyy")).format($P{ed})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="ce822d8a-3151-422d-9ec3-fe8adb885999" x="1" y="9" width="554" height="26"/>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{caption1}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -65,42 +65,42 @@ GROUP BY
 	</pageHeader>
 	<columnHeader>
 		<band height="101">
-			<staticText>
-				<reportElement uuid="5a7bd6c5-e7b4-4115-9c73-83b323236288" mode="Opaque" x="0" y="0" width="364" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+			<textField>
+				<reportElement uuid="35c5e0a6-f295-41ec-bd12-fd642a4278bc" mode="Opaque" x="1" y="0" width="362" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Single" lineSpacingSize="5.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{user}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="131dcca3-d19d-4902-97f0-ee91699c152e" mode="Opaque" x="365" y="0" width="45" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
 					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Персонал]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="522a7381-5732-4d27-b56b-f5260da49f1d" mode="Opaque" x="365" y="0" width="46" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
+				<textFieldExpression><![CDATA[$R{client_count}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="ba56bc2e-7ae7-4291-8a49-6632fbdc88e2" mode="Opaque" x="412" y="0" width="45" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8_R" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{work_avg}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="ab9cb70e-e424-4095-a4c3-d5e02abd49e8" mode="Opaque" x="459" y="0" width="46" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8_R" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{work_max}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="98ca4f89-0e3a-4692-a225-cf78dc85a929" mode="Opaque" x="507" y="0" width="48" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
 					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Количество обслуженных клиентов]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="2508ac96-c6f5-4643-b676-e61dad71d765" mode="Opaque" x="412" y="0" width="46" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement verticalAlignment="Middle" rotation="Left">
-					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
-				</textElement>
-				<text><![CDATA[Среднее время работы с клиентом мин.
-                ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="4932604d-5126-4545-9e1b-c4cfc10e7988" mode="Opaque" x="459" y="0" width="47" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement verticalAlignment="Middle" rotation="Left">
-					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
-				</textElement>
-				<text><![CDATA[Максимальное время работы с клиентом мин.]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="bc4e6369-0f54-4309-8673-4bd26c64b1bb" mode="Opaque" x="507" y="0" width="48" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement verticalAlignment="Middle" rotation="Left">
-					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
-				</textElement>
-				<text><![CDATA[Минимальное время работы с клиентом мин.]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$R{work_min}]]></textFieldExpression>
+			</textField>
 		</band>
 	</columnHeader>
 	<detail>
@@ -171,10 +171,10 @@ GROUP BY
 				<textElement textAlignment="Right">
 					<font size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Страница " + $V{PAGE_NUMBER} + " из "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{page}+" " + $V{PAGE_NUMBER} + " "+$R{from}+" "]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="7226f976-0232-4cbd-8642-a4219588939c" key="textField" x="1" y="2" width="209" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement uuid="7226f976-0232-4cbd-8642-a4219588939c" key="textField" x="1" y="2" width="295" height="19" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

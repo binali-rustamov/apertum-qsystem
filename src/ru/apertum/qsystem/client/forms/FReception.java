@@ -268,7 +268,7 @@ public class FReception extends javax.swing.JFrame {
                 + ";<br>" + getLocaleMessage("service.restrict_adv_reg") + " " + service.getAdvanceTimePeriod() + " " + getLocaleMessage("service.min") + ": " + service.getAdvanceLimit() //NOI18N
                 + ";<br>  " + getLocaleMessage("service.restrict_adv_period") + ": " + service.getAdvanceLimitPeriod() //NOI18N
                 + ";<br>"// + getLocaleMessage("service.work_calendar") + ": " + "<font color=\"#" + (service.getCalendar() == null ? "DD0000\">" + getLocaleMessage("service.work_calendar.no") : "000000\">" + service.getCalendar().toString()) + "</font>" + ";  " + getLocaleMessage("service.work_calendar.plan") + ": " + "<font color=\"#" + (service.getSchedule() == null ? "DD0000\">" + getLocaleMessage("service.work_calendar.no") : "000000\">" + service.getSchedule().toString()) + "</font>" + ";<br>" //NOI18N
-                + (service.getInput_required() ? getLocaleMessage("service.required_client_data") + ": \"" + service.getInput_caption() + "\"(" + service.getPersonDayLimit() + ")" : getLocaleMessage("service.required_client_data.not")) + ";<br>   "
+                + (service.getInput_required() ? getLocaleMessage("service.required_client_data") + ": \"" + service.getInput_caption().replaceAll("<[^>]*>", "") + "\"(" + service.getPersonDayLimit() + ")" : getLocaleMessage("service.required_client_data.not")) + ";<br>   "
                 + (service.getResult_required() ? getLocaleMessage("service.required_result") : getLocaleMessage("service.required_result.not")) + ";");
 
         // покажем пользователей
@@ -418,7 +418,7 @@ public class FReception extends javax.swing.JFrame {
                         if (greed.get(rowIndex).getShadow().getStartTime() == null) {
                             final int mnt = Math.round((new Date().getTime() - greed.get(rowIndex).getShadow().getFinTime().getTime()) / 1000 / 60);
                             final boolean toolong = (mnt > standards.getDowntimeMax());
-                            return getLocaleMessage("<HTML><SPAN STYLE='COLOR:") + (toolong ? "RED" : "GREEN") + "'>" + getLocaleMessage("Free2") + " " + mnt + getLocaleMessage("min.min") + "</span>";
+                            return "<HTML><SPAN STYLE='COLOR:" + (toolong ? "RED" : "GREEN") + "'>" + getLocaleMessage("Free2") + " " + mnt + getLocaleMessage("min.min") + "</span>";
                         } else {
                             final int mnt = Math.round((new Date().getTime() - greed.get(rowIndex).getShadow().getStartTime().getTime()) / 1000 / 60);
                             final boolean toolong = (mnt > standards.getDowntimeMax());
@@ -1946,7 +1946,7 @@ public class FReception extends javax.swing.JFrame {
             //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
             String inputData = null;
             if (service.getInput_required()) {
-                inputData = (String) JOptionPane.showInputDialog(this, service.getInput_caption(), "***", 3, null, null, ""); //NOI18N
+                inputData = (String) JOptionPane.showInputDialog(this, service.getInput_caption().replaceAll("<[^>]*>", ""), "***", 3, null, null, ""); //NOI18N
                 if (inputData == null || inputData.isEmpty()) {
                     return;
                 }
@@ -2072,12 +2072,12 @@ public class FReception extends javax.swing.JFrame {
                     getLocaleMessage("admin.action.change_priority.get.title"), //NOI18N
                     JOptionPane.QUESTION_MESSAGE,
                     null,
-                    Uses.PRIORITYS_WORD.values().toArray(),
-                    Uses.PRIORITYS_WORD.values().toArray()[1]);
+                    Uses.get_PRIORITYS_WORD().values().toArray(),
+                    Uses.get_PRIORITYS_WORD().values().toArray()[1]);
             //Если не выбрали, то выходим
             if (name != null) {
-                for (int i = 0; i < Uses.PRIORITYS_WORD.size(); i++) {
-                    if (name.equals(Uses.PRIORITYS_WORD.get(i))) {
+                for (int i = 0; i < Uses.get_PRIORITYS_WORD().size(); i++) {
+                    if (name.equals(Uses.get_PRIORITYS_WORD().get(i))) {
                         JOptionPane.showMessageDialog(this, NetCommander.setCustomerPriority(netProperty, i, cus.customer.getFullNumber()), getLocaleMessage("admin.action.change_priority.title"), JOptionPane.INFORMATION_MESSAGE);
                         refreshLines();
                     }
@@ -2095,12 +2095,12 @@ public class FReception extends javax.swing.JFrame {
                     getLocaleMessage("admin.action.change_priority.get.title"),
                     JOptionPane.QUESTION_MESSAGE,
                     null,
-                    Uses.PRIORITYS_WORD.values().toArray(),
-                    Uses.PRIORITYS_WORD.values().toArray()[1]);
+                    Uses.get_PRIORITYS_WORD().values().toArray(),
+                    Uses.get_PRIORITYS_WORD().values().toArray()[1]);
             //Если не выбрали, то выходим
             if (name != null) {
-                for (int i = 0; i < Uses.PRIORITYS_WORD.size(); i++) {
-                    if (name.equals(Uses.PRIORITYS_WORD.get(i))) {
+                for (int i = 0; i < Uses.get_PRIORITYS_WORD().size(); i++) {
+                    if (name.equals(Uses.get_PRIORITYS_WORD().get(i))) {
                         JOptionPane.showMessageDialog(this, NetCommander.setCustomerPriority(netProperty, i, num), getLocaleMessage("admin.action.change_priority.title"), JOptionPane.INFORMATION_MESSAGE);
 
                     }

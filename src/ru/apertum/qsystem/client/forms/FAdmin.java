@@ -19,6 +19,7 @@ package ru.apertum.qsystem.client.forms;
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
@@ -40,6 +41,8 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
@@ -57,6 +60,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
@@ -398,15 +403,15 @@ public class FAdmin extends javax.swing.JFrame {
         treeServices.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         treeInfo.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         /*
-         treeServices.setCellRenderer(new DefaultTreeCellRenderer() {
+        treeServices.setCellRenderer(new DefaultTreeCellRenderer() {
         
-         @Override
-         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-         super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-         setText(((Element) value).attributeValue(Uses.TAG_NAME));
-         return this;
-         }
-         });*/
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+        setText(((Element) value).attributeValue(Uses.TAG_NAME));
+        return this;
+        }
+        });*/
         treeServices.addTreeSelectionListener(new TreeSelectionListener() {
 
             @Override
@@ -697,7 +702,7 @@ public class FAdmin extends javax.swing.JFrame {
                 + ";<br>" + getLocaleMessage("service.restrict_adv_reg") + " " + service.getAdvanceTimePeriod() + " " + getLocaleMessage("service.min") + ": " + service.getAdvanceLimit()
                 + ";<br>  " + getLocaleMessage("service.restrict_adv_period") + ": " + service.getAdvanceLimitPeriod()
                 + ";<br>" + getLocaleMessage("service.work_calendar") + ": " + "<font color=\"#" + (service.getCalendar() == null ? "DD0000\">" + getLocaleMessage("service.work_calendar.no") : "000000\">" + service.getCalendar().toString()) + "</font>" + ";  " + getLocaleMessage("service.work_calendar.plan") + ": " + "<font color=\"#" + (service.getSchedule() == null ? "DD0000\">" + getLocaleMessage("service.work_calendar.no") : "000000\">" + service.getSchedule().toString()) + "</font>" + ";<br>"
-                + (service.getInput_required() ? getLocaleMessage("service.required_client_data") + ": \"" + service.getInput_caption() + "\"(" + service.getPersonDayLimit() + ")" : getLocaleMessage("service.required_client_data.not")) + ";<br>   "
+                + (service.getInput_required() ? getLocaleMessage("service.required_client_data") + ": \"" + service.getInput_caption().replaceAll("<[^>]*>", "") + "\"(" + service.getPersonDayLimit() + ")" : getLocaleMessage("service.required_client_data.not")) + ";<br>   "
                 + (service.getResult_required() ? getLocaleMessage("service.required_result") : getLocaleMessage("service.required_result.not")) + ";");
         labelButtonCaption.setText(service.getButtonText());
 
@@ -1087,9 +1092,9 @@ public class FAdmin extends javax.swing.JFrame {
                             String inputLine;
                             while ((inputLine = in.readLine()) != null) {
                                 result += inputLine;
-                                }
                             }
                         }
+                    }
                     conn.disconnect();
                 } catch (Exception e) {
                     System.err.println("Pager not enabled. " + e);
@@ -1350,7 +1355,7 @@ public class FAdmin extends javax.swing.JFrame {
         newService.setSoundTemplate("021111");
         newService.setAdvanceTimePeriod(60);
         newService.setCalendar(QCalendarList.getInstance().getById(1));
-        if(QScheduleList.getInstance().getSize()!=0){
+        if (QScheduleList.getInstance().getSize() != 0) {
             newService.setSchedule(QScheduleList.getInstance().getElementAt(0));
         }
         newService.setButtonText("<html><b><p align=center><span style='font-size:20.0pt;color:red'>" + serviceName + "</span></b>");
@@ -1641,7 +1646,7 @@ public class FAdmin extends javax.swing.JFrame {
             //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
             String inputData = null;
             if (service.getInput_required()) {
-                inputData = (String) JOptionPane.showInputDialog(this, service.getInput_caption(), "***", 3, null, null, "");
+                inputData = (String) JOptionPane.showInputDialog(this, service.getInput_caption().replaceAll("<[^>]*>", ""), "***", 3, null, null, "");
                 if (inputData == null || inputData.isEmpty()) {
                     return;
                 }
@@ -1967,6 +1972,9 @@ public class FAdmin extends javax.swing.JFrame {
         menuAbout = new javax.swing.JMenu();
         menuItemHelp = new javax.swing.JMenuItem();
         menuItemAbout = new javax.swing.JMenuItem();
+        jSeparator17 = new javax.swing.JPopupMenu.Separator();
+        jMenuItemBagtracker = new javax.swing.JMenuItem();
+        jMenuItemForum = new javax.swing.JMenuItem();
 
         popupUser.setName("popupUser"); // NOI18N
 
@@ -4157,6 +4165,11 @@ public class FAdmin extends javax.swing.JFrame {
 
         labelPager.setText(resourceMap.getString("labelPager.text")); // NOI18N
         labelPager.setName("labelPager"); // NOI18N
+        labelPager.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                labelPagerMouseClicked(evt);
+            }
+        });
 
         panelPagerRadio.setBackground(resourceMap.getColor("panelPagerRadio.background")); // NOI18N
         panelPagerRadio.setName("panelPagerRadio"); // NOI18N
@@ -4411,6 +4424,27 @@ public class FAdmin extends javax.swing.JFrame {
         menuItemAbout.setAction(actionMap.get("getAbout")); // NOI18N
         menuItemAbout.setName("menuItemAbout"); // NOI18N
         menuAbout.add(menuItemAbout);
+
+        jSeparator17.setName("jSeparator17"); // NOI18N
+        menuAbout.add(jSeparator17);
+
+        jMenuItemBagtracker.setText(resourceMap.getString("jMenuItemBagtracker.text")); // NOI18N
+        jMenuItemBagtracker.setName("jMenuItemBagtracker"); // NOI18N
+        jMenuItemBagtracker.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemBagtrackerActionPerformed(evt);
+            }
+        });
+        menuAbout.add(jMenuItemBagtracker);
+
+        jMenuItemForum.setText(resourceMap.getString("jMenuItemForum.text")); // NOI18N
+        jMenuItemForum.setName("jMenuItemForum"); // NOI18N
+        jMenuItemForum.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemForumActionPerformed(evt);
+            }
+        });
+        menuAbout.add(jMenuItemForum);
 
         jMenuBar1.add(menuAbout);
 
@@ -5017,6 +5051,32 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
         tableCalendar.getColumnModel().getColumn(0).setPreferredWidth(500);
     }//GEN-LAST:event_spinCalendarYearStateChanged
 
+    private void jMenuItemBagtrackerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemBagtrackerActionPerformed
+        try {
+            Desktop.getDesktop().browse(new URI("https://code.google.com/p/apertum-qsystem/issues/list"));
+        } catch (URISyntaxException | IOException ex) {
+            QLog.l().logger().error(ex);
+        }
+    }//GEN-LAST:event_jMenuItemBagtrackerActionPerformed
+
+    private void jMenuItemForumActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemForumActionPerformed
+        try {
+            Desktop.getDesktop().browse(new URI("http://qsystem.info/index.php/forum/index"));
+        } catch (URISyntaxException | IOException ex) {
+            QLog.l().logger().error(ex);
+        }
+    }//GEN-LAST:event_jMenuItemForumActionPerformed
+
+    private void labelPagerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labelPagerMouseClicked
+        if (pagerUrl != null) {
+            try {
+                Desktop.getDesktop().browse(new URI(pagerUrl));
+            } catch (URISyntaxException | IOException ex) {
+                QLog.l().logger().error(ex);
+            }
+        }
+    }//GEN-LAST:event_labelPagerMouseClicked
+
     private void sendPager() {
         if (forPager != null) {
             final Thread t = new Thread(new Runnable() {
@@ -5045,12 +5105,12 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                 getLocaleMessage("admin.select_priority.title"),
                 JOptionPane.QUESTION_MESSAGE,
                 null,
-                Uses.COEFF_WORD.values().toArray(),
-                Uses.COEFF_WORD.values().toArray()[plan.getCoefficient()]);
+                Uses.get_COEFF_WORD().values().toArray(),
+                Uses.get_COEFF_WORD().values().toArray()[plan.getCoefficient()]);
         //Если не выбрали, то выходим
         if (name != null) {
-            for (int i = 0; i < Uses.COEFF_WORD.size(); i++) {
-                if (name.equals(Uses.COEFF_WORD.get(i))) {
+            for (int i = 0; i < Uses.get_COEFF_WORD().size(); i++) {
+                if (name.equals(Uses.get_COEFF_WORD().get(i))) {
                     plan.setCoefficient(i);
                 }
             }
@@ -5469,12 +5529,12 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                     getLocaleMessage("admin.action.change_priority.get.title"),
                     JOptionPane.QUESTION_MESSAGE,
                     null,
-                    Uses.PRIORITYS_WORD.values().toArray(),
-                    Uses.PRIORITYS_WORD.values().toArray()[1]);
+                    Uses.get_PRIORITYS_WORD().values().toArray(),
+                    Uses.get_PRIORITYS_WORD().values().toArray()[1]);
             //Если не выбрали, то выходим
             if (name != null) {
-                for (int i = 0; i < Uses.PRIORITYS_WORD.size(); i++) {
-                    if (name.equals(Uses.PRIORITYS_WORD.get(i))) {
+                for (int i = 0; i < Uses.get_PRIORITYS_WORD().size(); i++) {
+                    if (name.equals(Uses.get_PRIORITYS_WORD().get(i))) {
                         JOptionPane.showMessageDialog(this, NetCommander.setCustomerPriority(new ServerNetProperty(), i, num), getLocaleMessage("admin.action.change_priority.title"), JOptionPane.INFORMATION_MESSAGE);
 
                     }
@@ -5654,6 +5714,9 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
             }
         }
     }
+    private String pagerUrl = null;
+    private static final String regexp_URL = "\\b(https?|ftp|file|mailto):(//|[-a-zA-Z0-9_\\.]+@)+[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+    private static final Pattern p = Pattern.compile(regexp_URL);
 
     public static class Answer {
 
@@ -5714,6 +5777,13 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
                 form.rbPager3.setSelected(false);
                 pd = data.get(d);
                 form.labelPager.setText(pd.textData);
+                final Matcher m = p.matcher(pd.textData);
+
+                form.pagerUrl = null;
+                while (m.find()) {
+                    form.pagerUrl = pd.textData.substring(m.start(0), m.end(0));
+                }
+
                 form.labelPagerCaptionCombo.setText(pd.quizCaption);
                 form.labelPagerCaptionEdit.setText(pd.quizCaption);
                 switch (pd.dataType) {
@@ -5994,6 +6064,8 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JMenuItem jMenuItem9;
+    private javax.swing.JMenuItem jMenuItemBagtracker;
+    private javax.swing.JMenuItem jMenuItemForum;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
@@ -6052,6 +6124,7 @@ private void buttonSendDataToSkyActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JPopupMenu.Separator jSeparator14;
     private javax.swing.JPopupMenu.Separator jSeparator15;
     private javax.swing.JPopupMenu.Separator jSeparator16;
+    private javax.swing.JPopupMenu.Separator jSeparator17;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;

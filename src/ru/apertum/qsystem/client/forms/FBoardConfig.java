@@ -19,6 +19,7 @@ package ru.apertum.qsystem.client.forms;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import org.dom4j.Element;
 import org.jdesktop.application.Application;
@@ -63,6 +64,11 @@ public class FBoardConfig extends AFBoardRedactor {
                 setDividerLocation();
             }
         });
+        try {
+            setIconImage(ImageIO.read(FParamsEditor.class.getResource("/ru/apertum/qsystem/client/forms/resources/admin.png")));
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
         //привязка помощи к форме.
         final Helper helper = Helper.getHelp("ru/apertum/qsystem/client/help/admin.hs");
         helper.enableHelpKey(spUp, "editTablo");

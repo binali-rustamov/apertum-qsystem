@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 import java.util.ServiceLoader;
 import javax.swing.DefaultListModel;
@@ -64,9 +65,6 @@ import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeException;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.output.OutputException;
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
-import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.common.WelcomeParams;
 import ru.apertum.qsystem.common.GsonPool;
@@ -90,14 +88,6 @@ import ru.apertum.qsystem.server.model.QServiceTree;
  */
 public class PComplexService extends javax.swing.JPanel {
 
-    private static ResourceMap localeMap = null;
-
-    public static String getLocaleMessage(String key) {
-        if (localeMap == null) {
-            localeMap = Application.getInstance(QSystem.class).getContext().getResourceMap(FAdmin.class);
-        }
-        return localeMap.getString(key);
-    }
     final private File configFile;
     final IClientNetProperty netProperty;
 
@@ -212,7 +202,12 @@ public class PComplexService extends javax.swing.JPanel {
 
         loadState();
     }
+    private static final ResourceBundle translate = ResourceBundle.getBundle("ru/apertum/qsystem/client/forms/resources/PComplexService", Locales.getInstance().getLangCurrent());
 
+    private String locMes(String key){
+        return translate.getString(key);
+    }
+    
     private boolean isGood(QService data) {
         boolean flag = true;
         DefaultListModel<QService> sl = (DefaultListModel<QService>) (listFreeServices.getModel());
@@ -460,7 +455,7 @@ public class PComplexService extends javax.swing.JPanel {
         jSplitPane1.setDividerLocation(350);
         jSplitPane1.setContinuousLayout(true);
 
-        treeServices.setBorder(javax.swing.BorderFactory.createTitledBorder("Оказываемые услуги"));
+        treeServices.setBorder(javax.swing.BorderFactory.createTitledBorder(locMes("services")));
         treeServices.setDragEnabled(true);
         treeServices.setDropMode(javax.swing.DropMode.ON);
         treeServices.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -480,7 +475,7 @@ public class PComplexService extends javax.swing.JPanel {
         jSplitPane2.setDividerLocation(330);
         jSplitPane2.setContinuousLayout(true);
 
-        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder("Сохраненные списки услуг"));
+        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(locMes("savedServiceList")));
 
         listOfLists.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         listOfLists.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -523,7 +518,7 @@ public class PComplexService extends javax.swing.JPanel {
         jSplitPane3.setAutoscrolls(true);
         jSplitPane3.setContinuousLayout(true);
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Последовательнооказываемые услуги"));
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(locMes("seqServices")));
         jPanel5.setLayout(new javax.swing.BoxLayout(jPanel5, javax.swing.BoxLayout.Y_AXIS));
 
         listServ1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -578,7 +573,7 @@ public class PComplexService extends javax.swing.JPanel {
 
         jSplitPane3.setRightComponent(jPanel5);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Безочередные услуги"));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(locMes("unseqServices")));
 
         listFreeServices.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         listFreeServices.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -612,21 +607,21 @@ public class PComplexService extends javax.swing.JPanel {
             .addComponent(jSplitPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
         );
 
-        buttonSetInLine.setText("В очередь");
+        buttonSetInLine.setText(translate.getString("inLine")); // NOI18N
         buttonSetInLine.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonSetInLineActionPerformed(evt);
             }
         });
 
-        buttonSaveList.setText("Сохранить");
+        buttonSaveList.setText(translate.getString("save")); // NOI18N
         buttonSaveList.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonSaveListActionPerformed(evt);
             }
         });
 
-        buttonClearLists.setText("Отчистить");
+        buttonClearLists.setText(translate.getString("clear")); // NOI18N
         buttonClearLists.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonClearListsActionPerformed(evt);
@@ -659,7 +654,7 @@ public class PComplexService extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Списки услуг", jPanel7);
+        jTabbedPane1.addTab(locMes("servList"), jPanel7);
 
         treeDepends.setExpandsSelectedPaths(false);
         treeDepends.setRootVisible(false);
@@ -682,7 +677,7 @@ public class PComplexService extends javax.swing.JPanel {
             .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Зависимости услуг", jPanel8);
+        jTabbedPane1.addTab(translate.getString("dependances"), jPanel8); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -695,7 +690,7 @@ public class PComplexService extends javax.swing.JPanel {
             .addComponent(jTabbedPane1)
         );
 
-        jTabbedPane1.getAccessibleContext().setAccessibleName("Списки услуг");
+        jTabbedPane1.getAccessibleContext().setAccessibleName(locMes("servList"));
         jTabbedPane1.getAccessibleContext().setAccessibleDescription("");
 
         jSplitPane2.setLeftComponent(jPanel1);
@@ -724,7 +719,7 @@ public class PComplexService extends javax.swing.JPanel {
     }//GEN-LAST:event_listFreeServicesMouseClicked
 
     private void buttonClearListsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonClearListsActionPerformed
-        if (JOptionPane.showConfirmDialog(this, "Ты точно хочешь удалить все выбранные услуги?", "Отчистка набора услуг", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
+        if (JOptionPane.showConfirmDialog(this, translate.getString("readyForCleanServices"), translate.getString("cliningServices"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
             return;
         }
         ((DefaultListModel) (listFreeServices.getModel())).clear();
@@ -740,7 +735,7 @@ public class PComplexService extends javax.swing.JPanel {
             return;
         }
 
-        final String inputData = (String) JOptionPane.showInputDialog(this, "Название списка:", "***", 3, null, null, "");
+        final String inputData = (String) JOptionPane.showInputDialog(this, translate.getString("listName"), "***", 3, null, null, "");
         if (inputData == null || inputData.isEmpty()) {
             return;
         }
@@ -1066,14 +1061,14 @@ public class PComplexService extends javax.swing.JPanel {
             return;
         }
 
-        String[] ss = {"Низкий", "Нормальный", "Повышенный", "V.I.P."};
+        String[] ss = {translate.getString("low"), translate.getString("normal"), translate.getString("hight"), translate.getString("vip")};
         final String name = (String) JOptionPane.showInputDialog(this,
-                "Выберите приоритет посетителя",
-                "Определение приоритета",
+                translate.getString("selectPrrity"),
+                translate.getString("selectingPriorty"),
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 ss,
-                "Нормальный");
+                translate.getString("normal"));
         //Если не выбрали, то выходим
         if (name != null) {
             int priority = 1;
@@ -1209,7 +1204,7 @@ public class PComplexService extends javax.swing.JPanel {
 
             String pref = customer.getPrefix();
             pref = "".equals(pref) ? "" : pref + "-";
-            JOptionPane.showMessageDialog(this, getLocaleMessage("admin.print_ticket.title") + " \"" + customer.getService().getName() + "\". " + getLocaleMessage("admin.print_ticket.title_1") + " \"" + pref + customer.getNumber() + "\"." + "\n\n" + customer.getService().getDescription(), getLocaleMessage("admin.print_ticket.caption"), JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, FAdmin.getLocaleMessage("admin.print_ticket.title") + " \"" + customer.getService().getName() + "\". " + FAdmin.getLocaleMessage("admin.print_ticket.title_1") + " \"" + pref + customer.getNumber() + "\"." + "\n\n" + customer.getService().getDescription(), FAdmin.getLocaleMessage("admin.print_ticket.caption"), JOptionPane.INFORMATION_MESSAGE);
 
         }
     }//GEN-LAST:event_buttonSetInLineActionPerformed
@@ -1457,6 +1452,13 @@ public class PComplexService extends javax.swing.JPanel {
             }
         };
         final PrinterJob job = PrinterJob.getPrinterJob();
+        if (WelcomeParams.getInstance().printService != null) {
+            try {
+                job.setPrintService(WelcomeParams.getInstance().printService);
+            } catch (PrinterException ex) {
+                QLog.l().logger().error("Ошибка установки принтера: ", ex);
+            }
+        }
         job.setPrintable(canvas);
         try {
             job.print(WelcomeParams.getInstance().printAttributeSet);
@@ -1470,7 +1472,7 @@ public class PComplexService extends javax.swing.JPanel {
         if (evt.getClickCount() > 1) {
             final JList list = ((JList) (evt.getComponent()));
             if (list.getSelectedIndex() != -1) {
-                if (JOptionPane.showConfirmDialog(this, "Ты точно хочешь удалить список \"" + ((DefaultListModel) (list.getModel())).get(list.getSelectedIndex()) + "\"?", "Удаление набора услуг", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
+                if (JOptionPane.showConfirmDialog(this, locMes("del1") + " \"" + ((DefaultListModel) (list.getModel())).get(list.getSelectedIndex()) + "\"?", locMes("del2"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
                     return;
                 }
                 ((DefaultListModel) (list.getModel())).remove(list.getSelectedIndex());

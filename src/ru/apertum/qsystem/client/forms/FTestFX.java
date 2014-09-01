@@ -39,7 +39,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
-import javafx.animation.TranslateTransitionBuilder;
+//import javafx.animation.TranslateTransitionBuilder;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

@@ -61,9 +61,9 @@
         <res id="userInputLang.xml_rus" src="i18n/userInputLang_rus.xml" />
 		<res id="userInputLang.xml_ukr" src="i18n/userInputLang_ukr.xml" />
 
-		<res id="HTMLInfoPanel.info_eng" src="i18n/Readme_eng.html"/>
-        <res id="HTMLInfoPanel.info_rus" src="i18n/Readme_rus.html"/>
-		<res id="HTMLInfoPanel.info_ukr" src="i18n/Readme_ukr.html"/>
+		<res id="HTMLInfoPanel.info_eng" src="i18n/about_eng.html"/>
+        <res id="HTMLInfoPanel.info_rus" src="i18n/about_rus.html"/>
+		<res id="HTMLInfoPanel.info_ukr" src="i18n/about_ukr.html"/>
 		
 		<res id="LicencePanel.licence_eng" src="i18n/license-gpl3-eng.txt"/>
 		<res id="LicencePanel.licence_rus" src="i18n/license-gpl3-rus.txt"/>
@@ -108,13 +108,15 @@
         <pack id="mainFiles" name="Main files" required="yes">
             <description>Основные файлы</description>
             <file src="../dist" targetdir="$INSTALL_PATH"/>
-            <file type="html" src="i18n/Readme_eng.html" targetdir="$INSTALL_PATH"/>
-			<file type="html" src="i18n/Readme_rus.html" targetdir="$INSTALL_PATH"/>
-			<file type="html" src="i18n/Readme_ukr.html" targetdir="$INSTALL_PATH"/>
+            <file type="html" src="i18n/about_eng.html" targetdir="$INSTALL_PATH"/>
+			<file type="html" src="i18n/about_rus.html" targetdir="$INSTALL_PATH"/>
+			<file type="html" src="i18n/about_ukr.html" targetdir="$INSTALL_PATH"/>
 			<file src="i18n/license-gpl3-eng.txt" targetdir="$INSTALL_PATH/license/"/>
 			<file src="i18n/license-gpl3-rus.txt" targetdir="$INSTALL_PATH/license/"/>
 			<file src="i18n/license-gpl3-ukr.txt" targetdir="$INSTALL_PATH/license/"/>
-			<file src="../readme.txt" targetdir="$INSTALL_PATH/"/>
+			<file src="../readme_rus.txt" targetdir="$INSTALL_PATH/"/>
+			<file src="../readme_eng.txt" targetdir="$INSTALL_PATH/"/>
+			<file src="../readme_spa.txt" targetdir="$INSTALL_PATH/"/>
 			<file type="properties" src="../config/langs.properties" targetdir="$INSTALL_PATH/config/"/>
 			<fileset dir="../config/board" includes="*.jpg,*.gif,*.png,*.mpg,*.txt" targetdir="$INSTALL_PATH/config/board/"/>
             <fileset os="windows" dir="resource/img" includes="*.ico" targetdir="$INSTALL_PATH/icons/"/>
@@ -143,6 +145,7 @@
                 <os family="unix"/>
             </executable>
             <file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
+			<parsable encoding="utf-8" targetfile="$INSTALL_PATH/config/clientboard.xml"/>
 			<parsable os="windows" targetfile="$INSTALL_PATH/StartClient.bat"/>
             <parsable os="unix" targetfile="$INSTALL_PATH/client.sh"/>
 			<parsable os="windows" targetfile="$INSTALL_PATH/StartClientDemo.bat"/>
@@ -160,8 +163,9 @@
             <file os="unix" src="resource/txt/admspr.sh" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH"/>
             <file src="../db/qsystem.sql" targetdir="$INSTALL_PATH/DB/"/>
+            <file src="../db/qsystem_eng.sql" targetdir="$INSTALL_PATH/DB/"/>
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
-			<file src="../config/clientboard.xml" targetdir="$INSTALL_PATH/config/"/>
+			<parsable encoding="utf-8" targetfile="$INSTALL_PATH/config/mainboard.xml"/>
 			<file src="../config/reporter.properties" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/reporter.html" targetdir="$INSTALL_PATH/config/"/>
 			<fileset dir="../www/" includes="*.jpg,*.gif,*.png,*.mpg,*.htm,*.html,*.js,*.css" targetdir="$INSTALL_PATH/www/"/>

@@ -24,6 +24,7 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -81,15 +82,14 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     private static boolean isMain = true;
 
     /**
-     * Получить форму табло. Получаем главное табло. Если требуется получить с
-     * указанием типа то использовать public static FIndicatorBoard
+     * Получить форму табло. Получаем главное табло. Если требуется получить с указанием типа то использовать public static FIndicatorBoard
      * getIndicatorBoard(Element rootParams, boolean isMain)
      *
      * @param rootParams параметры табло.
      * @return
      */
     public static FIndicatorBoard getIndicatorBoard(Element rootParams) {
-        if (!"1".equals(rootParams.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
+        if (!"1".equals(rootParams.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL)) && !rootParams.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL).startsWith("$")) {
             return null;
         }
         if (indicatorBoard == null || rootParams != indicatorBoard.root) {
@@ -97,13 +97,14 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             indicatorBoard.loadConfig();
             indicatorBoard.root = rootParams;
         }
+        if (indicatorBoard.monitor < 1) {
+            return null;
+        }
         return indicatorBoard;
     }
 
     /**
-     * Получить форму табло. Получаем главное табло. Вызов этого метода создает
-     * новый объект. не использовать при одиночном табло. сделано для
-     * зонального.
+     * Получить форму табло. Получаем главное табло. Вызов этого метода создает новый объект. не использовать при одиночном табло. сделано для зонального.
      *
      * @param rootParams параметры табло.
      * @param isDebug
@@ -153,6 +154,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
         rightElement = rootParams.element(Uses.TAG_BOARD_RIGHT);
         mainElement = rootParams.element(Uses.TAG_BOARD_MAIN);
         // Проствим кол-во строк и др. параметры
+        final ArrayList<Element> lst = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_MONITOR);
+        this.monitor = lst.isEmpty() ? 100 : Integer.parseInt(lst.get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.linesCount = Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINES_COUNT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         final int ii = Integer.parseInt(Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_COLS_COUNT).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.colsCount = isMain ? (ii > 0 ? (ii > 5 ? 5 : ii) : 1) : 1;
@@ -191,7 +194,13 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     }
 
     public void toPosition(boolean isDebug, int x, int y) {
-        // Определим форму нв монитор
+        // Определим форму на монитор
+        final Rectangle bounds = Uses.displays.get(monitor);
+        if (bounds != null) {
+            x = bounds.x + 1;
+            y = bounds.y + 1;
+        }
+
         setLocation(x, y);
         setAlwaysOnTop(!isDebug);
         // setResizable(isDebug);
@@ -222,13 +231,9 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Загрузка размеров областей табло
      */
     private void loadDividerLocation() {
-        double up = 0;
         double down = 1;
-        double down2 = 1;
-        double left = 0;
-        double right = 1;
         if ("1".equals(topElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
-            up = Double.parseDouble(topElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
+            double up = Double.parseDouble(topElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
             spUp.setDividerLocation(up);
             panelUp.refreshVideoSize();
         } else {
@@ -250,7 +255,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                     panelDown.setVisible(false);
                 }
                 if ("1".equals(bottomElement2.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
-                    down2 = Double.parseDouble(bottomElement2.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
+                    double down2 = Double.parseDouble(bottomElement2.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
                     spDown2.setDividerLocation(down2);
                     panelDown2.refreshVideoSize();
                 } else {
@@ -279,14 +284,14 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             }
         }
         if ("1".equals(leftElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
-            left = Double.parseDouble(leftElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
+            double left = Double.parseDouble(leftElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
             spLeft.setDividerLocation(left);
             panelLeft.refreshVideoSize();
         } else {
             panelLeft.setVisible(false);
         }
         if ("1".equals(rightElement.attributeValue(Uses.TAG_BOARD_VISIBLE_PANEL))) {
-            right = Double.parseDouble(rightElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
+            double right = Double.parseDouble(rightElement.attributeValue(Uses.TAG_BOARD_PANEL_SIZE));
             spRight.setDividerLocation(right);
             panelRight.refreshVideoSize();
         } else {
@@ -541,8 +546,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
             }
         }
         /**
-         * blinkCount 0 - постоянное мигание, -1 не мигает. число - количество
-         * миганий
+         * blinkCount 0 - постоянное мигание, -1 не мигает. число - количество миганий
          */
         int blinkCount = -1;
 
@@ -601,6 +605,10 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Массив контролов для вывода инфы.
      */
     public final ArrayList<Line> labels = new ArrayList<>();
+    /**
+     * Номер дополнительного монитора для табло
+     */
+    private int monitor = 100;
     /**
      * Количество выводимых строк
      */
@@ -767,8 +775,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * @param number номер клиента - часть выводимого текста
      * @param point пункт куда позвали клиента - часть выводимого текста
      * @param ext_data Третья колонка
-     * @param blinkCount 0 - постоянное мигание, -1 не мигает. число -
-     * количество миганий
+     * @param blinkCount 0 - постоянное мигание, -1 не мигает. число - количество миганий
      */
     public void printRecord(int index, String number, String point, String ext_data, int blinkCount) {
         if (index < getLinesCount()) {
@@ -810,8 +817,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
     }
 
     /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")

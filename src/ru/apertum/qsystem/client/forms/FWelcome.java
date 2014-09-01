@@ -497,6 +497,7 @@ public class FWelcome extends javax.swing.JFrame {
 
     public FWelcome(QService root) {
         QLog.l().logger().info("Создаем окно приглашения.");
+        setLocation(0, 0);
         if (!QLog.l().isDebug()) {
             if (!QLog.l().isDemo()) {
                 setUndecorated(true);
@@ -504,9 +505,8 @@ public class FWelcome extends javax.swing.JFrame {
                 //setResizable(false);
 
                 // спрячем курсор мыши
-                int[] pixels = new int[16 * 16];
-                Image image = Toolkit.getDefaultToolkit().createImage(
-                        new MemoryImageSource(16, 16, pixels, 0, 16));
+                final int[] pixels = new int[16 * 16];
+                final Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
                 Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "invisibleCursor");
                 setCursor(transparentCursor);
             }
@@ -994,6 +994,13 @@ public class FWelcome extends javax.swing.JFrame {
             }
         };
         final PrinterJob job = PrinterJob.getPrinterJob();
+        if (WelcomeParams.getInstance().printService != null) {
+            try {
+                job.setPrintService(WelcomeParams.getInstance().printService);
+            } catch (PrinterException ex) {
+                QLog.l().logger().error("Ошибка установки принтера: ", ex);
+            }
+        }
         job.setPrintable(canvas);
         try {
             job.print(WelcomeParams.getInstance().printAttributeSet);
@@ -1220,6 +1227,13 @@ public class FWelcome extends javax.swing.JFrame {
             }
         };
         final PrinterJob job = PrinterJob.getPrinterJob();
+        if (WelcomeParams.getInstance().printService != null) {
+            try {
+                job.setPrintService(WelcomeParams.getInstance().printService);
+            } catch (PrinterException ex) {
+                QLog.l().logger().error("Ошибка установки принтера: ", ex);
+            }
+        }
         job.setPrintable(canvas);
         try {
             job.print(WelcomeParams.getInstance().printAttributeSet);
@@ -1319,6 +1333,13 @@ public class FWelcome extends javax.swing.JFrame {
             }
         };
         final PrinterJob job = PrinterJob.getPrinterJob();
+        if (WelcomeParams.getInstance().printService != null) {
+            try {
+                job.setPrintService(WelcomeParams.getInstance().printService);
+            } catch (PrinterException ex) {
+                QLog.l().logger().error("Ошибка установки принтера: ", ex);
+            }
+        }
         job.setPrintable(canvas);
         try {
             job.print(WelcomeParams.getInstance().printAttributeSet);
@@ -1898,12 +1919,12 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         labelInfo.setVerticalAlignment(JLabel.BOTTOM);
         labelInfo.setVerticalTextPosition(SwingConstants.BOTTOM);
         labelInfo.setHorizontalTextPosition(SwingConstants.LEFT);
-        
-        labelInfo2.setIcon(new ImageIcon(getClass().getResource(imagePath)));
+
+        labelInfo2.setIcon(new File(imagePath).exists() ? new ImageIcon(imagePath) :  new ImageIcon(getClass().getResource(imagePath)));
         //labelInfo2.setIcon(new ImageIcon("E:/WORK/apertum-qsystem/temp/resources/down.png"));
         labelInfo2.setHorizontalTextPosition(SwingConstants.CENTER);
         labelInfo2.setHorizontalAlignment(JLabel.CENTER);
-        
+
         panelMain.add(labelInfo);
         panelMain.add(labelInfo2);
         labelInfo.setBounds(0, 0, 200, 200);

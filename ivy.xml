@@ -13,7 +13,7 @@
 
     <!-- http://mvnrepository.com -->
     <dependencies>
-        <dependency org="mysql" name="mysql-connector-java" rev="5.1.28" conf="runtime->*" transitive="false"/>
+        <dependency org="mysql" name="mysql-connector-java" rev="5.1.31" conf="runtime->*" transitive="false"/>
 
         <dependency org="org.springframework" name="spring-core" rev="4.0.0.RELEASE"  conf="compile->*" transitive="false"/>
         <dependency org="org.springframework" name="spring-beans" rev="4.0.0.RELEASE"  conf="compile->*" transitive="false"/>

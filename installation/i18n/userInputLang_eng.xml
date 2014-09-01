@@ -15,4 +15,6 @@
 	<str id="tach" txt="Select Services on the touch terminal"/>
 	<str id="buttons" txt="Select Services on the buttons device"/>
 	<str id="multylng" txt="Multylangual (for check-point)"/>
+	<str id="serverboard" txt="Show main board"/>
+	<str id="clientboard" txt="Show operator's board"/>
 </langpack>

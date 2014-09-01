@@ -31,6 +31,7 @@ import ru.apertum.qsystem.client.forms.FAbout;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.exceptions.ReportException;
+import ru.apertum.qsystem.reports.common.RepResBundle;
 import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.generators.RepCurrentUsers;
 import ru.apertum.qsystem.reports.generators.ReportCurrentServices;
@@ -74,7 +75,9 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
             htmlRepList = htmlRepList.concat(
                     "<tr>\n"
                     + "<td style=\"text-align: left; padding-left: 60px;\">\n"
-                    + "<a href=\"" + report.getHref() + ".html\" target=\"_blank\">" + report.getName() + "</a>\n"
+                    + "<a href=\"" + report.getHref() + ".html\" target=\"_blank\">"
+                    + (RepResBundle.getInstance().present(report.getHref()) ? RepResBundle.getInstance().getStringSafe(report.getHref()) : report.getName())
+                    + "</a>\n"
                     + "<a href=\"" + report.getHref() + ".rtf\" target=\"_blank\">[RTF]</a>\n"
                     + "<a href=\"" + report.getHref() + ".pdf\" target=\"_blank\">[PDF]</a>\n"
                     + "<a href=\"" + report.getHref() + ".xlsx\" target=\"_blank\">[XLSX]</a>\n"
@@ -138,8 +141,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
         return htmlUsersList;
     }
     /**
-     * Список паролей пользователей
-     * имя -> пароль
+     * Список паролей пользователей имя -> пароль
      */
     private HashMap<String, String> passMap;
 
@@ -149,6 +151,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
 
     /**
      * Генерация отчета по его имени.
+     *
      * @param request запрос пришедший от клиента
      * @return Отчет в виде массива байт.
      */
@@ -217,6 +220,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
 
     /**
      * Загрузим страничку ввода пароля и пользователя
+     *
      * @return страница в виде массива байт.
      */
     private Response getLoginPage() {
@@ -235,7 +239,10 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
         }
         Response res = null;
         try {
-            res = new Response(new String(result, "UTF-8").replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, getHtmlUsersList()).replaceFirst(Uses.ANCHOR_PROJECT_NAME_FOR_REPORT, Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF())).getBytes("UTF-8")); //"Cp1251"
+            res = new Response(RepResBundle.getInstance().prepareString(new String(result, "UTF-8")).
+                    replaceFirst(Uses.ANCHOR_USERS_FOR_REPORT, getHtmlUsersList()).
+                    replaceFirst(Uses.ANCHOR_PROJECT_NAME_FOR_REPORT, Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF())).
+                    getBytes("UTF-8")); //"Cp1251"
         } catch (UnsupportedEncodingException ex) {
         }
         return res;

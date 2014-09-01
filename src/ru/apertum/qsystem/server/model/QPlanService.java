@@ -122,7 +122,6 @@ public class QPlanService implements Serializable {
     //@OneToOne(targetEntity = QUser.class)
     @ManyToOne()
     @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
-    @Transient
     public QUser getUser() {
         return user;
     }
@@ -133,7 +132,7 @@ public class QPlanService implements Serializable {
 
     @Override
     public String toString() {
-        return (getFlexible_coef() ? "* " : "") + "[" + Uses.COEFF_WORD.get(getCoefficient()) + "]" + service.getPrefix() + " " + service.getName();
+        return (getFlexible_coef() ? "* " : "") + "[" + Uses.get_COEFF_WORD().get(getCoefficient()) + "]" + service.getPrefix() + " " + service.getName();
     }
     //******************************************************************************************************************
     //*******            Статистика             *******************************************

@@ -31,6 +31,7 @@ import javax.persistence.MappedSuperclass;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRHtmlExporter;
@@ -38,6 +39,7 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import org.apache.http.HttpRequest;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ReportException;
@@ -209,11 +211,13 @@ public abstract class AGenerator implements IGenerator {
             // теперь посмотрим, не сформировали ли коннект 
             //если есть коннект, то строим отчет по коннекту, иначе формируем данные формироватором.
             final Connection conn = getConnection(request);
+            final Map paramsForFilling = getParameters(request);
+            paramsForFilling.put(JRParameter.REPORT_LOCALE, Locales.getInstance().getLangCurrent());
             final JasperPrint jasperPrint;
             if (conn == null) {
-                jasperPrint = JasperFillManager.fillReport(inStr, getParameters(request), getDataSource(request));//это используя уже откампиленный
+                jasperPrint = JasperFillManager.fillReport(inStr, paramsForFilling, getDataSource(request));//это используя уже откампиленный
             } else {
-                jasperPrint = JasperFillManager.fillReport(inStr, getParameters(request), conn);//это используя уже откампиленный
+                jasperPrint = JasperFillManager.fillReport(inStr, paramsForFilling, conn);//это используя уже откампиленный
             }
             byte[] result = null;
 

@@ -58,7 +58,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
 
     public void setConfigFile(String configFile) {
         final String err = ("/".equals(File.separator)) ? "\\" : "/";
-        while (configFile.indexOf(err) != -1) {
+        while (configFile.contains(err)) {
             configFile = configFile.replace(err, File.separator);
         }
         this.configFile = configFile;

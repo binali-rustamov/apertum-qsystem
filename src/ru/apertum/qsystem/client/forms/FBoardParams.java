@@ -347,6 +347,7 @@ public class FBoardParams extends javax.swing.JDialog {
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
         textAreaHtml.setColumns(20);
+        textAreaHtml.setFont(resourceMap.getFont("textAreaHtml.font")); // NOI18N
         textAreaHtml.setLineWrap(true);
         textAreaHtml.setRows(5);
         textAreaHtml.setWrapStyleWord(true);

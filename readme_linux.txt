@@ -1,9 +1,12 @@
-﻿1. Debian 7 install Java Oracle 1.7 via apt-get
+﻿1. Debian 7 install Java Oracle 1.7(6, 7, 8) via apt-get
+можно почитать тут http://www.linuxrussia.com/2013/04/oracle-java-7-ubuntu-1304-1204-1210.html
 
-установим часовой пояс dpkg-reconfigure tzdata
-проверим время date
+// установим часовой пояс dpkg-reconfigure tzdata
+// проверим время date
 
-
+**********************************************
+** Java
+**********************************************
 
 открыть терминал с root правами и поехали
 
@@ -49,6 +52,11 @@ java -version
 java version "1.7.0_45"
 Java(TM) SE Runtime Environment (build 1.7.0_45-b18)
 Java HotSpot(TM) Server VM (build 24.45-b08, mixed mode)
+
+
+**********************************************
+** GlassFish
+**********************************************
 
 
 
@@ -102,3 +110,47 @@ Access your Glassfish console URL this time over SSL (so accept certificate mism
 
 
 Спецзаметка:  как решать проблему с включением блокировки єкрана в линукс http://www.linuxrussia.com/2013/05/caffeine-ubuntu.html
+
+**********************************************
+** MySQL
+**********************************************
+
+* To start mysql server:
+/etc/init.d/mysqld start
+* To stop mysql server:
+/etc/init.d/mysqld stop
+* To restart mysql server
+/etc/init.d/mysqld restart
+
+
+mysql -u root -p
+
+mysql> SHOW DATABASES;
+mysql> drop database qsystem;
+
+If you are already running mysql, you can execute an SQL script file using the source command or \. command:
+mysql> source file_name
+mysql> \. file_name
+
+
+
+[mysql]
+default-character-set=utf8
+
+[mysqld]
+
+collation_server=utf8_unicode_ci
+character_set_server=utf8
+
+**********************************************
+** LINUX
+**********************************************
+Список процессов
+ps ax | grep 'ищем процесс по куску имени'
+
+Киляем процесс по его id
+kill PID[ PID2 PID3]
+kill -9 PID
+
+Киляем все процессы по имени
+killall PIDNAME

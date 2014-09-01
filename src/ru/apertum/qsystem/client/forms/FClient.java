@@ -135,7 +135,7 @@ public final class FClient extends javax.swing.JFrame {
                 priority = getLocaleMessage("messages.priority.strange");
             }
         }
-        String s = customer.getService().getInput_caption();
+        String s = customer.getService().getInput_caption().replaceAll("<[^>]*>", "");
         if (s == null) {
             s = "";
         } else {
@@ -636,7 +636,6 @@ public final class FClient extends javax.swing.JFrame {
         }
     }
     private SelfSituation plan;
-
     private long refreshTime = 0;
 
     /**
@@ -801,7 +800,6 @@ public final class FClient extends javax.swing.JFrame {
         setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
         end(start);
     }
-
     private boolean fkill = false;
 
     /**
@@ -1534,12 +1532,12 @@ public final class FClient extends javax.swing.JFrame {
         // без предконнекта из main в дальнейшем сокет не хочет работать,
         // долго висит и вываливает минут через 15-20 эксепшн java.net.SocketException: Malformed reply from SOCKS server  
         /*
-         Socket skt = null;
-         try {
-         skt = new Socket(netProperty.getAddress(), 61111);
-         skt.close();
-         } catch (IOException ex) {
-         }
+        Socket skt = null;
+        try {
+        skt = new Socket(netProperty.getAddress(), 61111);
+        skt.close();
+        } catch (IOException ex) {
+        }
          */
 
         if (!QLog.l().isTerminal()) {// в терминальном режиме запускаем много копий
@@ -1639,10 +1637,10 @@ public final class FClient extends javax.swing.JFrame {
         final long start = go();
 
         /*
-         String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
-         if (status == null) {
-         return;
-         }
+        String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
+        if (status == null) {
+        return;
+        }
          * 
          */
         if (moveToPostponed == null) {
@@ -1663,12 +1661,16 @@ public final class FClient extends javax.swing.JFrame {
     @Action
     public void invitePostponed() {
         if (listPostponed.getSelectedIndex() != -1) {
-            final long start = go();
-            final QCustomer cust = (QCustomer) listPostponed.getSelectedValue();
-            NetCommander.invitePostponeCustomer(netProperty, user.getId(), cust.getId());
-            // Показываем обстановку
-            setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
-            end(start);
+            if (keys_current.equals(KEYS_MAY_INVITE) || keys_current.equals(KEYS_OFF)) {
+                final long start = go();
+                final QCustomer cust = (QCustomer) listPostponed.getSelectedValue();
+                NetCommander.invitePostponeCustomer(netProperty, user.getId(), cust.getId());
+                // Показываем обстановку
+                setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
+                end(start);
+            } else {
+                JOptionPane.showMessageDialog(null, "Вы уже вызвали посетителя. Завершите работу с ранее вызваным посетителем.", "Вызов отложенного", JOptionPane.INFORMATION_MESSAGE);
+            }
         }
     }
 

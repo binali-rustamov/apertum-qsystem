@@ -426,7 +426,9 @@
                         </Container>
                         <Component class="javax.swing.JButton" name="buttonSetInLine">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="&#x412; &#x43e;&#x447;&#x435;&#x440;&#x435;&#x434;&#x44c;"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <ResourceString bundle="ru/apertum/qsystem/client/forms/resources/PComplexService.properties" key="inLine" replaceFormat="translate.getString(&quot;{key}&quot;)"/>
+                            </Property>
                           </Properties>
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonSetInLineActionPerformed"/>
@@ -434,7 +436,9 @@
                         </Component>
                         <Component class="javax.swing.JButton" name="buttonSaveList">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="&#x421;&#x43e;&#x445;&#x440;&#x430;&#x43d;&#x438;&#x442;&#x44c;"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <ResourceString bundle="ru/apertum/qsystem/client/forms/resources/PComplexService.properties" key="save" replaceFormat="translate.getString(&quot;{key}&quot;)"/>
+                            </Property>
                           </Properties>
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonSaveListActionPerformed"/>
@@ -442,7 +446,9 @@
                         </Component>
                         <Component class="javax.swing.JButton" name="buttonClearLists">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="&#x41e;&#x442;&#x447;&#x438;&#x441;&#x442;&#x438;&#x442;&#x44c;"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <ResourceString bundle="ru/apertum/qsystem/client/forms/resources/PComplexService.properties" key="clear" replaceFormat="translate.getString(&quot;{key}&quot;)"/>
+                            </Property>
                           </Properties>
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonClearListsActionPerformed"/>
@@ -454,7 +460,9 @@
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                           <JTabbedPaneConstraints tabName="&#x417;&#x430;&#x432;&#x438;&#x441;&#x438;&#x43c;&#x43e;&#x441;&#x442;&#x438; &#x443;&#x441;&#x43b;&#x443;&#x433;">
-                            <Property name="tabTitle" type="java.lang.String" value="&#x417;&#x430;&#x432;&#x438;&#x441;&#x438;&#x43c;&#x43e;&#x441;&#x442;&#x438; &#x443;&#x441;&#x43b;&#x443;&#x433;"/>
+                            <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <ResourceString bundle="ru/apertum/qsystem/client/forms/resources/PComplexService.properties" key="dependances" replaceFormat="translate.getString(&quot;{key}&quot;)"/>
+                            </Property>
                           </JTabbedPaneConstraints>
                         </Constraint>
                       </Constraints>

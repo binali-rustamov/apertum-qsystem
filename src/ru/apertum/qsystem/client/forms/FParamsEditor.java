@@ -16,6 +16,8 @@
  */
 package ru.apertum.qsystem.client.forms;
 
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -66,7 +68,7 @@ public class FParamsEditor extends AFBoardRedactor {
 
         @Override
         public String toString() {
-            return element.attributeValue(Uses.TAG_BOARD_NAME) + " = " + element.attributeValue(Uses.TAG_BOARD_VALUE);
+            return getName() + " = " + element.attributeValue(Uses.TAG_BOARD_VALUE);
         }
 
         public String getValue() {
@@ -74,7 +76,8 @@ public class FParamsEditor extends AFBoardRedactor {
         }
 
         public String getName() {
-            return element.attributeValue(Uses.TAG_BOARD_NAME);
+            return getLocaleMessage(element.attributeValue(Uses.TAG_BOARD_NAME));
+            //return element.attributeValue(Uses.TAG_BOARD_NAME);
         }
 
         public int getType() {
@@ -119,6 +122,11 @@ public class FParamsEditor extends AFBoardRedactor {
     private FParamsEditor(JFrame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        try {
+            setIconImage(ImageIO.read(FParamsEditor.class.getResource("/ru/apertum/qsystem/client/forms/resources/admin.png")));
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
     }
     
     private static FParamsEditor editor = null;

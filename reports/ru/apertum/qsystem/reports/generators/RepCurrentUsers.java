@@ -41,7 +41,7 @@ public class RepCurrentUsers extends AGenerator {
 
     @Override
     protected JRDataSource getDataSource(HttpRequest request) {
-        final LinkedList<CurRepRecord> dataSource = new LinkedList<CurRepRecord>();
+        final LinkedList<CurRepRecord> dataSource = new LinkedList<>();
         for (QUser user : QUserList.getInstance().getItems()) {
             int user_worked = 0;
             int user_killed = 0;

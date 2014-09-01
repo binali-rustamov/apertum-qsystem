@@ -65,7 +65,9 @@ public class FServicePriority extends javax.swing.JDialog {
      */
     private static FServicePriority dialog;
 
-    /** Creates new form FServicePriority */
+    /** Creates new form FServicePriority
+     * @param parent
+     * @param modal */
     public FServicePriority(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -76,6 +78,7 @@ public class FServicePriority extends javax.swing.JDialog {
      * @param netProperty свойства коннекта
      * @param owner для модальности
      * @param plan список обрабатываемых услуг
+     * @param userId
      */
     public static void show(INetProperty netProperty, JFrame owner, SelfSituation plan, Long userId) {
         QLog.l().logger().info("Диалог управления приоритетами.");
@@ -122,9 +125,9 @@ public class FServicePriority extends javax.swing.JDialog {
         tablePlan.setModel(new FlexPriorityMableModel(plan));
 
         JComboBox<String> cb = new JComboBox<>();
-        cb.addItem(Uses.COEFF_WORD.get(Uses.SERVICE_REMAINS));
-        cb.addItem(Uses.COEFF_WORD.get(Uses.SERVICE_NORMAL));
-        cb.addItem(Uses.COEFF_WORD.get(Uses.SERVICE_VIP));
+        cb.addItem(Uses.get_COEFF_WORD().get(Uses.SERVICE_REMAINS));
+        cb.addItem(Uses.get_COEFF_WORD().get(Uses.SERVICE_NORMAL));
+        cb.addItem(Uses.get_COEFF_WORD().get(Uses.SERVICE_VIP));
         TableCellEditor editor = new DefaultCellEditor(cb);
         TableColumnModel cm = tablePlan.getColumnModel();
         TableColumn tc = cm.getColumn(1);
@@ -136,6 +139,8 @@ public class FServicePriority extends javax.swing.JDialog {
     /**
      * команду на сервер для изменения текущих приоритетов.
      * Изменения только текущие, ничего не сохранияется в БД
+     * @param netProperty
+     * @param userId
      */
     public void savePlan(INetProperty netProperty, Long userId) {
         final StringBuilder sb = new StringBuilder();

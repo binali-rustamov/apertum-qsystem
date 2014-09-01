@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="statisticServicesPeriod" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="3187ac07-ccf4-42db-94b5-5078f03540f0">
-	<property name="ireport.zoom" value="1.0"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="statisticServicesPeriod" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="ru/apertum/qsystem/reports/templates/statisticServicesPeriod" uuid="3187ac07-ccf4-42db-94b5-5078f03540f0">
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="sd" class="java.util.Date"/>
@@ -51,24 +51,24 @@ GROUP BY
 	<title>
 		<band height="67">
 			<line>
-				<reportElement uuid="9bfd8455-56d0-4e00-96ce-77c03a69f7fe" x="0" y="8" width="555" height="1"/>
+				<reportElement uuid="9bfd8455-56d0-4e00-96ce-77c03a69f7fe" x="0" y="5" width="555" height="1"/>
 			</line>
 			<line>
 				<reportElement uuid="e900f0ac-b876-4ad0-b315-9e73f6740b2d" positionType="FixRelativeToBottom" x="0" y="61" width="555" height="1"/>
 			</line>
-			<staticText>
-				<reportElement uuid="2995e25c-cb2a-4a18-8c2c-d5fa63a2f1c4" x="1" y="9" width="551" height="26"/>
-				<textElement textAlignment="Center">
-					<font size="18" isBold="true" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
-				</textElement>
-				<text><![CDATA[Статистический отчет в разрезе услуг за период]]></text>
-			</staticText>
 			<textField pattern="">
 				<reportElement uuid="31d2afad-f67d-405c-81ac-928c2e1b24c8" x="1" y="35" width="551" height="24"/>
 				<textElement textAlignment="Center">
 					<font fontName="SansSerif" size="18" isBold="true" isUnderline="false" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["с даты " + (new java.text.SimpleDateFormat("dd.MM.yyyy")).format($P{sd}) + " по дату " + (new java.text.SimpleDateFormat("dd.MM.yyyy")).format($P{ed})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{from_date}+" " + (new java.text.SimpleDateFormat("dd.MM.yyyy")).format($P{sd}) + " "+$R{to_date}+" " + (new java.text.SimpleDateFormat("dd.MM.yyyy")).format($P{ed})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="94f6cf55-20d7-4a77-8fab-b468c5ead117" x="1" y="8" width="554" height="27"/>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{caption1}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -77,67 +77,63 @@ GROUP BY
 	</pageHeader>
 	<columnHeader>
 		<band height="101">
-			<staticText>
-				<reportElement uuid="130013d7-af81-4c34-b3b3-d2d09c921755" mode="Opaque" x="0" y="0" width="238" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+			<textField>
+				<reportElement uuid="e26fefbd-f8a6-4333-ab13-9e82d53b5c01" mode="Opaque" x="1" y="0" width="236" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Single" lineSpacingSize="5.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{service}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="0542fb83-b47b-4554-b837-8f3ff061f8b3" mode="Opaque" x="239" y="0" width="45" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
 					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Услуга
-                ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="d6c0845f-2b46-4076-93f5-e8f4a95e44e2" mode="Opaque" x="239" y="0" width="46" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
+				<textFieldExpression><![CDATA[$R{client_count}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="88dfdd27-58e7-4370-9af4-e42e3e347931" mode="Opaque" x="286" y="0" width="34" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
 					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Количество обслуженных]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="0b5190b8-dd55-4d8d-9caa-42dfdb76066d" mode="Opaque" x="286" y="0" width="35" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement verticalAlignment="Middle" rotation="Left">
-					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+				<textFieldExpression><![CDATA[$R{wait_avg}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="7ae3e658-0223-47f1-9596-0774f6035bd8" mode="Opaque" x="322" y="0" width="35" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8_R" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Среднее время ожидания мин.
-                ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="2346e44c-4ff8-4faf-989f-ab82febe8f5b" mode="Opaque" x="322" y="0" width="36" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement verticalAlignment="Middle" rotation="Left">
-					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+				<textFieldExpression><![CDATA[$R{work_avg}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="711d61ff-d551-43b9-9be3-fb2e9e08151a" mode="Opaque" x="359" y="0" width="48" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8_R" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Среднее время работы мин.
-                ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="505352d6-290a-43ae-a22c-d64a95d9c3b7" mode="Opaque" x="359" y="0" width="49" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement verticalAlignment="Middle" rotation="Left">
-					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+				<textFieldExpression><![CDATA[$R{wait_max}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="2923e554-a4c9-490e-9e7d-61a46370e5f7" mode="Opaque" x="409" y="0" width="48" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8_R" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Максимальное время ожидания мин.
-                ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="d70c7980-3393-40e5-8046-a1c25b547844" mode="Opaque" x="409" y="0" width="49" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement verticalAlignment="Middle" rotation="Left">
-					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+				<textFieldExpression><![CDATA[$R{wait_min}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="64001074-e823-4a0f-9756-2babb13d0506" mode="Opaque" x="459" y="0" width="46" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8_R" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Минимальное время ожидания мин.
-                ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="25e4e7f6-611b-40bf-964b-19c10e0c8141" mode="Opaque" x="459" y="0" width="47" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement verticalAlignment="Middle" rotation="Left">
-					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+				<textFieldExpression><![CDATA[$R{work_max}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="fd577a7b-c002-4289-804e-921343158924" mode="Opaque" x="507" y="0" width="48" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8_R" isPdfEmbedded="true"/>
 				</textElement>
-				<text><![CDATA[Максимальное время работы с клиентом мин.]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="3cab0f69-3cb3-4b1f-82d6-034279800b1a" mode="Opaque" x="507" y="0" width="48" height="101" forecolor="#FFFFFF" backcolor="#999999"/>
-				<textElement verticalAlignment="Middle" rotation="Left">
-					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
-				</textElement>
-				<text><![CDATA[Минимальное время работы с клиентом мин.]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$R{work_min}]]></textFieldExpression>
+			</textField>
 		</band>
 	</columnHeader>
 	<detail>
@@ -191,10 +187,11 @@ GROUP BY
 				</textElement>
 				<textFieldExpression><![CDATA[$F{client_count}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement uuid="0a75faf1-9183-4b58-a874-8469e5faaf54" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="239" height="20" backcolor="#CCCCFF"/>
+			<textField>
+				<reportElement uuid="0a75faf1-9183-4b58-a874-8469e5faaf54" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="239" height="20" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true" backcolor="#CCCCFF"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="12" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+					<paragraph tabStopWidth="4000"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{service_name}]]></textFieldExpression>
 			</textField>
@@ -229,7 +226,7 @@ GROUP BY
 				<textElement textAlignment="Right">
 					<font size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Страница " + $V{PAGE_NUMBER} + " из "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{page}+" " + $V{PAGE_NUMBER} + " "+$R{from}+" "]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement uuid="11f6f6ed-bc77-4fa6-a013-570335e76f90" key="textField" x="1" y="2" width="209" height="19" forecolor="#000000" backcolor="#FFFFFF"/>

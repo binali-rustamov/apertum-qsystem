@@ -6,7 +6,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html  xml:lang="ru" lang="ru">
     <head>
-        <title>Отчеты QSystem</title>
+        <title>$R{header} QSystem</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <script type="text/javascript" src="./js/datepicker.js"></script>
         <!-- <link href="./css/demo.css"       rel="stylesheet" type="text/css" /> -->
@@ -91,7 +91,7 @@
                     </tr>
                     <tr>
                         <td height="85" valign="top"><H2><font color="#555555">
-                                    Статистика и отчеты системы управления очередью #PROJECT_NAME_ANCHOR# #ERROR_INPUT_DATA#
+                                    $R{header} #PROJECT_NAME_ANCHOR# #ERROR_INPUT_DATA#
                                     <Hr>
                         </font></H2></td>
                     </tr>    
@@ -100,12 +100,12 @@
                                 <form action="#DATA_FOR_REPORT#" name="form1" method="POST" >   
                                     <h3>Статистический отчет по отзывам клиентов за период:</h3>
                                     <p><fieldset>
-                                            <label for="sd">Начальная дата : </label> <br>
+                                            <label for="sd">$R{start_date} : </label> <br>
                                             <input type="text" class="w8em divider-dot format-d-m-y highlight-days-67" name="sd" id="sd" value="" maxlength="10" /> <br>
-                                            <label for="ed">Конечная дата : </label>   <br>
+                                            <label for="ed">$R{finish_date} : </label>   <br>
                                             <input type="text" class="w8em divider-dot format-d-m-y highlight-days-67" name="ed" id="ed" value="" maxlength="10" />
                                     </fieldset></p>
-                                    <p><input type="submit" value="Отправить"><input type="reset" value="Очистить"></p>   
+                                    <p><input type="submit" value="$R{send}"><input type="reset" value="$R{clear}"></p>   
                                 </form>    
                     </center></td></tr>
                     
@@ -114,7 +114,7 @@
                                         <Hr> 
                                         © Apertum Projects<br />
                                         e-mail: <a href="mailto:info@apertum.ru">info@apertum.ru</a><br/>
-                                        Всегда передовые решения
+                                        $R{promo_bottom}
                         </font></H6></center></td>
                     </tr> 
                 </tbody>

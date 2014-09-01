@@ -237,7 +237,7 @@ public class FServiceLangList extends javax.swing.JDialog {
 
     private void edtLng(QServiceLang lng) {
         // Запросим название языка и если оно уникально, то примем
-        String lngName = lng == null ? "en_US" : lng.getLang();
+        String lngName = lng == null ? "eng" : lng.getLang();
         boolean flag = true;
         while (flag) {
             final String old = lngName;

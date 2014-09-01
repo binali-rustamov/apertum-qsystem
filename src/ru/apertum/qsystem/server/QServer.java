@@ -464,6 +464,9 @@ public class QServer extends Thread {
         @Expose
         @SerializedName("pauses")
         public LinkedList<Long> pauses = null;
+        @Expose
+        @SerializedName("date")
+        public Long date = new Date().getTime();
     }
 
     /**
@@ -507,47 +510,55 @@ public class QServer extends Thread {
                 GsonPool.getInstance().returnGson(gson);
             }
 
-            try {
-                QPostponedList.getInstance().loadPostponedList(recList.postponed);
-                for (QCustomer recCustomer : recList.backup) {
-                    // в эту очередь он был
-                    final QService service = QServiceTree.getInstance().getById(recCustomer.getService().getId());
-                    if (service == null) {
-                        QLog.l().logger().warn("Попытка добавить клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к услуге \"" + recCustomer.getService().getName() + "\" не успешна. Услуга не обнаружена!");
-                        continue;
-                    }
-                    service.setCountPerDay(recCustomer.getService().getCountPerDay());
-                    service.setDay(recCustomer.getService().getDay());
-                    // так зовут юзера его обрабатываюшего
-                    final QUser user = recCustomer.getUser();
-                    // кастомер ща стоит к этой услуге к какой стоит
-                    recCustomer.setService(service);
-                    // смотрим к чему привязан кастомер. либо в очереди стоит, либо у юзера обрабатыватся
-                    if (user == null) {
-                        // сохраненный кастомер стоял в очереди и ждал, но его еще никто не звал
-                        QServiceTree.getInstance().getById(recCustomer.getService().getId()).addCustomer(recCustomer);
-                        QLog.l().logger().debug("Добавили клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к услуге \"" + recCustomer.getService().getName() + "\"");
-                    } else {
-                        // сохраненный кастомер обрабатывался юзером с именем userId
-                        if (QUserList.getInstance().getById(user.getId()) == null) {
-                            QLog.l().logger().warn("Попытка добавить клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к юзеру \"" + user.getName() + "\" не успешна. Юзер не обнаружен!");
+            // Проверим не просрочился ли кеш. Время просточки 3 часа.
+            if (recList.date == null || new Date().getTime() - recList.date > 3 * 60 * 60 * 1000) {
+                // Просрочился кеш, не грузим
+                QLog.l().logger().warn("Срок давности хранения состояния истек. Если в системе ничего не происходит 3 часа, то считается что сохраненные данные устарели безвозвратно.");
+            } else {
+                // Свежий, загружаем в сервер данные кеша
+
+                try {
+                    QPostponedList.getInstance().loadPostponedList(recList.postponed);
+                    for (QCustomer recCustomer : recList.backup) {
+                        // в эту очередь он был
+                        final QService service = QServiceTree.getInstance().getById(recCustomer.getService().getId());
+                        if (service == null) {
+                            QLog.l().logger().warn("Попытка добавить клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к услуге \"" + recCustomer.getService().getName() + "\" не успешна. Услуга не обнаружена!");
                             continue;
                         }
-                        QUserList.getInstance().getById(user.getId()).setCustomer(recCustomer);
-                        recCustomer.setUser(QUserList.getInstance().getById(user.getId()));
-                        QLog.l().logger().debug("Добавили клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к юзеру \"" + user.getName() + "\"");
+                        service.setCountPerDay(recCustomer.getService().getCountPerDay());
+                        service.setDay(recCustomer.getService().getDay());
+                        // так зовут юзера его обрабатываюшего
+                        final QUser user = recCustomer.getUser();
+                        // кастомер ща стоит к этой услуге к какой стоит
+                        recCustomer.setService(service);
+                        // смотрим к чему привязан кастомер. либо в очереди стоит, либо у юзера обрабатыватся
+                        if (user == null) {
+                            // сохраненный кастомер стоял в очереди и ждал, но его еще никто не звал
+                            QServiceTree.getInstance().getById(recCustomer.getService().getId()).addCustomer(recCustomer);
+                            QLog.l().logger().debug("Добавили клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к услуге \"" + recCustomer.getService().getName() + "\"");
+                        } else {
+                            // сохраненный кастомер обрабатывался юзером с именем userId
+                            if (QUserList.getInstance().getById(user.getId()) == null) {
+                                QLog.l().logger().warn("Попытка добавить клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к юзеру \"" + user.getName() + "\" не успешна. Юзер не обнаружен!");
+                                continue;
+                            }
+                            QUserList.getInstance().getById(user.getId()).setCustomer(recCustomer);
+                            recCustomer.setUser(QUserList.getInstance().getById(user.getId()));
+                            QLog.l().logger().debug("Добавили клиента \"" + recCustomer.getPrefix() + recCustomer.getNumber() + "\" к юзеру \"" + user.getName() + "\"");
+                        }
                     }
-                }
-                for (long idUser : recList.pauses) {
-                    final QUser user = QUserList.getInstance().getById(idUser);
-                    if (user != null) {
-                        user.setPause(Boolean.TRUE);
+                    for (long idUser : recList.pauses) {
+                        final QUser user = QUserList.getInstance().getById(idUser);
+                        if (user != null) {
+                            user.setPause(Boolean.TRUE);
+                        }
                     }
+                } catch (ServerException ex) {
+                    System.err.println("Востановление состояния сервера после изменения конфигурации. " + ex);
+                    clearAllQueue();
+                    QLog.l().logger().error("Востановление состояния сервера после изменения конфигурации. Для выключения сервера используйте команду exit. ", ex);
                 }
-            } catch (ServerException ex) {
-                System.err.println("Востановление состояния сервера после изменения конфигурации. " + ex);
-                clearAllQueue();
-                QLog.l().logger().error("Востановление состояния сервера после изменения конфигурации. Для выключения сервера используйте команду exit. ", ex);
             }
         }
         QLog.l().logger().info("Восстановление состояния системы завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");

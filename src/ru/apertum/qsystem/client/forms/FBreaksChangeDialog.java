@@ -44,7 +44,9 @@ import ru.apertum.qsystem.server.model.schedule.QBreaksList;
  */
 public class FBreaksChangeDialog extends javax.swing.JDialog {
 
-    /** Creates new form FBreaksChangeDialog */
+    /** Creates new form FBreaksChangeDialog
+     * @param parent
+     * @param modal */
     public FBreaksChangeDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -60,9 +62,7 @@ public class FBreaksChangeDialog extends javax.swing.JDialog {
     }
 
     /**
-     * <Услуга Наименование="Удостоверение_доверенности" Описание="Удостоверение доверенности" Префикс="Й]" Статус="1" Лимит="3"><![CDATA[<html><b><p align=center><span style='font-size:20.0pt;color:blue'>Удостоверение доверенности</span>]]>
-     * </Услуга>
-     * Основной метод редактирования услуги.
+     * Основной метод редактирования перерыва.
      * @param parent
      * @param modal
      * @param breaks
@@ -91,7 +91,7 @@ public class FBreaksChangeDialog extends javax.swing.JDialog {
         breaksParent.getBreaks().clear();
         for (QBreak qBreak : breaks) {
             breaksParent.getBreaks().add(qBreak);
-        }
+        }    
     }
 
     @SuppressWarnings("unchecked")

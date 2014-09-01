@@ -16,21 +16,21 @@
  */
 package ru.apertum.qsystem.client.common;
 
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.Locale;
 import java.util.Properties;
+import javax.print.PrintService;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.MediaPrintableArea;
 import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
-import javax.print.attribute.standard.PrinterName;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 
@@ -96,6 +96,11 @@ public class WelcomeParams {
     private static final String TOP_SIZE = "top_size";// - это ширина верхней панели на п.р. с видом кнопок
     private static final String TOP_IMG = "top_img";// - это картинка на верхней панели на п.р. с видом кнопок
     private static final String TOP_IMG_SECONDARY = "top_img_secondary";// - это картинка на верхней панели на п.р. на вторичных диалогах
+    private static final String PATTERN_GET_TICKET = "pattern_get_ticket";// - это шаблон текста для диалога забрать талон
+    private static final String GET_TICKET_IMG = "get_ticket_img";// - это картинка для диалогаплучения талона. пустое значение - картинка по умолчанию
+    private static final String PATTERN_CONFIRMATION_START = "pattern_confirmation_start";// - это шаблон текста для диалога подтверждения стоять в очереди. Встроенный текст dialogue_text.take_ticket dialog.text_before_people [[endRus]]
+    private static final String CONFIRMATION_START_IMG = "confirmation_start_img";// - это картинка для диалога подтверждения стоять в очереди. пустое значение - картинка по умолчанию
+    private static final String PATTERN_INFO_DIALOG = "pattern_info_dialog";// - это шаблон текста для информационных диалогов Встроенный текст dialog.message
 
     private WelcomeParams() {
         loadSettings();
@@ -131,6 +136,12 @@ public class WelcomeParams {
     public int topSize = 0; // - это ширина верхней панели на п.р. с видом кнопок
     public String topImg = ""; // - это картинка на верхней панели на п.р. с видом кнопок
     public String topImgSecondary = ""; // - это картинка на верхней панели на п.р. на вторичных диалогах
+    public PrintService printService = null; // - это картинка на верхней панели на п.р. на вторичных диалогах
+    public String patternGetTicket = ""; // - это шаблон текста для диалога забрать талон
+    public String getTicketImg = ""; // - это картинка для диалогаплучения талона. пустое значение - картинка по умолчанию
+    public String patternConfirmationStart = ""; // - это это шаблон текста для диалога подтверждения стоять в очереди. Встроенный текст dialogue_text.take_ticket dialog.text_before_people [[endRus]]
+    public String confirmationStartImg = ""; // - это картинка для диалога подтверждения стоять в очереди. пустое значение - картинка по умолчанию
+    public String patternInfoDialog = ""; // шаблон текста для информационных диалогов Встроенный текст dialog.message
     /**
      * Задержка заставки при печати в мсек.
      */
@@ -359,12 +370,31 @@ public class WelcomeParams {
         buttonImg = "1".equals(settings.getProperty(BUTTON_IMG, "1")) || "true".equals(settings.getProperty(BUTTON_IMG, "true")); // кнопка информационной системы на пункте регистрации
         topImg = settings.getProperty(TOP_IMG, "");
         topImgSecondary = settings.getProperty(TOP_IMG_SECONDARY, "");
+        patternGetTicket = settings.getProperty(PATTERN_GET_TICKET, "<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>dialogue_text.take_ticket<br></span><span style='font-size:60.0pt;color:blue'>dialogue_text.your_nom<br></span><span style='font-size:130.0pt;color:blue'>dialogue_text.number</span></p>");
+        patternConfirmationStart = settings.getProperty(PATTERN_CONFIRMATION_START, "pattern_confirmation_start=<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>dialog.text_before</span><br><span style='font-size:100.0pt;color:red'>dialog.count</span><br><span style='font-size:60.0pt;color:red'>dialog.text_before_people[[endRus]]</span></p></b>");
+        getTicketImg = settings.getProperty(GET_TICKET_IMG, "/ru/apertum/qsystem/client/forms/resources/getTicket.png");
+        if ("".equals(getTicketImg) || !new File(getTicketImg).exists()) {
+            getTicketImg = "/ru/apertum/qsystem/client/forms/resources/getTicket.png";
+        }
+        confirmationStartImg = settings.getProperty(CONFIRMATION_START_IMG, "/ru/apertum/qsystem/client/forms/resources/vopros.png");
+        if ("".equals(confirmationStartImg) || !new File(confirmationStartImg).exists()) {
+            confirmationStartImg = "/ru/apertum/qsystem/client/forms/resources/vopros.png";
+        }
+        patternInfoDialog = settings.getProperty(PATTERN_INFO_DIALOG, "<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>dialog.message</span></b></p>");
+        
         topSize = Integer.parseInt(settings.getProperty(TOP_SIZE, "0"));
         if ("1".equals(settings.getProperty(EXECUTIVE, "0"))) {
             printAttributeSet.add(MediaSizeName.EXECUTIVE);
         }
         if (!"".equals(settings.getProperty(PRNAME, ""))) {
-            printAttributeSet.add(new PrinterName(settings.getProperty(PRNAME, ""), Locale.getDefault()));
+            // Get array of all print services
+            final PrintService[] services = PrinterJob.lookupPrintServices();
+            // Retrieve specified print service from the array
+            for (int index = 0; printService == null && index < services.length; index++) {
+                if (services[index].getName().equalsIgnoreCase(settings.getProperty(PRNAME, ""))) {
+                    printService = services[index];
+                }
+            }
         }
         if (!"".equals(settings.getProperty(PRINTABLE_AREA, "")) && settings.getProperty(PRINTABLE_AREA, "").split(",").length == 4) {
             final String[] ss = settings.getProperty(PRINTABLE_AREA, "").split(",");

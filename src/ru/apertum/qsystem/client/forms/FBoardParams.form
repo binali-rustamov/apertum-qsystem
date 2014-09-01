@@ -293,6 +293,7 @@
         <Component class="javax.swing.JTextArea" name="textAreaHtml">
           <Properties>
             <Property name="columns" type="int" value="20"/>
+            <Property name="font" type="java.awt.Font" resourceKey="textAreaHtml.font"/>
             <Property name="lineWrap" type="boolean" value="true"/>
             <Property name="rows" type="int" value="5"/>
             <Property name="wrapStyleWord" type="boolean" value="true"/>

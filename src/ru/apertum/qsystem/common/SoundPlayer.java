@@ -290,12 +290,12 @@ public class SoundPlayer implements Runnable {
             }
             if (!isZero(elem)) {
                 String fileName = elem;
-                //if (isRus(elem)) {
                 fileName = reRus(elem.toLowerCase());
-                //}
-                final String file = path + fileName.toLowerCase() + ".wav";
-                //System.out.println(elem + " - " + file);
-                res.add(file);
+                if (fileName != null) {
+                    final String file = path + fileName.toLowerCase() + ".wav";
+                    //System.out.println(elem + " - " + file);
+                    res.add(file);
+                }
             }
 
         }
@@ -312,6 +312,9 @@ public class SoundPlayer implements Runnable {
             latters = new HashMap<>();
             try {
                 final InputStream ris = elem.getClass().getResourceAsStream("/ru/apertum/qsystem/server/sound/latters.properties");
+                if (ris == null) {
+                    return null;
+                }
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(ris, Charset.forName("utf8")))) {
                     String line;
                     boolean f = true;
@@ -329,6 +332,8 @@ public class SoundPlayer implements Runnable {
                     }
                 }
             } catch (IOException ex) {
+                QLog.l().logger().error("Не найден зкуковой ресурс или что-то в этом роде. " + ex);
+                return null;
             }
         }
 
@@ -357,6 +362,7 @@ public class SoundPlayer implements Runnable {
      *
      * @param clientNumber номер вызываемого клиента
      * @param pointNumber номер кабинета, куда вызвали
+     * @param isFirst
      */
     public static void inviteClient(String clientNumber, String pointNumber, boolean isFirst) {
         inviteClient(clientNumber, pointNumber, isFirst, null, null, null);
@@ -367,6 +373,7 @@ public class SoundPlayer implements Runnable {
      *
      * @param clientNumber номер вызываемого клиента
      * @param pointNumber номер кабинета, куда вызвали
+     * @param isFirst
      * @param inviteType Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать
      * @param voiceType Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать
      * @param pointType Для сервера всегда null. Для всего остального смотреть в настройках сервера и передавать 0 - кабинет, 1 - окно, 2 - стойка
