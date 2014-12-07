@@ -23,20 +23,16 @@
 package ru.apertum.qsystem.client.forms;
 
 import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridLayout;
 
-import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.util.Date;
 import java.util.Set;
 import javafx.animation.AnimationTimer;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
+import javafx.animation.PathTransition;
+import javafx.animation.PathTransition.OrientationType;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 //import javafx.animation.TranslateTransitionBuilder;
@@ -46,15 +42,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.concurrent.Worker.State;
 import javafx.embed.swing.JFXPanel;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.effect.Lighting;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
-import javafx.util.Duration;
-import javax.swing.border.BevelBorder;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -62,10 +49,14 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.effect.Glow;
+import javafx.scene.effect.Lighting;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -73,13 +64,25 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.CubicCurveTo;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.scene.web.PopupFeatures;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import javax.swing.Timer;
+import javax.swing.border.BevelBorder;
 import netscape.javascript.JSObject;
 import ru.apertum.qsystem.common.BrowserFX;
 
@@ -91,22 +94,37 @@ public class FTestFX extends javax.swing.JFrame {
 
     final static String tt = "This is a text sample В 1962 году американцы запустили первый космический аппарат для изучения Венеры Маринер-1, потерпевший аварию через несколько минут после старта. Сначала на аппарате отказала антенна, которая получала сигнал от наводящей системы с Земли, после чего управление взял на себя бортовой компьютер. Он тоже не смог исправить отклонение от курса, так как загруженная в него программа содержала единственную ошибку — при переносе инструкций в код для перфокарт в одном из уравнений была пропущена чёрточка над буквой, отсутствие которой коренным образом поменяло математический смысл уравнения. Журналисты вскоре окрестили эту чёрточку «самым дорогим дефисом в истории» (в пересчёте на сегодняшний день стоимость утерянного аппарата составляет 135 000 000 $).";
 
-    /** Creates new form FTestFX */
+    /**
+     * Creates new form FTestFX
+     */
     public FTestFX() {
         initComponents();
         setLocation(500, 300);
-       // setFX();
-        
-        GridLayout gl = new GridLayout(1, 1);
-        qPanel1.setLayout(gl);
-        BrowserFX bfx = new BrowserFX();
-        qPanel1.add(bfx, BorderLayout.CENTER);
-        bfx.load("http://yandex.ru");
+        setFX();
 
+        /*
+         GridLayout gl = new GridLayout(1, 1);
+         qPanel1.setLayout(gl);
+         BrowserFX bfx = new BrowserFX();
+         qPanel1.add(bfx, BorderLayout.CENTER);
+         bfx.load("http://yandex.ru");
+         */
     }
     private static JFXPanel javafxPanel;
+    private static JFXPanel javafxPanelR;
 
     private void setFX() {
+
+        javafxPanelR = new JFXPanel();
+        javafxPanelR.setOpaque(true);
+        //javafxPanel.setBackground(java.awt.Color.red);
+        javafxPanelR.setBorder(new BevelBorder(1));
+        javafxPanelR.setLayout(new GridLayout(1, 1));
+        GridLayout glR = new GridLayout(1, 1);
+        panel.setLayout(glR);
+        javafxPanelR.setBackground(java.awt.Color.red);
+        panel.add(javafxPanelR, BorderLayout.CENTER);
+
         javafxPanel = new JFXPanel();
         javafxPanel.setOpaque(false);
         //javafxPanel.setBackground(java.awt.Color.red);
@@ -117,9 +135,33 @@ public class FTestFX extends javax.swing.JFrame {
         qPanel1.add(javafxPanel, BorderLayout.CENTER);
         javafxPanel.setBackground(java.awt.Color.red);
 
-
         Platform.runLater(new Runnable() {
+            private Path generateCurvyPath() {
+                final Path path = new Path();
+                path.getElements().add(new MoveTo(970, 70));
+                //path.getElements().add(new CubicCurveTo(430, 0, 430, 120, 250, 120));
+               // path.getElements().add(new CubicCurveTo(50, 120, 50, 240, 430, 240));
+                path.getElements().add(new LineTo(0, 70));
+             //   path.setOpacity(0.0);
+                return path;
+            }
 
+            private PathTransition generatePathTransition(
+                    final Shape shape, final Path path,
+                    final Duration duration, final Duration delay,
+                    final OrientationType orientation) {
+                final PathTransition pathTransition = new PathTransition();
+                pathTransition.setDuration(duration);
+                pathTransition.setDelay(delay);
+                pathTransition.setPath(path);
+                pathTransition.setNode(shape);
+                pathTransition.setOrientation(orientation);
+                pathTransition.setCycleCount(Timeline.INDEFINITE);
+                //pathTransition.setAutoReverse(true);
+                return pathTransition;
+            }
+
+            @Override
             public void run() {
                 Group root = new Group();
                 //Scene scene = new Scene(root);
@@ -129,6 +171,30 @@ public class FTestFX extends javax.swing.JFrame {
                 javafxPanel.setScene(scene);
                 scene.setFill(new Color(1, 1, 1, 0.8));
                 //createJavaFXContent(root);
+
+                Group root2 = new Group();
+                //Scene scene = new Scene(root);
+                //final Text txt = new Text("asgr g sdfgh dsgh dfgh dfgh dfhg");
+                final Text txt = null;
+                        //TextBuilder.create().text("RMOUG").x(20).y(120).fill(Color.DARKGRAY)
+                       // .font(Font.font(java.awt.Font.SERIF, 155))
+                       // .effect(new Glow(0.25)).build();
+                
+                root2.getChildren().add(txt);
+                Scene scene2 = new Scene(root2, 750, 500, Color.web("#666970"));
+
+                javafxPanelR.setScene(scene2);
+                scene2.setFill(Color.BLUEVIOLET);
+
+                final Path path = generateCurvyPath();
+                root2.getChildren().add(path);
+
+                final PathTransition rmougTransition
+                        = generatePathTransition(
+                                txt, path, Duration.seconds(8.0), Duration.seconds(0.5),
+                                OrientationType.NONE);
+                
+                rmougTransition.play();
             }
 
             private void createJavaFXContent(Group root) {
@@ -136,13 +202,9 @@ public class FTestFX extends javax.swing.JFrame {
                 //Rectangle background = new Rectangle(0, 0, 100, 200);
                 //background.setFill(Color.BLACK);
                 //root.getChildren().add(background);
-
-
                 final Browser bro = new Browser();
                 root.getChildren().add(bro);
                 bro.load("http://google.com");
-
-
 
                 final WebView wv = new WebView();
                 // hide webview scrollbars whenever they appear.
@@ -159,12 +221,6 @@ public class FTestFX extends javax.swing.JFrame {
                 wv.getEngine().load("http://google.com");
                 //root.getChildren().add(wv);
 
-
-
-
-
-
-
                 // Start the text animation
                 //   TranslateTransition transTransition = TranslateTransitionBuilder.create().
                 //                   duration(new Duration(7500)).node(t).fromX(0).fromY(0).toX(-1820).onFinished(onFinished).
@@ -175,10 +231,9 @@ public class FTestFX extends javax.swing.JFrame {
 
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

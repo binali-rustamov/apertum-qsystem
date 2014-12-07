@@ -19,6 +19,7 @@ package ru.apertum.qsystem.client.forms;
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -71,6 +72,7 @@ import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfService;
 import ru.apertum.qsystem.common.cmd.RpcGetSelfSituation.SelfSituation;
 import ru.apertum.qsystem.common.exceptions.ClientException;
+import ru.apertum.qsystem.common.exceptions.QException;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.IClientNetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
@@ -78,7 +80,6 @@ import ru.apertum.qsystem.extra.IStartClient;
 import ru.apertum.qsystem.fx.OrangeClientboard;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.postponed.QPostponedList;
-import ru.apertum.qsystem.server.model.results.QResult;
 
 /**
  * Created on 11 Сентябрь 2008 г., 16:57
@@ -197,7 +198,7 @@ public final class FClient extends javax.swing.JFrame {
      * Обозначим результат работы с клиентом если требуется
      */
     private Long setResult() {
-        Long rs = new Long(-1);
+        Long rs = (long) -1;
         if (customer.getService().getResult_required()) {
             getResults();
             Object res = JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
@@ -209,9 +210,9 @@ public final class FClient extends javax.swing.JFrame {
 
     private Object[] getResults() {
         if (results.isEmpty()) {
-            for (QResult result : NetCommander.getResultsList(netProperty)) {
+            NetCommander.getResultsList(netProperty).stream().forEach((result) -> {
                 results.put(result.getName(), result.getId());
-            }
+            });
         }
         return results.keySet().toArray();
     }
@@ -229,12 +230,8 @@ public final class FClient extends javax.swing.JFrame {
         String pref = "";
 
         public void start2() {
-            new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    start();
-                }
+            new Thread(() -> {
+                start();
             }).start();
             try {
                 Thread.sleep(500);
@@ -264,29 +261,25 @@ public final class FClient extends javax.swing.JFrame {
                     QLog.l().logger().error("Не открылся pipe. ", ex);
                 }
                 final RandomAccessFile raf2 = raf;
-                t = new Timer(1000, new ActionListener() {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        i++;
-                        if (raf2 != null) {
-                            try {
-                                raf2.seek(0);
-                                final String s = raf2.readLine();
-                                final String[] ss = s.split("\\^");
-                                if (ss.length == 2 && !pref.equals(ss[0])) {
-                                    System.out.println(ss[1]);
-                                    pref = ss[0];
-                                    getData2(ss[1], null, 0);
-                                }
-                            } catch (IOException ex) {
-                                QLog.l().logger().error("Не прочитался pipe. ", ex);
+                t = new Timer(1000, (ActionEvent e) -> {
+                    i++;
+                    if (raf2 != null) {
+                        try {
+                            raf2.seek(0);
+                            final String s = raf2.readLine();
+                            final String[] ss = s.split("\\^");
+                            if (ss.length == 2 && !pref.equals(ss[0])) {
+                                System.out.println(ss[1]);
+                                pref = ss[0];
+                                getData2(ss[1], null, 0);
                             }
+                        } catch (IOException ex) {
+                            QLog.l().logger().error("Не прочитался pipe. ", ex);
                         }
-                        if (i > 180) {
-                            i = 0;
-                            checkPort();
-                        }
+                    }
+                    if (i > 180) {
+                        i = 0;
+                        checkPort();
                     }
                 });
                 t.start();
@@ -329,7 +322,7 @@ public final class FClient extends javax.swing.JFrame {
             //Если кастомер встал в очередь, обрабатываемую этим юзером, то апдейтим состояние очередей.
             if (my || user.getId().toString().equals(data)) {
                 //Получаем состояние очередей для юзера
-                setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
+                refreshClient();
                 return;
             }
             if (Uses.TASK_REFRESH_POSTPONED_POOL.equals(data)) {
@@ -354,15 +347,10 @@ public final class FClient extends javax.swing.JFrame {
 
         private boolean isMyMessage(String txt) {
             final String adr = txt.substring(0, txt.indexOf("##"));
-            if (adr.indexOf("@" + user.getId() + "@") != -1) {
+            if (adr.contains("@" + user.getId() + "@")) {
                 return true;
             }
-            for (SelfService srv : plan.getSelfservices()) {
-                if (adr.indexOf("@" + srv.getId() + "@") != -1) {
-                    return true;
-                }
-            }
-            return false;
+            return plan.getSelfservices().stream().anyMatch((srv) -> (adr.contains("@" + srv.getId() + "@")));
         }
     };
     private final UDPServer udpServer;
@@ -377,7 +365,7 @@ public final class FClient extends javax.swing.JFrame {
     /**
      * Описание того, сколько народу стоит в очередях к этому юзеру, ну и прочее(потом)mess Не использовать на прямую.
      *
-     * @see setSituation(Element plan)
+     * see setSituation(Element plan)
      */
     private SelfSituation userPlan;
     private static ResourceMap localeMap = null;
@@ -448,48 +436,33 @@ public final class FClient extends javax.swing.JFrame {
         printCustomerNumber("", -1);
         // Фича. По нажатию Escape закрываем форму
         // свернем по esc
-        getRootPane().registerKeyboardAction(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
+        getRootPane().registerKeyboardAction((ActionEvent e) -> {
+            setVisible(false);
         },
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
         // инициализим trayIcon, т.к. setSituation() требует работу с tray
-        tray = QTray.getInstance(this, "/ru/apertum/qsystem/client/forms/resources/client.png", getLocaleMessage("messages.tray.hint"));
-        tray.addItem(getLocaleMessage("messages.tray.showClient"), new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(true);
-                setState(JFrame.NORMAL);
-            }
+        final JFrame fr = this;
+        tray = QTray.getInstance(fr, "/ru/apertum/qsystem/client/forms/resources/client.png", getLocaleMessage("messages.tray.hint"));
+        tray.addItem(getLocaleMessage("messages.tray.showClient"), (ActionEvent e) -> {
+            setVisible(true);
+            setState(JFrame.NORMAL);
         });
-        tray.addItem("-", new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
+        tray.addItem("-", (ActionEvent e) -> {
         });
-        tray.addItem(getLocaleMessage("messages.tray.close"), new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                System.exit(0);
-            }
+        tray.addItem(getLocaleMessage("messages.tray.close"), (ActionEvent e) -> {
+            dispose();
+            System.exit(0);
         });
         labelUser.setText(user.getName() + " - " + (NetCommander.pointId != null && !NetCommander.pointId.equals("") ? NetCommander.pointId : user.getPoint()));
         ch.setSelected(user.isPause());
-        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
+        refreshClient();
 
         int ii = 1;
         final ButtonGroup bg = new ButtonGroup();
         final String currLng = Locales.getInstance().getLangCurrName();
         for (String lng : Locales.getInstance().getAvailableLocales()) {
-            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FClient.class, this).get("setCurrentLang"));
+            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FClient.class, fr).get("setCurrentLang"));
             bg.add(item);
             item.setSelected(lng.equals(currLng));
             item.setText(lng); // NOI18N
@@ -507,19 +480,15 @@ public final class FClient extends javax.swing.JFrame {
         helper.enableHelpKey(panelDown, "client");
 
         ch.setOpaque(false);
-        ch.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final boolean state = NetCommander.setBussy(netProperty, getUser().getId(), ch.isSelected());
-                ch.setSelected(state);
-                if (state) {
-                    ch.setForeground(new Color(250, 0, 0));
-                    ch.setText(getLocaleMessage("client.pause").toUpperCase());
-                } else {
-                    ch.setForeground(new Color(0, 150, 0));
-                    ch.setText(getLocaleMessage("client.pause"));
-                }
+        ch.addActionListener((ActionEvent e) -> {
+            final boolean state1 = NetCommander.setBussy(netProperty, getUser().getId(), ch.isSelected());
+            ch.setSelected(state1);
+            if (state1) {
+                ch.setForeground(new Color(250, 0, 0));
+                ch.setText(getLocaleMessage("client.pause").toUpperCase());
+            } else {
+                ch.setForeground(new Color(0, 150, 0));
+                ch.setText(getLocaleMessage("client.pause"));
             }
         });
         menuBar.add(ch);
@@ -586,6 +555,7 @@ public final class FClient extends javax.swing.JFrame {
             labelMotiv.setText(tts.substring(tts.length() - 26));
             // тут типа костылик для автообновления. удп у них видите ли не доходят! Лохи криворукие! Раз в три минуты если давно не обновлялось...
             if (new Date().getTime() - refreshTime > 3 * 60 * 1000) {
+                refreshTime = new Date().getTime();
                 refreshClient();
             }
         }
@@ -601,26 +571,22 @@ public final class FClient extends javax.swing.JFrame {
         if (indicatorBoard == null && f.exists()) {
 
             // todo indicatorBoard = FIndicatorBoard.getIndicatorBoard(new SAXReader(false).read(cfgFile).getRootElement(), false);
-            java.awt.EventQueue.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    Element root = null;
+            java.awt.EventQueue.invokeLater(() -> {
+                Element root = null;
+                try {
+                    root = new SAXReader(false).read(cfgFile).getRootElement();
+                } catch (DocumentException ex) {
+                    throw new ServerException("Не создали клиентское табло.", ex);
+                }
+                indicatorBoard = FIndicatorBoard.getIndicatorBoard(root, false);
+                if (indicatorBoard != null) {
                     try {
-                        root = new SAXReader(false).read(cfgFile).getRootElement();
-                    } catch (DocumentException ex) {
-                        QLog.l().logger().error("Не создали клиентское табло.", ex);
+                        indicatorBoard.setIconImage(ImageIO.read(FIndicatorBoard.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
+                    } catch (IOException ex) {
+                        throw new ServerException(ex);
                     }
-                    indicatorBoard = FIndicatorBoard.getIndicatorBoard(root, false);
-                    if (indicatorBoard != null) {
-                        try {
-                            indicatorBoard.setIconImage(ImageIO.read(FIndicatorBoard.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
-                        } catch (IOException ex) {
-                            throw new ServerException(ex);
-                        }
-                        indicatorBoard.toPosition(QLog.l().isDebug(), Integer.parseInt(root.attributeValue("x")), Integer.parseInt(root.attributeValue("y")));
-                        indicatorBoard.setVisible(true);
-                    }
+                    indicatorBoard.toPosition(QLog.l().isDebug(), Integer.parseInt(root.attributeValue("x", "0")), Integer.parseInt(root.attributeValue("y", "0")));
+                    indicatorBoard.setVisible(true);
                 }
             });
         }
@@ -745,7 +711,7 @@ public final class FClient extends javax.swing.JFrame {
     /**
      * Механизм включения/отключения кнопок
      *
-     * @param regim
+     * @param regim Конфигурация кнопок
      */
     public void setKeyRegim(String regim) {
         keys_current = regim;
@@ -777,16 +743,17 @@ public final class FClient extends javax.swing.JFrame {
     }
 
     private void end(long start) {
-        QLog.l().logger().trace("Действие завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.\n");
+        QLog.l().logger().trace("Действие завершено. Затрачено времени: " + ((double) (System.currentTimeMillis() - start)) / 1000 + " сек.\n");
     }
 
     /**
      * Действие по нажатию кнопки "Вызов"
      *
      * @param evt
+     * @throws ru.apertum.qsystem.common.exceptions.QException
      */
     @Action
-    public void inviteNextCustomer(ActionEvent evt) {
+    public void inviteNextCustomer(ActionEvent evt) throws QException {
         final long start = go();
         // Вызываем кастомера
         final QCustomer cust = NetCommander.inviteNextCustomer(netProperty, user.getId());
@@ -806,9 +773,10 @@ public final class FClient extends javax.swing.JFrame {
      * Действие по нажатию кнопки "Отклонить"
      *
      * @param evt
+     * @throws ru.apertum.qsystem.common.exceptions.QException
      */
     @Action
-    public void killCustomer(ActionEvent evt) {
+    public void killCustomer(ActionEvent evt) throws QException {
         if (customer.getService().getExpectation() != 0 && (new Date().getTime() - customer.getStandTime().getTime()) / 1000 / 60 < customer.getService().getExpectation()) {
             if (fkill) {
                 if (JOptionPane.showConfirmDialog(this,
@@ -850,9 +818,10 @@ public final class FClient extends javax.swing.JFrame {
      * Действие по нажатию кнопки "Начать прием"
      *
      * @param evt
+     * @throws ru.apertum.qsystem.common.exceptions.QException
      */
     @Action
-    public void getStartCustomer(ActionEvent evt) {
+    public void getStartCustomer(ActionEvent evt) throws QException {
         final long start = go();
         // Переводим кастомера в разряд обрабатываемых
         NetCommander.getStartCustomer(netProperty, user.getId());
@@ -866,9 +835,10 @@ public final class FClient extends javax.swing.JFrame {
      * Действие по нажатию кнопки "Завершить прием"
      *
      * @param evt
+     * @throws ru.apertum.qsystem.common.exceptions.QException
      */
     @Action
-    public void getStopCustomer(ActionEvent evt) {
+    public void getStopCustomer(ActionEvent evt) throws QException {
         //Обозначим результат если требуется
         final long start = go();
         // Переводим кастомера в разряд обрабатанных
@@ -903,9 +873,10 @@ public final class FClient extends javax.swing.JFrame {
      * Действие по нажатию кнопки "Перенаправить"
      *
      * @param evt
+     * @throws ru.apertum.qsystem.common.exceptions.QException
      */
     @Action
-    public void redirectCustomer(ActionEvent evt) {
+    public void redirectCustomer(ActionEvent evt) throws QException {
         final long start = go();
         // Обозначим результат если надо
         final Long res = setResult();
@@ -1066,7 +1037,7 @@ public final class FClient extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(194, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1146,8 +1117,8 @@ public final class FClient extends javax.swing.JFrame {
         labelNextCustomerInfo.setText(resourceMap.getString("labelNextCustomerInfo.text")); // NOI18N
         labelNextCustomerInfo.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         labelNextCustomerInfo.setName("labelNextCustomerInfo"); // NOI18N
+        jLayeredPane1.add(labelNextCustomerInfo);
         labelNextCustomerInfo.setBounds(0, 0, 200, 320);
-        jLayeredPane1.add(labelNextCustomerInfo, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         buttonMoveToPostponed.setAction(actionMap.get("moveToPOstponed")); // NOI18N
         buttonMoveToPostponed.setText(resourceMap.getString("buttonMoveToPostponed.text")); // NOI18N
@@ -1191,7 +1162,7 @@ public final class FClient extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(labelNextNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLayeredPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
+                .addComponent(jLayeredPane1))
         );
 
         jPanel2.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1317,8 +1288,8 @@ public final class FClient extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jTabbedPane1)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1326,11 +1297,11 @@ public final class FClient extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(labelUser, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE))
+                        .addComponent(labelUser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(labelResume, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)))
+                        .addComponent(labelResume, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -1345,7 +1316,7 @@ public final class FClient extends javax.swing.JFrame {
                     .addComponent(jLabel4)
                     .addComponent(labelResume))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
@@ -1377,14 +1348,14 @@ public final class FClient extends javax.swing.JFrame {
         panelDownLayout.setHorizontalGroup(
             panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         panelDownLayout.setVerticalGroup(
             panelDownLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelDownLayout.createSequentialGroup()
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
+                .addComponent(jSplitPane1))
         );
 
         menuBar.setName("menuBar"); // NOI18N
@@ -1480,8 +1451,8 @@ public final class FClient extends javax.swing.JFrame {
             .addComponent(panelDown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds((screenSize.width-579)/2, (screenSize.height-610)/2, 579, 610);
+        setSize(new java.awt.Dimension(579, 610));
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -1532,25 +1503,25 @@ public final class FClient extends javax.swing.JFrame {
         // без предконнекта из main в дальнейшем сокет не хочет работать,
         // долго висит и вываливает минут через 15-20 эксепшн java.net.SocketException: Malformed reply from SOCKS server  
         /*
-        Socket skt = null;
-        try {
-        skt = new Socket(netProperty.getAddress(), 61111);
-        skt.close();
-        } catch (IOException ex) {
-        }
+         Socket skt = null;
+         try {
+         skt = new Socket(netProperty.getAddress(), 61111);
+         skt.close();
+         } catch (IOException ex) {
+         }
          */
 
         if (!QLog.l().isTerminal()) {// в терминальном режиме запускаем много копий
             // Отсечем вторую копию.
-            DatagramSocket socket = null;
             try {
-                socket = new DatagramSocket(netProperty.getClientPort());
+                final DatagramSocket socket = new DatagramSocket(netProperty.getClientPort());
+                socket.close();
             } catch (SocketException ex) {
                 QLog.l().logger().error("Сервер UDP не запустился, вторая копия не позволяется.");
                 JOptionPane.showMessageDialog(null, getLocaleMessage("messages.restart.mess"), getLocaleMessage("messages.restart.caption"), JOptionPane.INFORMATION_MESSAGE);
                 System.exit(0);
             }
-            socket.close();
+
         }
         // Определим кто работает на данном месте.
         final QUser user = FLogin.logining(netProperty, null, true, 3, FLogin.LEVEL_USER);
@@ -1586,12 +1557,8 @@ public final class FClient extends javax.swing.JFrame {
             for (final IStartClient event : ServiceLoader.load(IStartClient.class)) {
                 QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
                 try {
-                    new Thread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            event.start(fClient);
-                        }
+                    new Thread(() -> {
+                        event.start(fClient);
                     }).start();
                 } catch (Throwable tr) {
                     QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
@@ -1601,7 +1568,7 @@ public final class FClient extends javax.swing.JFrame {
         } catch (AWTException ex) {
             QLog.l().logger().error("Ошибка работы с tray: ", ex);
             System.exit(0);
-        } catch (Exception ex) {
+        } catch (DocumentException | HeadlessException ex) {
             QLog.l().logger().error("Ошибка при старте: ", ex);
             System.exit(0);
         } finally {
@@ -1616,7 +1583,12 @@ public final class FClient extends javax.swing.JFrame {
     @Action
     public void refreshClient() {
         //Получаем состояние очередей для юзера
-        setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
+        try {
+            setSituation(NetCommander.getSelfServices(netProperty, user.getId()));
+        } catch (Throwable th) {
+            QLog.l().logger().error("Ошибка при обновлении состояния: ", th);
+            tray.showMessageTray("QSystem server warning.", "Server QMS QSystem probably is down.", MessageType.WARNING);
+        }
     }
 
     @Action
@@ -1633,14 +1605,14 @@ public final class FClient extends javax.swing.JFrame {
     }
 
     @Action
-    public void moveToPOstponed() {
+    public void moveToPOstponed() throws QException {
         final long start = go();
 
         /*
-        String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
-        if (status == null) {
-        return;
-        }
+         String status = (String) JOptionPane.showInputDialog(this, getLocaleMessage("resultwork.dialog.caption"), getLocaleMessage("resultwork.dialog.title"), JOptionPane.QUESTION_MESSAGE, null, getResults(), null);
+         if (status == null) {
+         return;
+         }
          * 
          */
         if (moveToPostponed == null) {
@@ -1659,7 +1631,7 @@ public final class FClient extends javax.swing.JFrame {
     private FMoveToPostponed moveToPostponed;
 
     @Action
-    public void invitePostponed() {
+    public void invitePostponed() throws QException {
         if (listPostponed.getSelectedIndex() != -1) {
             if (keys_current.equals(KEYS_MAY_INVITE) || keys_current.equals(KEYS_OFF)) {
                 final long start = go();
@@ -1705,7 +1677,7 @@ public final class FClient extends javax.swing.JFrame {
     private javax.swing.JButton buttonStart;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
-    private javax.swing.JMenu fileMenu;
+    public javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -1735,8 +1707,8 @@ public final class FClient extends javax.swing.JFrame {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel labelMessage;
-    private javax.swing.JLabel labelNextCustomerInfo;
-    private javax.swing.JLabel labelNextNumber;
+    public javax.swing.JLabel labelNextCustomerInfo;
+    public javax.swing.JLabel labelNextNumber;
     private javax.swing.JLabel labelPost;
     private javax.swing.JLabel labelResume;
     private javax.swing.JLabel labelSituation;

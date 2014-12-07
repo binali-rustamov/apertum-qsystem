@@ -45,6 +45,7 @@ import ru.apertum.qsystem.server.ChangeContext;
  */
 public class AnnotationSessionFactoryBean implements Action {
 
+    private String driver = "com.mysql.jdbc.Driver";
     private String url = "jdbc:mysql://127.0.0.1/qsystem?autoReconnect=true&amp;characterEncoding=UTF-8";
     private String user = "root";
     private String password = "root";
@@ -61,9 +62,9 @@ public class AnnotationSessionFactoryBean implements Action {
     }
 
     public void makeCurrent(SqlServers.SqlServer server) {
-        for (SqlServers.SqlServer ser : servers) {
+        servers.stream().forEach((ser) -> {
             ser.setCurrent(false);
-        }
+        });
         server.setCurrent(true);
     }
 
@@ -172,13 +173,14 @@ public class AnnotationSessionFactoryBean implements Action {
                         break;
                     }
                 }
+                driver = cur.getDriver();
                 url = cur.getUrl();
                 user = cur.getUser();
                 password = cur.getPassword();
                 name = cur.getName();
             }
             flag = false;
-            QLog.l().logger().info("DB server '" + name + "' url=" + url);
+            QLog.l().logger().info("DB server '" + name + " driver=" + driver + "' url=" + url);
         }
     }
 
@@ -201,6 +203,18 @@ public class AnnotationSessionFactoryBean implements Action {
         load(ChangeContext.filePath);
         this.current = current;
     }
+
+    public String getDriver() {
+        load(ChangeContext.filePath);
+        return driver;
+    }
+
+    public void setDriver(String driver) {
+        load(ChangeContext.filePath);
+        this.driver = driver;
+    }
+    
+    
 
     public String getUrl() {
         load(ChangeContext.filePath);

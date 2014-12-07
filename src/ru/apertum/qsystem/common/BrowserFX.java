@@ -20,7 +20,8 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.util.Set;
 import javafx.application.Platform;
-import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -29,6 +30,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 import javax.swing.JPanel;
 import ru.apertum.qsystem.common.exceptions.ClientException;
@@ -48,14 +50,10 @@ public class BrowserFX extends JPanel {
         setLayout(gl);
         add(javafxPanel, BorderLayout.CENTER);
 
-        Platform.runLater(new Runnable() {
-
-            @Override
-            public void run() {
-                bro = new Browser();
-                Scene scene = new Scene(bro, 750, 500, Color.web("#666970"));
-                javafxPanel.setScene(scene);
-            }
+        Platform.runLater(() -> {
+            bro = new Browser();
+            Scene scene = new Scene(bro, 750, 500, Color.web("#666970"));
+            javafxPanel.setScene(scene);
         });
     }
 
@@ -75,34 +73,31 @@ public class BrowserFX extends JPanel {
 
     public void load(final String url) {
         waitBrowser();
-        Platform.runLater(new Runnable() {
-
-            @Override
-            public void run() {
-                bro.load(url);
-            }
+        Platform.runLater(() -> {
+            bro.load(url);
         });
     }
+
     public void loadContent(final String cnt) {
         waitBrowser();
-        Platform.runLater(new Runnable() {
+        Platform.runLater(() -> {
+            bro.loadContent(cnt);
+        });
+    }
 
-            @Override
-            public void run() {
-                bro.loadContent(cnt);
-            }
+    public void loadContent(final String cnt, final String str) {
+        waitBrowser();
+        Platform.runLater(() -> {
+            bro.loadContent(cnt, str);
         });
     }
     
-    public void loadContent(final String cnt, final String str) {
-        waitBrowser();
-        Platform.runLater(new Runnable() {
-
-            @Override
-            public void run() {
-                bro.loadContent(cnt, str);
-            }
-        });
+    public String goBack() {
+        return bro.goBack();
+    }
+    
+    public String goForward() {
+        return bro.goForward();
     }
 
     class Browser extends Region {
@@ -115,15 +110,11 @@ public class BrowserFX extends JPanel {
         }
 
         public Browser() {
-            browser.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
-
-                @Override
-                public void onChanged(Change<? extends Node> change) {
-                    final Set<Node> deadSeaScrolls = browser.lookupAll(".scroll-bar");
-                    for (Node scroll : deadSeaScrolls) {
-                        scroll.setVisible(false);
-                    }
-                }
+            browser.getChildrenUnmodifiable().addListener((Change<? extends Node> change) -> {
+                final Set<Node> deadSeaScrolls = browser.lookupAll(".scroll-bar");
+                deadSeaScrolls.stream().forEach((scroll) -> {
+                    scroll.setVisible(false);
+                });
             });
             getChildren().add(browser);
         }
@@ -143,6 +134,30 @@ public class BrowserFX extends JPanel {
         @Override
         protected void layoutChildren() {
             layoutInArea(browser, 0, 0, getWidth() + 10, getHeight(), 0, HPos.CENTER, VPos.CENTER);
+        }
+
+        public String goBack() {
+            final WebHistory history = webEngine.getHistory();
+            ObservableList<WebHistory.Entry> entryList = history.getEntries();
+            int currentIndex = history.getCurrentIndex();
+            //    Out("currentIndex = "+currentIndex);
+            //    Out(entryList.toString().replace("],","]\n"));
+            Platform.runLater(() -> {
+                history.go(-1);
+            });
+            return entryList.get(currentIndex > 0 ? currentIndex - 1 : currentIndex).getUrl();
+        }
+
+        public String goForward() {
+            final WebHistory history = webEngine.getHistory();
+            ObservableList<WebHistory.Entry> entryList = history.getEntries();
+            int currentIndex = history.getCurrentIndex();
+            //    Out("currentIndex = "+currentIndex);
+            //    Out(entryList.toString().replace("],","]\n"));
+            Platform.runLater(() -> {
+                history.go(1);
+            });
+            return entryList.get(currentIndex < entryList.size() - 1 ? currentIndex + 1 : currentIndex).getUrl();
         }
     }
 }

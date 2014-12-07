@@ -25,7 +25,6 @@ import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.Timer;
@@ -120,21 +119,13 @@ public final class QTray {
         trayIcon = new TrayIcon(mainImage, hint, popupMenu);
 
         // показ формы по двейному щелчку на форме
-        trayIcon.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.setVisible(true);
-                frame.setState(JFrame.NORMAL);
-            }
+        trayIcon.addActionListener((ActionEvent e) -> {
+            frame.setVisible(true);
+            frame.setState(JFrame.NORMAL);
         });
-        frame.addWindowStateListener(new WindowStateListener() {
-
-            @Override
-            public void windowStateChanged(WindowEvent e) {
-                if (e.getNewState() == JFrame.ICONIFIED) {
-                    frame.setVisible(false);
-                }
+        frame.addWindowStateListener((WindowEvent e) -> {
+            if (e.getNewState() == JFrame.ICONIFIED) {
+                frame.setVisible(false);
             }
         });
         try {

@@ -27,7 +27,6 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.MemoryImageSource;
 import java.io.DataInputStream;
@@ -92,10 +91,9 @@ public class FResponseDialog extends javax.swing.JDialog {
         if (respDialog == null) {
             respDialog = new FResponseDialog(parent, modal);
             respDialog.panelMain.setLayout(new GridLayout(respList.size(), 1, 15, 40));
-            for (QRespItem item : respList) {
-                final RespButton button = new RespButton(item, WelcomeParams.getInstance().buttonType);
+            respList.stream().map((item) -> new RespButton(item, WelcomeParams.getInstance().buttonType)).forEach((button) -> {
                 respDialog.panelMain.add(button);
-            }
+            });
             respDialog.setTitle(getLocaleMessage("dialog.title"));
         }
         result = null;
@@ -115,7 +113,7 @@ public class FResponseDialog extends javax.swing.JDialog {
         if (respDialog.clockBack.isActive()) {
             respDialog.clockBack.stop();
         }
-        if (respDialog.clockBack.getInterval() < 1000) {
+        if (respDialog.clockBack.getInterval() > 1000) {
             respDialog.clockBack.start();
         }
         respDialog.setVisible(true);
@@ -135,13 +133,9 @@ public class FResponseDialog extends javax.swing.JDialog {
             id = item.getId();
             setText(item.getHTMLText());
             setBorder(new CompoundBorder(new BevelBorder(BevelBorder.RAISED), new BevelBorder(BevelBorder.RAISED)));
-            addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    result = id;
-                    respDialog.setVisible(false);
-                }
+            addActionListener((ActionEvent e) -> {
+                result = id;
+                respDialog.setVisible(false);
             });
 
 

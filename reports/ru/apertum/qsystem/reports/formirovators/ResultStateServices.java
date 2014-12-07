@@ -71,7 +71,7 @@ public class ResultStateServices extends AFormirovator {
         final Connection connection;
         try {
             Class.forName(driverClassName);
-            connection = DriverManager.getConnection(url + (url.indexOf("?") == -1 ? "" : "&") + "user=" + username + "&password=" + password);
+            connection = DriverManager.getConnection(url, username, password);
         } catch (SQLException | ClassNotFoundException ex) {
             throw new ReportException(ResultStateServices.class.getName() + " " + ex);
         }

@@ -46,8 +46,9 @@ public final class Locales {
             if (f.exists()) {
                 config.setFileName(configFileName);
             } else {
-                QLog.l().logger().error(new FileNotFoundException(configFileName));
-                throw new RuntimeException(new FileNotFoundException(configFileName));
+                final Exception ex = new FileNotFoundException(configFileName);
+                QLog.l().logger().error(ex);
+                throw new RuntimeException(ex);
             }
         }
 
@@ -63,7 +64,7 @@ public final class Locales {
             String s = itr.next();
             if (s.startsWith("locale")) {
                 s = s.substring(s.indexOf(".") + 1);
-                if (s.indexOf(".") != -1) {
+                if (s.contains(".")) {
                     s = s.substring(0, s.indexOf("."));
                     if (locales.get(s) == null) {
                         final Locale locale = new Locale(config.getString("locale." + s + ".lng"), config.getString("locale." + s + ".country"));
@@ -76,8 +77,14 @@ public final class Locales {
                 }
             }
         }
+        //System.out.println("- 0 --" + getLangCurrent());
+        //System.out.println("- 01 --" + getLangCurrent().getISO3Language());
         isUkr = getLangCurrent().getISO3Language().toLowerCase().startsWith("ukr");
-        isRuss = getNameOfPresentLocale().toLowerCase().startsWith("ru") && !isUkr;
+        //System.out.println("- 1 --" + Locale.getDefault());
+        //System.out.println("- 2 --" + locales_name.get(Locale.getDefault()));
+        
+        //isRuss = getNameOfPresentLocale().toLowerCase().startsWith("ru") && !isUkr;
+        isRuss = getLangCurrent().getISO3Language().startsWith("ru") && !isUkr;
 
         russSymbolDateFormat = new DateFormatSymbols(getLocaleByName("RU"));
         russSymbolDateFormat.setMonths(Uses.RUSSIAN_MONAT);

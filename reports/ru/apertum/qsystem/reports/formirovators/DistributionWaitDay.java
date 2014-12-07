@@ -39,6 +39,11 @@ public class DistributionWaitDay extends AFormirovator {
      * Метод формирования параметров для отчета.
      * В отчет нужно передать некие параметры. Они упаковываются в Мар.
      * Если параметры не нужны, то сформировать пустой Мар.
+     * @param driverClassName
+     * @param url
+     * @param username
+     * @param password
+     * @param request
      * @return
      */
     @Override
@@ -48,11 +53,16 @@ public class DistributionWaitDay extends AFormirovator {
     /**
      * Для параметров
      */
-    final private HashMap<String, Object> paramMap = new HashMap<String, Object>();
+    final private HashMap<String, Object> paramMap = new HashMap<>();
 
     /**
      * Метод получения коннекта к базе если отчет строится через коннект.
      * Если отчет строится не через коннект, а формироватором, то выдать null.
+     * @param driverClassName
+     * @param url
+     * @param username
+     * @param password
+     * @param request
      * @return коннект соединения к базе или null.
      */
     @Override
@@ -60,10 +70,8 @@ public class DistributionWaitDay extends AFormirovator {
         final Connection connection;
         try {
             Class.forName(driverClassName);
-            connection = DriverManager.getConnection(url + (url.indexOf("?") == -1 ? "" : "&") + "user=" + username + "&password=" + password);
-        } catch (SQLException ex) {
-            throw new ReportException(StatisticServices.class.getName() + " " + ex);
-        } catch (ClassNotFoundException ex) {
+            connection = DriverManager.getConnection(url, username, password);
+        } catch (SQLException | ClassNotFoundException ex) {
             throw new ReportException(StatisticServices.class.getName() + " " + ex);
         }
         return connection;
@@ -142,8 +150,8 @@ public class DistributionWaitDay extends AFormirovator {
         // проверка на корректность введенных параметров
         QLog.l().logger().trace("Принятые параметры \"" + params.toString() + "\".");
         if (params.size() == 1) {
-            Date date = null;
-            String sdate = null;
+            Date date;
+            String sdate;
             try {
                 date = Uses.format_dd_MM_yyyy.parse(params.get("date"));
                 sdate = (new java.text.SimpleDateFormat("yyyy-MM-dd")).format(date);

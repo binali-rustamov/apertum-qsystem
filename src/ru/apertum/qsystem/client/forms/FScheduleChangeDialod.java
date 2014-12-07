@@ -18,7 +18,6 @@ package ru.apertum.qsystem.client.forms;
 
 import java.awt.Frame;
 import java.text.ParseException;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.apache.commons.lang.ArrayUtils;
 import org.jdesktop.application.Application;
@@ -57,8 +56,6 @@ public class FScheduleChangeDialod extends javax.swing.JDialog {
     }
 
     /**
-     * <Услуга Наименование="Удостоверение_доверенности" Описание="Удостоверение доверенности" Префикс="Й]" Статус="1" Лимит="3"><![CDATA[<html><b><p align=center><span style='font-size:20.0pt;color:blue'>Удостоверение доверенности</span>]]>
-     * </Услуга>
      * Основной метод редактирования услуги.
      * @param parent
      * @param modal

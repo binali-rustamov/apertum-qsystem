@@ -40,6 +40,11 @@ public class RatioServices extends AFormirovator {
      * Метод формирования параметров для отчета.
      * В отчет нужно передать некие параметры. Они упаковываются в Мар.
      * Если параметры не нужны, то сформировать пустой Мар.
+     * @param driverClassName
+     * @param url
+     * @param username
+     * @param password
+     * @param request
      * @return
      */
     @Override
@@ -49,11 +54,16 @@ public class RatioServices extends AFormirovator {
     /**
      * Для параметров
      */
-    final private HashMap<String, Date> paramMap = new HashMap<String, Date>();
+    final private HashMap<String, Date> paramMap = new HashMap<>();
 
     /**
      * Метод получения коннекта к базе если отчет строится через коннект.
      * Если отчет строится не через коннект, а формироватором, то выдать null.
+     * @param driverClassName
+     * @param url
+     * @param username
+     * @param password
+     * @param request
      * @return коннект соединения к базе или null.
      */
     @Override
@@ -61,10 +71,8 @@ public class RatioServices extends AFormirovator {
         final Connection connection;
         try {
             Class.forName(driverClassName);
-            connection = DriverManager.getConnection(url + (url.indexOf("?") == -1 ? "" : "&") + "user=" + username + "&password=" + password);
-        } catch (SQLException ex) {
-            throw new ReportException(RatioServices.class.getName() + " " + ex);
-        } catch (ClassNotFoundException ex) {
+            connection = DriverManager.getConnection(url, username, password);
+        } catch (SQLException | ClassNotFoundException ex) {
             throw new ReportException(RatioServices.class.getName() + " " + ex);
         }
         return connection;
@@ -155,9 +163,9 @@ public class RatioServices extends AFormirovator {
         // проверка на корректность введенных параметров
         QLog.l().logger().trace("Принятые параметры \"" + params.toString() + "\".");
         if (params.size() == 2) {
-            Date sd = null;
-            Date fd = null;
-            Date fd1 = null;
+            Date sd;
+            Date fd;
+            Date fd1;
             try {
                 sd = Uses.format_dd_MM_yyyy.parse(params.get("sd"));
                 fd = Uses.format_dd_MM_yyyy.parse(params.get("ed"));

@@ -27,9 +27,7 @@ import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +36,7 @@ import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.ServiceLoader;
 import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -51,9 +50,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -88,9 +85,9 @@ import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.exceptions.QException;
 import ru.apertum.qsystem.common.model.IClientNetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
+import ru.apertum.qsystem.extra.IStartReception;
 import ru.apertum.qsystem.server.model.ATListModel;
 import ru.apertum.qsystem.server.model.ATreeModel;
-import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.IidGetter;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QPlanService;
@@ -100,7 +97,6 @@ import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.QStandards;
 import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.postponed.QPostponedList;
-import ru.apertum.qsystem.server.model.results.QResult;
 
 /**
  *
@@ -141,46 +137,31 @@ public class FReception extends javax.swing.JFrame {
 
         // Фича. По нажатию Escape закрываем форму
         // свернем по esc
-        getRootPane().registerKeyboardAction(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
+        getRootPane().registerKeyboardAction((ActionEvent e) -> {
+            setVisible(false);
         },
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         // инициализим trayIcon, т.к. setSituation() требует работу с tray
-        tray = QTray.getInstance(this, "/ru/apertum/qsystem/client/forms/resources/monitor.png", getTitle()); //NOI18N
-        tray.addItem(getLocaleMessage("messages.tray.showClient"), new ActionListener() { //NOI18N
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(true);
-                setState(JFrame.NORMAL);
-            }
+        final JFrame fr = this;
+        tray = QTray.getInstance(fr, "/ru/apertum/qsystem/client/forms/resources/monitor.png", getTitle()); //NOI18N
+        tray.addItem(getLocaleMessage("messages.tray.showClient"), (ActionEvent e) -> {
+            setVisible(true);
+            setState(JFrame.NORMAL);
         });
-        tray.addItem("-", new ActionListener() { //NOI18N
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
+        tray.addItem("-", (ActionEvent e) -> {
         });
-        tray.addItem(getLocaleMessage("messages.tray.close"), new ActionListener() { //NOI18N
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                System.exit(0);
-            }
+        tray.addItem(getLocaleMessage("messages.tray.close"), (ActionEvent e) -> {
+            dispose();
+            System.exit(0);
         });
 
         int ii = 1;
         final ButtonGroup bg = new ButtonGroup();
         final String currLng = Locales.getInstance().getLangCurrName();
         for (String lng : Locales.getInstance().getAvailableLocales()) {
-            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FReception.class, this).get("setCurrentLang")); //NOI18N
+            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FReception.class, fr).get("setCurrentLang")); //NOI18N
             bg.add(item);
             item.setSelected(lng.equals(currLng));
             item.setText(lng); // NOI18N
@@ -188,21 +169,13 @@ public class FReception extends javax.swing.JFrame {
             menuLangs.add(item);
         }
 
-        treeServices.addTreeSelectionListener(new TreeSelectionListener() {
-
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                serviceListChange();
-            }
+        treeServices.addTreeSelectionListener((TreeSelectionEvent e) -> {
+            serviceListChange();
         });
 
         // Определим события выбора итемов в списках.
-        listUsers.addListSelectionListener(new ListSelectionListener() {
-
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                userListChange();
-            }
+        listUsers.addListSelectionListener((ListSelectionEvent e) -> {
+            userListChange();
         });
     }
     JTreeComboBox comboBoxServices;
@@ -214,16 +187,12 @@ public class FReception extends javax.swing.JFrame {
         panelTreeCmbx.setLayout(new GridLayout(1, 1));
         panelTreeCmbx.add(comboBoxServices);
 
-        comboBoxServices.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (((QService) e.getItem()).isLeaf()) {
-                    lastSelected = (QService) e.getItem();
-                    preRegChange(false);
-                } else {
-                    comboBoxServices.setSelectedItem(lastSelected);
-                }
+        comboBoxServices.addItemListener((ItemEvent e) -> {
+            if (((QService) e.getItem()).isLeaf()) {
+                lastSelected = (QService) e.getItem();
+                preRegChange(false);
+            } else {
+                comboBoxServices.setSelectedItem(lastSelected);
             }
         });
         comboBoxServices.setSelectedItem(model.getRoot());
@@ -260,8 +229,8 @@ public class FReception extends javax.swing.JFrame {
         labelServiceInfo.setText("<html><body text=\"#336699\"> " + (service.getEnable() == 1 ? "" : "<font color=\"#FF0000\">!*** </font>") + s + " " + getLocaleMessage("service.service") + service.getSeqId() + ": \"" + "<font color=\"#000000\">" + service.getName() + "\"    " + "</font>" //NOI18N
                 + "<font color=\"#"
                 + (service.getStatus() == 1 //NOI18N //NOI18N
-                ? "00AA00\">" + getLocaleMessage("service.kind.active") //NOI18N
-                : (service.getStatus() == 0 ? "CCAA00\">" + getLocaleMessage("service.kind.not_active") : "DD0000\">" + getLocaleMessage("service.kind.unavailable"))) + "/" + service.getPoint() //NOI18N
+                        ? "00AA00\">" + getLocaleMessage("service.kind.active") //NOI18N
+                        : (service.getStatus() == 0 ? "CCAA00\">" + getLocaleMessage("service.kind.not_active") : "DD0000\">" + getLocaleMessage("service.kind.unavailable"))) + "/" + service.getPoint() //NOI18N
                 + "</font>"
                 + ";    " + getLocaleMessage("service.prefix") + ": " + "<font color=\"#DD0000\">" + service.getPrefix() + "</font>" + ";  " + getLocaleMessage("service.description") + ": " + service.getDescription() //NOI18N //NOI18N
                 + ";<br>" + getLocaleMessage("service.restrict_day_reg") + ": " + (service.getDayLimit() == 0 ? getLocaleMessage("service.work_calendar.no") : service.getDayLimit()) //NOI18N
@@ -700,7 +669,7 @@ public class FReception extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(textFieldSerchService, javax.swing.GroupLayout.DEFAULT_SIZE, 796, Short.MAX_VALUE)
+                .addComponent(textFieldSerchService)
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(
@@ -735,7 +704,7 @@ public class FReception extends javax.swing.JFrame {
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 888, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1044, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -760,7 +729,7 @@ public class FReception extends javax.swing.JFrame {
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 888, Short.MAX_VALUE)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 1044, Short.MAX_VALUE)
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -791,7 +760,7 @@ public class FReception extends javax.swing.JFrame {
         panelLineStateLayout.setHorizontalGroup(
             panelLineStateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelLineStateLayout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 789, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 945, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelLineStateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(labelWarringOfLineSize, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -837,14 +806,14 @@ public class FReception extends javax.swing.JFrame {
         panelServicesLayout.setHorizontalGroup(
             panelServicesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 895, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         panelServicesLayout.setVerticalGroup(
             panelServicesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelServicesLayout.createSequentialGroup()
                 .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE))
         );
 
         tabsPane.addTab(resourceMap.getString("panelServices.TabConstraints.tabTitle"), panelServices); // NOI18N
@@ -916,7 +885,7 @@ public class FReception extends javax.swing.JFrame {
             .addGroup(jPanel12Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 761, Short.MAX_VALUE)
                     .addComponent(labelUser)
                     .addComponent(buttonRefreshUser, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
@@ -926,7 +895,7 @@ public class FReception extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel12Layout.createSequentialGroup()
                 .addComponent(labelUser)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonRefreshUser))
         );
@@ -939,18 +908,18 @@ public class FReception extends javax.swing.JFrame {
         panelUsers.setLayout(panelUsersLayout);
         panelUsersLayout.setHorizontalGroup(
             panelUsersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 895, Short.MAX_VALUE)
+            .addComponent(jSplitPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1051, Short.MAX_VALUE)
         );
         panelUsersLayout.setVerticalGroup(
             panelUsersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+            .addComponent(jSplitPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 598, Short.MAX_VALUE)
         );
 
         tabsPane.addTab(resourceMap.getString("panelUsers.TabConstraints.tabTitle"), panelUsers); // NOI18N
 
         panelPrereg.setName("panelPrereg"); // NOI18N
 
-        calPrereg.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(-16777216,true)));
+        calPrereg.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         calPrereg.setFont(resourceMap.getFont("calPrereg.font")); // NOI18N
         calPrereg.setName("calPrereg"); // NOI18N
         calPrereg.setTodayButtonVisible(true);
@@ -968,7 +937,7 @@ public class FReception extends javax.swing.JFrame {
         panelTreeCmbx.setLayout(panelTreeCmbxLayout);
         panelTreeCmbxLayout.setHorizontalGroup(
             panelTreeCmbxLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 883, Short.MAX_VALUE)
+            .addGap(0, 1039, Short.MAX_VALUE)
         );
         panelTreeCmbxLayout.setVerticalGroup(
             panelTreeCmbxLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1042,19 +1011,20 @@ public class FReception extends javax.swing.JFrame {
             .addComponent(panelTreeCmbx, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelPreregLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(calPrereg, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelPreregLayout.createSequentialGroup()
-                        .addComponent(labelPreDate)
-                        .addContainerGap())
-                    .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelPreregLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(checkBoxPrintAdvTicket)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 539, Short.MAX_VALUE)
-                .addComponent(buttonRemoveAdvanceCustomer)
-                .addContainerGap())
+                        .addComponent(calPrereg, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(panelPreregLayout.createSequentialGroup()
+                                .addComponent(labelPreDate)
+                                .addContainerGap())
+                            .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 785, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelPreregLayout.createSequentialGroup()
+                        .addComponent(checkBoxPrintAdvTicket)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 691, Short.MAX_VALUE)
+                        .addComponent(buttonRemoveAdvanceCustomer)
+                        .addContainerGap())))
         );
         panelPreregLayout.setVerticalGroup(
             panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1066,7 +1036,7 @@ public class FReception extends javax.swing.JFrame {
                     .addGroup(panelPreregLayout.createSequentialGroup()
                         .addComponent(labelPreDate)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+                        .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(panelPreregLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(buttonRemoveAdvanceCustomer)
@@ -1104,7 +1074,7 @@ public class FReception extends javax.swing.JFrame {
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 938, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonRefreshPostponed)
                 .addContainerGap())
@@ -1141,7 +1111,7 @@ public class FReception extends javax.swing.JFrame {
         jPanel10Layout.setHorizontalGroup(
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 938, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonRefreshBlack)
                 .addContainerGap())
@@ -1149,10 +1119,10 @@ public class FReception extends javax.swing.JFrame {
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
-                .addContainerGap(224, Short.MAX_VALUE)
+                .addContainerGap(284, Short.MAX_VALUE)
                 .addComponent(buttonRefreshBlack)
                 .addContainerGap())
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
         );
 
         jSplitPane2.setRightComponent(jPanel10);
@@ -1161,11 +1131,11 @@ public class FReception extends javax.swing.JFrame {
         jPanel8.setLayout(jPanel8Layout);
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 895, Short.MAX_VALUE)
+            .addComponent(jSplitPane2)
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+            .addComponent(jSplitPane2, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
         tabsPane.addTab(resourceMap.getString("jPanel8.TabConstraints.tabTitle"), jPanel8); // NOI18N
@@ -1187,7 +1157,7 @@ public class FReception extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelTotalCustomers, javax.swing.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)
+                .addComponent(labelTotalCustomers, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -1236,7 +1206,7 @@ public class FReception extends javax.swing.JFrame {
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+            .addComponent(jScrollPane11, javax.swing.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
         );
 
         jSplitPane5.setLeftComponent(jPanel3);
@@ -1271,11 +1241,11 @@ public class FReception extends javax.swing.JFrame {
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+            .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+            .addComponent(jScrollPane12, javax.swing.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
         );
 
         jSplitPane5.setRightComponent(jPanel5);
@@ -1290,17 +1260,17 @@ public class FReception extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(662, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(buttonRefreshMainData)
                 .addContainerGap())
-            .addComponent(jSplitPane5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 895, Short.MAX_VALUE)
+            .addComponent(jSplitPane5, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+                .addComponent(jSplitPane5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonRefreshMainData)
                 .addContainerGap())
@@ -1314,11 +1284,11 @@ public class FReception extends javax.swing.JFrame {
         panelComplexServ.setLayout(panelComplexServLayout);
         panelComplexServLayout.setHorizontalGroup(
             panelComplexServLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 895, Short.MAX_VALUE)
+            .addGap(0, 1051, Short.MAX_VALUE)
         );
         panelComplexServLayout.setVerticalGroup(
             panelComplexServLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 538, Short.MAX_VALUE)
+            .addGap(0, 598, Short.MAX_VALUE)
         );
 
         tabsPane.addTab(resourceMap.getString("panelComplexServ.TabConstraints.tabTitle"), panelComplexServ); // NOI18N
@@ -1387,11 +1357,11 @@ public class FReception extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabsPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
+            .addComponent(tabsPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1056, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabsPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
+            .addComponent(tabsPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
         );
 
         pack();
@@ -1455,10 +1425,14 @@ public class FReception extends javax.swing.JFrame {
                 return;
             }
             labelUser.setText(user.getName() + " " + user.getPoint());
-            final SelfSituation plan = NetCommander.getSelfServices(netProperty, user.getId());
+            final SelfSituation plan;
+            try {
+                plan = NetCommander.getSelfServices(netProperty, user.getId());
+            } catch (QException ex) {
+                throw new ClientException(ex);
+            }
 
             String tempAll = "";
-            String temp1 = "";
             String color = "blue";
             int inCount = 0;
 
@@ -1597,12 +1571,8 @@ public class FReception extends javax.swing.JFrame {
                     }
                     // печатаем результат
                     if (checkBoxPrintAdvTicket.isSelected()) {
-                        new Thread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                FWelcome.printTicketAdvance(res, ((QService) treeServices.getModel().getRoot()).getTextToLocale(QService.Field.NAME));
-                            }
+                        new Thread(() -> {
+                            FWelcome.printTicketAdvance(res, ((QService) treeServices.getModel().getRoot()).getTextToLocale(QService.Field.NAME));
                         }).start();
                     }
                     preRegChange(true);
@@ -1618,12 +1588,8 @@ public class FReception extends javax.swing.JFrame {
 
                         if (res.getMethod() == null) {// костыль. тут приедет текст запрета если нельзя встать в очередь
                             QLog.l().logger().info(getLocaleMessage("print.ticket"));
-                            new Thread(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    FWelcome.printTicket(res.getResult(), ((QService) treeServices.getModel().getRoot()).getName());
-                                }
+                            new Thread(() -> {
+                                FWelcome.printTicket(res.getResult(), ((QService) treeServices.getModel().getRoot()).getName());
                             }).start();
                             preRegChange(true);
                             JOptionPane.showMessageDialog(this, getLocaleMessage("admin.client_adv_dialog.msg_3"), getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.INFORMATION_MESSAGE);
@@ -1710,10 +1676,9 @@ public class FReception extends javax.swing.JFrame {
             }
 
             if (fc.getAcust().getAdvanceTime() == null) {
-                
+
             } else {
-                if (0 == JOptionPane.showConfirmDialog(this, "Удалить предварительную запись " + fc.getAcust().getId() + " ко времени "  + fc + " безвозвратно?", getLocaleMessage("pre.reg.2"), JOptionPane.YES_NO_OPTION)) {
-                    
+                if (0 == JOptionPane.showConfirmDialog(this, "Удалить предварительную запись " + fc.getAcust().getId() + " ко времени " + fc + " безвозвратно?", getLocaleMessage("pre.reg.2"), JOptionPane.YES_NO_OPTION)) {
 
                     final JsonRPC20OK res = NetCommander.removeAdvancedCustomer(netProperty, fc.getAcust().getId());
 
@@ -1721,14 +1686,13 @@ public class FReception extends javax.swing.JFrame {
 
                         if (res.getResult() == 1) {// костыль. тут приедет ID отказа
                             QLog.l().logger().info("Удалили предваоительного " + fc.getAcust().getId() + " на " + fc);
-                            
+
                             preRegChange(true);
                             JOptionPane.showMessageDialog(this, getLocaleMessage("admin.client_adv_remove.msg_3"), getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.INFORMATION_MESSAGE);
                         } else {
                             JOptionPane.showMessageDialog(this, "Не найдена предварительная запись по номеру " + fc.getAcust().getId(), getLocaleMessage("admin.client_adv_dialog.title"), JOptionPane.ERROR_MESSAGE);
                         }
                     }
-                    
 
                 }
             }
@@ -1744,7 +1708,9 @@ public class FReception extends javax.swing.JFrame {
         Locale.setDefault(Locales.getInstance().getLangCurrent());
         Uses.showSplash();
         // Загрузка плагинов из папки plugins
-        Uses.loadPlugins("./plugins/");
+        if (QLog.l().isPlaginable()) {
+            Uses.loadPlugins("./plugins/");
+        }
 
         try {
             config = new PropertiesConfiguration("config/reception.properties");
@@ -1786,19 +1752,28 @@ public class FReception extends javax.swing.JFrame {
             throw new ClientException(ex);
         }
 
-        if (res) {
-            java.awt.EventQueue.invokeLater(new Runnable() {
+        // подключения плагинов, которые стартуют в самом начале.
+        // поддержка расширяемости плагинами
+        for (final IStartReception event : ServiceLoader.load(IStartReception.class)) {
+            QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+            try {
+                new Thread(() -> {
+                    event.start(fReception);
+                }).start();
+            } catch (Throwable tr) {
+                QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+            }
+        }
 
-                @Override
-                public void run() {
-                    try {
-                        fReception.setVisible(true);
-                    } catch (Exception ex) {
-                        Uses.closeSplash();
-                        throw new ClientException(ex);
-                    } finally {
-                        Uses.closeSplash();
-                    }
+        if (res) {
+            java.awt.EventQueue.invokeLater(() -> {
+                try {
+                    fReception.setVisible(true);
+                } catch (Exception ex) {
+                    Uses.closeSplash();
+                    throw new ClientException(ex);
+                } finally {
+                    Uses.closeSplash();
                 }
             });
         } else {
@@ -1833,19 +1808,17 @@ public class FReception extends javax.swing.JFrame {
         try {
             final ServicesForWelcome servs = NetCommander.getServiсes(netProperty);
             final LinkedList<QService> slist = new LinkedList<>();
-            QServiceTree.sailToStorm(servs.getRoot(), new ISailListener() {
-
-                @Override
-                public void actionPerformed(TreeNode service) {
-                    slist.add((QService) service);
-                }
+            QServiceTree.sailToStorm(servs.getRoot(), (TreeNode service) -> {
+                slist.add((QService) service);
             });
 
             for (QService qService : slist) {
-                for (QService qService1 : qService.getChildren()) {
+                qService.getChildren().stream().map((qService1) -> {
                     qService1.setParent(qService);
+                    return qService1;
+                }).forEach((qService1) -> {
                     qService1.setParentId(qService.getId());
-                }
+                });
             }
 
             final ATreeModel tm = new ATreeModel<QService>() {
@@ -1878,9 +1851,7 @@ public class FReception extends javax.swing.JFrame {
         try {
             srvs = NetCommander.getServerState(netProperty);
             int amt = 0;
-            for (ServiceInfo serviceInfo : srvs) {
-                amt += serviceInfo.getCountWait();
-            }
+            amt = srvs.stream().map((serviceInfo) -> serviceInfo.getCountWait()).reduce(amt, Integer::sum);
             labelTotalCustomers.setText("<html><span style='color:" + (amt > standards.getLineTotalMax() ? "red" : "green") + "'>" + getLocaleMessage("total.line") + " " + amt);
             tableServicesMon.setModel(new ServicesMonModel(srvs));
 
@@ -2026,7 +1997,7 @@ public class FReception extends javax.swing.JFrame {
 
         @Override
         public Long getId() {
-            return new Long(nom);
+            return (long) nom;
         }
     }
 
@@ -2120,9 +2091,9 @@ public class FReception extends javax.swing.JFrame {
 
     private Object[] getResults() {
         if (results.isEmpty()) {
-            for (QResult result : NetCommander.getResultsList(netProperty)) {
+            NetCommander.getResultsList(netProperty).stream().forEach((result) -> {
                 results.put(result.getName(), result.getId());
-            }
+            });
         }
         return results.keySet().toArray();
     }
@@ -2269,7 +2240,7 @@ public class FReception extends javax.swing.JFrame {
     private javax.swing.JTable tablePreReg;
     private javax.swing.JTable tableServicesMon;
     private javax.swing.JTable tableUsersMon;
-    private javax.swing.JTabbedPane tabsPane;
+    public javax.swing.JTabbedPane tabsPane;
     private javax.swing.JTextField textFieldSerchService;
     private javax.swing.JTree treeServices;
     // End of variables declaration//GEN-END:variables

@@ -24,7 +24,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.File;
@@ -85,10 +84,12 @@ public class QButton extends JButton {
         return isVisible;
     }
     private final boolean isForPrereg;
+    private boolean isDummy = false;
 
     public boolean isIsForPrereg() {
         return isForPrereg;
     }
+    private final static int FOR_DUMMY = 3;
     private final static int FOR_PREREG = 2;
     private final static int NO_ACTIVE = 0;
     private final static int NO_VISIBLE = -1;
@@ -160,8 +161,19 @@ public class QButton extends JButton {
         this.form = frm;
         this.service = service;
         this.parent = prt;
+
+        // посмотрим доступна ли данная услуга или группа услуг
+        isVisible = NO_VISIBLE != service.getStatus();
+        isActive = NO_ACTIVE != service.getStatus() && isVisible;
+        isForPrereg = FOR_PREREG == service.getStatus() && isActive;
+        isDummy = FOR_DUMMY == service.getStatus() && isActive;
+        if (!isVisible) {
+            setVisible(false);
+            return;
+        }
+
         // Нарисуем картинку на кнопке если надо. Загрузить можно из файла или ресурса
-        if ("".equals(resourceName)) {
+        if (isDummy || "".equals(resourceName)) {
             background = null;
         } else {
             background = imgs.get(resourceName);
@@ -190,14 +202,7 @@ public class QButton extends JButton {
                 }
             }
         }
-        // посмотрим доступна ли данная услуга или группа услуг
-        isVisible = NO_VISIBLE != service.getStatus();
-        isActive = NO_ACTIVE != service.getStatus() && isVisible;
-        isForPrereg = FOR_PREREG == service.getStatus() && isActive;
-        if (!isVisible) {
-            setVisible(false);
-            return;
-        }
+
         refreshText();
         setSize(1, 1);
         if (WelcomeParams.getInstance().buttonImg) {
@@ -206,6 +211,14 @@ public class QButton extends JButton {
             } else {
                 setIcon(new ImageIcon(getClass().getResource("/ru/apertum/qsystem/client/forms/resources/folder.png")));
             }
+        }
+
+        // заглушка. не надо ей ничего отрисовывать кроме надписи на кнопки. и нажимать ее не надо
+        if (isDummy) {
+            setOpaque(false);
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            return;
         }
 
         //займемся внешним видом
@@ -218,249 +231,237 @@ public class QButton extends JButton {
             setBorderPainted(false);
         }
 
-        addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    // "Услуги" и "Группа" это одно и тоже.
-                    if (!service.isLeaf()) {
-                        form.showButtons(service, (JPanel) getParent());
-                        if (form.clockBack.isActive()) {
-                            form.clockBack.stop();
-                        }
-                        if (form.clockBack.getInterval() > 999) {
-                            form.clockBack.start();
-                        }
+        addActionListener((ActionEvent e) -> {
+            try {
+                // "Услуги" и "Группа" это одно и тоже.
+                if (!service.isLeaf()) {
+                    form.showButtons(service, (JPanel) getParent());
+                    if (form.clockBack.isActive()) {
+                        form.clockBack.stop();
                     }
-                    if (service.isLeaf()) {// отсюда и до конца :)
+                    if (form.clockBack.getInterval() > 999) {
+                        form.clockBack.start();
+                    }
+                }
+                if (service.isLeaf()) {// отсюда и до конца :)
 
-                        //  в зависимости от активности формируем сообщение и шлем запрос на сервер об статистике
-                        if (isActive) {
-                            // Услуга активна. Посмотрим не предварительная ли это запись.
-                            // Если Предварительная запись, то пытаемся предватительно встать и выходим из обработке кнопки.
-                            if (FWelcome.isAdvanceRegim()) {
-                                form.setAdvanceRegim(false);
+                    //  в зависимости от активности формируем сообщение и шлем запрос на сервер об статистике
+                    if (isActive) {
+                        // Услуга активна. Посмотрим не предварительная ли это запись.
+                        // Если Предварительная запись, то пытаемся предватительно встать и выходим из обработке кнопки.
+                        if (FWelcome.isAdvanceRegim()) {
+                            form.setAdvanceRegim(false);
 
-                                //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода, т.к. потом при постановки в очередь предварительных
-                                // нет ввода данных, только номера регистрации.
-                                String inputData = null;
-                                if (service.getInput_required()) {
-                                    inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION));
-                                    if (inputData == null) {
-                                        return;
-                                    }
-                                }
-
-                                final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service, true, WelcomeParams.getInstance().delayBack * 2, form.advancedCustomer, inputData, "");
-                                //Если res == null значит отказались от выбора
-                                if (res == null) {
-                                    form.showMed();
-                                    return;
-                                }
-
-                                // приложим введенное клиентом чтобы потом напечатать.
-                                if (service.getInput_required()) {
-                                    res.setAuthorizationCustomer(new QAuthorizationCustomer(inputData));
-                                }
-
-                                //вешаем заставку
-                                final GregorianCalendar gc_time = new GregorianCalendar();
-                                gc_time.setTime(res.getAdvanceTime());
-                                int t = gc_time.get(GregorianCalendar.HOUR_OF_DAY);
-                                String t_m = ("" + gc_time.get(GregorianCalendar.MINUTE) + "0000").substring(0, 2);
-                                if (t == 0) {
-                                    t = 24;
-                                    gc_time.add(GregorianCalendar.HOUR_OF_DAY, -1);
-                                }
-                                form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + "<br><br></span>"
-                                        + "<span style='font-size:80.0pt;color:blue'>" + (Locales.getInstance().isRuss ? Uses.getRusDate(gc_time.getTime(), Uses.DATE_FORMAT_FULL) : Uses.format_dd_MMMM_yyyy.format(gc_time.getTime())) + "<br></span>"
-                                        // + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + t + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00" + "</span></p>",
-                                        + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_come_to") + " " + t + ":" + t_m + " " + "</span></p>",
-                                        WelcomeParams.getInstance().getTicketImg);
-                                // печатаем результат
-                                new Thread(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        QLog.l().logger().info("Печать этикетки бронирования.");
-                                        FWelcome.printTicketAdvance(res);
-                                    }
-                                }).start();
-                                // выходим, т.к. вся логика предварительной записи в форме предварительного календаря
-                                return;
-                            }
-                            
-                            /*
-                             * Если только возможна предвариловка, то просто заканчиваем с сообщением этого файта
-                             */
-                            if (isForPrereg) {
-                                form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("messages.only_for_prereg")));
-                                form.clockUnlockBack.start();
-                                return;
-                            }
-
-                            // Отсюда действие по нажатия кнопки чтоб просто встать в очередь
-                            // Узнать, есть ли информация для прочнения в этой услуге.
-                            // Если текст информации не пустой, то показать диалог сэтим текстом
-                            // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
-                            // если есть текст, то показываем диалог
-                            if (service.getPreInfoHtml() != null && !"".equals(service.getPreInfoHtml())) {
-
-                                // поддержка расширяемости плагинами
-                                // покажим преинфо из плагинов
-                                boolean flag = true;
-                                for (final IWelcome event : ServiceLoader.load(IWelcome.class)) {
-                                    QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
-                                    boolean f = false;
-                                    try {
-                                        f = event.showPreInfoDialog(form, FWelcome.netProperty, service.getTextToLocale(QService.Field.PRE_INFO_HTML), service.getTextToLocale(QService.Field.PRE_INFO_PRINT_TEXT), true, true, WelcomeParams.getInstance().delayBack * 2);
-                                    } catch (Throwable tr) {
-                                        QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
-                                    }
-                                    flag = flag && f;
-                                }
-
-                                if (!flag || !FPreInfoDialog.showPreInfoDialog(form, service.getTextToLocale(QService.Field.PRE_INFO_HTML), service.getTextToLocale(QService.Field.PRE_INFO_PRINT_TEXT), true, true, WelcomeParams.getInstance().delayBack * 2)) {
-                                    // выходим т.к. кастомер отказался продолжать
-                                    return;
-                                }
-                            }
-
-                            // Если режим инфокиоска, то сразу уходим, т.к. вставать в очередь нет нужды
-                            // Показали информацию и все
-                            if (FWelcome.isInfo) {
-                                return;
-                            }
-
-                            // узнать статистику по предлагаемой услуги и спросить потенциального кастомера
-                            // будет ли он стоять или нет
-                            final ServiceState servState;
-                            try {
-                                servState = NetCommander.aboutService(FWelcome.netProperty, service.getId());
-                            } catch (Exception ex) {
-                                // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
-                                QLog.l().logger().error("Гасим жестоко. Невозможно отправить команду на сервер. ", ex);
-                                form.lock(FWelcome.LOCK_MESSAGE);
-                                return;
-                            }
-                            // Если приехал текст причины, то покажем ее и не дадим встать в очередь
-                            if (servState.getMessage() != null && !"".equals(servState.getMessage())) {
-                                form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", servState.getMessage()));
-                                form.clockUnlockBack.start();
-                                return;
-                            }
-                            // Если услуга не обрабатывается ни одним пользователем то в count вернется Uses.LOCK_INT
-                            // вот трех еще потерплю, а больше низачто!
-                            if (servState.getCode() == Uses.LOCK_INT) {
-                                form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.service_not_available")));
-                                form.clockUnlockBack.start();
-                                return;
-                            }
-                            if (servState.getCode() == Uses.LOCK_FREE_INT) {
-                                form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.service_not_available_by_schedule")));
-                                form.clockUnlockBack.start();
-                                return;
-                            }
-                            if (servState.getCode() == Uses.LOCK_PER_DAY_INT) {
-                                form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.clients_enough")));
-                                form.clockUnlockBack.start();
-                                return;
-                            }
-                            if (servState.getCode() >= WelcomeParams.getInstance().askLimit) {
-                                // Выведем диалог о том будет чел сотять или пошлет нахер всю контору.
-                                if (!FConfirmationStart2.getMayContinue(form, servState.getCode())) {
-                                    return;
-                                }
-                            }
-                        }
-                        // ну если неактивно, т.е. надо показать отказ, или продолжить вставать в очередь
-                        if (form.clockBack.isActive()) {
-                            form.clockBack.stop();//т.к. есть какой-то логический конец, то не надо в корень автоматом.
-
-                        }
-
-                        String inputData = null;
-                        ATalkingClock clock;
-                        if (!isActive) {
-                            clock = form.showDelayFormPrint(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.right_naw_can_not")) + "</span>", "/ru/apertum/qsystem/client/forms/resources/noActive.png");
-                        } else {
-                            //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
+                            //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода, т.к. потом при постановки в очередь предварительных
+                            // нет ввода данных, только номера регистрации.
+                            String inputData = null;
                             if (service.getInput_required()) {
-
-                                // поддержка расширяемости плагинами
-                                // запросим ввода данных 
-                                String flag = null;
-                                for (final IWelcome event : ServiceLoader.load(IWelcome.class)) {
-                                    QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
-                                    String f = null;
-                                    try {
-                                        f = event.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION));
-                                    } catch (Throwable tr) {
-                                        QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
-                                    }
-                                    flag = (f == null ? flag : (flag == null ? f : (flag + " " + f)));
-                                }
-
-                                inputData = (flag == null ? FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION))
-                                        : flag);
+                                inputData = FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION));
                                 if (inputData == null) {
                                     return;
                                 }
-                                // если ввели, то нужно спросить у сервера есть ли возможность встать в очередь с такими введенными данными
-
-                                //@return 1 - превышен, 0 - можно встать. 2 - забанен
-                                int limitPersonOver = 0;
-                                try {
-                                    limitPersonOver = NetCommander.aboutServicePersonLimitOver(FWelcome.netProperty, service.getId(), inputData);
-                                } catch (Exception ex) {
-                                    // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
-                                    QLog.l().logger().error("Гасим жестоко опрос превышения лимита по введенным данным, но не лочим киоск. Невозможно отправить команду на сервер. ", ex);
-                                    return;
-                                }
-                                if (limitPersonOver != 0) {
-                                    form.lock(limitPersonOver == 1 ? WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.ticket_with_nom_finished"))
-                                            : "<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.denail_by_lost") + "</span></b></p>");
-                                    form.clockUnlockBack.start();
-                                    return;
-                                }
                             }
-                            clock = form.showDelayFormPrint(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.take_ticket")),
-                                    WelcomeParams.getInstance().getTicketImg);
-                        }
 
-                        //выполним задание если услуга активна
-                        if (isActive) {
-                            final QCustomer res;
-                            try {
-                                res = NetCommander.standInService(FWelcome.netProperty, service.getId(), "1", 1, inputData);
-                            } catch (Exception ex) {
-                                // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
-                                QLog.l().logger().error("Невозможно отправить команду на сервер. ", ex);
-                                form.lock(FWelcome.LOCK_MESSAGE);
-                                clock.stop();
+                            final QAdvanceCustomer res = FAdvanceCalendar.showCalendar(form, true, FWelcome.netProperty, service, true, WelcomeParams.getInstance().delayBack * 2, form.advancedCustomer, inputData, "");
+                            //Если res == null значит отказались от выбора
+                            if (res == null) {
+                                form.showMed();
                                 return;
                             }
-                            clock.stop();
-                            clock = form.showDelayFormPrint(WelcomeParams.getInstance().patternGetTicket.replace("dialogue_text.take_ticket", FWelcome.getLocaleMessage("qbutton.take_ticket")).
-                                    replace("dialogue_text.your_nom", FWelcome.getLocaleMessage("qbutton.your_nom")).
-                                    replace("dialogue_text.number", res.getPrefix() + res.getNumber()),
+
+                            // приложим введенное клиентом чтобы потом напечатать.
+                            if (service.getInput_required()) {
+                                res.setAuthorizationCustomer(new QAuthorizationCustomer(inputData));
+                            }
+
+                            //вешаем заставку
+                            final GregorianCalendar gc_time = new GregorianCalendar();
+                            gc_time.setTime(res.getAdvanceTime());
+                            int t = gc_time.get(GregorianCalendar.HOUR_OF_DAY);
+                            String t_m = ("" + gc_time.get(GregorianCalendar.MINUTE) + "0000").substring(0, 2);
+                            if (t == 0) {
+                                t = 24;
+                                gc_time.add(GregorianCalendar.HOUR_OF_DAY, -1);
+                            }
+                            form.showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket") + "<br><br></span>"
+                                    + "<span style='font-size:80.0pt;color:blue'>" + (Locales.getInstance().isRuss ? Uses.getRusDate(gc_time.getTime(), Uses.DATE_FORMAT_FULL) : Uses.format_dd_MMMM_yyyy.format(gc_time.getTime())) + "<br></span>"
+                                    // + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_from") + " " + t + ":00 " + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_to") + " " + (t + 1) + ":00" + "</span></p>",
+                                    + "<span style='font-size:80.0pt;color:blue'>" + FWelcome.getLocaleMessage("qbutton.take_adv_ticket_come_to") + " " + t + ":" + t_m + " " + "</span></p>",
                                     WelcomeParams.getInstance().getTicketImg);
-
-                            QLog.l().logger().info("Печать этикетки.");
-
-                            new Thread(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    FWelcome.printTicket(res);
-                                }
+                            // печатаем результат
+                            new Thread(() -> {
+                                QLog.l().logger().info("Печать этикетки бронирования.");
+                                FWelcome.printTicketAdvance(res);
                             }).start();
+                            // выходим, т.к. вся логика предварительной записи в форме предварительного календаря
+                            return;
+                        }
+
+                        /*
+                         * Если только возможна предвариловка, то просто заканчиваем с сообщением этого файта
+                         */
+                        if (isForPrereg) {
+                            form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("messages.only_for_prereg")));
+                            form.clockUnlockBack.start();
+                            return;
+                        }
+
+                        // Отсюда действие по нажатия кнопки чтоб просто встать в очередь
+                        // Узнать, есть ли информация для прочнения в этой услуге.
+                        // Если текст информации не пустой, то показать диалог сэтим текстом
+                        // У диалога должны быть кнопки "Встать в очередь", "Печать", "Отказаться".
+                        // если есть текст, то показываем диалог
+                        if (service.getPreInfoHtml() != null && !"".equals(service.getPreInfoHtml())) {
+
+                            // поддержка расширяемости плагинами
+                            // покажим преинфо из плагинов
+                            boolean flag = true;
+                            for (final IWelcome event : ServiceLoader.load(IWelcome.class)) {
+                                QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+                                boolean f = false;
+                                try {
+                                    f = event.showPreInfoDialog(form, FWelcome.netProperty, service.getTextToLocale(QService.Field.PRE_INFO_HTML), service.getTextToLocale(QService.Field.PRE_INFO_PRINT_TEXT), true, true, WelcomeParams.getInstance().delayBack * 2);
+                                } catch (Throwable tr) {
+                                    QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+                                }
+                                flag = flag && f;
+                            }
+
+                            if (!flag || !FPreInfoDialog.showPreInfoDialog(form, service.getTextToLocale(QService.Field.PRE_INFO_HTML), service.getTextToLocale(QService.Field.PRE_INFO_PRINT_TEXT), true, true, WelcomeParams.getInstance().delayBack * 2)) {
+                                // выходим т.к. кастомер отказался продолжать
+                                return;
+                            }
+                        }
+
+                        // Если режим инфокиоска, то сразу уходим, т.к. вставать в очередь нет нужды
+                        // Показали информацию и все
+                        if (FWelcome.isInfo) {
+                            return;
+                        }
+
+                        // узнать статистику по предлагаемой услуги и спросить потенциального кастомера
+                        // будет ли он стоять или нет
+                        final ServiceState servState;
+                        try {
+                            servState = NetCommander.aboutService(FWelcome.netProperty, service.getId());
+                        } catch (Exception ex) {
+                            // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
+                            QLog.l().logger().error("Гасим жестоко. Невозможно отправить команду на сервер. ", ex);
+                            form.lock(FWelcome.LOCK_MESSAGE);
+                            return;
+                        }
+                        // Если приехал текст причины, то покажем ее и не дадим встать в очередь
+                        if (servState.getMessage() != null && !"".equals(servState.getMessage())) {
+                            form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", servState.getMessage()));
+                            form.clockUnlockBack.start();
+                            return;
+                        }
+                        // Если услуга не обрабатывается ни одним пользователем то в count вернется Uses.LOCK_INT
+                        // вот трех еще потерплю, а больше низачто!
+                        if (servState.getCode() == Uses.LOCK_INT) {
+                            form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.service_not_available")));
+                            form.clockUnlockBack.start();
+                            return;
+                        }
+                        if (servState.getCode() == Uses.LOCK_FREE_INT) {
+                            form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.service_not_available_by_schedule")));
+                            form.clockUnlockBack.start();
+                            return;
+                        }
+                        if (servState.getCode() == Uses.LOCK_PER_DAY_INT) {
+                            form.lock(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.clients_enough")));
+                            form.clockUnlockBack.start();
+                            return;
+                        }
+                        if (servState.getCode() >= WelcomeParams.getInstance().askLimit) {
+                            // Выведем диалог о том будет чел сотять или пошлет нахер всю контору.
+                            if (!FConfirmationStart2.getMayContinue(form, servState.getCode())) {
+                                return;
+                            }
                         }
                     }
-                } catch (Exception ex) {
-                    QLog.l().logger().error("Ошибка при попытки обработать нажатие кнопки постановки в ачередь. " + ex.toString());
+                    // ну если неактивно, т.е. надо показать отказ, или продолжить вставать в очередь
+                    if (form.clockBack.isActive()) {
+                        form.clockBack.stop();//т.к. есть какой-то логический конец, то не надо в корень автоматом.
+
+                    }
+
+                    String inputData = null;
+                    ATalkingClock clock;
+                    if (!isActive) {
+                        clock = form.showDelayFormPrint(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.right_naw_can_not")) + "</span>", "/ru/apertum/qsystem/client/forms/resources/noActive.png");
+                    } else {
+                        //Если услуга требует ввода данных пользователем, то нужно получить эти данные из диалога ввода
+                        if (service.getInput_required()) {
+
+                            // поддержка расширяемости плагинами
+                            // запросим ввода данных
+                            String flag = null;
+                            for (final IWelcome event : ServiceLoader.load(IWelcome.class)) {
+                                QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
+                                String f = null;
+                                try {
+                                    f = event.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION));
+                                } catch (Throwable tr) {
+                                    QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+                                }
+                                flag = (f == null ? flag : (flag == null ? f : (flag + " " + f)));
+                            }
+
+                            inputData = (flag == null ? FInputDialog.showInputDialog(form, true, FWelcome.netProperty, false, WelcomeParams.getInstance().delayBack, service.getTextToLocale(QService.Field.INPUT_CAPTION))
+                                    : flag);
+                            if (inputData == null) {
+                                return;
+                            }
+                            // если ввели, то нужно спросить у сервера есть ли возможность встать в очередь с такими введенными данными
+
+                            //@return 1 - превышен, 0 - можно встать. 2 - забанен
+                            int limitPersonOver;
+                            try {
+                                limitPersonOver = NetCommander.aboutServicePersonLimitOver(FWelcome.netProperty, service.getId(), inputData);
+                            } catch (Exception ex) {
+                                // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
+                                QLog.l().logger().error("Гасим жестоко опрос превышения лимита по введенным данным, но не лочим киоск. Невозможно отправить команду на сервер. ", ex);
+                                return;
+                            }
+                            if (limitPersonOver != 0) {
+                                form.lock(limitPersonOver == 1 ? WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.ticket_with_nom_finished"))
+                                        : "<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>" + FWelcome.getLocaleMessage("qbutton.denail_by_lost") + "</span></b></p>");
+                                form.clockUnlockBack.start();
+                                return;
+                            }
+                        }
+                        clock = form.showDelayFormPrint(WelcomeParams.getInstance().patternInfoDialog.replace("dialog.message", FWelcome.getLocaleMessage("qbutton.take_ticket")),
+                                WelcomeParams.getInstance().getTicketImg);
+                    }
+
+                    //выполним задание если услуга активна
+                    if (isActive) {
+                        final QCustomer res;
+                        try {
+                            res = NetCommander.standInService(FWelcome.netProperty, service.getId(), "1", 1, inputData);
+                        } catch (Exception ex) {
+                            // гасим жестоко, пользователю незачем видеть ошибки. выставим блокировку
+                            QLog.l().logger().error("Невозможно отправить команду на сервер. ", ex);
+                            form.lock(FWelcome.LOCK_MESSAGE);
+                            clock.stop();
+                            return;
+                        }
+                        clock.stop();
+                        form.showDelayFormPrint(WelcomeParams.getInstance().patternGetTicket.replace("dialogue_text.take_ticket", FWelcome.getLocaleMessage("qbutton.take_ticket")).
+                                replace("dialogue_text.your_nom", FWelcome.getLocaleMessage("qbutton.your_nom")).
+                                replace("dialogue_text.number", res.getPrefix() + res.getNumber()),
+                                WelcomeParams.getInstance().getTicketImg);
+
+                        QLog.l().logger().info("Печать этикетки.");
+
+                        new Thread(() -> {
+                            FWelcome.printTicket(res);
+                        }).start();
+                    }
                 }
+            } catch (Exception ex) {
+                QLog.l().logger().error("Ошибка при попытки обработать нажатие кнопки постановки в ачередь. " + ex.toString());
             }
         });//addActionListener
 

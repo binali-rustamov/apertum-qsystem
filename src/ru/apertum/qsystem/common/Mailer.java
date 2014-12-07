@@ -46,16 +46,12 @@ public class Mailer {
     }
 
     public static void sendReporterMailAtFon(final String attachment) {
-        final Thread t = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                final File attach = new File(attachment);
-                try {
-                    sendReporterMail(attach.exists() ? attach : null);
-                } catch (MessagingException | UnsupportedEncodingException ex) {
-                    throw new ServerException("Рассылка не произошла.", ex);
-                }
+        final Thread t = new Thread(() -> {
+            final File attach = new File(attachment);
+            try {
+                sendReporterMail(attach.exists() ? attach : null);
+            } catch (MessagingException | UnsupportedEncodingException ex) {
+                throw new ServerException("Рассылка не произошла.", ex);
             }
         });
         t.start();
@@ -122,6 +118,7 @@ public class Mailer {
     /**
      * Open a specific text file containing mail server
      * parameters, and populate a corresponding Properties object.
+     * @return props
      */
     public static Properties fetchConfig() {
         if (fMailServerConfig != null) {
@@ -157,8 +154,8 @@ public class Mailer {
 
 class MyAuthenticator extends Authenticator {
 
-    private String user_;
-    private String password_;
+    private final String user_;
+    private final String password_;
 
     MyAuthenticator(String user, String password) {
         this.user_ = user;

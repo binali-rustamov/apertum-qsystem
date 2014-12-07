@@ -21,9 +21,8 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 /**
- * Таймер, однако. Кудаж без него.
- * В наследниках реализовать метод run(). 
- * Умеет отмерять единичные интервалы времени.
+ * Таймер, однако. Кудаж без него. В наследниках реализовать метод run(). Умеет отмерять единичные интервалы времени.
+ *
  * @author Evgeniy Egorov
  */
 public abstract class ATalkingClock {
@@ -40,6 +39,7 @@ public abstract class ATalkingClock {
     public void setCount(int count) {
         this.count = count;
     }
+    private int cntr = 0;
     /**
      * Интервал в мсек.
      */
@@ -52,22 +52,17 @@ public abstract class ATalkingClock {
     public final void setInterval(int interval) {
         this.interval = interval;
     }
-    private final ActionListener timeAction = new ActionListener() {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            run();
-            if (count != 0) {
-                cntr++;
-                if (cntr >= count) {
-                    stop();
-                }
+    private final ActionListener timeAction = (ActionEvent e) -> {
+        run();
+        if (count != 0) {
+            cntr++;
+            if (cntr >= count) {
+                stop();
             }
         }
     };
     private Timer t;
     private boolean active = false;
-    private int cntr = 0;
 
     /**
      * Реализовать в наследниках. Этот метод выполнится по таймеру.
@@ -76,6 +71,7 @@ public abstract class ATalkingClock {
 
     /**
      * Конструктор таймера
+     *
      * @param interval интервал срабатываний таймера
      * @param count количество срабатываний таймера, если 0 то постоянное
      */
@@ -85,9 +81,8 @@ public abstract class ATalkingClock {
     }
 
     /**
-     * Запуск таймера.
-     * При старте каждый раз создается новый таймер, не используется старый, т.к. интервал ему можно сменить тока с глюками
-     * влюбой момент перед стартом.
+     * Запуск таймера. При старте каждый раз создается новый таймер, не используется старый, т.к. интервал ему можно сменить тока с глюками влюбой момент перед
+     * стартом.
      */
     public void start() {
         if (isActive()) {
@@ -100,7 +95,7 @@ public abstract class ATalkingClock {
     }
 
     /**
-     * Останов таймера 
+     * Останов таймера
      */
     public void stop() {
         cntr = 0;
@@ -110,10 +105,10 @@ public abstract class ATalkingClock {
 
     /**
      * Проверка активности таймера
+     *
      * @return признай активности
      */
     public boolean isActive() {
         return active;
     }
 }
-

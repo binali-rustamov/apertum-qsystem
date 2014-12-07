@@ -93,6 +93,8 @@ public class WelcomeParams {
     private static final String SERV_BUTTON_TYPE = "serv_button_type";// - вид управляющей кнопки на пункте регистрации. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
     private static final String SERV_VERT_BUTTON_TYPE = "serv_vert_button_type";// - вид вертикальной управляющей кнопки на пункте регистрации. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
     private static final String BUTTON_IMG = "button_img";// - это присутствие пиктограммы услуги или группы на кнопке
+    private static final String BUTTON_TOSTART_IMG = "button_tostart_img";// - это пиктограмма на кнопке "В начало"
+    private static final String BUTTON_GOBACK_IMG = "button_goback_img";// - это пиктограмма на кнопке "Назад"
     private static final String TOP_SIZE = "top_size";// - это ширина верхней панели на п.р. с видом кнопок
     private static final String TOP_IMG = "top_img";// - это картинка на верхней панели на п.р. с видом кнопок
     private static final String TOP_IMG_SECONDARY = "top_img_secondary";// - это картинка на верхней панели на п.р. на вторичных диалогах
@@ -101,6 +103,9 @@ public class WelcomeParams {
     private static final String PATTERN_CONFIRMATION_START = "pattern_confirmation_start";// - это шаблон текста для диалога подтверждения стоять в очереди. Встроенный текст dialogue_text.take_ticket dialog.text_before_people [[endRus]]
     private static final String CONFIRMATION_START_IMG = "confirmation_start_img";// - это картинка для диалога подтверждения стоять в очереди. пустое значение - картинка по умолчанию
     private static final String PATTERN_INFO_DIALOG = "pattern_info_dialog";// - это шаблон текста для информационных диалогов Встроенный текст dialog.message
+    private static final String INFO_BUTTON_HTMLTEXT = "info_button_htmltext";
+    private static final String RESPONSE_BUTTON_HTMLTEXT = "response_button_htmltext";
+    private static final String TOP_URL = "top_url";
 
     private WelcomeParams() {
         loadSettings();
@@ -117,6 +122,10 @@ public class WelcomeParams {
     public int barcode = 1; // присутствие штрихкода на квитанции
     public boolean input_data_qrcode = true; // присутствие qr-штрихкода на квитанции если клиент ввел свои персональные данные
     public boolean info = true; // кнопка информационной системы на пункте регистрации
+    public String infoURL = null; // кнопка информационной системы на пункте регистрации
+    public String responseURL = null; // - кнопка обратной связи на пункте регистрации
+    public String infoHtml = ""; // кнопка информационной системы на пункте регистрации
+    public String responseHtml = ""; // - кнопка обратной связи на пункте регистрации
     public boolean response = true; // - кнопка обратной связи на пункте регистрации
     public boolean advance = true; // - кнопка предварительной записи на пункте регистрации
     public boolean standAdvance = true; // присутствие кнопки предварительной записи на пункте регистрации (0/1)
@@ -133,8 +142,11 @@ public class WelcomeParams {
     public String servButtonType = ""; // - это внешний вид сервисной кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
     public String servVertButtonType = ""; // - это внешний вид вертикальной сервисной кнопки. Если его нет или ошибочный, то стандартный вид. Иначе номер вида или картинка в png желательно
     public boolean buttonImg = true; // - это присутствие пиктограммы услуги или группы на кнопке
-    public int topSize = 0; // - это ширина верхней панели на п.р. с видом кнопок
+    public File buttonToStratImg = null; // - это пиктограммы  на кнопке
+    public File buttonGoBackImg = null; // - это пиктограммы  на кнопке
+    public int topSize = -1; // - это ширина верхней панели на п.р. с видом кнопок
     public String topImg = ""; // - это картинка на верхней панели на п.р. с видом кнопок
+    public String topURL = ""; // - а верхней панели пункта регистрации, там где заголовок и картинка в углу, можно вывести вэб-контент по URL. Оставьте пустым если не требуется
     public String topImgSecondary = ""; // - это картинка на верхней панели на п.р. на вторичных диалогах
     public PrintService printService = null; // - это картинка на верхней панели на п.р. на вторичных диалогах
     public String patternGetTicket = ""; // - это шаблон текста для диалога забрать талон
@@ -208,8 +220,18 @@ public class WelcomeParams {
         buttons_speed = Integer.parseInt(settings.getProperty("buttons_speed"));
         buttons_parity = Integer.parseInt(settings.getProperty("buttons_parity"));
         buttons_stopbits = Integer.parseInt(settings.getProperty("buttons_stopbits"));
-        info = "1".equals(settings.getProperty(INFO_BUTTON)) || "true".equals(settings.getProperty(INFO_BUTTON)); // кнопка информационной системы на пункте регистрации
-        response = "1".equals(settings.getProperty(RESPONSE_BUTTON)) || "true".equals(settings.getProperty(RESPONSE_BUTTON)); // - кнопка обратной связи на пункте регистрации
+        infoURL = settings.getProperty(INFO_BUTTON, null);
+        if (infoURL.length() < 4) {
+            infoURL = null;
+        }
+        info = (infoURL != null && infoURL.length() > 3) || "1".equals(settings.getProperty(INFO_BUTTON)) || "true".equals(settings.getProperty(INFO_BUTTON)); // кнопка информационной системы на пункте регистрации
+        responseURL = settings.getProperty(RESPONSE_BUTTON, null);
+        if (responseURL.length() < 4) {
+            responseURL = null;
+        }
+        response = (responseURL != null && responseURL.length() > 3) || "1".equals(settings.getProperty(RESPONSE_BUTTON)) || "true".equals(settings.getProperty(RESPONSE_BUTTON)); // - кнопка обратной связи на пункте регистрации
+        infoHtml = settings.getProperty(INFO_BUTTON_HTMLTEXT, "");
+        responseHtml = settings.getProperty(RESPONSE_BUTTON_HTMLTEXT, "");
         advance = "1".equals(settings.getProperty(ADVANCE_BUTTON)) || "true".equals(settings.getProperty(ADVANCE_BUTTON)); // - кнопка предварительной записи на пункте регистрации
         standAdvance = "1".equals(settings.getProperty(STAND_ADVANCE_BUTTON)) || "true".equals(settings.getProperty(STAND_ADVANCE_BUTTON)); // присутствие кнопки предварительной записи на пункте регистрации (0/1)
 
@@ -367,8 +389,13 @@ public class WelcomeParams {
         } else {
             servVertButtonType = "";
         }
+        buttonGoBackImg = new File(settings.getProperty(BUTTON_GOBACK_IMG, ""));
+        buttonGoBackImg = buttonGoBackImg.exists() ? buttonGoBackImg : null;
+        buttonToStratImg = new File(settings.getProperty(BUTTON_TOSTART_IMG, ""));
+        buttonToStratImg = buttonToStratImg.exists() ? buttonToStratImg : null;
         buttonImg = "1".equals(settings.getProperty(BUTTON_IMG, "1")) || "true".equals(settings.getProperty(BUTTON_IMG, "true")); // кнопка информационной системы на пункте регистрации
         topImg = settings.getProperty(TOP_IMG, "");
+        topURL = settings.getProperty(TOP_URL, "");
         topImgSecondary = settings.getProperty(TOP_IMG_SECONDARY, "");
         patternGetTicket = settings.getProperty(PATTERN_GET_TICKET, "<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>dialogue_text.take_ticket<br></span><span style='font-size:60.0pt;color:blue'>dialogue_text.your_nom<br></span><span style='font-size:130.0pt;color:blue'>dialogue_text.number</span></p>");
         patternConfirmationStart = settings.getProperty(PATTERN_CONFIRMATION_START, "pattern_confirmation_start=<HTML><b><p align=center><span style='font-size:60.0pt;color:green'>dialog.text_before</span><br><span style='font-size:100.0pt;color:red'>dialog.count</span><br><span style='font-size:60.0pt;color:red'>dialog.text_before_people[[endRus]]</span></p></b>");
@@ -381,8 +408,8 @@ public class WelcomeParams {
             confirmationStartImg = "/ru/apertum/qsystem/client/forms/resources/vopros.png";
         }
         patternInfoDialog = settings.getProperty(PATTERN_INFO_DIALOG, "<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>dialog.message</span></b></p>");
-        
-        topSize = Integer.parseInt(settings.getProperty(TOP_SIZE, "0"));
+
+        topSize = Integer.parseInt(settings.getProperty(TOP_SIZE, "-1"));
         if ("1".equals(settings.getProperty(EXECUTIVE, "0"))) {
             printAttributeSet.add(MediaSizeName.EXECUTIVE);
         }

@@ -263,7 +263,6 @@ public class NetCommander {
      * @param netProperty netProperty параметры соединения с сервером.
      * @param serviceId услуга, которую пытаемся править
      * @param reason
-     * @ret
      */
     public static void changeTempAvailableService(INetProperty netProperty, long serviceId, String reason) {
         QLog.l().logger().info("Сделать услугу временно неактивной/активной.");
@@ -411,8 +410,9 @@ public class NetCommander {
      * @param netProperty параметры соединения с сервером
      * @param userId id пользователя для которого идет опрос
      * @return список обрабатываемых услуг с количеством кастомеров в них стоящих и обрабатываемый кастомер если был
+     * @throws ru.apertum.qsystem.common.exceptions.QException
      */
-    public static RpcGetSelfSituation.SelfSituation getSelfServices(INetProperty netProperty, long userId) {
+    public static RpcGetSelfSituation.SelfSituation getSelfServices(INetProperty netProperty, long userId) throws QException {
         QLog.l().logger().info("Получение описания очередей для юзера.");
         // загрузим ответ
         final CmdParams params = new CmdParams();
@@ -423,7 +423,7 @@ public class NetCommander {
             res = send(netProperty, Uses.TASK_GET_SELF_SERVICES, params);
         } catch (QException e) {// вывод исключений
             Uses.closeSplash();
-            throw new ClientException("Невозможно получить ответ от сервера. " + e.toString());
+            throw new QException("Невозможно получить ответ от сервера. " + e.toString());
         }
         final Gson gson = GsonPool.getInstance().borrowGson();
         final RpcGetSelfSituation rpc;

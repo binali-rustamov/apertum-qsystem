@@ -3,7 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<style name="Arial_Normal" isDefault="true" fontName="Arial" fontSize="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+	<style name="SansSerif" isDefault="true" fontName="SansSerif" fontSize="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -27,21 +27,21 @@
 				<textField isBlankWhenNull="false">
 					<reportElement uuid="cd77bf84-7d4e-45f9-9e1b-9758775edafc" x="1" y="10" width="554" height="20"/>
 					<textElement>
-						<font size="12" isUnderline="true"/>
+						<font fontName="SansSerif" size="12" isUnderline="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{service} + ":  " + $F{service}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement uuid="792cc8b7-f38a-4a5a-ac99-53b8cd23d378" x="48" y="48" width="507" height="18"/>
 					<textElement>
-						<font size="12"/>
+						<font fontName="SansSerif" size="12"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{served} + ":  " + $F{service_worked} + "  "+ $R{killed} +": " +  $F{service_killed} + "  "+ $R{work_avg} +": " + $F{service_average_work} + " "+ $R{min} +"."]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement uuid="218ca9b5-db21-4332-98dc-a46f69788cd3" x="48" y="30" width="507" height="18"/>
 					<textElement>
-						<font size="12"/>
+						<font fontName="SansSerif" size="12"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{waiting}+":  " + $F{service_wait} + "  "+ $R{wait_avg} +": " + $F{service_average_wait} + " "+ $R{min} +"."]]></textFieldExpression>
 				</textField>
@@ -69,7 +69,7 @@
 			<textField>
 				<reportElement uuid="c9d056b2-7698-46e6-a9b1-87da08ffdbd3" x="0" y="5" width="555" height="48"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="18" isBold="true" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+					<font fontName="SansSerif" size="18" isBold="true" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{caption1}]]></textFieldExpression>
 			</textField>
@@ -92,7 +92,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="10"/>
+					<font fontName="SansSerif" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{produced} +" "+new Date()]]></textFieldExpression>
 			</textField>
@@ -106,14 +106,14 @@
 			<textField>
 				<reportElement uuid="fe7048ee-3c62-4ac2-9da4-6b5b82957651" x="26" y="2" width="529" height="20"/>
 				<textElement>
-					<font size="12" isUnderline="true"/>
+					<font fontName="SansSerif" size="12" isUnderline="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{user} + ":  " + $F{user}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="e2e789c3-10a4-4eff-a923-6cce046fb69b" x="48" y="22" width="507" height="18"/>
 				<textElement>
-					<font size="12"/>
+					<font fontName="SansSerif" size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{served} + ": " + $F{worked} + "  "+ $R{killed} +": " +  $F{killed} + "  "+ $R{work_avg} +": " + $F{avg_time_work} + " "+ $R{min} +"."]]></textFieldExpression>
 			</textField>
@@ -146,7 +146,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+					<font fontName="SansSerif" size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
 			</textField>
@@ -159,7 +159,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+					<font fontName="SansSerif" size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page}+" " + $V{PAGE_NUMBER} + " "+$R{from}+" "]]></textFieldExpression>
 			</textField>

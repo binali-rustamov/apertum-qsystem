@@ -28,9 +28,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Vector;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -187,12 +191,12 @@ public class FTest extends javax.swing.JFrame {
             }
         });
 
-        qPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(-16777216,true)));
+        qPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         qPanel1.setAutoscrolls(true);
         qPanel1.setEndPoint(new java.awt.Point(0, 200));
-        qPanel1.setGradient(true);
+        qPanel1.setGradient(java.lang.Boolean.TRUE);
         qPanel1.setName("qPanel1"); // NOI18N
-        qPanel1.setNativePosition(false);
+        qPanel1.setNativePosition(java.lang.Boolean.FALSE);
         qPanel1.setStartPoint(new java.awt.Point(0, 40));
         qPanel1.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
@@ -297,7 +301,7 @@ public class FTest extends javax.swing.JFrame {
         rl.setText(resourceMap.getString("rl.text")); // NOI18N
         rl.setFont(resourceMap.getFont("rl.font")); // NOI18N
         rl.setName("rl"); // NOI18N
-        rl.setRun(false);
+        rl.setRun(java.lang.Boolean.FALSE);
         rl.setRunningText(resourceMap.getString("rl.runningText")); // NOI18N
         rl.setSpeedRunningText(5);
 
@@ -384,10 +388,9 @@ public class FTest extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jButton14, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                                .addComponent(jLabel2))
                             .addComponent(jTextField2, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(jButton5)
                                 .addGap(14, 14, 14)
@@ -412,8 +415,8 @@ public class FTest extends javax.swing.JFrame {
                                                 .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(jLabel1))
-                                            .addComponent(jButton12))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 366, Short.MAX_VALUE)
+                                            .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                                 .addComponent(jButton10)
@@ -452,12 +455,11 @@ public class FTest extends javax.swing.JFrame {
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(jButton15, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jButton14, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel2)))
-                        .addGap(18, 18, 18))
+                                .addComponent(jLabel2))))
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton16)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                        .addComponent(jButton16)))
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -676,7 +678,21 @@ private void qPanel1ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-F
 }//GEN-LAST:event_qPanel1ComponentResized
 
 private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
+    System.out.println(    (float) 3 / 2f );
+    System.out.println(    (float) 3 / 2 );
+    System.out.println(    3 / 2 );
+    
+    map(Arrays.asList("10", "20", "30"), Integer::valueOf);
 }//GEN-LAST:event_jButton12ActionPerformed
+
+public static <T, R> List<R> map(List<T> list, Function<T, R> f) {
+        List<R> result = new ArrayList<>();
+        list.stream().forEach((elem) -> {
+            result.add(f.apply(elem));
+        });
+        list.stream().collect(null);
+        return result;
+    }
 
 private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton13ActionPerformed
 

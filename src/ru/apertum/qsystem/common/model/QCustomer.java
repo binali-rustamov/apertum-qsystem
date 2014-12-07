@@ -30,6 +30,7 @@ import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.results.QResult;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.ServiceLoader;
 import javax.persistence.Column;
@@ -88,8 +89,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     }
     /**
      * АТРИБУТЫ "ОЧЕРЕДНИКА" персональный номер, именно по нему система ведет учет и управление очередниками
-     *
-     * @param number новер - целое число
+     *  номер - целое число
      */
     @Expose
     @SerializedName("number")
@@ -121,7 +121,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
      * какая-то итерация закончена и про кастомера должно занестись в БД, то как и надо выставлять что кастомер ЗАКОНЧИЛ обрабатываться, а уж потом менять ,
      * если надо, его атрибуты и менять состояние, например на РЕДИРЕКТЕННОГО.
      *
-     * @param state - состояние клиента
+     * состояние клиента
      * @see ru.apertum.qsystem.common.Uses
      */
     @Expose
@@ -226,7 +226,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
             Spring.getInstance().getHt().saveOrUpdate(this);
         } catch (Exception ex) {
             Spring.getInstance().getTxManager().rollback(status);
-            throw new ServerException("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
+            throw new ServerException("Ошибка при сохранении \n" + ex.toString() + "\n" + Arrays.toString(ex.getStackTrace()));
         }
         Spring.getInstance().getTxManager().commit(status);
         QLog.l().logger().debug("Сохранили.");
@@ -284,7 +284,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     @SerializedName("to_service")
     private QService service;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+        @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id")
     public QService getService() {
         return service;
@@ -343,7 +343,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     /**
      * Префикс услуги, к которой стоит кастомер.
      *
-     * @return Строка префикса.
+     * Строка префикса.
      */
     @Expose
     @SerializedName("prefix")
@@ -536,7 +536,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
     }
 
     /**
-     * Вернет XML-строку, описывающую кастомера
+     * Вернет строку, описывающую кастомера
      */
     @Override
     public String toString() {

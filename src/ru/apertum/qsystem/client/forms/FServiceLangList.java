@@ -40,7 +40,9 @@ import ru.apertum.qsystem.server.model.QServiceLang;
  */
 public class FServiceLangList extends javax.swing.JDialog {
 
-    /** Creates new form FServiceLangList */
+    /** Creates new form FServiceLangList
+     * @param parent
+     * @param modal */
     public FServiceLangList(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -64,10 +66,12 @@ public class FServiceLangList extends javax.swing.JDialog {
         serviceLangList.service = service;
         serviceLangList.listLng.setModel(new javax.swing.AbstractListModel() {
 
+            @Override
             public int getSize() {
                 return service.getLangs().size();
             }
 
+            @Override
             public Object getElementAt(int i) {
                 return service.getLangs().toArray()[i];
             }
@@ -160,15 +164,11 @@ public class FServiceLangList extends javax.swing.JDialog {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(ButtonRemove, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(ButtonEdit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(ButtonAdd, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())))
+                    .addComponent(ButtonRemove, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ButtonEdit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ButtonAdd, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -211,10 +211,12 @@ public class FServiceLangList extends javax.swing.JDialog {
             if (remove) {
                 listLng.setModel(new javax.swing.AbstractListModel() {
 
+                    @Override
                     public int getSize() {
                         return service.getLangs().size();
                     }
 
+                    @Override
                     public Object getElementAt(int i) {
                         return service.getLangs().toArray()[i];
                     }
@@ -281,10 +283,12 @@ public class FServiceLangList extends javax.swing.JDialog {
         item.setLang(lngName);
         listLng.setModel(new javax.swing.AbstractListModel() {
 
+            @Override
             public int getSize() {
                 return service.getLangs().size();
             }
 
+            @Override
             public Object getElementAt(int i) {
                 return service.getLangs().toArray()[i];
             }

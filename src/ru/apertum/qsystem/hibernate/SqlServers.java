@@ -48,6 +48,9 @@ public class SqlServers {
     public static class SqlServer {
 
         @Expose
+        @SerializedName("driver")
+        private String driver = "com.mysql.jdbc.Driver";
+        @Expose
         @SerializedName("url")
         private String url = "jdbc:mysql://127.0.0.1/qsystem?autoReconnect=true&amp;characterEncoding=UTF-8";
         @Expose
@@ -77,6 +80,14 @@ public class SqlServers {
             this.url = url;
             this.user = user;
             this.name = name;
+        }
+
+        public String getDriver() {
+            return driver;
+        }
+
+        public void setDriver(String driver) {
+            this.driver = driver;
         }
 
         public String getName() {
@@ -129,7 +140,7 @@ public class SqlServers {
 
         @Override
         public String toString() {
-            return name + "   "+(isCurrent() ? "C" : "_") + "   " + (isMain() ? "M" : "_") + "   " + getUrl();
+            return name + "   " + (isCurrent() ? "C" : "_") + "   " + (isMain() ? "M" : "_") + "   " + getUrl();
         }
     }
 }

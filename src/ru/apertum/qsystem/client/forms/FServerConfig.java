@@ -37,7 +37,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -108,41 +107,73 @@ public class FServerConfig extends javax.swing.JFrame {
         }
 
         final DefaultListModel<SqlServer> model = new DefaultListModel<>();
-        for (SqlServer s : servs) {
+        servs.stream().forEach((s) -> {
             model.addElement(s);
-        }
+        });
         listServs.setModel(model);
         panelParams.setVisible(false);
 
-        listServs.addListSelectionListener(new ListSelectionListener() {
+        listServs.addListSelectionListener((ListSelectionEvent e) -> {
+            final SqlServer ser = (SqlServer) listServs.getSelectedValue();
+            if (ser != null) {
+                panelParams.setVisible(true);
 
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                final SqlServer ser = (SqlServer) listServs.getSelectedValue();
-                if (ser != null) {
-                    panelParams.setVisible(true);
-                    final String s = ser.getUrl();
-                    int st = s.indexOf("://") + 3; // начало адреса   jdbc:mysql://localhost/qsystem?autoReconnect
-                    int ssh = s.indexOf("/", st);
-                    int ask = s.indexOf("?", st);
-                    textFieldServerAdress.setText(s.substring(st, ssh));
-                    textFieldBaseName.setText(ask == -1 ? s.substring(ssh + 1) : s.substring(ssh + 1, ask));
-                    textFieldUserName.setText(ser.getUser());
-                    textFieldPassword.setText(ser.getPassword());
-                    cbCurrent.setSelected(ser.isCurrent());
-                    cbMain.setSelected(ser.isMain());
+                cbDB.setSelectedIndex("com.mysql.jdbc.Driver".equalsIgnoreCase(ser.getDriver()) ? 0 : 1);
+                switch (cbDB.getSelectedIndex()) {
+                    case 0:
+                        final String s = ser.getUrl();
+                        int st = s.indexOf("://") + 3; // начало адреса   jdbc:mysql://localhost/qsystem?autoReconnect
+                        int ssh = s.indexOf("/", st);
+                        int ask = s.indexOf("?", st);
+                        textFieldServerAdress.setText(s.substring(st, ssh));
+                        textFieldBaseName.setText(ask == -1 ? s.substring(ssh + 1) : s.substring(ssh + 1, ask));
+                        break;
+                    case 1:
+                        /*
+                         Embedded (local) connection	jdbc:h2:[file:][<path>]<databaseName>
+                         jdbc:h2:~/test
+                         jdbc:h2:file:/data/sample
+                         jdbc:h2:file:C:/data/sample (Windows only)
+        
+                         Server mode (remote connections) using TCP/IP	jdbc:h2:tcp://<server>[:<port>]/[<path>]<databaseName>
+                         jdbc:h2:~/test
+                         jdbc:h2:tcp://dbserv:8084/~/sample
+                         jdbc:h2:tcp://localhost/mem:test
+                         */
+                        final String u = ser.getUrl();
+                        int adr = u.indexOf("://"); // начало адреса   jdbc:h2:tcp://dbserv:8084/~/sample
+                        if (adr == -1) {//jdbc:h2:~/test
+                            adr = u.indexOf("://") + 3; // начало адреса jdbc:h2:~/test
+                            int sdr_e = u.indexOf("/", adr);
+                            textFieldServerAdress.setText("");
+                            textFieldBaseName.setText(u.substring(sdr_e - 1));
+                        } else {//jdbc:h2:tcp://dbserv:8084/~/sample
+                            int sdr_e = u.indexOf("/", adr+3);
+                            textFieldServerAdress.setText(u.substring(adr+3, sdr_e));
+                            textFieldBaseName.setText(u.substring(sdr_e+1));
+                        }
+
+                        break;
+                    default:
+                        throw new AssertionError();
                 }
+
+                textFieldUserName.setText(ser.getUser());
+                textFieldPassword.setText(ser.getPassword());
+                cbCurrent.setSelected(ser.isCurrent());
+                cbMain.setSelected(ser.isMain());
             }
         });
         if (servs.size() > 0) {
             listServs.setSelectedIndex(0);
         }
-        
+
         int ii = 1;
         final ButtonGroup bg = new ButtonGroup();
         final String currLng = Locales.getInstance().getLangCurrName();
         for (String lng : Locales.getInstance().getAvailableLocales()) {
-            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FServerConfig.class, this).get("setCurrentLang"));
+            final FServerConfig sc = this;
+            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FServerConfig.class, sc).get("setCurrentLang"));
             bg.add(item);
             item.setSelected(lng.equals(currLng));
             item.setText(lng); // NOI18N
@@ -150,7 +181,7 @@ public class FServerConfig extends javax.swing.JFrame {
             menuLangs.add(item);
         }
     }
-    
+
     @Action
     public void setCurrentLang() {
         for (int i = 0; i < menuLangs.getItemCount(); i++) {
@@ -174,7 +205,7 @@ public class FServerConfig extends javax.swing.JFrame {
         miRemove = new javax.swing.JMenuItem();
         jPanel1 = new javax.swing.JPanel();
         panelParams = new javax.swing.JPanel();
-        jButton3 = new javax.swing.JButton();
+        btnCheckDBcnt = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -186,16 +217,18 @@ public class FServerConfig extends javax.swing.JFrame {
         cbCurrent = new javax.swing.JCheckBox();
         cbMain = new javax.swing.JCheckBox();
         buttonSaveServer = new javax.swing.JButton();
+        cbDB = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         listServs = new javax.swing.JList();
         buttonRemove = new javax.swing.JButton();
         buttonAdd = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        btnSaveAll = new javax.swing.JButton();
+        btnClose = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         menuLangs = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         popListServs.setName("popListServs"); // NOI18N
 
@@ -231,11 +264,11 @@ public class FServerConfig extends javax.swing.JFrame {
         panelParams.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("panelParams.border.title"))); // NOI18N
         panelParams.setName("panelParams"); // NOI18N
 
-        jButton3.setText(resourceMap.getString("jButton3.text")); // NOI18N
-        jButton3.setName("jButton3"); // NOI18N
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        btnCheckDBcnt.setText(resourceMap.getString("btnCheckDBcnt.text")); // NOI18N
+        btnCheckDBcnt.setName("btnCheckDBcnt"); // NOI18N
+        btnCheckDBcnt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                btnCheckDBcntActionPerformed(evt);
             }
         });
 
@@ -277,13 +310,17 @@ public class FServerConfig extends javax.swing.JFrame {
             }
         });
 
+        cbDB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MySQL", "H2" }));
+        cbDB.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("cbDB.border.title"))); // NOI18N
+        cbDB.setName("cbDB"); // NOI18N
+
         javax.swing.GroupLayout panelParamsLayout = new javax.swing.GroupLayout(panelParams);
         panelParams.setLayout(panelParamsLayout);
         panelParamsLayout.setHorizontalGroup(
             panelParamsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelParamsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelParamsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(panelParamsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(panelParamsLayout.createSequentialGroup()
                         .addComponent(cbMain)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -296,17 +333,21 @@ public class FServerConfig extends javax.swing.JFrame {
                             .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(panelParamsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(textFieldBaseName, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
-                            .addComponent(textFieldUserName, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
-                            .addComponent(textFieldPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
+                            .addComponent(textFieldBaseName)
+                            .addComponent(textFieldUserName)
+                            .addComponent(textFieldPassword)
                             .addComponent(textFieldServerAdress, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jButton3)
-                    .addComponent(buttonSaveServer))
+                    .addComponent(btnCheckDBcnt)
+                    .addComponent(buttonSaveServer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cbDB, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelParamsLayout.setVerticalGroup(
             panelParamsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelParamsLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelParamsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(cbDB, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addGroup(panelParamsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(textFieldServerAdress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -327,10 +368,10 @@ public class FServerConfig extends javax.swing.JFrame {
                     .addComponent(cbMain)
                     .addComponent(cbCurrent))
                 .addGap(18, 18, 18)
-                .addComponent(jButton3)
+                .addComponent(btnCheckDBcnt)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonSaveServer)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(35, Short.MAX_VALUE))
         );
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
@@ -364,11 +405,11 @@ public class FServerConfig extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap(352, Short.MAX_VALUE)
+                        .addContainerGap(335, Short.MAX_VALUE)
                         .addComponent(buttonAdd)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buttonRemove))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelParams, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -376,7 +417,7 @@ public class FServerConfig extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelParams, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
+                .addComponent(jScrollPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buttonRemove)
@@ -387,28 +428,28 @@ public class FServerConfig extends javax.swing.JFrame {
         jPanel3.setBorder(new javax.swing.border.MatteBorder(null));
         jPanel3.setName("jPanel3"); // NOI18N
 
-        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
-        jButton1.setName("jButton1"); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnSaveAll.setText(resourceMap.getString("btnSaveAll.text")); // NOI18N
+        btnSaveAll.setName("btnSaveAll"); // NOI18N
+        btnSaveAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onClickOK(evt);
             }
         });
 
         javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(ru.apertum.qsystem.QSystem.class).getContext().getActionMap(FServerConfig.class, this);
-        jButton2.setAction(actionMap.get("quit")); // NOI18N
-        jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
-        jButton2.setName("jButton2"); // NOI18N
+        btnClose.setAction(actionMap.get("quit")); // NOI18N
+        btnClose.setText(resourceMap.getString("btnClose.text")); // NOI18N
+        btnClose.setName("btnClose"); // NOI18N
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap(700, Short.MAX_VALUE)
-                .addComponent(jButton1)
+                .addContainerGap(683, Short.MAX_VALUE)
+                .addComponent(btnSaveAll)
                 .addGap(17, 17, 17)
-                .addComponent(jButton2)
+                .addComponent(btnClose)
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -416,8 +457,8 @@ public class FServerConfig extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(btnSaveAll)
+                    .addComponent(btnClose))
                 .addContainerGap())
         );
 
@@ -429,6 +470,10 @@ public class FServerConfig extends javax.swing.JFrame {
         menuLangs.setText(resourceMap.getString("menuLangs.text")); // NOI18N
         menuLangs.setName("menuLangs"); // NOI18N
         jMenu1.add(menuLangs);
+
+        jMenuItem1.setAction(actionMap.get("quit")); // NOI18N
+        jMenuItem1.setName("jMenuItem1"); // NOI18N
+        jMenu1.add(jMenuItem1);
 
         jMenuBar1.add(jMenu1);
 
@@ -455,22 +500,38 @@ public class FServerConfig extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+private void btnCheckDBcntActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCheckDBcntActionPerformed
 
     /*
-    final ComboPooledDataSource cpds = new ComboPooledDataSource();
-    try {
-    cpds.setDriverClass("com.mysql.jdbc.Driver"); //loads the jdbc driver
-    } catch (PropertyVetoException ex) {
-    System.err.println(ex);
-    JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog2.title") + "\n" + ex.getMessage() + "\n" + ex, getLocaleMessage("servercfg.dialog2.caption"), JOptionPane.WARNING_MESSAGE);
-    throw new RuntimeException(getLocaleMessage("servercfg.bd.fail"), ex);
-    }
+     final ComboPooledDataSource cpds = new ComboPooledDataSource();
+     try {
+     cpds.setDriverClass("com.mysql.jdbc.Driver"); //loads the jdbc driver
+     } catch (PropertyVetoException ex) {
+     System.err.println(ex);
+     JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog2.title") + "\n" + ex.getMessage() + "\n" + ex, getLocaleMessage("servercfg.dialog2.caption"), JOptionPane.WARNING_MESSAGE);
+     throw new RuntimeException(getLocaleMessage("servercfg.bd.fail"), ex);
+     }
      * *
      */
-
     // Название драйвера
-    final String driverName = "com.mysql.jdbc.Driver";
+    final String driverName;
+    final String url;
+    switch (cbDB.getSelectedIndex()) {
+        case 0:
+            driverName = ("com.mysql.jdbc.Driver");
+            url = "jdbc:mysql://" + textFieldServerAdress.getText() + ("".equals(textFieldBaseName.getText()) ? "" : "/" + textFieldBaseName.getText());// + "?autoReconnect=true&amp;characterEncoding=UTF-8";
+            break;
+        case 1:
+            driverName = ("org.h2.Driver");
+            url = ("jdbc:h2:"
+                    + (textFieldServerAdress.getText().trim().isEmpty()
+                            ? textFieldBaseName.getText().trim()
+                            : "tcp://" + textFieldServerAdress.getText().trim() + "/" + textFieldBaseName.getText().trim()));
+            break;
+        default:
+            throw new AssertionError();
+    }
+    System.out.println(url + "\n" + textFieldUserName.getText() + "\n" + textFieldPassword.getText());
     try {
         Class.forName(driverName);
     } catch (ClassNotFoundException ex) {
@@ -479,14 +540,11 @@ private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         throw new RuntimeException(getLocaleMessage("servercfg.bd.fail"), ex);
     }
 
-    final String url = "jdbc:mysql://" + textFieldServerAdress.getText() + ("".equals(textFieldBaseName.getText()) ? "" : "/" + textFieldBaseName.getText());// + "?autoReconnect=true&amp;characterEncoding=UTF-8";
-    System.out.println(url + "\n" + textFieldUserName.getText() + "\n" + textFieldPassword.getText());
-
     /*
-    cpds.setJdbcUrl(url);
-    cpds.setUser(textFieldUserName.getText());
-    cpds.setPassword(textFieldPassword.getText());
-    cpds.setCheckoutTimeout(20000);
+     cpds.setJdbcUrl(url);
+     cpds.setUser(textFieldUserName.getText());
+     cpds.setPassword(textFieldPassword.getText());
+     cpds.setCheckoutTimeout(20000);
      * *
      */
     Connection con = null;
@@ -514,7 +572,7 @@ private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         }
     }
     JOptionPane.showMessageDialog(this, getLocaleMessage("servercfg.dialog3.title"), getLocaleMessage("servercfg.dialog3.caption"), JOptionPane.INFORMATION_MESSAGE);
-}//GEN-LAST:event_jButton3ActionPerformed
+}//GEN-LAST:event_btnCheckDBcntActionPerformed
 
 private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClickOK
     // в темповый файл
@@ -541,19 +599,48 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
 }//GEN-LAST:event_onClickOK
 
     private void buttonSaveServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSaveServerActionPerformed
+
+        /*
+         Embedded (local) connection	jdbc:h2:[file:][<path>]<databaseName>
+         jdbc:h2:~/test
+         jdbc:h2:file:/data/sample
+         jdbc:h2:file:C:/data/sample (Windows only)
+        
+         Server mode (remote connections) using TCP/IP	jdbc:h2:tcp://<server>[:<port>]/[<path>]<databaseName>
+         jdbc:h2:tcp://localhost/~/test
+         jdbc:h2:tcp://dbserv:8084/~/sample
+         jdbc:h2:tcp://localhost/mem:test
+         */
         final SqlServer ser = (SqlServer) listServs.getSelectedValue();
         if (ser != null) {
-            String url = ser.getUrl();
-            int st = url.indexOf("://") + 3; // начало адреса   jdbc:mysql://localhost/qsystem?autoReconnect
-            int ssh = url.indexOf("/", st);
-            url = url.replace(url.substring(st, ssh), textFieldServerAdress.getText());
 
-            st = url.indexOf("://") + 3; // начало адреса   jdbc:mysql://localhost/qsystem?autoReconnect
-            ssh = url.indexOf("/", st);
-            int ask = url.indexOf("?", st);
-            url = url.replace((ask == -1 ? url.substring(ssh + 1) : url.substring(ssh + 1, ask)), textFieldBaseName.getText());
+            switch (cbDB.getSelectedIndex()) {
+                case 0:
+                    ser.setDriver("com.mysql.jdbc.Driver");
+                    String url = ser.getUrl();
+                    int st = url.indexOf("://") + 3; // начало адреса   jdbc:mysql://localhost/qsystem?autoReconnect
+                    int ssh = url.indexOf("/", st);
+                    url = url.replace(url.substring(st, ssh), textFieldServerAdress.getText());
 
-            ser.setUrl(url);
+                    st = url.indexOf("://") + 3; // начало адреса   jdbc:mysql://localhost/qsystem?autoReconnect
+                    ssh = url.indexOf("/", st);
+                    int ask = url.indexOf("?", st);
+                    url = url.replace((ask == -1 ? url.substring(ssh + 1) : url.substring(ssh + 1, ask)), textFieldBaseName.getText());
+
+                    ser.setUrl(url);
+                    break;
+                case 1:
+                    ser.setDriver("org.h2.Driver");
+                    ser.setUrl("jdbc:h2:"
+                            + (textFieldServerAdress.getText().trim().isEmpty()
+                                    ? textFieldBaseName.getText().trim()
+                                    : "tcp://" + textFieldServerAdress.getText().trim() + "/" + textFieldBaseName.getText().trim())
+                    );
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+
             ser.setUser(textFieldUserName.getText());
             ser.setPassword(textFieldPassword.getText());
             if (cbCurrent.isSelected()) {
@@ -642,31 +729,29 @@ private void onClickOK(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClic
             }
         }
 
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                final FServerConfig sc = new FServerConfig();
-                Uses.setLocation(sc);
-                sc.setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            final FServerConfig sc = new FServerConfig();
+            Uses.setLocation(sc);
+            sc.setVisible(true);
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCheckDBcnt;
+    private javax.swing.JButton btnClose;
+    private javax.swing.JButton btnSaveAll;
     private javax.swing.JButton buttonAdd;
     private javax.swing.JButton buttonRemove;
     private javax.swing.JButton buttonSaveServer;
     private javax.swing.JCheckBox cbCurrent;
+    private javax.swing.JComboBox cbDB;
     private javax.swing.JCheckBox cbMain;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;

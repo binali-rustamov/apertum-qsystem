@@ -17,7 +17,6 @@
 package ru.apertum.qsystem.client.forms;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Locale;
 import javax.swing.ImageIcon;
@@ -69,23 +68,15 @@ public class FConfirmationStart2 extends javax.swing.JDialog {
         super(owner, "Статистика", true);
         initComponents();
 
-        buttonOk.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clock.stop();
-                ok = true;
-                setVisible(false);
-            }
+        buttonOk.addActionListener((ActionEvent e) -> {
+            clock.stop();
+            ok = true;
+            setVisible(false);
         });
-        buttonCancel.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clock.stop();
-                ok = false;
-                setVisible(false);
-            }
+        buttonCancel.addActionListener((ActionEvent e) -> {
+            clock.stop();
+            ok = false;
+            setVisible(false);
         });
     }
     private static ResourceMap localeMap = null;

@@ -76,13 +76,9 @@ public class RunningLabel extends JLabel implements Serializable {
     /**
      * Событие перерисовки 25 кадров в секунду.
      */
-    private ActionListener actionListener = new ActionListener() {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            need = true;
-            repaint();
-        }
+    private final ActionListener actionListener = (ActionEvent e) -> {
+        need = true;
+        repaint();
     };
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
@@ -221,7 +217,7 @@ public class RunningLabel extends JLabel implements Serializable {
     }
 
     private String getNextStringFromLines() {
-        String res = "Не определидось";
+        final String res;
         if (needNextLine) {
             prepareStrings(fileWithStrings);
             if (lines.size() == 0) {
@@ -408,9 +404,10 @@ public class RunningLabel extends JLabel implements Serializable {
     }
 
     public void setBackgroundImage(String resourceName) {
+        backgroundImage = resourceName;
         final String oldValue = resourceName;
         this.backgroundImg = Uses.loadImage(this, resourceName, "");
-        propertySupport.firePropertyChange(PROP_BLINK_COUNT, oldValue, resourceName);
+        propertySupport.firePropertyChange(PROP_BACKGROUND_IMG, oldValue, resourceName);
         needRepaint();
     }
     public static final String PROP_IS_RUN = "isRunText";
@@ -442,7 +439,7 @@ public class RunningLabel extends JLabel implements Serializable {
      * Поток генерации событий смещения текста
      */
     //private Thread timerThread = null;
-    private Timer timerThread = new Timer(40, actionListener);
+    private final Timer timerThread = new Timer(40, actionListener);
 
     /**
      * Запустить бегущий текст

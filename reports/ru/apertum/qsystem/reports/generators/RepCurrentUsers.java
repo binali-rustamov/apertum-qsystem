@@ -26,7 +26,6 @@ import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.model.AGenerator;
 import ru.apertum.qsystem.reports.model.CurRepRecord;
 import ru.apertum.qsystem.server.model.QPlanService;
-import ru.apertum.qsystem.server.model.QUser;
 import ru.apertum.qsystem.server.model.QUserList;
 
 /**
@@ -42,7 +41,7 @@ public class RepCurrentUsers extends AGenerator {
     @Override
     protected JRDataSource getDataSource(HttpRequest request) {
         final LinkedList<CurRepRecord> dataSource = new LinkedList<>();
-        for (QUser user : QUserList.getInstance().getItems()) {
+        QUserList.getInstance().getItems().stream().forEach((user) -> {
             int user_worked = 0;
             int user_killed = 0;
             long user_avg_time_work = 0;
@@ -55,7 +54,7 @@ public class RepCurrentUsers extends AGenerator {
             for (QPlanService plan : user.getPlanServices()) {
                 dataSource.add(new CurRepRecord(user.getName(), plan.getService().getName(), user_worked, user_killed, user_avg_time_work, plan.getWorked(), plan.getKilled(), plan.getAvg_work()));
             }
-        }
+        });
         return new JRBeanCollectionDataSource(dataSource);
     }
 

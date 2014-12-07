@@ -69,9 +69,10 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
         passMap = new HashMap<>();
         htmlRepList = "";
         htmlUsersList = "";
-        // добавим аналитические отчеты
-        for (QReport report : reports) {
+        reports.stream().map((report) -> {
             addGenerator(report);
+            return report;
+        }).forEach((report) -> {
             htmlRepList = htmlRepList.concat(
                     "<tr>\n"
                     + "<td style=\"text-align: left; padding-left: 60px;\">\n"
@@ -83,7 +84,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
                     + "<a href=\"" + report.getHref() + ".xlsx\" target=\"_blank\">[XLSX]</a>\n"
                     + "</td>\n"
                     + "</tr>\n");
-        }
+        });
         /*
          * Это не отчет. это генератор списка отчетов, который проверяет пароль и пользователя и формирует
          * coocies для браузера, чтоб далее браузер подставлял жти куки в запрос и тем самым сервак "узнавал пользователя".
@@ -141,7 +142,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
         return htmlUsersList;
     }
     /**
-     * Список паролей пользователей имя -> пароль
+     * Список паролей пользователей имя - пароль
      */
     private HashMap<String, String> passMap;
 
@@ -199,7 +200,7 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
          */
         final Response result = generator.process(request);
 
-        QLog.l().logRep().info("Генерация завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
+        QLog.l().logRep().info("Генерация завершено. Затрачено времени: " + ((double) (System.currentTimeMillis() - start)) / 1000 + " сек.");
         return result;
     }
 
@@ -207,9 +208,9 @@ public class QReportsList extends ATListModel<QReport> implements ComboBoxModel 
         final HttpEntityEnclosingRequest r = new BasicHttpEntityEnclosingRequest("POST", uri);
         r.addHeader("Cookie", "username=" + user.getName() + "; password=" + user.getPassword());
         final StringBuilder sb = new StringBuilder();
-        for (String st : params.keySet()) {
+        params.keySet().stream().forEach((st) -> {
             sb.append("&").append(st).append("=").append(params.get(st));
-        }
+        });
         final InputStream is = new ByteArrayInputStream(sb.substring(1).getBytes());
         final BasicHttpEntity b = new BasicHttpEntity();
         b.setContent(is);

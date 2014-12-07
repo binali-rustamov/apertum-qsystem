@@ -47,10 +47,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -76,9 +78,11 @@ import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.common.ClientNetProperty;
+import ru.apertum.qsystem.client.common.WelcomeBGparams;
 import ru.apertum.qsystem.common.NetCommander;
 import ru.apertum.qsystem.client.model.QButton;
 import ru.apertum.qsystem.client.model.QPanel;
+import ru.apertum.qsystem.common.BrowserFX;
 import ru.apertum.qsystem.common.GsonPool;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
@@ -92,7 +96,6 @@ import ru.apertum.qsystem.common.model.ATalkingClock;
 import ru.apertum.qsystem.common.model.IClientNetProperty;
 import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.extra.IPrintTicket;
-import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.QAdvanceCustomer;
 import ru.apertum.qsystem.server.model.QAuthorizationCustomer;
 import ru.apertum.qsystem.server.model.QService;
@@ -219,7 +222,7 @@ public class FWelcome extends javax.swing.JFrame {
                 try {
                     is = socket.getInputStream();
                 } catch (IOException e) {
-                    throw new ServerException("Ошибка при получении входного потока: " + e.getStackTrace());
+                    throw new ServerException("Ошибка при получении входного потока: " + Arrays.toString(e.getStackTrace()));
                 }
 
                 final String data;
@@ -233,9 +236,9 @@ public class FWelcome extends javax.swing.JFrame {
                     Thread.sleep(100);//бля
                     data = URLDecoder.decode(new String(Uses.readInputStream(is)).trim(), "utf-8");
                 } catch (IOException ex) {
-                    throw new ServerException("Ошибка при чтении из входного потока: " + ex.getStackTrace());
+                    throw new ServerException("Ошибка при чтении из входного потока: " + Arrays.toString(ex.getStackTrace()));
                 } catch (InterruptedException ex) {
-                    throw new ServerException("Проблема со сном: " + ex.getStackTrace());
+                    throw new ServerException("Проблема со сном: " + Arrays.toString(ex.getStackTrace()));
                 }
                 QLog.l().logger().trace("Задание:\n" + data);
 
@@ -279,7 +282,7 @@ public class FWelcome extends javax.swing.JFrame {
                     writer.print(rpc_resp);
                     writer.flush();
                 } catch (IOException e) {
-                    throw new ServerException("Ошибка при записи в поток: " + e.getStackTrace());
+                    throw new ServerException("Ошибка при записи в поток: " + Arrays.toString(e.getStackTrace()));
                 }
             } finally {
                 // завершаем соединение
@@ -374,14 +377,10 @@ public class FWelcome extends javax.swing.JFrame {
                     final String line = s.nextLine().trim();
                     if (!line.startsWith("#")) {
                         final String[] ss = line.split("=");
-                        QServiceTree.sailToStorm(root, new ISailListener() {
-
-                            @Override
-                            public void actionPerformed(TreeNode service) {
-                                if (((QService) service).getId().equals(Long.valueOf(ss[1]))) {
-                                    QLog.l().logger().debug(ss[0] + " = " + ss[1] + " " + ((QService) service).getName());
-                                    addrs.put(Byte.valueOf(ss[0]), (QService) service);
-                                }
+                        QServiceTree.sailToStorm(root, (TreeNode service) -> {
+                            if (((QService) service).getId().equals(Long.valueOf(ss[1]))) {
+                                QLog.l().logger().debug(ss[0] + " = " + ss[1] + " " + ((QService) service).getName());
+                                addrs.put(Byte.valueOf(ss[0]), (QService) service);
                             }
                         });
                     }
@@ -484,13 +483,9 @@ public class FWelcome extends javax.swing.JFrame {
             // ***************************************************************************************************************************************
             // ***  Это тачевый терминал
             // ***************************************************************************************************************************************
-            java.awt.EventQueue.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    final FWelcome w = new FWelcome(root);
-                    w.setVisible(true);
-                }
+            java.awt.EventQueue.invokeLater(() -> {
+                final FWelcome w = new FWelcome(root);
+                w.setVisible(true);
             });
         }
     }
@@ -529,8 +524,27 @@ public class FWelcome extends javax.swing.JFrame {
             });
         }
         initComponents();
-        if (WelcomeParams.getInstance().topSize != 0) {
+        if (WelcomeParams.getInstance().topSize >= 0) {
             panelCaption.setPreferredSize(new Dimension(panelCaption.getWidth(), WelcomeParams.getInstance().topSize));
+        }
+        try {
+            // пиктограмки на кнопках "назад" и "в начало"
+            if (WelcomeParams.getInstance().buttonGoBackImg != null) {
+                buttonBack.setIcon(new ImageIcon(WelcomeParams.getInstance().buttonGoBackImg.toURI().toURL()));
+            }
+            if (WelcomeParams.getInstance().buttonToStratImg != null) {
+                buttonToBegin.setIcon(new ImageIcon(WelcomeParams.getInstance().buttonToStratImg.toURI().toURL()));
+            }
+        } catch (MalformedURLException ex) {
+        }
+        //На верхней панели пункта регистрации, там где заголовок и картинка в углу, можно вывести вэб-контент по URL. Оставьте пустым если не требуется
+        if (!WelcomeParams.getInstance().topURL.isEmpty()) {
+            panelCaption.removeAll();
+            final BrowserFX bro = new BrowserFX();
+            final GridLayout gl = new GridLayout(1, 1);
+            panelCaption.setLayout(gl);
+            panelCaption.add(bro);
+            bro.load(Uses.prepareAbsolutPathForImg(WelcomeParams.getInstance().topURL));
         }
         try {
             setIconImage(ImageIO.read(FAdmin.class.getResource("/ru/apertum/qsystem/client/forms/resources/checkIn.png")));
@@ -559,21 +573,28 @@ public class FWelcome extends javax.swing.JFrame {
          */
         buttonInfo.setVisible(WelcomeParams.getInstance().info);
         buttonResponse.setVisible(WelcomeParams.getInstance().response);
+        if (!"".equals(WelcomeParams.getInstance().infoHtml)) {
+            buttonInfo.setText(WelcomeParams.getInstance().infoHtml); // NOI18N 
+        }
+        if (!"".equals(WelcomeParams.getInstance().responseHtml)) {
+            buttonResponse.setText(WelcomeParams.getInstance().responseHtml); // NOI18N
+        }
         buttonAdvance.setVisible(WelcomeParams.getInstance().advance);
         buttonStandAdvance.setVisible(WelcomeParams.getInstance().standAdvance);
         panelLngs.setVisible(Locales.getInstance().isWelcomeMultylangs());
         if (Locales.getInstance().isWelcomeMultylangs()) {
             FlowLayout la = new FlowLayout(Locales.getInstance().getMultylangsPosition(), 50, 10);
             panelLngs.setLayout(la);
-            for (final String lng : Locales.getInstance().getAvailableLangs()) {
+            Locales.getInstance().getAvailableLangs().stream().map((lng) -> {
                 final JButton btn = new JButton(Uses.prepareAbsolutPathForImg(Locales.getInstance().getLangButtonText(lng)));
                 btn.setContentAreaFilled(Locales.getInstance().isWelcomeMultylangsButtonsFilled());
                 btn.setFocusPainted(false);
                 btn.setBorderPainted(Locales.getInstance().isWelcomeMultylangsButtonsBorder());
-
                 btn.addActionListener(new LngBtnAction(Locales.getInstance().getLocaleByName(lng)));
+                return btn;
+            }).forEach((btn) -> {
                 panelLngs.add(btn);
-            }
+            });
         }
         showMed();
         // Если режим инфокиоска, то не показываем кнопки предвариловки
@@ -665,10 +686,14 @@ public class FWelcome extends javax.swing.JFrame {
      */
     public void showButtons(QService current, JPanel panel) {
 
-        QLog.l().logger().info("Показываем набор кнопок уровня: " + current.getName());
+        QLog.l().logger().info("Показываем набор кнопок уровня: " + current.getName() + " ID=" + current.getId());
         if (current != FWelcome.current) { // если смена уровней то страница уровня становится нулевая
             pageNumber = 0;
         }
+        
+        // картинки для подложки с каждым набором кнопок из WelcomeBGparams. По дефолту из welcome.properties
+        ((QPanel) panelBackground).setBackgroundImgage(WelcomeBGparams.getInstance().getImg(current.getId()));
+        
         if (current != root && current.getParent() == null) {
             current.setParent(FWelcome.current);
         }
@@ -702,11 +727,7 @@ public class FWelcome extends javax.swing.JFrame {
         // посмотрим сколько реальных кнопок нужно отобразить
         // тут есть невидимые услуги и услуги не с того киоска
         int childCount = 0;
-        for (QService service : current.getChildren()) {
-            if (!(isAdvanceRegim() && service.getAdvanceLimit() == 0) && service.getStatus() != -1 && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
-                childCount++;
-            }
-        }
+        childCount = current.getChildren().stream().filter((service) -> (!(isAdvanceRegim() && service.getAdvanceLimit() == 0) && service.getStatus() != -1 && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point)))).map((_item) -> 1).reduce(childCount, Integer::sum);
 
         if (childCount < 4) {
             cols = 1;
@@ -714,11 +735,11 @@ public class FWelcome extends javax.swing.JFrame {
         }
         if (childCount > 3 && childCount < 11) {
             cols = 2;
-            rows = Math.round(new Float(childCount) / 2);
+            rows = Math.round((float) childCount / 2f);
         }
         if (childCount > 10) {
             cols = 3;
-            rows = Math.round(new Float(0.3) + (float) childCount / 3);
+            rows = Math.round(0.3f + (float) childCount / 3);
         }
 
         // поправка на то что если кнопок на уровне много и они уже в три колонки, то задействуем ограничение по линиям, а то расползутся
@@ -780,7 +801,7 @@ public class FWelcome extends javax.swing.JFrame {
             try {
                 flag = event.printTicket(customer, FWelcome.caption);
             } catch (Throwable tr) {
-                QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
+                QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: ", tr);
             }
             // раз напечатили и хорошь
             if (flag) {
@@ -1364,11 +1385,7 @@ public class FWelcome extends javax.swing.JFrame {
         // посмотрим сколько реальных кнопок нужно отобразить
         // тут есть невидимые услуги и услуги не с того киоска
         int childCount = 0;
-        for (QService service : current.getChildren()) {
-            if (service.getStatus() != -1 && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point))) {
-                childCount++;
-            }
-        }
+        childCount = current.getChildren().stream().filter((service) -> (service.getStatus() != -1 && (WelcomeParams.getInstance().point == 0 || (service.getPoint() == 0 || service.getPoint() == WelcomeParams.getInstance().point)))).map((_item) -> 1).reduce(childCount, Integer::sum);
 
         if (childCount < 4) {
             cols = 1;
@@ -1376,16 +1393,15 @@ public class FWelcome extends javax.swing.JFrame {
         }
         if (childCount > 3 && childCount < 11) {
             cols = 2;
-            rows = Math.round(new Float(childCount) / 2);
+            rows = Math.round((float) childCount / 2);
         }
         if (childCount > 10) {
             cols = 3;
-            rows = Math.round(new Float(0.3) + (float) childCount / 3);
+            rows = Math.round(0.3f + (float) childCount / 3);
         }
 
         // поправка на то что если кнопок на уровне много и они уже в три колонки, то задействуем ограничение по линиям, а то расползутся
         if (visible && rows > WelcomeParams.getInstance().linesButtonCount && cols >= 3) {
-            rows = WelcomeParams.getInstance().linesButtonCount;
             panelForPaging.setVisible(true);
         } else {
             panelForPaging.setVisible(false);
@@ -1837,8 +1853,8 @@ public class FWelcome extends javax.swing.JFrame {
         buttonToBegin.setText(resourceMap.getString("buttonToBegin.text")); // NOI18N
         buttonBack.setText(resourceMap.getString("buttonBack.text")); // NOI18N
         labelLock.setText(resourceMap.getString("labelLock.text")); // NOI18N
-        buttonInfo.setText(resourceMap.getString("buttonInfo.text")); // NOI18N 
-        buttonResponse.setText(resourceMap.getString("buttonResponse.text")); // NOI18N
+        buttonInfo.setText("".equals(WelcomeParams.getInstance().infoHtml) ? resourceMap.getString("buttonInfo.text") : WelcomeParams.getInstance().infoHtml); // NOI18N 
+        buttonResponse.setText("".equals(WelcomeParams.getInstance().responseHtml) ? resourceMap.getString("buttonResponse.text") : WelcomeParams.getInstance().responseHtml); // NOI18N
         buttonBackPage.setText(resourceMap.getString("buttonBackPage.text")); // NOI18N
         buttonForwardPage.setText(resourceMap.getString("buttonForwardPage.text")); // NOI18N
         labelBackPage.setText(resourceMap.getString("labelBackPage.text")); // NOI18N
@@ -1920,7 +1936,7 @@ private void buttonToBeginActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         labelInfo.setVerticalTextPosition(SwingConstants.BOTTOM);
         labelInfo.setHorizontalTextPosition(SwingConstants.LEFT);
 
-        labelInfo2.setIcon(new File(imagePath).exists() ? new ImageIcon(imagePath) :  new ImageIcon(getClass().getResource(imagePath)));
+        labelInfo2.setIcon(new File(imagePath).exists() ? new ImageIcon(imagePath) : new ImageIcon(getClass().getResource(imagePath)));
         //labelInfo2.setIcon(new ImageIcon("E:/WORK/apertum-qsystem/temp/resources/down.png"));
         labelInfo2.setHorizontalTextPosition(SwingConstants.CENTER);
         labelInfo2.setHorizontalAlignment(JLabel.CENTER);
@@ -1957,12 +1973,8 @@ private void buttonStandAdvanceActionPerformed(java.awt.event.ActionEvent evt) {
 
             QLog.l().logger().info("Печать этикетки.");
 
-            new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    FWelcome.printTicket(res.getResult());
-                }
+            new Thread(() -> {
+                FWelcome.printTicket(res.getResult());
             }).start();
         } else {
             showDelayFormPrint("<HTML><b><p align=center><span style='font-size:60.0pt;color:red'>" + res.getMethod(),
@@ -1973,14 +1985,22 @@ private void buttonStandAdvanceActionPerformed(java.awt.event.ActionEvent evt) {
 }//GEN-LAST:event_buttonStandAdvanceActionPerformed
 
 private void buttonResponseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonResponseActionPerformed
-    final Long res = FResponseDialog.showResponseDialog(this, getResponse(), true, true, WelcomeParams.getInstance().delayBack * 2);
-    if (res != null) {
-        NetCommander.setResponseAnswer(netProperty, res, null, null, null, "");
+    if (WelcomeParams.getInstance().responseURL != null) {
+        FInfoDialogWeb.showInfoDialogWeb(this, true, true, WelcomeParams.getInstance().delayBack * 4, WelcomeParams.getInstance().responseURL);
+    } else {
+        final Long res = FResponseDialog.showResponseDialog(this, getResponse(), true, true, WelcomeParams.getInstance().delayBack * 2);
+        if (res != null) {
+            NetCommander.setResponseAnswer(netProperty, res, null, null, null, "");
+        }
     }
 }//GEN-LAST:event_buttonResponseActionPerformed
 
 private void buttonInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonInfoActionPerformed
-    FInfoDialog.showResponseDialog(this, getInfoTree(), true, true, WelcomeParams.getInstance().delayBack * 3);
+    if (WelcomeParams.getInstance().infoURL != null) {
+        FInfoDialogWeb.showInfoDialogWeb(this, true, true, WelcomeParams.getInstance().delayBack * 4, WelcomeParams.getInstance().infoURL);
+    } else {
+        FInfoDialog.showInfoDialog(this, getInfoTree(), true, true, WelcomeParams.getInstance().delayBack * 3);
+    }
 }//GEN-LAST:event_buttonInfoActionPerformed
 
     private void buttonBackPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBackPageActionPerformed

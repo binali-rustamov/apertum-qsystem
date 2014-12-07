@@ -23,6 +23,7 @@ import java.util.Date;
  * Событие выбора даты и время для предварительной записи
  * @author Evgeniy Egorov
  */
+@FunctionalInterface
 public interface IAdviceEvent {
     /**
      * Событие выбора даты и время для предварительной записи

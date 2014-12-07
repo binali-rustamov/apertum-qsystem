@@ -59,6 +59,7 @@ public class KeyboardQwertyRus extends javax.swing.JPanel {
     private Font font;
     private Color foregraundColor;
 
+    @Override
     public Font getFont() {
         return font;
     }

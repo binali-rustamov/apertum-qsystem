@@ -3,7 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<style name="Arial_Normal" isDefault="true" fontName="Arial" fontSize="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+	<style name="SansSerif" isDefault="true" fontName="SansSerif" fontSize="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -27,14 +27,14 @@
 				<textField>
 					<reportElement uuid="00632ae5-460a-47f2-bea3-a2cd16c99df8" x="47" y="25" width="508" height="18"/>
 					<textElement>
-						<font size="12"/>
+						<font fontName="SansSerif" size="12"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{served} + ": " + $F{user_worked} + "  "+ $R{killed} +": " +  $F{user_killed} + "  "+ $R{work_avg} +": " + $F{user_average_work} + " "+ $R{min} +"."]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement uuid="59734ae6-370c-4d4d-8fd3-16be1d11490c" x="1" y="5" width="554" height="20"/>
 					<textElement>
-						<font size="12" isUnderline="true"/>
+						<font fontName="SansSerif" size="12" isUnderline="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{user} + ":  " + $F{user}]]></textFieldExpression>
 				</textField>
@@ -62,7 +62,7 @@
 			<textField>
 				<reportElement uuid="3a81432b-e3be-4e36-a10e-9641c0aa9c16" x="3" y="5" width="552" height="48"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="18" isBold="true" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+					<font fontName="SansSerif" size="18" isBold="true" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{caption1}]]></textFieldExpression>
 			</textField>
@@ -79,7 +79,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="10"/>
+					<font fontName="SansSerif" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{produced} +" "+new Date()]]></textFieldExpression>
 			</textField>
@@ -99,14 +99,14 @@
 			<textField isBlankWhenNull="false">
 				<reportElement uuid="415f66f9-bfcd-419b-85fd-c70fcbdab312" x="28" y="0" width="521" height="20"/>
 				<textElement>
-					<font size="12" isUnderline="true"/>
+					<font fontName="SansSerif" size="12" isUnderline="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{service} + ":  " + $F{service}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="4d06467d-c0e4-40fd-bab7-7e20bd018db5" x="47" y="20" width="508" height="18"/>
 				<textElement>
-					<font size="12"/>
+					<font fontName="SansSerif" size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{served}+":  " + $F{worked} + "  "+ $R{killed} +": " + $F{killed}  + "  "+$R{work_avg}+": " + $F{avg_time_work} + $R{min} +"."]]></textFieldExpression>
 			</textField>
@@ -126,7 +126,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+					<font fontName="SansSerif" size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page}+" " + $V{PAGE_NUMBER} + " "+$R{from}+" "]]></textFieldExpression>
 			</textField>
@@ -152,7 +152,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
+					<font fontName="SansSerif" size="10" pdfFontName="tahoma.ttf" pdfEncoding="KOI8-R" isPdfEmbedded="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
 			</textField>

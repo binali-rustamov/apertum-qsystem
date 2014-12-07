@@ -23,11 +23,11 @@ import javax.swing.tree.TreeNode;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
+import ru.apertum.qsystem.client.common.WysiwygDlg;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ClientException;
 import ru.apertum.qsystem.common.exceptions.ServerException;
-import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceLang;
 import ru.apertum.qsystem.server.model.QServiceTree;
@@ -63,9 +63,6 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     }
 
     /**
-     * <Услуга Наименование="Удостоверение_доверенности" Описание="Удостоверение доверенности" Префикс="Й]" Статус="1" Лимит="3"><![CDATA[<html><b><p
-     * align=center><span style='font-size:20.0pt;color:blue'>Удостоверение доверенности</span>]]>
-     * </Услуга>
      * Основной метод редактирования услуги.
      *
      * @param parent родительская форма
@@ -79,7 +76,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         if (serviceChangeDialod == null) {
             serviceChangeDialod = new FServiceChangeDialod(parent, modal);
         }
-        serviceChangeDialod.setTitle(getLocaleMessage("dialog.title"));
+        serviceChangeDialod.setTitle(getLocaleMessage("dialog.title") + "  ID " + service.getId());
+        serviceChangeDialod.tfID.setText(service.getId().toString());
         serviceChangeDialod.comboBoxSchedule.setModel(scheduleModel);
         serviceChangeDialod.comboBoxCalendar.setModel(calendarModel);
         serviceChangeDialod.loadService(service);
@@ -98,8 +96,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         textAreaButtonCaption.setText(service.getButtonText());
         textAreaInfoHtml.setText(service.getPreInfoHtml());
         textAreaTextPrint.setText(service.getPreInfoPrintText());
-        if (service.getStatus() == 2) {
-            comboBoxEnabled.setSelectedIndex(3);
+        if (service.getStatus() >= 2) {
+            comboBoxEnabled.setSelectedIndex(service.getStatus() + 1);
         } else {
             comboBoxEnabled.setSelectedIndex(service.getStatus() * (-1) + 1);
         }
@@ -125,7 +123,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         textFieldInputCaption.setText(service.getInput_caption());
         textFieldTicketText.setText(service.getTicketText());
         сheckBoxResultRequired.setSelected(service.getResult_required());
-        checkBoxBackoffice.setSelected(service.getEnable().intValue() != 1);
+        checkBoxBackoffice.setSelected(service.getEnable() != 1);
         spinnerPunktReg.setValue(service.getPoint());
 
         spinButX.setValue(service.getButX());
@@ -205,16 +203,12 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
             service.setButtonText(textAreaButtonCaption.getText());
         }
 
-        QServiceTree.sailToStorm(QServiceTree.getInstance().getRoot(), new ISailListener() {
-
-            @Override
-            public void actionPerformed(TreeNode srvc) {
-                if (!service.equals(srvc) && srvc.isLeaf()) {
-                    final String pr = ((QService) srvc).getPrefix();
-                    if (!pr.isEmpty() && pr.equalsIgnoreCase(textFieldPrefix.getText())) {
-                        if (JOptionPane.showConfirmDialog(null, getLocaleMessage("dialog.message5"), "Подтвердите правильность", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.CANCEL_OPTION) {
-                            throw new ServerException(getLocaleMessage("dialog.message5"));
-                        }
+        QServiceTree.sailToStorm(QServiceTree.getInstance().getRoot(), (TreeNode srvc) -> {
+            if (!service.equals(srvc) && srvc.isLeaf()) {
+                final String pr = ((QService) srvc).getPrefix();
+                if (!pr.isEmpty() && pr.equalsIgnoreCase(textFieldPrefix.getText())) {
+                    if (JOptionPane.showConfirmDialog(null, getLocaleMessage("dialog.message5"), "Подтвердите правильность", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.CANCEL_OPTION) {
+                        throw new ServerException(getLocaleMessage("dialog.message5"));
                     }
                 }
             }
@@ -230,8 +224,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         service.setExpectation((Integer) spinnerExpectation.getValue());
         service.setAdvanceLimitPeriod((Integer) spinnerLimitPeriod.getValue() < 0 ? 0 : (Integer) spinnerLimitPeriod.getValue());
 
-        if (comboBoxEnabled.getSelectedIndex() == 3) {
-            service.setStatus(2);
+        if (comboBoxEnabled.getSelectedIndex() >= 3) {
+            service.setStatus(comboBoxEnabled.getSelectedIndex() - 1);
         } else {
             service.setStatus((comboBoxEnabled.getSelectedIndex() - 1) * (-1));
         }
@@ -263,7 +257,6 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
 
     private void setHide(boolean b) {
         textFieldPrefix.setEnabled(b);
-        comboBoxEnabled.setEnabled(b);
         comboBoxEnabled.setEnabled(b);
         comboBoxPeriod.setEnabled(b);
         spinnerDayLimit.setEnabled(b);
@@ -398,6 +391,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         jLabel17 = new javax.swing.JLabel();
         spinButH = new javax.swing.JSpinner();
         jLabel18 = new javax.swing.JLabel();
+        WysiwygButton = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         jSplitPane3 = new javax.swing.JSplitPane();
         jSplitPane1 = new javax.swing.JSplitPane();
@@ -409,6 +403,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         textAreaInfoHtml = new javax.swing.JTextArea();
+        butWYS2 = new javax.swing.JButton();
         jScrollPane5 = new javax.swing.JScrollPane();
         labelInfoDialog = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
@@ -430,6 +425,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         checkBoxBackoffice = new javax.swing.JCheckBox();
         jLabel9 = new javax.swing.JLabel();
         spinnerPunktReg = new javax.swing.JSpinner();
+        tfID = new javax.swing.JTextField();
+        jLabel27 = new javax.swing.JLabel();
         panelButtons = new javax.swing.JPanel();
         buttonSave = new javax.swing.JButton();
         buttonCancel = new javax.swing.JButton();
@@ -447,9 +444,9 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         panelProps.setBorder(new javax.swing.border.MatteBorder(null));
         panelProps.setName("panelProps"); // NOI18N
 
-        comboBoxEnabled.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Активна", "Неактивна", "Невидима", "Только предварительная запись" }));
+        comboBoxEnabled.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Активна", "Неактивна", "Невидима", "Только предварительная запись", "Заглушка" }));
         comboBoxEnabled.setName("comboBoxEnabled"); // NOI18N
-        comboBoxEnabled.setModel(new javax.swing.DefaultComboBoxModel(new String[] { getLocaleMessage("active"), getLocaleMessage("notActive"), getLocaleMessage("invisible"), getLocaleMessage("forPrereg") }));
+        comboBoxEnabled.setModel(new javax.swing.DefaultComboBoxModel(new String[] { getLocaleMessage("active"), getLocaleMessage("notActive"), getLocaleMessage("invisible"), getLocaleMessage("forPrereg"), getLocaleMessage("forDummy") }));
 
         jLabel21.setText(resourceMap.getString("jLabel21.text")); // NOI18N
         jLabel21.setName("jLabel21"); // NOI18N
@@ -573,10 +570,33 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(сheckBoxResultRequired)
-                        .addContainerGap())
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(сheckBoxInputRequired)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(textFieldInputCaption, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 757, Short.MAX_VALUE)
+                                    .addComponent(jLabel4)
+                                    .addGroup(jPanel3Layout.createSequentialGroup()
+                                        .addComponent(labelLimitForOnePerson)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(spinnerLimitForOnePerson, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(comboBoxSchedule, 0, 708, Short.MAX_VALUE))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(comboBoxCalendar, 0, 718, Short.MAX_VALUE))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel10)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(textFieldTicketText, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)))
+                        .addGap(18, 18, 18))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(сheckBoxResultRequired)
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addComponent(jLabel8)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -594,46 +614,20 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(comboBoxPeriod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel12)))
-                        .addContainerGap())
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel19)
-                            .addComponent(jLabel26))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(spinnerExpectation, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(spinnerDuration, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel20)
-                            .addComponent(jLabel25))
-                        .addContainerGap(491, Short.MAX_VALUE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(сheckBoxInputRequired)
+                                .addComponent(jLabel12))
                             .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(textFieldInputCaption, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 725, Short.MAX_VALUE)
-                                    .addComponent(jLabel4)
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addComponent(labelLimitForOnePerson)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(spinnerLimitForOnePerson, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                                .addComponent(jLabel3)
+                                    .addComponent(jLabel19)
+                                    .addComponent(jLabel26))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(comboBoxSchedule, 0, 676, Short.MAX_VALUE))
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(jLabel5)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(spinnerExpectation, javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(spinnerDuration, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(comboBoxCalendar, 0, 686, Short.MAX_VALUE))
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(jLabel10)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(textFieldTicketText, javax.swing.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)))
-                        .addGap(18, 18, 18))))
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel20)
+                                    .addComponent(jLabel25))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -796,6 +790,15 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                 .addContainerGap(246, Short.MAX_VALUE))
         );
 
+        WysiwygButton.setText(resourceMap.getString("WysiwygButton.text")); // NOI18N
+        WysiwygButton.setName("WysiwygButton"); // NOI18N
+        WysiwygButton.setPreferredSize(new java.awt.Dimension(79, 15));
+        WysiwygButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                WysiwygButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -803,8 +806,12 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel24)
-                    .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel24)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(WysiwygButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -816,9 +823,11 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jPanel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel24)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel24)
+                            .addComponent(WysiwygButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)))
+                        .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -856,8 +865,8 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel7)
-                .addContainerGap(501, Short.MAX_VALUE))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 750, Short.MAX_VALUE)
+                .addContainerGap(533, Short.MAX_VALUE))
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -887,21 +896,34 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         });
         jScrollPane2.setViewportView(textAreaInfoHtml);
 
+        butWYS2.setText(resourceMap.getString("butWYS2.text")); // NOI18N
+        butWYS2.setName("butWYS2"); // NOI18N
+        butWYS2.setPreferredSize(new java.awt.Dimension(81, 15));
+        butWYS2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                butWYS2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(jLabel6)
-                .addContainerGap(548, Short.MAX_VALUE))
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 750, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(butWYS2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jLabel6)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(butWYS2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE))
         );
 
         jSplitPane1.setLeftComponent(jPanel2);
@@ -923,7 +945,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 754, Short.MAX_VALUE)
+                .addComponent(jSplitPane3)
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -1057,20 +1079,19 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                 .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbGoNumber)
-                .addContainerGap(178, Short.MAX_VALUE))
+                .addContainerGap(210, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel8Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cbClient)
-                    .addComponent(cbClientNumber)))
             .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(cbGoNumber))
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(cbClient)
+                        .addComponent(cbClientNumber))
+                    .addComponent(cbGoNumber)))
         );
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
@@ -1105,6 +1126,13 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         spinnerPunktReg.setModel(new javax.swing.SpinnerNumberModel(0, 0, 99, 1));
         spinnerPunktReg.setName("spinnerPunktReg"); // NOI18N
 
+        tfID.setEditable(false);
+        tfID.setText(resourceMap.getString("tfID.text")); // NOI18N
+        tfID.setName("tfID"); // NOI18N
+
+        jLabel27.setText(resourceMap.getString("jLabel27.text")); // NOI18N
+        jLabel27.setName("jLabel27"); // NOI18N
+
         javax.swing.GroupLayout panelPropsLayout = new javax.swing.GroupLayout(panelProps);
         panelProps.setLayout(panelPropsLayout);
         panelPropsLayout.setHorizontalGroup(
@@ -1112,10 +1140,14 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelPropsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelPropsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelPropsLayout.createSequentialGroup()
+                        .addComponent(jLabel23)
+                        .addGap(10, 10, 10)
+                        .addComponent(textFieldServiceDescript))
                     .addGroup(panelPropsLayout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addGap(8, 8, 8)
-                        .addComponent(comboBoxEnabled, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(comboBoxEnabled, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel21)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1125,17 +1157,18 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                         .addGap(18, 18, 18)
                         .addComponent(jLabel9)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spinnerPunktReg, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(spinnerPunktReg, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(panelPropsLayout.createSequentialGroup()
                         .addComponent(jLabel22)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(textFieldServiceName, javax.swing.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelPropsLayout.createSequentialGroup()
-                        .addComponent(jLabel23)
-                        .addGap(10, 10, 10)
-                        .addComponent(textFieldServiceDescript, javax.swing.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(textFieldServiceName)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel27)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tfID, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 779, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
         );
         panelPropsLayout.setVerticalGroup(
             panelPropsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1143,7 +1176,9 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(panelPropsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(textFieldServiceName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel22))
+                    .addComponent(jLabel22)
+                    .addComponent(tfID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel27))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelPropsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(comboBoxEnabled, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1158,7 +1193,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
                     .addComponent(textFieldServiceDescript, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel23))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE))
+                .addComponent(jTabbedPane1))
         );
 
         panelButtons.setBorder(new javax.swing.border.MatteBorder(null));
@@ -1185,7 +1220,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
         panelButtonsLayout.setHorizontalGroup(
             panelButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelButtonsLayout.createSequentialGroup()
-                .addContainerGap(595, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(buttonSave)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(buttonCancel)
@@ -1247,9 +1282,22 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private void textAreaButtonCaptionKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textAreaButtonCaptionKeyPressed
         labelCaptionButton.setText(textAreaButtonCaption.getText());
     }//GEN-LAST:event_textAreaButtonCaptionKeyPressed
+
+    private void WysiwygButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_WysiwygButtonActionPerformed
+        textAreaButtonCaption.setText(WysiwygDlg.showInstance(textAreaButtonCaption.getText()));
+        labelCaptionButton.setText(textAreaButtonCaption.getText());
+    }//GEN-LAST:event_WysiwygButtonActionPerformed
+
+    private void butWYS2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butWYS2ActionPerformed
+        textAreaInfoHtml.setText(WysiwygDlg.showInstance(textAreaInfoHtml.getText()));
+        labelInfoDialog.setText(textAreaInfoHtml.getText());
+    }//GEN-LAST:event_butWYS2ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton WysiwygButton;
     private javax.swing.ButtonGroup bgGo;
     private javax.swing.ButtonGroup bgGong;
+    private javax.swing.JButton butWYS2;
     private javax.swing.JButton buttonCancel;
     private javax.swing.JButton buttonSave;
     private javax.swing.JCheckBox cbClient;
@@ -1280,6 +1328,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1339,6 +1388,7 @@ public class FServiceChangeDialod extends javax.swing.JDialog {
     private javax.swing.JTextField textFieldServiceDescript;
     private javax.swing.JTextField textFieldServiceName;
     private javax.swing.JTextField textFieldTicketText;
+    private javax.swing.JTextField tfID;
     private javax.swing.JCheckBox сheckBoxInputRequired;
     private javax.swing.JCheckBox сheckBoxResultRequired;
     // End of variables declaration//GEN-END:variables

@@ -27,7 +27,6 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
-import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.QUser;
@@ -226,20 +225,16 @@ public class FMessager extends javax.swing.JDialog {
         if (checkBoxAll.isSelected()) {
             s = s + "ALL";
         } else {
-            for (Object o : listUsers.getSelectedValuesList()) {
+            listUsers.getSelectedValuesList().stream().forEach((o) -> {
                 s = s + "@" + ((QUser)o).getId().toString() + "@";
-            }
+            });
             if (treeServices.getSelectionPaths() != null) {
                 for (Object o : treeServices.getSelectionPaths()) {
                     final TreePath selectedPath = (TreePath) o;
                     final QService service = (QService) selectedPath.getLastPathComponent();
 
-                    QServiceTree.sailToStorm(service, new ISailListener() {
-
-                        @Override
-                        public void actionPerformed(TreeNode service) {
-                            s = s + "@" + ((QService)service).getId().toString() + "@";
-                        }
+                    QServiceTree.sailToStorm(service, (TreeNode service1) -> {
+                        s = s + "@" + ((QService) service1).getId().toString() + "@";
                     });
                 }
             }

@@ -29,7 +29,6 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.MethodNotSupportedException;
-import org.apache.http.entity.ContentProducer;
 import org.apache.http.entity.EntityTemplate;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
@@ -159,13 +158,9 @@ public class HttpQSystemReportsHandler implements HttpRequestHandler {
         QLog.l().logRep().trace("Выдаем результат " + result.getData().length + " байт на запрос \"" + request.getRequestLine().getUri() + "\".");
 
         final byte[] result2 = result.getData();
-        final EntityTemplate body = new EntityTemplate(new ContentProducer() {
-
-            @Override
-            public void writeTo(final OutputStream outstream) throws IOException {
-                outstream.write(result2);
-                outstream.flush();
-            }
+        final EntityTemplate body = new EntityTemplate((final OutputStream outstream) -> {
+            outstream.write(result2);
+            outstream.flush();
         });
 
         body.setContentType(result.getContentType());

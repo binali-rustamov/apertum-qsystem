@@ -33,6 +33,7 @@ import ru.apertum.qsystem.common.exceptions.ServerException;
 
 /**
  * Старт редактора конфигурации клиентского табло
+ *
  * @author Evgeniy Egorov
  */
 public class TabloRedactor {
@@ -63,17 +64,17 @@ public class TabloRedactor {
             throw new ServerException("Невозможно прочитать файл настроек. " + ex.getMessage());
         }
         /*
-        java.awt.EventQueue.invokeLater(new Runnable() {
+         java.awt.EventQueue.invokeLater(new Runnable() {
 
-        @Override
-        public void run() {*/
+         @Override
+         public void run() {*/
         final FBoardConfig bc = new FBoardConfigImpl(null, false);
         bc.setTitle("Редактор клиентского табло");
         bc.setParams(root);
         Uses.setLocation(bc);
         bc.setVisible(true);
         /*         }
-        });*/
+         });*/
     }
 
     static class FBoardConfigImpl extends FBoardConfig {
@@ -117,6 +118,6 @@ public class TabloRedactor {
         } catch (IOException ex) {
             throw new ServerException("Не возможно сохранить изменения в поток." + ex.getMessage());
         }
-        QLog.l().logger().info("Состояние сохранено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
+        QLog.l().logger().info("Состояние сохранено. Затрачено времени: " + ((double) (System.currentTimeMillis() - start)) / 1000 + " сек.");
     }
 }

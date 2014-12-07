@@ -286,6 +286,7 @@ public final class JTreeComboBox extends JComboBox implements TreeSelectionListe
         public void keyTyped(KeyEvent e) {
         }
 
+        @Override
         public void keyReleased(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE
                     || e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -302,6 +303,7 @@ public final class JTreeComboBox extends JComboBox implements TreeSelectionListe
         }
         protected boolean hideNext = false;
 
+        @Override
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             hideNext = mouseInside;
         }
@@ -434,16 +436,9 @@ public final class JTreeComboBox extends JComboBox implements TreeSelectionListe
         dcb.setEditable(true);
         c.add(dcb);
 
-        cb.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JTreeComboBox src = (JTreeComboBox) e.getSource();
-
-                //JOptionPane.showMessageDialog(null, 
-                System.out.println("Selected " + src.getSelectedItem());
-
-            }
+        cb.addActionListener((ActionEvent e) -> {
+            JTreeComboBox src = (JTreeComboBox) e.getSource();
+            //System.out.println("Selected " + src.getSelectedItem());
         });
         //c.add(new DateComboBox());
         //c.add(new JComboBox(new String[] {"Item"}));

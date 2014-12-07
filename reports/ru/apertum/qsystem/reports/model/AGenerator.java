@@ -47,7 +47,7 @@ import ru.apertum.qsystem.reports.common.Response;
 import ru.apertum.qsystem.reports.net.NetUtil;
 
 /**
- * Базовый класс генераторов отчетов. сам себя складывает в HashMap<String, IGenerator> generators. Для получения отчета генератор использует методы интерфейса
+ * Базовый класс генераторов отчетов. сам себя складывает в HashMap [ String, IGenerator ] generators. Для получения отчета генератор использует методы интерфейса
  * IFormirovator. метод process генерирует отчет.
  *
  * @author Evgeniy Egorov

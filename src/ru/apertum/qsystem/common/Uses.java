@@ -32,7 +32,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -87,7 +86,8 @@ public final class Uses {
     public static final int PRIORITY_VIP = 3;
     public static final int[] PRIORITYS = {PRIORITY_LOW, PRIORITY_NORMAL, PRIORITY_HI, PRIORITY_VIP};
     private static final LinkedHashMap<Integer, String> PRIORITYS_WORD = new LinkedHashMap<>();
-    public static LinkedHashMap<Integer, String> get_PRIORITYS_WORD(){
+
+    public static LinkedHashMap<Integer, String> get_PRIORITYS_WORD() {
         PRIORITYS_WORD.put(PRIORITY_LOW, FServicePriority.getLocaleMessage("client.priority.low"));
         PRIORITYS_WORD.put(PRIORITY_NORMAL, FServicePriority.getLocaleMessage("client.priority.standard"));
         PRIORITYS_WORD.put(PRIORITY_HI, FServicePriority.getLocaleMessage("client.priority.hi"));
@@ -100,8 +100,9 @@ public final class Uses {
     public static final int SERVICE_NORMAL = 1;
     public static final int SERVICE_VIP = 2;
     public static final int[] SERVICE_PRIORITYS = {SERVICE_EXCLUDE, SERVICE_REMAINS, SERVICE_NORMAL, SERVICE_VIP};
-    private static final LinkedHashMap<Integer, String> COEFF_WORD = new LinkedHashMap<>();
-    public static LinkedHashMap<Integer, String> get_COEFF_WORD(){
+    public static final LinkedHashMap<Integer, String> COEFF_WORD = new LinkedHashMap<>();
+
+    public static LinkedHashMap<Integer, String> get_COEFF_WORD() {
         COEFF_WORD.put(SERVICE_REMAINS, FServicePriority.getLocaleMessage("service.priority.low"));
         COEFF_WORD.put(SERVICE_NORMAL, FServicePriority.getLocaleMessage("service.priority.basic"));
         COEFF_WORD.put(SERVICE_VIP, FServicePriority.getLocaleMessage("service.priority.vip"));
@@ -419,9 +420,9 @@ public final class Uses {
      */
     private static void getList(ArrayList list, Element el, String tagName) {
         list.addAll(el.elements(tagName));
-        for (Object obj : el.elements()) {
+        el.elements().stream().forEach((obj) -> {
             getList(list, (Element) obj, tagName);
-        }
+        });
     }
 
     /**
@@ -450,9 +451,9 @@ public final class Uses {
         if (attrValue.equals(el.attributeValue(attrName))) {
             list.add(el);
         }
-        for (Object obj : el.elements()) {
+        el.elements().stream().forEach((obj) -> {
             getList(list, (Element) obj, attrName, attrValue);
-        }
+        });
     }
 
     /**
@@ -481,9 +482,9 @@ public final class Uses {
         if (text.equals(el.getTextTrim())) {
             list.add(el);
         }
-        for (Object obj : el.elements()) {
+        el.elements().stream().forEach((obj) -> {
             getListCData(list, (Element) obj, text);
-        }
+        });
     }
 
     /**
@@ -582,10 +583,17 @@ public final class Uses {
         if ("".equals(resourceName)) {
             return null;
         } else {
+            Image img = hashImg.get(resourceName);
+            if (img != null) {
+                return img;
+            }
+
             final DataInputStream inStream;
             File f = new File(resourceName);
             if (f.exists()) {
-                return new ImageIcon(resourceName).getImage();
+                img = new ImageIcon(resourceName).getImage();
+                hashImg.put(resourceName, img);
+                return img;
             } else {
                 final InputStream is = o.getClass().getResourceAsStream(resourceName);
                 if (is == null) {
@@ -610,17 +618,19 @@ public final class Uses {
             } catch (IOException ex) {
                 QLog.l().logger().error(ex);
             }
-            return new ImageIcon(b).getImage();
+            img = new ImageIcon(b).getImage();
+            hashImg.put(resourceName, img);
+            return img;
         }
     }
+    private static final HashMap<String, Image> hashImg = new HashMap<>();
 
     /**
-     * Для чтения байт из потока. не применять для потока связанного с сокетом.
+     * Для чтения байт из потока. не применять для потока связанного с сокетом. readSocketInputStream(InputStream stream)
      *
      * @param stream из него читаем
      * @return byte[] результат
      * @throws java.io.IOException
-     * @see readSocketInputStream(InputStream stream)
      */
     public static byte[] readInputStream(InputStream stream) throws IOException {
         final byte[] result;
@@ -719,6 +729,9 @@ public final class Uses {
                 }
             }
         }
+        COEFF_WORD.put(SERVICE_REMAINS, FServicePriority.getLocaleMessage("service.priority.low"));
+        COEFF_WORD.put(SERVICE_NORMAL, FServicePriority.getLocaleMessage("service.priority.basic"));
+        COEFF_WORD.put(SERVICE_VIP, FServicePriority.getLocaleMessage("service.priority.vip"));
     }
 
     /**
@@ -729,14 +742,8 @@ public final class Uses {
     public static void loadPlugins(String folder) {
         // Загрузка плагинов из папки plugins
         QLog.l().logger().info("Загрузка плагинов из папки plugins.");
-        final File[] list = new File(folder).listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".jar");
-            }
-        });
-        if (list.length != 0) {
+        final File[] list = new File(folder).listFiles((File dir, String name) -> name.toLowerCase().endsWith(".jar"));
+        if (list != null && list.length != 0) {
             final URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
             final Class sysclass = URLClassLoader.class;
             final Class[] parameters = new Class[]{URL.class};
@@ -812,7 +819,6 @@ public final class Uses {
             screen.setAlwaysOnTop(true);
         }
     }
-    private static Thread thread = null;
     private static boolean sh = false;
 
     /**
@@ -852,9 +858,6 @@ public final class Uses {
      */
     public static void closeSplash() {
         sh = false;
-        if (thread != null) {
-            thread.interrupt();
-        }
     }
 
     static void renderSplashFrame(Graphics2D g, int frame) {
@@ -867,23 +870,53 @@ public final class Uses {
     }
 
     public static String prepareAbsolutPathForImg(String html) {
-        final Pattern pattern = Pattern.compile("<\\s*img\\s*src\\s*=\\s*'.*?'\\s*>");//<img src='file:///E:\WORK\apertum-qsystem\config\board\q.jpg'>
+        File f = new File(html.startsWith("file:///") ? html.substring(8) : html);
+        if (f.exists()) {
+            return f.toURI().toString().replace("file:/", "file:///");
+        }
+        final Pattern pattern = Pattern.compile("<\\s*img\\s*src\\s*=\\s*['\"].*?['\"]\\s*>");//<img src='file:///E:\WORK\apertum-qsystem\config\board\q.jpg'>
         final Matcher matcher = pattern.matcher(html);
         String res = html;
         while (matcher.find()) {
             String img = matcher.group();
-            img = img.substring(img.indexOf("'") + 1, img.indexOf("'", img.indexOf("'") + 1));
+            final String tci = img.contains("'") ? "'" : "\"";
+            img = img.substring(img.indexOf(tci) + 1, img.indexOf(tci, img.indexOf(tci) + 1));
+
+            String ff = img;
             if (img.startsWith("file:///")) {
-                continue;
+                ff = img.substring(8);
             }
-            final File f = new File(img);
+            f = new File(ff);
             if (f.isFile()) {
-                res = res.replace("'" + img + "'", "'file:///" + f.getAbsolutePath() + "'");
+                res = res.replace(tci + img + tci, tci + f.toURI().toString().replace("file:/", "file:///") + tci);
             } else {
                 QLog.l().logger().error("Не найден файл \"" + img + "\" для HTML.");
             }
         }
         return res;
+    }
+
+    public static void main(String[] args) {
+        String result = "<html dir=\"ltr\"><head></head><body contenteditable=\"true\"><b><p align=\"center\"><span style=\"font-size:20.0pt;color:blue\">Some service</span></p></b></body></html>";
+        System.out.println(result);
+        result = result.replaceAll("<.?(html).*?>", "");
+        System.out.println(result);
+        result = result.replaceAll("(<.?(head).*?>).*?(<.?(head).*?>)", "");
+        System.out.println(result);
+        result = result.replaceAll("<.?(body).*?>", "");
+        System.out.println(result);
+
+        result = result.replaceAll("<p\\S*?", "\n<p ");
+        System.out.println(result);
+
+        System.out.println("");
+        System.out.println("");
+
+        System.out.println(prepareAbsolutPathForImg("<img src='file:///config/board/q.png'>"));
+        System.out.println(prepareAbsolutPathForImg("<img src=\"file:///config/board/q.png\">"));
+        System.out.println(prepareAbsolutPathForImg("config/board/q.png"));
+        System.out.println(prepareAbsolutPathForImg("file:///www/timed.html"));
+        System.out.println(prepareAbsolutPathForImg("www/timed.html"));
     }
     private static ResourceMap localeMap = null;
 

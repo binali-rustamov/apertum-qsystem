@@ -21,7 +21,6 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import javax.sound.sampled.*;
 import javax.swing.*;
-import java.lang.Thread.*;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -130,9 +129,9 @@ public class SoundPlayer implements Runnable {
         if (startListener != null) {
             startListener.actionPerformed(new ActionEvent(o, 1, "start do sounds"));
         }
-        for (String res : resourceList) {
+        resourceList.stream().forEach((res) -> {
             doSound(o, res);
-        }
+        });
         if (finishListener != null) {
             finishListener.actionPerformed(new ActionEvent(o, 1, "finish do sounds"));
         }
@@ -174,7 +173,7 @@ public class SoundPlayer implements Runnable {
                     int bufferlengthinframes = sourcedataline.getBufferSize() / 8;
                     int bufferlengthinbytes = bufferlengthinframes * framesizeinbytes;
                     sounddata = new byte[bufferlengthinbytes];
-                    int numberofbytesread = 0;
+                    int numberofbytesread;
                     while ((numberofbytesread = ais.read(sounddata)) != -1) {
                         sourcedataline.write(sounddata, 0, numberofbytesread);
                     }
@@ -184,7 +183,6 @@ public class SoundPlayer implements Runnable {
                         Thread.sleep(100);
                     }
                 }
-                sounddata = null;
             }
 
             //printAudioFormatInfo(audioformat);
@@ -239,7 +237,7 @@ public class SoundPlayer implements Runnable {
                     i = n - 1;
                 }
                 elem = ss;
-                if (elem.indexOf("_0") != -1 && elem.indexOf("0_") != -1) {
+                if (elem.contains("_0") && elem.contains("0_")) {
                     continue;
                 }
                 if (isZero(elem)) {
@@ -289,8 +287,7 @@ public class SoundPlayer implements Runnable {
 
             }
             if (!isZero(elem)) {
-                String fileName = elem;
-                fileName = reRus(elem.toLowerCase());
+                final String fileName = reRus(elem.toLowerCase());
                 if (fileName != null) {
                     final String file = path + fileName.toLowerCase() + ".wav";
                     //System.out.println(elem + " - " + file);

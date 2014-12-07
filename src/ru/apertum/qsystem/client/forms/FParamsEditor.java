@@ -37,11 +37,11 @@ import ru.apertum.qsystem.common.exceptions.ClientException;
  * Умеет принять xml-параметры, отредактировать и вернуть результат.
  * Универсальный для простых параметров.
  * Параметры должны быть в таком формате
- * <Параметры>
- *    <Параметер Наименование="высота" Тип="1" Значение="13"/>
- *    <Параметер Наименование="ширина" Тип="2" Значение="13.2"/>
- *    <Параметер Наименование="Заголовок" Тип="3" Значение="Это текст"/>
- * </Параметры>
+ *  Параметры
+ *     Параметер Наименование="высота" Тип="1" Значение="13"/
+ *     Параметер Наименование="ширина" Тип="2" Значение="13.2"/
+ *     Параметер Наименование="Заголовок" Тип="3" Значение="Это текст"/
+ * / Параметры
  * @author Evgeniy Egorov
  */
 public class FParamsEditor extends AFBoardRedactor {
@@ -107,9 +107,9 @@ public class FParamsEditor extends AFBoardRedactor {
     class ParamList extends DefaultListModel {
 
         public ParamList(Element root) {
-            for (Object o : root.elements(Uses.TAG_BOARD_PROP)) {
+            root.elements(Uses.TAG_BOARD_PROP).stream().forEach((o) -> {
                 addElement(new Param((Element) o));
-            }
+            });
         }
     }
 

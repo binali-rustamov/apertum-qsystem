@@ -113,7 +113,7 @@ public class FInfoDialog extends javax.swing.JDialog {
      * @param delay задержка перед скрытием диалога. если 0, то нет автозакрытия диалога
      * @return XML-описание результата предварительной записи, по сути это номерок. если null, то отказались от предварительной записи
      */
-    public static Long showResponseDialog(Frame parent, QInfoItem respList, boolean modal, boolean fullscreen, int delay) {
+    public static Long showInfoDialog(Frame parent, QInfoItem respList, boolean modal, boolean fullscreen, int delay) {
         FInfoDialog.delay = delay;
         QLog.l().logger().info("Чтение информации");
 
@@ -142,7 +142,7 @@ public class FInfoDialog extends javax.swing.JDialog {
         if (infoDialog.clockBack.isActive()) {
             infoDialog.clockBack.stop();
         }
-        if (infoDialog.clockBack.getInterval() < 1000) {
+        if (infoDialog.clockBack.getInterval() > 1000) {
             infoDialog.clockBack.start();
         }
 

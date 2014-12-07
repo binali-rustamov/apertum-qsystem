@@ -17,8 +17,7 @@
 package ru.apertum.qsystem.common.model;
 
 import java.util.Arrays;
-import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
-
+import ru.apertum.qsystem.common.Uses;
 /**
  * @author Evgeniy Egorov
  * Реализация преоритета очередников.
@@ -28,7 +27,7 @@ import ru.apertum.qsystem.common.Uses;import ru.apertum.qsystem.common.QLog;
  * по умолчанию приоритет Uses.PRIORITY_NORMAL;
  *
  */
-public class Priority implements IPriority {
+public final class Priority implements IPriority {
 
     private int priority;
 
@@ -46,7 +45,7 @@ public class Priority implements IPriority {
         if (Arrays.binarySearch(Uses.PRIORITYS, priority) == -1) {
             throw new IllegalArgumentException("Не возможно установить значение приоритета." +
                     " Значение " + priority +
-                    " не принадлежит допустимым значениям: " + Uses.PRIORITYS);
+                    " не принадлежит допустимым значениям: " + Arrays.toString(Uses.PRIORITYS));
         }
         this.priority = priority;
     }

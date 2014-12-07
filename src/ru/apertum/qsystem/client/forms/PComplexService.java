@@ -55,7 +55,6 @@ import javax.swing.JTree;
 import javax.swing.TransferHandler;
 import static javax.swing.TransferHandler.MOVE;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
@@ -78,7 +77,6 @@ import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.extra.IPrintTicket;
 import static ru.apertum.qsystem.server.QServer.clearAllQueue;
 import ru.apertum.qsystem.server.model.ATreeModel;
-import ru.apertum.qsystem.server.model.ISailListener;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
 
@@ -104,18 +102,18 @@ public class PComplexService extends javax.swing.JPanel {
         this.netProperty = netProperty;
         treeServices.setModel(tm);
 
-        listOfLists.setModel(new DefaultListModel<ComplexListOfServices>());
-        listFreeServices.setModel(new DefaultListModel<QService>());
+        listOfLists.setModel(new DefaultListModel<>());
+        listFreeServices.setModel(new DefaultListModel<>());
         listFreeServices.setTransferHandler(thList);
-        listServ1.setModel(new DefaultListModel<QService>());
+        listServ1.setModel(new DefaultListModel<>());
         listServ1.setTransferHandler(thList);
-        listServ2.setModel(new DefaultListModel<QService>());
+        listServ2.setModel(new DefaultListModel<>());
         listServ2.setTransferHandler(thList);
-        listServ3.setModel(new DefaultListModel<QService>());
+        listServ3.setModel(new DefaultListModel<>());
         listServ3.setTransferHandler(thList);
-        listServ4.setModel(new DefaultListModel<QService>());
+        listServ4.setModel(new DefaultListModel<>());
         listServ4.setTransferHandler(thList);
-        listServ5.setModel(new DefaultListModel<QService>());
+        listServ5.setModel(new DefaultListModel<>());
         listServ5.setTransferHandler(thList);
         treeDepends.setModel(new DepServiceTree(new DepService("root1", Long.MIN_VALUE)));
         treeDepends.setTransferHandler(thDepTree);
@@ -157,46 +155,42 @@ public class PComplexService extends javax.swing.JPanel {
         });
         listFreeServices.setDropMode(DropMode.INSERT);
 
-        listOfLists.addListSelectionListener(new ListSelectionListener() {
-
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (listOfLists.getSelectedIndex() != -1) {
-                    DefaultListModel<ComplexListOfServices> sll = (DefaultListModel<ComplexListOfServices>) (listOfLists.getModel());
-                    final ComplexListOfServices cmp = sll.get(listOfLists.getSelectedIndex());
-
-                    DefaultListModel<QService> sl = (DefaultListModel<QService>) (listFreeServices.getModel());
-                    sl.clear();
-                    for (QService ser : cmp.listFree) {
-                        sl.addElement(ser);
-                    }
-                    sl = (DefaultListModel<QService>) (listServ1.getModel());
-                    sl.clear();
-                    for (QService ser : cmp.list1) {
-                        sl.addElement(ser);
-                    }
-                    sl = (DefaultListModel<QService>) (listServ2.getModel());
-                    sl.clear();
-                    for (QService ser : cmp.list2) {
-                        sl.addElement(ser);
-                    }
-                    sl = (DefaultListModel<QService>) (listServ3.getModel());
-                    sl.clear();
-                    for (QService ser : cmp.list3) {
-                        sl.addElement(ser);
-                    }
-                    sl = (DefaultListModel<QService>) (listServ4.getModel());
-                    sl.clear();
-                    for (QService ser : cmp.list4) {
-                        sl.addElement(ser);
-                    }
-                    sl = (DefaultListModel<QService>) (listServ5.getModel());
-                    sl.clear();
-                    for (QService ser : cmp.list5) {
-                        sl.addElement(ser);
-                    }
-
+        listOfLists.addListSelectionListener((ListSelectionEvent e) -> {
+            if (listOfLists.getSelectedIndex() != -1) {
+                DefaultListModel<ComplexListOfServices> sll = (DefaultListModel<ComplexListOfServices>) (listOfLists.getModel());
+                final ComplexListOfServices cmp = sll.get(listOfLists.getSelectedIndex());
+                
+                DefaultListModel<QService> sl = (DefaultListModel<QService>) (listFreeServices.getModel());
+                sl.clear();
+                for (QService ser : cmp.listFree) {
+                    sl.addElement(ser);
                 }
+                sl = (DefaultListModel<QService>) (listServ1.getModel());
+                sl.clear();
+                for (QService ser : cmp.list1) {
+                    sl.addElement(ser);
+                }
+                sl = (DefaultListModel<QService>) (listServ2.getModel());
+                sl.clear();
+                for (QService ser : cmp.list2) {
+                    sl.addElement(ser);
+                }
+                sl = (DefaultListModel<QService>) (listServ3.getModel());
+                sl.clear();
+                for (QService ser : cmp.list3) {
+                    sl.addElement(ser);
+                }
+                sl = (DefaultListModel<QService>) (listServ4.getModel());
+                sl.clear();
+                for (QService ser : cmp.list4) {
+                    sl.addElement(ser);
+                }
+                sl = (DefaultListModel<QService>) (listServ5.getModel());
+                sl.clear();
+                for (QService ser : cmp.list5) {
+                    sl.addElement(ser);
+                }
+                
             }
         });
 
@@ -316,21 +310,17 @@ public class PComplexService extends javax.swing.JPanel {
                 return false;
             }
             final DefaultListModel<QService> sl = (DefaultListModel<QService>) (((JList) (info.getComponent())).getModel());
-            for (QService data : dataA) {
+            dataA.stream().forEach((data) -> {
                 if (data.isLeaf() && isGood(data)) {
                     sl.addElement(data);
                 } else {
-                    QServiceTree.sailToStorm(data, new ISailListener() {
-
-                        @Override
-                        public void actionPerformed(TreeNode service) {
-                            if (service.isLeaf() && isGood((QService) service)) {
-                                sl.addElement((QService) service);
-                            }
+                    QServiceTree.sailToStorm(data, (TreeNode service) -> {
+                        if (service.isLeaf() && isGood((QService) service)) {
+                            sl.addElement((QService) service);
                         }
                     });
                 }
-            }
+            });
             return true;
         }
     };
@@ -380,24 +370,20 @@ public class PComplexService extends javax.swing.JPanel {
                             ((DepServiceTree) treeDepends.getModel()).insertNodeInto(new DepService(data.getName(), data.getId()), parent, parent.getChildCount());
                         }
                     } else {
-                        QServiceTree.sailToStorm(data, new ISailListener() {
-
-                            @Override
-                            public void actionPerformed(TreeNode service) {
-                                if (service.isLeaf()) {
-                                    final QService data = (QService) service;
-                                    boolean f = true;
-                                    final Enumeration<DepService> e = parent.children();
-                                    while (e.hasMoreElements()) {
-                                        final DepService ds = e.nextElement();
-                                        if (ds.getId().equals(data.getId())) {
-                                            f = false;
-                                            break;
-                                        }
+                        QServiceTree.sailToStorm(data, (TreeNode service) -> {
+                            if (service.isLeaf()) {
+                                final QService data1 = (QService) service;
+                                boolean f = true;
+                                final Enumeration<DepService> e = parent.children();
+                                while (e.hasMoreElements()) {
+                                    final DepService ds = e.nextElement();
+                                    if (ds.getId().equals(data1.getId())) {
+                                        f = false;
+                                        break;
                                     }
-                                    if (f && !data.getId().equals(parent.getId())) {
-                                        ((DepServiceTree) treeDepends.getModel()).insertNodeInto(new DepService(data.getName(), data.getId()), parent, parent.getChildCount());
-                                    }
+                                }
+                                if (f && !data1.getId().equals(parent.getId())) {
+                                    ((DepServiceTree) treeDepends.getModel()).insertNodeInto(new DepService(data1.getName(), data1.getId()), parent, parent.getChildCount());
                                 }
                             }
                         });
@@ -901,15 +887,11 @@ public class PComplexService extends javax.swing.JPanel {
             super(root1);
             final DefaultTreeModel f = this;
             final ATreeModel tm = (ATreeModel) treeServices.getModel();
-            QServiceTree.sailToStorm(tm.getRoot(), new ISailListener() {
-
-                @Override
-                public void actionPerformed(TreeNode service) {
-                    final QService serv = (QService) service;
-                    if (serv.isLeaf()) {
-                        final DepService ser = new DepService(serv.getName(), serv.getId());
-                        f.insertNodeInto(ser, (MutableTreeNode) root1, root1.getChildCount());
-                    }
+            QServiceTree.sailToStorm(tm.getRoot(), (TreeNode service) -> {
+                final QService serv = (QService) service;
+                if (serv.isLeaf()) {
+                    final DepService ser = new DepService(serv.getName(), serv.getId());
+                    f.insertNodeInto(ser, (MutableTreeNode) root1, root1.getChildCount());
                 }
             });
         }
@@ -975,7 +957,7 @@ public class PComplexService extends javax.swing.JPanel {
                 GsonPool.getInstance().returnGson(gson);
             }
             if (recList == null) {
-                recList = new SaveList(new ArrayList<ComplexListOfServices>(), new LinkedList<LinkedList<Long>>());
+                recList = new SaveList(new ArrayList<>(), new LinkedList<>());
             }
 
             try {
@@ -986,12 +968,12 @@ public class PComplexService extends javax.swing.JPanel {
                     final DepService ds = e.nextElement();
                     for (LinkedList<Long> rec : recList.dependences) {
                         if (rec.get(0).equals(ds.id)) {
-                            for (Long long1 : rec) {
+                            rec.stream().forEach((long1) -> {
                                 final QService ser = QServiceTree.getInstance().getById(long1);
                                 if (ser != null && !ser.getId().equals(ds.id)) {
                                     ds.add(new DepService(ser.getName(), long1));
                                 }
-                            }
+                            });
                             break;
                         }
                     }
@@ -1002,46 +984,34 @@ public class PComplexService extends javax.swing.JPanel {
                 for (ComplexListOfServices rec : recList.backup) {
 
                     ArrayList<QService> del = new ArrayList<>();
-                    for (QService service : rec.listFree) {
-                        if (!QServiceTree.getInstance().hasById(service.getId())) {
-                            del.add(service);
-                        }
-                    }
+                    rec.listFree.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                        del.add(service);
+                    });
                     rec.listFree.removeAll(del);
                     del.clear();
-                    for (QService service : rec.list1) {
-                        if (!QServiceTree.getInstance().hasById(service.getId())) {
-                            del.add(service);
-                        }
-                    }
+                    rec.list1.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                        del.add(service);
+                    });
                     rec.list1.removeAll(del);
                     del.clear();
-                    for (QService service : rec.list2) {
-                        if (!QServiceTree.getInstance().hasById(service.getId())) {
-                            del.add(service);
-                        }
-                    }
+                    rec.list2.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                        del.add(service);
+                    });
                     rec.list2.removeAll(del);
                     del.clear();
-                    for (QService service : rec.list3) {
-                        if (!QServiceTree.getInstance().hasById(service.getId())) {
-                            del.add(service);
-                        }
-                    }
+                    rec.list3.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                        del.add(service);
+                    });
                     rec.list3.removeAll(del);
                     del.clear();
-                    for (QService service : rec.list4) {
-                        if (!QServiceTree.getInstance().hasById(service.getId())) {
-                            del.add(service);
-                        }
-                    }
+                    rec.list4.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                        del.add(service);
+                    });
                     rec.list4.removeAll(del);
                     del.clear();
-                    for (QService service : rec.list5) {
-                        if (!QServiceTree.getInstance().hasById(service.getId())) {
-                            del.add(service);
-                        }
-                    }
+                    rec.list5.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                        del.add(service);
+                    });
                     rec.list5.removeAll(del);
 
                     ((DefaultListModel) (listOfLists.getModel())).addElement(rec);
@@ -1370,22 +1340,16 @@ public class PComplexService extends javax.swing.JPanel {
                 }
 
                 final LinkedList<QService> servs = new LinkedList<>();
-                for (LinkedList<LinkedList<Long>> ids : customer.getComplexId()) {
-                    for (final LinkedList<Long> id : ids) {
-                        if (id.getFirst() != n1) {
-                            QServiceTree.sailToStorm(tm.getRoot(), new ISailListener() {
-
-                                @Override
-                                public void actionPerformed(TreeNode service) {
-                                    final QService serv = (QService) service;
-                                    if (id.getFirst() == serv.getId().longValue()) {
-                                        servs.add(serv);
-                                    }
-                                }
-                            });
-                        }
-                    }
-                }
+                customer.getComplexId().stream().forEach((ids) -> {
+                    ids.stream().filter((id) -> (id.getFirst() != n1)).forEach((id) -> {
+                        QServiceTree.sailToStorm(tm.getRoot(), (TreeNode service) -> {
+                            final QService serv = (QService) service;
+                            if (id.getFirst() == serv.getId().longValue()) {
+                                servs.add(serv);
+                            }
+                        });
+                    });
+                });
                 for (QService qService : servs) {
                     ++line;
                     //write("№   _____________________________", ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);

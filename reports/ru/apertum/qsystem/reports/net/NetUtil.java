@@ -35,7 +35,7 @@ import ru.apertum.qsystem.common.exceptions.ReportException;
  */
 public class NetUtil {
 
-    private static HashMap<HttpRequest, String> map_ec = new HashMap<>();
+    private static final HashMap<HttpRequest, String> map_ec = new HashMap<>();
 
     public static synchronized String getEntityContent(HttpRequest request) {
         String result = map_ec.get(request);

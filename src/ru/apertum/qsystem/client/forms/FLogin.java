@@ -101,7 +101,6 @@ public class FLogin extends javax.swing.JDialog {
                 labelLavel.setText(LABEL_ADMIN);
                 break;
             default:
-                level = LEVEL_USER;
                 labelLavel.setText(LABEL_USER);
         }
     }
