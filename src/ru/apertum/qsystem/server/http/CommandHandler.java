@@ -108,8 +108,8 @@ public class CommandHandler extends AbstractHandler {
                 status = f ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK;
                 break;
             default:
-                status = HttpServletResponse.SC_OK;
-                result = "<h1>QSystem<hr><br><br>URL не поддерживается // URL not supply</h1>";
+                //status = HttpServletResponse.SC_OK;
+                //result = "<h1>QSystem<hr><br><br>URL не поддерживается // URL not supply</h1>";
                 return;
         }
         //System.out.println(status + "/n" + result);

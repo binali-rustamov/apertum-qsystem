@@ -16,7 +16,7 @@
             <author name="Develop by Evgeniy V. Egorov" email="egorov@apertum.ru"/>
         </authors>
         <url>http://www.apertum.ru</url>
-        <javaversion>1.7.0</javaversion>
+        <javaversion>1.8.0</javaversion>
         <requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall.vista|izpack.macinstall"/>
     </info>
@@ -174,6 +174,7 @@
         <pack id="registrationPoint" name="Registration point" required="no" preselected="no">
             <description>Пункт регистрации</description>
             <file src="../config/welcome.properties" targetdir="$INSTALL_PATH/config/"/>
+			<file src="../config/welcome_bg.properties" targetdir="$INSTALL_PATH/config/"/>
             <file os="windows" src="resource/txt/Welcome.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/welcome.sh" targetdir="$INSTALL_PATH"/>
 			<fileset dir="../config/flags" includes="*.jpg,*.gif,*.png,*.mpg" targetdir="$INSTALL_PATH/config/flags/"/>
@@ -190,6 +191,12 @@
 			<parsable os="windows" targetfile="$INSTALL_PATH/Reception.bat"/>
             <parsable os="unix" targetfile="$INSTALL_PATH/reception.sh"/>
 			<parsable targetfile="$INSTALL_PATH/config/langs.properties"/>
+        </pack>
+		<pack id="journal" name="Journal" required="no" preselected="no">
+            <description>Journal</description>
+			<file src="../config/journal.properties" targetdir="$INSTALL_PATH/config/"/>
+            <file  src="../plugins/Journal.jar" targetdir="$INSTALL_PATH/plugins/"/>
+            <!-- Reccursive adding -->
         </pack>
         <pack id="docs" name="Documentation" required="no">
             <description>Документация</description>

@@ -17,7 +17,6 @@
 package ru.apertum.qsystem.server.controller;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -38,7 +37,6 @@ import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.SoundPlayer;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.common.model.QCustomer;
-import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.QUser;
 
@@ -100,12 +98,8 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
                 showOnBoard(new LinkedHashSet<>(records.values()));
             }
 
-            java.awt.EventQueue.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    indicatorBoard.setVisible(true);
-                }
+            java.awt.EventQueue.invokeLater(() -> {
+                indicatorBoard.setVisible(true);
             });
         }
     }
@@ -143,13 +137,11 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             if (QLog.isServer1) { // если это не сервер, то QServiceTree полезет в спринг
                 final LinkedList<String> nexts = new LinkedList<>();
                 final PriorityQueue<QCustomer> customers = new PriorityQueue<>();
-                for (QService service : QServiceTree.getInstance().getNodes()) {
-                    if (service.isLeaf()) {
-                        for (QCustomer qCustomer : service.getClients()) {
-                            customers.add(qCustomer);
-                        }
-                    }
-                }
+                QServiceTree.getInstance().getNodes().stream().filter((service) -> (service.isLeaf())).forEach((service) -> {
+                    service.getClients().stream().forEach((qCustomer) -> {
+                        customers.add(qCustomer);
+                    });
+                });
                 QCustomer qCustomer = customers.poll();
                 while (qCustomer != null) {
                     nexts.add(qCustomer.getPrefix() + qCustomer.getNumber());
@@ -219,19 +211,11 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
     @Override
     public void showBoard() {
         // Для прерывания звука в роликах при звуковом оповещении.
-        SoundPlayer.setStartListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setMute(true);
-            }
+        SoundPlayer.setStartListener((ActionEvent e) -> {
+            setMute(true);
         });
-        SoundPlayer.setFinishListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setMute(false);
-            }
+        SoundPlayer.setFinishListener((ActionEvent e) -> {
+            setMute(false);
         });
         initIndicatorBoard();
     }

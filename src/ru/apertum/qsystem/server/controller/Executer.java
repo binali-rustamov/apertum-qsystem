@@ -21,6 +21,7 @@ import ru.apertum.qsystem.common.SoundPlayer;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import org.dom4j.DocumentException;
@@ -131,7 +132,7 @@ public final class Executer {
 
     /**
      *
-     * @author Evgeniy Egorov Базовый класс обработчиков заданий. сам себя складывает в HashMap<String, ATask> tasks. метод process исполняет задание.
+     * @author Evgeniy Egorov Базовый класс обработчиков заданий. сам себя складывает в HashMap[String, ATask] tasks. метод process исполняет задание.
      */
     public class Task {
 
@@ -140,7 +141,8 @@ public final class Executer {
 
         public Task(String name) {
             this.name = name;
-            tasks.put(name, this);
+            final Task tk = this;
+            tasks.put(name, tk);
         }
 
         public Object process(CmdParams cmdParams, String ipAdress, byte[] IP) {
@@ -366,7 +368,7 @@ public final class Executer {
             // а стазу начать что-то делать.
             // Например кастомера отправили на комплектование товара, при этом его не нужно звать, только скомплектовать товар и
             // заредиректить на выдачу, вот на выдаче его и нужно звать.
-            if (customer.getService().getEnable().intValue() != 1) { // услуга не требует вызова
+            if (customer.getService().getEnable() != 1) { // услуга не требует вызова
                 // Время старта работы с юзера с кастомером.
                 customer.setStartTime(new Date());
                 // кастомер переходит в состояние "Начала обработки" или "Продолжение работы"
@@ -378,7 +380,7 @@ public final class Executer {
             try {
                 // сохраняем состояния очередей.
                 QServer.savePool();
-                if (customer.getService().getEnable().intValue() == 1) { // услуга требует вызова
+                if (customer.getService().getEnable() == 1) { // услуга требует вызова
                     // просигналим звуком
                     SoundPlayer.inviteClient(customer.getService(), user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
                     //разослать оповещение о том, что появился вызванный посетитель
@@ -680,12 +682,10 @@ public final class Executer {
             super.process(cmdParams, ipAdress, IP);
             final LinkedList<RpcGetServerState.ServiceInfo> srvs = new LinkedList<>();
 
-            for (QService service : QServiceTree.getInstance().getNodes()) {
-                if (service.isLeaf()) {
-                    final QCustomer customer = service.peekCustomer();
-                    srvs.add(new RpcGetServerState.ServiceInfo(service, service.getCountCustomers(), customer != null ? customer.getPrefix() + customer.getNumber() : "-"));
-                }
-            }
+            QServiceTree.getInstance().getNodes().stream().filter((service) -> (service.isLeaf())).forEach((service) -> {
+                final QCustomer customer = service.peekCustomer();
+                srvs.add(new RpcGetServerState.ServiceInfo(service, service.getCountCustomers(), customer != null ? customer.getPrefix() + customer.getNumber() : "-"));
+            });
             return new RpcGetServerState(srvs);
         }
     };
@@ -723,12 +723,8 @@ public final class Executer {
          * Опросим всю сетку на предмет пользователей параллельно происходящему.
          */
         public void refreshUsersFon() {
-            Thread th = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    refreshUsers();
-                }
+            Thread th = new Thread(() -> {
+                refreshUsers();
             });
             th.start();
         }
@@ -858,10 +854,10 @@ public final class Executer {
                 user.setPoint(cmdParams.textData);
             }
             final LinkedList<RpcGetSelfSituation.SelfService> servs = new LinkedList<>();
-            for (QPlanService planService : user.getPlanServices()) {
+            user.getPlanServices().stream().forEach((planService) -> {
                 final QService service = QServiceTree.getInstance().getById(planService.getService().getId());
                 servs.add(new RpcGetSelfSituation.SelfService(service, service.getCountCustomers(), planService.getCoefficient(), planService.getFlexible_coef()));
-            }
+            });
             // нужно сделать вставочку приглашенного юзера, если он есть
             return new RpcGetSelfSituation(new RpcGetSelfSituation.SelfSituation(servs,
                     user.getCustomer(),
@@ -938,14 +934,12 @@ public final class Executer {
                 int cnt = 0;
                 for (QService service : QServiceTree.getInstance().getNodes()) {
                     final LinkedList<QCustomer> for_del = new LinkedList<>();
-                    for (QCustomer customer : service.getClients()) {
-                        if (user.getCustomer().getInput_data().equals(customer.getInput_data())) {
-                            for_del.add(customer);
-                        }
-                    }
-                    for (QCustomer qCustomer : for_del) {
+                    service.getClients().stream().filter((customer) -> (user.getCustomer().getInput_data().equals(customer.getInput_data()))).forEach((customer) -> {
+                        for_del.add(customer);
+                    });
+                    for_del.stream().forEach((qCustomer) -> {
                         service.removeCustomer(qCustomer);
-                    }
+                    });
                     cnt = cnt + for_del.size();
                 }
                 if (cnt != 0) {
@@ -1111,9 +1105,7 @@ public final class Executer {
                 // если нет то дефолтная проводочка в следующую услугу.
                 if (customer.getState() == CustomerState.STATE_FINISH && customer.getComplexId() != null) {
                     int len = 0;
-                    for (LinkedList<LinkedList<Long>> li : customer.getComplexId()) {
-                        len += li.size();
-                    }
+                    len = customer.getComplexId().stream().map((li) -> li.size()).reduce(len, Integer::sum);
                     if (len != 0) {
                         QLog.l().logger().debug("Дефолтная проводка по комплексным услугам. Омталось " + len);
                         Long serviceID = null;
@@ -1803,7 +1795,7 @@ public final class Executer {
                         Spring.getInstance().getHt().saveOrUpdate(customer);
                         QLog.l().logger().debug("Сохранили.");
                     } catch (Exception ex) {
-                        QLog.l().logger().error("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
+                        QLog.l().logger().error("Ошибка при сохранении \n" + ex.toString() + "\n" + Arrays.toString(ex.getStackTrace()));
                         status.setRollbackOnly();
                     }
                 }
@@ -1846,7 +1838,7 @@ public final class Executer {
                             QLog.l().logger().debug("Удалили предварителньную запись о кастомере.");
                         } catch (Exception ex) {
                             status.setRollbackOnly();
-                            throw new ServerException("Ошибка при удалении \n" + ex.toString() + "\n" + ex.getStackTrace());
+                            throw new ServerException("Ошибка при удалении \n" + ex.toString() + "\n" + Arrays.toString(ex.getStackTrace()));
                         }
                     }
                 });
@@ -1894,7 +1886,7 @@ public final class Executer {
                         QLog.l().logger().debug("Удалили предварителньную запись о кастомере.");
                     } catch (Exception ex) {
                         status.setRollbackOnly();
-                        throw new ServerException("Ошибка при удалении \n" + ex.toString() + "\n" + ex.getStackTrace());
+                        throw new ServerException("Ошибка при удалении \n" + ex.toString() + "\n" + Arrays.toString(ex.getStackTrace()));
                     }
                 }
             });
@@ -1938,7 +1930,7 @@ public final class Executer {
                         QLog.l().logger().debug("Сохранили отзыв в базе.");
                     } catch (Exception ex) {
                         rpcErr.setError(new JsonRPC20Error.ErrorRPC(JsonRPC20Error.ErrorRPC.RESPONCE_NOT_SAVE, ex));
-                        QLog.l().logger().error("Ошибка при сохранении \n" + ex.toString() + "\n" + ex.getStackTrace());
+                        QLog.l().logger().error("Ошибка при сохранении \n" + ex.toString() + "\n" + Arrays.toString(ex.getStackTrace()));
                         status.setRollbackOnly();
                     }
                 }
@@ -2191,7 +2183,7 @@ public final class Executer {
         // А то что необходимо синхронизировать, то синхронизится в самих обработчиках.
         result = tasks.get(rpc.getMethod()).process(rpc.getParams(), ipAdress, IP);
 
-        QLog.l().logger().info("Задание завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
+        QLog.l().logger().info("Задание завершено. Затрачено времени: " + ((double) (System.currentTimeMillis() - start)) / 1000 + " сек.");
         return result;
     }
 }

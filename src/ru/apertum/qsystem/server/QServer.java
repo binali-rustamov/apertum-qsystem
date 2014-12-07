@@ -23,14 +23,13 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.ServiceLoader;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.forms.FAbout;
 import ru.apertum.qsystem.common.CodepagePrintStream;
@@ -197,12 +196,8 @@ public class QServer extends Thread {
         for (final IStartServer event : ServiceLoader.load(IStartServer.class)) {
             QLog.l().logger().info("Вызов SPI расширения. Описание: " + event.getDescription());
             try {
-                new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        event.start();
-                    }
+                new Thread(() -> {
+                    event.start();
                 }).start();
             } catch (Throwable tr) {
                 QLog.l().logger().error("Вызов SPI расширения завершился ошибкой. Описание: " + tr);
@@ -292,7 +287,7 @@ public class QServer extends Thread {
 
         deleteTempFile();
         Thread.sleep(1500);
-        QLog.l().logger().info("Сервер штатно завершил работу. Время работы: " + Uses.roundAs(new Double(System.currentTimeMillis() - start) / 1000 / 60, 2) + " мин.");
+        QLog.l().logger().info("Сервер штатно завершил работу. Время работы: " + Uses.roundAs(((double) (System.currentTimeMillis() - start)) / 1000 / 60, 2) + " мин.");
         System.exit(0);
     }
 
@@ -316,7 +311,7 @@ public class QServer extends Thread {
             try {
                 is = socket.getInputStream();
             } catch (IOException e) {
-                throw new ServerException("Ошибка при получении входного потока: " + e.getStackTrace());
+                throw new ServerException("Ошибка при получении входного потока: " + Arrays.toString(e.getStackTrace()));
             }
 
             final String data;
@@ -353,7 +348,7 @@ public class QServer extends Thread {
                 answer = gson.toJson(result);
             } catch (Exception ex) {
                 QLog.l().logger().error("Поздно пойманная ошибка при выполнении команды. ", ex);
-                throw new ServerException("Поздно пойманная ошибка при выполнении команды: " + ex.getStackTrace());
+                throw new ServerException("Поздно пойманная ошибка при выполнении команды: " + Arrays.toString(ex.getStackTrace()));
             } finally {
                 GsonPool.getInstance().returnGson(gson);
             }
@@ -366,7 +361,7 @@ public class QServer extends Thread {
                 writer.print(URLEncoder.encode(answer, "utf-8"));
                 writer.flush();
             } catch (IOException e) {
-                throw new ServerException("Ошибка при записи в поток: " + e.getStackTrace());
+                throw new ServerException("Ошибка при записи в поток: " + Arrays.toString(e.getStackTrace()));
             }
         } catch (ServerException | JsonParseException ex) {
             final StringBuilder sb = new StringBuilder("\nStackTrace:\n");
@@ -391,50 +386,43 @@ public class QServer extends Thread {
     /**
      * Сохранение состояния пула услуг в xml-файл на диск
      */
-    public static void savePool() {
+    public synchronized static void savePool() {
         final long start = System.currentTimeMillis();
-        final Lock saveLock = new ReentrantLock();
-        saveLock.lock();
-        try {
-            QLog.l().logger().info("Сохранение состояния.");
-            final LinkedList<QCustomer> backup = new LinkedList<>();// создаем список сохраняемых кастомеров
-            final LinkedList<Long> pauses = new LinkedList<>();// создаем список юзеров у которых менопауза
+        QLog.l().logger().info("Сохранение состояния.");
+        final LinkedList<QCustomer> backup = new LinkedList<>();// создаем список сохраняемых кастомеров
+        final LinkedList<Long> pauses = new LinkedList<>();// создаем список юзеров у которых менопауза
+        QServiceTree.getInstance().getNodes().stream().forEach((service) -> {
+            backup.addAll(service.getClients());
+        });
 
-            for (QService service : QServiceTree.getInstance().getNodes()) {
-                backup.addAll(service.getClients());
+        for (QUser user : QUserList.getInstance().getItems()) {
+            if (user.getCustomer() != null) {
+                backup.add(user.getCustomer());
             }
-
-            for (QUser user : QUserList.getInstance().getItems()) {
-                if (user.getCustomer() != null) {
-                    backup.add(user.getCustomer());
-                }
-                if (user.isPause()) {
-                    pauses.add(user.getId());
-                }
+            if (user.isPause()) {
+                pauses.add(user.getId());
             }
-            // в темповый файл
-            final FileOutputStream fos;
-            try {
-                (new File(Uses.TEMP_FOLDER)).mkdir();
-                fos = new FileOutputStream(new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE));
-            } catch (FileNotFoundException ex) {
-                throw new ServerException("Не возможно создать временный файл состояния. " + ex.getMessage());
-            }
-            Gson gson = null;
-            try {
-                gson = GsonPool.getInstance().borrowGson();
-                fos.write(gson.toJson(new TempList(backup, QPostponedList.getInstance().getPostponedCustomers(), pauses)).getBytes("UTF-8"));
-                fos.flush();
-                fos.close();
-            } catch (IOException ex) {
-                throw new ServerException("Не возможно сохранить изменения в поток." + ex.getMessage());
-            } finally {
-                GsonPool.getInstance().returnGson(gson);
-            }
-        } finally {
-            saveLock.unlock();
         }
-        QLog.l().logger().info("Состояние сохранено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
+        // в темповый файл
+        final FileOutputStream fos;
+        try {
+            (new File(Uses.TEMP_FOLDER)).mkdir();
+            fos = new FileOutputStream(new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE));
+        } catch (FileNotFoundException ex) {
+            throw new ServerException("Не возможно создать временный файл состояния. " + ex.getMessage());
+        }
+        Gson gson = null;
+        try {
+            gson = GsonPool.getInstance().borrowGson();
+            fos.write(gson.toJson(new TempList(backup, QPostponedList.getInstance().getPostponedCustomers(), pauses)).getBytes("UTF-8"));
+            fos.flush();
+            fos.close();
+        } catch (IOException ex) {
+            throw new ServerException("Не возможно сохранить изменения в поток." + ex.getMessage());
+        } finally {
+            GsonPool.getInstance().returnGson(gson);
+        }
+        QLog.l().logger().info("Состояние сохранено. Затрачено времени: " + ((double) (System.currentTimeMillis() - start)) / 1000 + " сек.");
     }
 
     static public class TempList {
@@ -561,7 +549,7 @@ public class QServer extends Thread {
                 }
             }
         }
-        QLog.l().logger().info("Восстановление состояния системы завершено. Затрачено времени: " + new Double(System.currentTimeMillis() - start) / 1000 + " сек.");
+        QLog.l().logger().info("Восстановление состояния системы завершено. Затрачено времени: " + ((double) (System.currentTimeMillis() - start)) / 1000 + " сек.");
     }
 
     static public void clearAllQueue() {

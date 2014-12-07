@@ -21,6 +21,7 @@ package ru.apertum.qsystem.server.model.infosystem;
  * Должен возникать для каждого инфоузла
  * @author Evgeniy Egorov
  */
+@FunctionalInterface
 public interface ISailListener {
 
     /**

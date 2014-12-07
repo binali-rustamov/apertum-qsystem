@@ -17,7 +17,6 @@
 package ru.apertum.qsystem.server.model.postponed;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -65,47 +64,43 @@ public class QPostponedList extends DefaultListModel {
 
     private QPostponedList() {
         if (QLog.isServer1) {
-            timerOut = new Timer(60 * 1000, new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Executer.postponedTaskLock.lock();
+            timerOut = new Timer(60 * 1000, (ActionEvent e) -> {
+                Executer.postponedTaskLock.lock();
+                try {
+                    Executer.clientTaskLock.lock();
                     try {
-                        Executer.clientTaskLock.lock();
-                        try {
-                            final ArrayList<QCustomer> forDel = new ArrayList<>();
-                            for (QCustomer customer : getPostponedCustomers()) {
-                                if (customer.getPostponPeriod() > 0 && customer.getFinishPontpone() < new Date().getTime()) {
-                                    QLog.l().logger().debug("Перемещение по таймеру из отложенных кастомера №" + customer.getPrefix() + customer.getNumber() + " в услугу \"" + customer.getService().getName() + "\"");
-                                    // время сидения вышло, пора отправляться в очередь.
-                                    forDel.add(customer);
-                                    // в очередь, сукины дети
-                                    // время постановки проставляется автоматом при создании кастомера.
-                                    customer.setPriority(customer.getPriority().get() + 1);
-                                    //добавим нового пользователя
-                                    customer.getService().addCustomer(customer);
-                                    // вроде как только что встал в очередь, ну и время проставим, а то ожидание будет огромное
-                                    // только что встал типо. Поросто время нахождения в отложенных не считаетка как ожидание очереди. Инвче в statistic ожидание огромное
-                                    customer.setStandTime(new Date());
-                                    // Состояние у него "Стою, жду".
-                                    customer.setState(CustomerState.STATE_WAIT_AFTER_POSTPONED);
-                                    // разослать оповещение
-                                    Uses.sendUDPBroadcast(customer.getService().getId().toString(), ServerProps.getInstance().getProps().getClientPort());
-                                }
+                        final ArrayList<QCustomer> forDel = new ArrayList<>();
+                        for (QCustomer customer : getPostponedCustomers()) {
+                            if (customer.getPostponPeriod() > 0 && customer.getFinishPontpone() < new Date().getTime()) {
+                                QLog.l().logger().debug("Перемещение по таймеру из отложенных кастомера №" + customer.getPrefix() + customer.getNumber() + " в услугу \"" + customer.getService().getName() + "\"");
+                                // время сидения вышло, пора отправляться в очередь.
+                                forDel.add(customer);
+                                // в очередь, сукины дети
+                                // время постановки проставляется автоматом при создании кастомера.
+                                customer.setPriority(customer.getPriority().get() + 1);
+                                //добавим нового пользователя
+                                customer.getService().addCustomer(customer);
+                                // вроде как только что встал в очередь, ну и время проставим, а то ожидание будет огромное
+                                // только что встал типо. Поросто время нахождения в отложенных не считаетка как ожидание очереди. Инвче в statistic ожидание огромное
+                                customer.setStandTime(new Date());
+                                // Состояние у него "Стою, жду".
+                                customer.setState(CustomerState.STATE_WAIT_AFTER_POSTPONED);
+                                // разослать оповещение
+                                Uses.sendUDPBroadcast(customer.getService().getId().toString(), ServerProps.getInstance().getProps().getClientPort());
                             }
-                            for (QCustomer qCustomer : forDel) {
-                                removeElement(qCustomer);
-                            }
-                        } catch (Exception ex) {
-                            throw new ServerException("Ошибка при постановке клиента в очередь", ex);
-                        } finally {
-                            Executer.clientTaskLock.unlock();
                         }
+                        forDel.stream().forEach((qCustomer) -> {
+                            removeElement(qCustomer);
+                        });
                     } catch (Exception ex) {
-                        throw new ServerException("Ошибка при перемещении в очередь отложенного из пула по таймеру " + ex);
+                        throw new ServerException("Ошибка при постановке клиента в очередь", ex);
                     } finally {
-                        Executer.postponedTaskLock.unlock();
+                        Executer.clientTaskLock.unlock();
                     }
+                } catch (Exception ex) {
+                    throw new ServerException("Ошибка при перемещении в очередь отложенного из пула по таймеру " + ex);
+                } finally {
+                    Executer.postponedTaskLock.unlock();
                 }
             });
             timerOut.start();

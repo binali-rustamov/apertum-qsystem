@@ -32,8 +32,8 @@ public class QMonitoriumBoard extends AIndicatorBoard {
 
     public QMonitoriumBoard() {
         int i = 0;
-        i = i+i;
-        i= i * 83;
+        //i = i+i;
+        //i= i * 83;
         //System.out.println("i = " + i);
     }
 

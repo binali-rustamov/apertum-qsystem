@@ -16,7 +16,6 @@
  */
 package ru.apertum.qsystem.server;
 
-import ru.apertum.qsystem.server.controller.IServerListener;
 import ru.apertum.qsystem.server.controller.ServerEvents;
 import ru.apertum.qsystem.server.model.QNet;
 import ru.apertum.qsystem.server.model.QStandards;
@@ -40,18 +39,14 @@ public class ServerProps {
 
     private ServerProps() {
         load();
-        ServerEvents.getInstance().registerListener(new IServerListener() {
-
-            @Override
-            public void restartEvent() {
-                load();
-            }
+        ServerEvents.getInstance().registerListener(() -> {
+            load();
         });
     }
 
     private void load() {
-        Spring.getInstance().getHt().load(netProp, new Long(1));
-        Spring.getInstance().getHt().load(standards, new Long(1));
+        Spring.getInstance().getHt().load(netProp, (long) 1);
+        Spring.getInstance().getHt().load(standards, (long) 1);
     }
 
     public static ServerProps getInstance() {

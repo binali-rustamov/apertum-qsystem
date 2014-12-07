@@ -135,7 +135,7 @@ public class ButtonDevice extends Object {
                 //добавляем табло на пульте
                 byte[] bytes = mess;
                 try {
-                    bytes = ("123" + cust.getFullNumber() + "7").getBytes("cp1251");
+                    bytes = ("123" + (cust.getFullNumber() + "    ").substring(0, 3) + "7").getBytes("cp1251");
                 } catch (UnsupportedEncodingException ex) {
                     System.err.println("!!! ERROR !!! " + ex);
                 }
@@ -147,6 +147,7 @@ public class ButtonDevice extends Object {
                 //mess[1] = addr.addres; // адрес
                 bytes[2] = 0x21;//0x20; // мигание Режим мигания: 0x20 – не мигает; 0x21 – мигает постоянно; 0x22…0x7F – мигает  (N-0x21) раз.
                 UBForm.sendToDevice(bytes);
+                /*
                 try {
                     Thread.sleep(150);
                 } catch (InterruptedException ex) {
@@ -155,6 +156,7 @@ public class ButtonDevice extends Object {
                 //ответ о результате на кнопку
                 mess[2] = 0x36; // – мигает Зеленый (500 мс);
                 UBForm.sendToDevice(mess);
+                */
             } else {
                 System.out.println("inv ** 5");
                 user.getShadow().setCustomerState(CustomerState.STATE_FINISH);
@@ -191,7 +193,7 @@ public class ButtonDevice extends Object {
             //добавляем табло на пульте
             byte[] bytes = mess;
             try {
-                bytes = ("123" + user.getShadow().getOldCostomer().getFullNumber() + "7").getBytes("cp1251");
+                bytes = ("123" + (user.getCustomer().getFullNumber() + "    ").substring(0, 3) + "7").getBytes("cp1251");
             } catch (UnsupportedEncodingException ex) {
                 System.err.println("!!! ERROR !!! " + ex);
             }
@@ -202,6 +204,8 @@ public class ButtonDevice extends Object {
             //mess[10] = 0x07; // конец
             //mess[1] = addr.addres; // адрес
             bytes[2] = 0x20;//0x20; // мигание Режим мигания: 0x20 – не мигает; 0x21 – мигает постоянно; 0x22…0x7F – мигает  (N-0x21) раз.
+            UBForm.sendToDevice(bytes);
+            /*
             try {
                 Thread.sleep(150);
             } catch (InterruptedException ex) {
@@ -212,6 +216,7 @@ public class ButtonDevice extends Object {
             System.out.println("--3\n");
             UBForm.sendToDevice(mess);
             System.out.println("--4\n");
+            */
             return;
         }
 
@@ -302,14 +307,55 @@ public class ButtonDevice extends Object {
 
     private void beReady() {
         System.out.println("beReady()");
+        
+        //добавляем табло на пульте
+        byte[] bytes = mess;
+        try {
+            bytes = ("123CAL7").getBytes("cp1251");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("!!! ERROR !!! " + ex);
+        }
+        bytes[0] = 1;
+        bytes[1] = addres;
+        bytes[bytes.length - 1] = 7;
+        //mess[0] = 0x01; // начало
+        //mess[10] = 0x07; // конец
+        //mess[1] = addr.addres; // адрес
+        bytes[2] = 0x20;//0x20; // мигание Режим мигания: 0x20 – не мигает; 0x21 – мигает постоянно; 0x22…0x7F – мигает  (N-0x21) раз.
+        UBForm.sendToDevice(bytes);
+        
+        
+        /*
         mess[2] = 0x34;// – мигает Зеленый (200 мс);
         UBForm.sendToDevice(mess);
+        */
     }
 
     private void beReadyBeep() {
         System.out.println("beReadyBeep()");
+        
+        
+        //добавляем табло на пульте
+        byte[] bytes = mess;
+        try {
+            bytes = ("123CAL7").getBytes("cp1251");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("!!! ERROR !!! " + ex);
+        }
+        bytes[0] = 1;
+        bytes[1] = addres;
+        bytes[bytes.length - 1] = 7;
+        //mess[0] = 0x01; // начало
+        //mess[10] = 0x07; // конец
+        //mess[1] = addr.addres; // адрес
+        bytes[2] = 0x21;//0x20; // мигание Режим мигания: 0x20 – не мигает; 0x21 – мигает постоянно; 0x22…0x7F – мигает  (N-0x21) раз.
+        UBForm.sendToDevice(bytes);
+        
+        
+        /*
         mess[2] = 0x3B; // – писк (500 мс) + мигает Зеленый (200 мс);
         UBForm.sendToDevice(mess);
+        */
     }
 
     private void lightDown() {
@@ -329,6 +375,8 @@ public class ButtonDevice extends Object {
         //mess[10] = 0x07; // конец
         //mess[1] = addr.addres; // адрес
         bytes[2] = 0x20;//0x20; // мигание Режим мигания: 0x20 – не мигает; 0x21 – мигает постоянно; 0x22…0x7F – мигает  (N-0x21) раз.
+        UBForm.sendToDevice(bytes);
+        /*
         try {
             Thread.sleep(150);
         } catch (InterruptedException ex) {
@@ -336,5 +384,6 @@ public class ButtonDevice extends Object {
 
         mess[2] = 0x30;// – светодиод погашен;
         UBForm.sendToDevice(mess);
+                */
     }
 }

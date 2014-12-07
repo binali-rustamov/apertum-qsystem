@@ -124,6 +124,7 @@ public class CalendarTableModel extends AbstractTableModel {
 
     /**
      * Сбросить выделенные дни в календаре
+     * @param year
      */
     public void dropCalendar(int year) {
         QLog.l().logger().debug("Сбросим календарь");
@@ -141,6 +142,7 @@ public class CalendarTableModel extends AbstractTableModel {
 
     /**
      * Пометить все субботы выходными
+     * @param year
      */
     public void checkSaturday(int year) {
         QLog.l().logger().debug("Пометив все субботы");
@@ -158,6 +160,7 @@ public class CalendarTableModel extends AbstractTableModel {
 
     /**
      * Пометить все воскресенья выходными
+     * @param year
      */
     public void checkSunday(int year) {
         QLog.l().logger().debug("Пометим все воскресенья");

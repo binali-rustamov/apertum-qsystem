@@ -119,17 +119,17 @@ public class Spring {
 
     public void saveAll(Collection list) {
         final Session ses = getTxManager().getSessionFactory().getCurrentSession();
-        for (Object object : list) {
+        list.stream().forEach((object) -> {
             ses.save(object);
-        }
+        });
         ses.flush();
     }
 
     public void saveOrUpdateAll(Collection list) {
         final Session ses = getTxManager().getSessionFactory().getCurrentSession();
-        for (Object object : list) {
+        list.stream().forEach((object) -> {
             ses.saveOrUpdate(object);
-        }
+        });
         ses.flush();
     }
 
@@ -141,9 +141,9 @@ public class Spring {
 
     public void deleteAll(Collection list) {
         final Session ses = getTxManager().getSessionFactory().getCurrentSession();
-        for (Object object : list) {
+        list.stream().forEach((object) -> {
             ses.delete(object);
-        }
+        });
         ses.flush();
     }
 

@@ -134,7 +134,7 @@ public class QInfoItem extends DefaultMutableTreeNode implements ITreeIdGetter, 
     @Expose
     @SerializedName("child_items")
     @Transient
-    private LinkedList<QInfoItem> childrenOfService = new LinkedList<QInfoItem>();
+    private LinkedList<QInfoItem> childrenOfService = new LinkedList<>();
 
     public LinkedList<QInfoItem> getChildren() {
         return childrenOfService;

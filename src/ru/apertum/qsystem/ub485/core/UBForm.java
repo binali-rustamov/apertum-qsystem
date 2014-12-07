@@ -66,50 +66,30 @@ public class UBForm extends JFrame {
         initComponents();
         table.setModel(new UserTableModel(AddrProp.getInstance()));
 
-
         // Фича. По нажатию Escape закрываем форму
         // свернем по esc
-        getRootPane().registerKeyboardAction(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
+        getRootPane().registerKeyboardAction((ActionEvent e) -> {
+            setVisible(false);
         },
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
         // инициализим trayIcon, т.к. setSituation() требует работу с tray
-        tray = QTray.getInstance(this, "/ru/apertum/qsystem/client/forms/resources/client.png", getLocaleMessage("messages.tray.hint"));
-        tray.addItem("Открыть", new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(true);
-                setState(JFrame.NORMAL);
-            }
+        final JFrame fr = this;
+        tray = QTray.getInstance(fr, "/ru/apertum/qsystem/client/forms/resources/client.png", getLocaleMessage("messages.tray.hint"));
+        tray.addItem("Открыть", (ActionEvent e) -> {
+            setVisible(true);
+            setState(JFrame.NORMAL);
         });
-        tray.addItem("-", new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
+        tray.addItem("-", (ActionEvent e) -> {
         });
-        tray.addItem("Выход", new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                System.exit(0);
-            }
+        tray.addItem("Выход", (ActionEvent e) -> {
+            dispose();
+            System.exit(0);
         });
 
         if (QLog.isSTART) {
-            final Thread th_start = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    buttonStartActionPerformed(null);
-                }
+            final Thread th_start = new Thread(() -> {
+                buttonStartActionPerformed(null);
             });
             th_start.start();
         }
@@ -685,15 +665,15 @@ public class UBForm extends JFrame {
             }
         };
         LinkedList<QUser> users = NetCommander.getUsers(netProperty);
-        for (QUser qUser : users) {
-            for (QPlanService pser : qUser.getPlanServices()) {
+        users.stream().forEach((qUser) -> {
+            qUser.getPlanServices().stream().forEach((pser) -> {
                 System.out.println("User: " + qUser.getName() + " => " + pser.getService().getId() + "-" + pser.getService().getName());
-            }
-        }
+            });
+        });
         LinkedList<ServiceInfo> servs = NetCommander.getServerState(netProperty);
-        for (ServiceInfo serviceInfo : servs) {
+        servs.stream().forEach((serviceInfo) -> {
             System.out.println("Servece: " + serviceInfo.getId() + "-" + serviceInfo.getServiceName() + "-" + serviceInfo.getCountWait());
-        }
+        });
 
         for (ButtonDevice adr : AddrProp.getInstance().getAddrs().values().toArray(new ButtonDevice[0])) {
             for (QUser qUser : users) {
@@ -726,7 +706,15 @@ public class UBForm extends JFrame {
             initProps();
         }
         try {
-            port = new RxtxSerialPort(textFieldPortName.getText());
+            port = new RxtxSerialPort(textFieldPortName.getText(), (String string, boolean bln) -> {
+                if (bln) {
+                    QLog.l().logger().error(string);
+                } else {
+                    QLog.l().logger().trace(string);
+                }
+            }, (String string) -> {
+                QLog.l().logger().error(string);
+            });
         } catch (Exception ex) {
             System.err.println(ex);
             JOptionPane.showMessageDialog(this,
@@ -907,12 +895,12 @@ public class UBForm extends JFrame {
         mess[mess.length - 1] = 7;
         /*
          * светодиод погашен
-        включен Красный
-        включен Зеленый
-        мигает Красный (200 мс)
-        мигает Зеленый (200 мс)
-        мигает Красный (500 мс)
-        мигает Зеленый (500 мс)
+         включен Красный
+         включен Зеленый
+         мигает Красный (200 мс)
+         мигает Зеленый (200 мс)
+         мигает Красный (500 мс)
+         мигает Зеленый (500 мс)
          */
         switch (comboBoxSignal.getSelectedIndex()) {
             case 0:
@@ -976,62 +964,48 @@ public class UBForm extends JFrame {
         }
 
         if (th == null || !isrun) {
-            th = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    byte[] mess = new byte[3];
-                    mess[0] = 4;
-                    mess[mess.length - 1] = 7;
-                    int i = 32;
-                    while (isrun && i < 255) {
-                        mess[1] = (byte) i;
-                        String s = "";
-                        for (byte b : mess) {
-                            s = s + (b & 0xFF) + "_";
-                        }
-                        System.out.println(s);
-                        final String ss = s;
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                labelTest.setText(ss);
-                            }
-                        });
-                        try {
-                            /*
-                            if (i == 60) {
-                            mess = new byte[2];
-                            mess[0] = 5;
-                            mess[mess.length - 1] = 7;
-                            }
-                             */
-                            port.send(mess);
-                        } catch (Exception ex) {
-                            System.err.println(ex);
-                            JOptionPane.showMessageDialog(null,
-                                    "В порт не отослалось. " + ex,
-                                    "Отсыл",
-                                    JOptionPane.ERROR_MESSAGE);
-                            throw new RuntimeException(ex);
-                        }
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException ex) {
-                        }
-                        i++;
+            th = new Thread(() -> {
+                byte[] mess = new byte[3];
+                mess[0] = 4;
+                mess[mess.length - 1] = 7;
+                int i = 32;
+                while (isrun && i < 255) {
+                    mess[1] = (byte) i;
+                    String s = "";
+                    for (byte b : mess) {
+                        s = s + (b & 0xFF) + "_";
                     }
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            textDebug.setText("  OK -> \n" + textDebug.getText());
-                        }
+                    System.out.println(s);
+                    final String ss = s;
+                    SwingUtilities.invokeLater(() -> {
+                        labelTest.setText(ss);
                     });
-
-
+                    try {
+                        /*
+                        if (i == 60) {
+                        mess = new byte[2];
+                        mess[0] = 5;
+                        mess[mess.length - 1] = 7;
+                        }
+                        */
+                        port.send(mess);
+                    } catch (Exception ex) {
+                        System.err.println(ex);
+                        JOptionPane.showMessageDialog(null,
+                                "В порт не отослалось. " + ex,
+                                "Отсыл",
+                                JOptionPane.ERROR_MESSAGE);
+                        throw new RuntimeException(ex);
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                    }
+                    i++;
                 }
+                SwingUtilities.invokeLater(() -> {
+                    textDebug.setText("  OK -> \n" + textDebug.getText());
+                });
             });
             isrun = true;
             th.setDaemon(true);
@@ -1101,10 +1075,10 @@ public class UBForm extends JFrame {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 /*
                  * Metal
-                Nimbus
-                CDE/Motif
-                Windows
-                Windows Classic
+                 Nimbus
+                 CDE/Motif
+                 Windows
+                 Windows Classic
                  */
                 if ("Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
@@ -1118,14 +1092,10 @@ public class UBForm extends JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                form = new UBForm();
-                form.setLocationRelativeTo(null);
-                form.setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            form = new UBForm();
+            form.setLocationRelativeTo(null);
+            form.setVisible(true);
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

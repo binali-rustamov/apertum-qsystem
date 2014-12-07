@@ -88,9 +88,10 @@ public class QBreaks implements IidGetter, Serializable {
 
     @Override
     public int hashCode() {
-        return hashCode();
+        return super.hashCode();
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -99,10 +100,7 @@ public class QBreaks implements IidGetter, Serializable {
             return false;
         }
         final QBreaks other = (QBreaks) obj;
-        if (!Objects.equals(this.id, other.id) || !Objects.equals(this.name, other.name) || !Objects.equals(this.breaks.size(), other.breaks.size())) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.id, other.id) && Objects.equals(this.name, other.name) && Objects.equals(this.breaks.size(), other.breaks.size());
     }
     
     

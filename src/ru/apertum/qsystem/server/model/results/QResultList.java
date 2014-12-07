@@ -42,7 +42,7 @@ public class QResultList extends ATListModel<QResult> implements ComboBoxModel {
 
     @Override
     protected LinkedList<QResult> load() {
-        return new LinkedList<QResult>(Spring.getInstance().getHt().loadAll(QResult.class));
+        return new LinkedList<>(Spring.getInstance().getHt().loadAll(QResult.class));
     }
     private QResult selected;
 

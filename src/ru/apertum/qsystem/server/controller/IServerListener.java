@@ -21,6 +21,7 @@ package ru.apertum.qsystem.server.controller;
  *
  * @author egorov
  */
+@FunctionalInterface
 public interface IServerListener {
 
     public void restartEvent();

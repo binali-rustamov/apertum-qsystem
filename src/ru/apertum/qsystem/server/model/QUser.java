@@ -224,7 +224,7 @@ public class QUser implements IidGetter, Serializable {
     //******************************************************************************************************************
     //************************************** Услуги юзера **************************************************************
     /**
-     * Множество услуг, которые обрабатывает юзер. По наименованию услуги получаем Класс - описалово участия юзера в этой услуге/ Имя услуги -> IProperty
+     * Множество услуг, которые обрабатывает юзер. По наименованию услуги получаем Класс - описалово участия юзера в этой услуге/ Имя услуги - IProperty
      */
     //private QPlanServiceList serviceList = new QPlanServiceList();
     @Expose
@@ -242,7 +242,7 @@ public class QUser implements IidGetter, Serializable {
     public List<QPlanService> getPlanServices() {
         return planServices;
     }
-    private QPlanServiceList planServiceList = new QPlanServiceList(new LinkedList<QPlanService>());
+    private QPlanServiceList planServiceList = new QPlanServiceList(new LinkedList<>());
 
     /**
      * Только для отображения в админке в виде списка
@@ -255,12 +255,7 @@ public class QUser implements IidGetter, Serializable {
     }
 
     public boolean hasService(long serviceId) {
-        for (QPlanService qPlanService : planServices) {
-            if (serviceId == qPlanService.getService().getId()) {
-                return true;
-            }
-        }
-        return false;
+        return planServices.stream().anyMatch((qPlanService) -> (serviceId == qPlanService.getService().getId()));
     }
 
     public boolean hasService(QService service) {
@@ -340,11 +335,9 @@ public class QUser implements IidGetter, Serializable {
 
     public void savePlan() {
         final LinkedList<QPlanService> del = new LinkedList<>();
-        for (QPlanService qPlanService : forDel) {
-            if (!QServiceTree.getInstance().hasById(qPlanService.getService().getId())) {
-                del.add(qPlanService);
-            }
-        }
+        forDel.stream().filter((qPlanService) -> (!QServiceTree.getInstance().hasById(qPlanService.getService().getId()))).forEach((qPlanService) -> {
+            del.add(qPlanService);
+        });
         forDel.removeAll(del);
         Spring.getInstance().getHt().deleteAll(forDel);
         forDel.clear();

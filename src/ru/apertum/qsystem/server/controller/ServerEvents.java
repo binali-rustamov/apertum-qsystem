@@ -45,8 +45,8 @@ public class ServerEvents implements IServerListener {
 
     @Override
     public void restartEvent() {
-        for (IServerListener listener : listeners) {
+        listeners.stream().forEach((listener) -> {
             listener.restartEvent();
-        }
+        });
     }
 }

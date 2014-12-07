@@ -16,7 +16,7 @@
             <author name="Develop by Evgeniy V. Egorov" email="egorov@apertum.ru"/>
         </authors>
         <url>http://www.qsystem.info</url>
-        <javaversion>1.7.0</javaversion>
+        <javaversion>1.8.0</javaversion>
         <requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall.vista|izpack.macinstall"/>
     </info>
@@ -241,10 +241,17 @@
             <parsable os="unix" targetfile="$INSTALL_PATH/reception.sh"/>
 			<parsable targetfile="$INSTALL_PATH/config/langs.properties"/>
         </pack>
-        <pack id="docs" name="Documentation" required="no">
+		<pack id="journal" name="Journal" required="no" preselected="no">
+            <description>Journal</description>
+			<file src="../config/journal.properties" targetdir="$INSTALL_PATH/config/"/>
+            <file  src="../plugins/Journal.jar" targetdir="$INSTALL_PATH/plugins/"/>
+            <!-- Reccursive adding -->
+        </pack>
+		<pack id="docs" name="Documentation" required="no">
             <description>Документация</description>
             <fileset os="windows" dir="../docs" includes="*.pdf" targetdir="$INSTALL_PATH/docs/"/>
             <!-- Reccursive adding -->
         </pack>
+        
     </packs>
 </installation>

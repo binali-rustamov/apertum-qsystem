@@ -17,18 +17,21 @@
 package ru.apertum.qsystem.server.http;
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.ArrayUtils;
+/*
+ import java.io.FilenameFilter;
+ import java.io.IOException;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
+ import java.net.MalformedURLException;
+ import java.net.URL;
+ import java.net.URLClassLoader;
+ import javax.servlet.ServletException;
+ import javax.servlet.http.HttpServlet;
+ import javax.servlet.http.HttpServletRequest;
+ import javax.servlet.http.HttpServletResponse;
+ import org.apache.commons.lang.ArrayUtils;
+ import org.eclipse.jetty.servlet.ServletHolder;
+ */
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -37,7 +40,6 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
@@ -150,14 +152,8 @@ public class JettyRunner implements Runnable {
         // Загрузка war из папки 
         String folder = "./www/war/";
         QLog.l().logger().info("Загрузка war из папки " + folder);
-        final File[] list = new File(folder).listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".war");
-            }
-        });
-        if (list.length != 0) {
+        final File[] list = new File(folder).listFiles((File dir, String name) -> name.toLowerCase().endsWith(".war"));
+        if (list != null && list.length != 0) {
             for (File file : list) {
                 final String name = file.getName().substring(0, file.getName().lastIndexOf(".")).toLowerCase();
                 QLog.l().logger().debug("WAR " + name + ": " + file.getAbsolutePath());

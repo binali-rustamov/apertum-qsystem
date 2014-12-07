@@ -122,9 +122,9 @@ public class ChangeContext {
                     System.out.print("Main server:");
                     str = read();
                     if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= servs.size()) {
-                        for (SqlServer ser : servs) {
+                        servs.stream().forEach((ser) -> {
                             ser.setMain(Boolean.FALSE);
-                        }
+                        });
                         servs.get(Integer.parseInt(str) - 1).setMain(Boolean.TRUE);
                     }
                     str = "m";
@@ -139,9 +139,9 @@ public class ChangeContext {
                     System.out.print("Current server:");
                     str = read();
                     if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= servs.size()) {
-                        for (SqlServer ser : servs) {
+                        servs.stream().forEach((ser) -> {
                             ser.setCurrent(Boolean.FALSE);
-                        }
+                        });
                         servs.get(Integer.parseInt(str) - 1).setCurrent(Boolean.TRUE);
                     }
                     str = "c";
@@ -149,7 +149,7 @@ public class ChangeContext {
                 if (!"".equals(str) && str.matches("-?\\d+(\\.\\d+)?") && Integer.parseInt(str) >= 1 && Integer.parseInt(str) <= servs.size()) {
                     final SqlServer ser = servs.get(Integer.parseInt(str) - 1);
                     String a = null;
-                    if (ser.getUrl().indexOf("//") > -1 && ser.getUrl().indexOf("/", ser.getUrl().indexOf("//")) > -1) {
+                    if (ser.getUrl().contains("//") && ser.getUrl().indexOf("/", ser.getUrl().indexOf("//")) > -1) {
                         a = ser.getUrl().substring(ser.getUrl().indexOf("//") + 2, ser.getUrl().indexOf("/", ser.getUrl().indexOf("//") + 2));
                     }
                     System.out.println("");
@@ -158,8 +158,9 @@ public class ChangeContext {
                     System.out.println("  1 user=" + ser.getUser());
                     System.out.println("  2 password=" + ser.getPassword());
                     System.out.println("  3 url=" + ser.getUrl());
+                    System.out.println("  4 driver=" + ser.getDriver());
                     if (a != null) {
-                        System.out.println("  4 adress=" + a);
+                        System.out.println("  5 adress=" + a);
                     }
                     System.out.print("Parameter for edit:");
                     str = read();
@@ -184,6 +185,12 @@ public class ChangeContext {
                                 ser.setUrl(read());
                                 break;
                             case 4:
+                                System.out.println("Driver");
+                                System.out.println("Old value: " + ser.getDriver());
+                                System.out.print("New value: ");
+                                ser.setDriver(read());
+                                break;    
+                            case 5:
                                 if (a != null) {
                                     System.out.println("Adress");
                                     System.out.println("Old value: " + a);

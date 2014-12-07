@@ -49,6 +49,7 @@ public class FreeDay implements Serializable {
         return false;
     }
 
+    @Override
     public int hashCode() {
         final GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(date);

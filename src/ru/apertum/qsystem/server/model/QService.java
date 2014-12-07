@@ -507,11 +507,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
 
     private int getCountPersonsPerDay(String data) {
         int cnt = 0;
-        for (QCustomer customer : customers) {
-            if (data.equalsIgnoreCase(customer.getInput_data())) {
-                cnt++;
-            }
-        }
+        cnt = customers.stream().filter((customer) -> (data.equalsIgnoreCase(customer.getInput_data()))).map((_item) -> 1).reduce(cnt, Integer::sum);
         if (getPersonDayLimit() <= cnt) {
             return cnt;
         }
@@ -892,9 +888,9 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     public QServiceLang getServiceLang(String nameLocale) {
         if (qslangs == null) {
             qslangs = new HashMap<>();
-            for (QServiceLang sl : getLangs()) {
+            getLangs().stream().forEach((sl) -> {
                 qslangs.put(sl.getLang(), sl);
-            }
+            });
         }
         return qslangs.get(nameLocale);
     }

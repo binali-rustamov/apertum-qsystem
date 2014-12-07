@@ -23,7 +23,6 @@ import javax.swing.tree.TreeNode;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.server.Spring;
-import ru.apertum.qsystem.server.controller.IServerListener;
 import ru.apertum.qsystem.server.controller.ServerEvents;
 
 /**
@@ -36,12 +35,8 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
     protected ATreeModel() {
         super(null);
         createTree();
-        ServerEvents.getInstance().registerListener(new IServerListener() {
-
-            @Override
-            public void restartEvent() {
-                createTree();
-            }
+        ServerEvents.getInstance().registerListener(() -> {
+            createTree();
         });
     }
 
@@ -60,23 +55,21 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
     }
 
     private void bildTree(T root, LinkedList<T> nodes) {
-        for (T node : nodes) {
-            if (root.getId().equals(node.getParentId())) {
-                node.setParent(root);
-                root.addChild(node);
-                bildTree(node, nodes);
-            }
-        }
+        nodes.stream().filter((node) -> (root.getId().equals(node.getParentId()))).map((node) -> {
+            node.setParent(root);
+            return node;
+        }).map((node) -> {
+            root.addChild(node);
+            return node;
+        }).forEach((node) -> {
+            bildTree(node, nodes);
+        });
     }
 
     public LinkedList<T> getNodes() {
         final LinkedList<T> nodes = new LinkedList<>();
-        sailToStorm(root, new ISailListener() {
-
-            @Override
-            public void actionPerformed(TreeNode service) {
-                nodes.add((T) service);
-            }
+        sailToStorm(root, (TreeNode service) -> {
+            nodes.add((T) service);
         });
         return nodes;
     }
@@ -101,12 +94,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
      * @return есть или нет
      */
     public boolean hasById(long id) {
-        for (T node : getNodes()) {
-            if (id == node.getId()) {
-                return true;
-            }
-        }
-        return false;
+        return getNodes().stream().anyMatch((node) -> (id == node.getId()));
     }
 
     /**
@@ -115,12 +103,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
      * @return есть или нет
      */
     public boolean hasByName(String name) {
-        for (T node : getNodes()) {
-            if (name.equals(node.getName())) {
-                return true;
-            }
-        }
-        return false;
+        return getNodes().stream().anyMatch((node) -> (name.equals(node.getName())));
     }
 
     public int size() {
@@ -170,12 +153,8 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
 
     @Override
     public void removeNodeFromParent(MutableTreeNode node) {
-        sailToStorm(node, new ISailListener() {
-
-            @Override
-            public void actionPerformed(TreeNode node) {
-                deleted.add((T) node);
-            }
+        sailToStorm(node, (TreeNode node1) -> {
+            deleted.add((T) node1);
         });
         deleted.add((T) node);
 
@@ -226,7 +205,7 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
     public void save() {
         // Вложенные нужно убрать. т.к. они сотрутся по констрейнту
         final LinkedList<T> del = new LinkedList<>();
-        for (T t : deleted) {
+        deleted.stream().forEach((t) -> {
             boolean flag = false;
             T parent = (T) t.getParent();
             while (parent != null && !flag) {
@@ -237,12 +216,12 @@ public abstract class ATreeModel<T extends ITreeIdGetter> extends DefaultTreeMod
                 }
                 if (!flag) {
                     parent = (T) parent.getParent();
-        }
+                }
             }
             if (flag) {
                 del.add(t);
             }
-        }
+        });
         deleted.removeAll(del);
         Spring.getInstance().getHt().deleteAll(deleted);
         deleted.clear();

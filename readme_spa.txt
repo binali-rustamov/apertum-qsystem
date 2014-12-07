@@ -1,7 +1,7 @@
 ﻿Instrucción de instalación del sistema de automatización del trabajo con clientes.
 
 Paso 1. Preparando la instalación.
-Antes de instalar el sistema, necesita asegurarse que ya tiene instalado el MySQL de versión no menos que 5.5 y OracleJRE no menos de 1.7. Puede averiguar la instalación de JRE así:
+Antes de instalar el sistema, necesita asegurarse que ya tiene instalado el MySQL de versión no menos que 5.5 y OracleJRE no menos de 1.8. Puede averiguar la instalación de JRE así:
 El menú Inicio –>Cumplir->cmd-> java –version.
 
 También está recomendado instalar utilidades gráficas para trabajar con MySQL.

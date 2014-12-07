@@ -23,6 +23,7 @@ import javax.swing.tree.TreeNode;
  * Должен возникать для каждой услуги и группы при рекурентном обходею
  * @author Evgeniy Egorov
  */
+@FunctionalInterface
 public interface ISailListener {
 
     /**

@@ -42,7 +42,7 @@ public class QCalendarList extends ATListModel<QCalendar> implements ComboBoxMod
 
     @Override
     protected LinkedList<QCalendar> load() {
-        return new LinkedList<QCalendar>(Spring.getInstance().getHt().loadAll(QCalendar.class));
+        return new LinkedList<>(Spring.getInstance().getHt().loadAll(QCalendar.class));
     }
     private QCalendar selected;
 

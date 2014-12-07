@@ -39,10 +39,9 @@ public class QUserList extends ATListModel<QUser> {
         final LinkedList<QUser> users = new LinkedList<>(
                 Spring.getInstance().getHt().findByCriteria(
                         DetachedCriteria.forClass(QUser.class).add(Property.forName("deleted").isNull()).setResultTransformer((Criteria.DISTINCT_ROOT_ENTITY))));
-        // если этого не проделать, то параметр количества привязанных услуг к юзеру будет пустым после рестарта сервера из админки
-        for (QUser qUser : users) {
+        users.stream().forEach((qUser) -> {
             qUser.setServicesCnt(qUser.getPlanServiceList().getSize());
-        }
+        });
         return users;
     }
 
@@ -53,16 +52,16 @@ public class QUserList extends ATListModel<QUser> {
 
     private QUserList() {
         super();
-        for (QUser qUser : getItems()) {
+        getItems().stream().forEach((qUser) -> {
             qUser.setServicesCnt(qUser.getPlanServiceList().getSize());
-        }
+        });
     }
 
     @Override
     public void save() {
-        for (QUser qUser : deleted) {
+        deleted.stream().forEach((qUser) -> {
             qUser.setDeleted(new Date());
-        }
+        });
         Spring.getInstance().getHt().saveOrUpdateAll(deleted);
         deleted.clear();
         /*

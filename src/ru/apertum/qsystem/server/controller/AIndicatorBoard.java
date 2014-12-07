@@ -26,9 +26,9 @@ import ru.apertum.qsystem.common.model.QCustomer;
 import ru.apertum.qsystem.server.model.QUser;
 
 /**
- * Базовый класс для классов вывода.
- * Сдесь реализован движок хранения и управления строками и прочий инфой для вывода инфы.
- * При непосредственным выводом на табло нужно вызвать этот метод markShowed(), чтоб промаркировать записи как начавшие висеть.
+ * Базовый класс для классов вывода. Сдесь реализован движок хранения и управления строками и прочий инфой для вывода инфы. При непосредственным выводом на
+ * табло нужно вызвать этот метод markShowed(), чтоб промаркировать записи как начавшие висеть.
+ *
  * @author Evgeniy Egorov
  */
 abstract public class AIndicatorBoard implements IIndicatorBoard {
@@ -60,15 +60,13 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
     //***********************************************************************
     //*************** Работа с хранением строк ******************************
     /**
-     * Список отображаемых строк
-     * Название юзера, создавшего эту строку на табло(Это идентификатор строк, т.к. имя позьзователя уникально в системе) -> строка
+     * Список отображаемых строк Название юзера, создавшего эту строку на табло(Это идентификатор строк, т.к. имя позьзователя уникально в системе) - строка
      */
     protected final LinkedHashMap<String, Record> records = new LinkedHashMap<>();
 
     /**
-     * Добавляет запись в хвост списка отображения
-     * Делает ее еще не отображенной.
-     * Мигание переехало в табло.
+     * Добавляет запись в хвост списка отображения Делает ее еще не отображенной. Мигание переехало в табло.
+     *
      * @param record
      */
     protected void addItem(Record record) {
@@ -80,6 +78,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
     /**
      * Убрать запись. Кастомер домой ушел.
+     *
      * @param record
      */
     protected void removeItem(Record record) {
@@ -119,8 +118,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
         final public String point;
         final public String customerNumber;
         /**
-         * Название юзера, создавшего эту строку на табло. 
-         * Это идентификатор строк, т.к. имя позьзователя уникально в системе.
+         * Название юзера, создавшего эту строку на табло. Это идентификатор строк, т.к. имя позьзователя уникально в системе.
          */
         final private String userName;
 
@@ -129,8 +127,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
         }
         final public Integer interval;
         /**
-         * При RS это адрес устройства.
-         * При мониторе это норядковый номер вывода
+         * При RS это адрес устройства. При мониторе это норядковый номер вывода
          */
         final public Integer adressRS;
         final public String ext_data;
@@ -141,6 +138,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
         /**
          * Уже показалась сколько надо
+         *
          * @return
          */
         public boolean isShowed() {
@@ -160,9 +158,9 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
         }
 
         /**
-         * При создании строка попадает в список отображения с признаком
-         * того что еще не отвесела. Таймер висения включеется когда строка попадает на табло.
-         * @param userName 
+         * При создании строка попадает в список отображения с признаком того что еще не отвесела. Таймер висения включеется когда строка попадает на табло.
+         *
+         * @param userName
          * @param point номер кабинета куда вызвали кастомера.
          * @param customerNumber номер кастомера о ком запись.
          * @param ext_data третья колонка
@@ -176,7 +174,8 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
             this.userName = userName;
             this.point = point;
             this.interval = interval;
-            records.put(userName, this);
+            final Record re = this;
+            records.put(userName, re);
             showTimer = new ATalkingClock(interval * 1000, 1) {
 
                 @Override
@@ -197,7 +196,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
             this.userName = "noName";
             showTimer = null;
         }
-        /** 
+        /**
          * Таймер время висения на табло.
          */
         final private ATalkingClock showTimer;
@@ -213,7 +212,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
         @Override
         public int compareTo(Record o) {
-            return (o != null && adressRS == o.adressRS && customerNumber.equals(o.customerNumber) && point.equals(o.point) && state == o.state) ? 0 : -1;
+            return (o != null && adressRS.equals(o.adressRS) && customerNumber.equals(o.customerNumber) && point.equals(o.point) && state == o.state) ? 0 : -1;
         }
     }
     //**************************************************************************
@@ -232,6 +231,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
     /**
      * На табло оператора долженн перестать мигать номер вызываемого клиента
+     *
      * @param user пользователь, который начал работать с клиентом.
      */
     @Override
@@ -248,6 +248,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
     /**
      * На табло по определенному адресу должно отчистиццо табло
+     *
      * @param user пользователь, который удалил клиента.
      */
     @Override
@@ -266,7 +267,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
      */
     @Override
     public synchronized void close() {
-        showOnBoard(new LinkedHashSet<Record>());
+        showOnBoard(new LinkedHashSet<>());
     }
     //**************************************************************************
     //************************** Другие методы *********************************
@@ -291,6 +292,7 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
     /**
      * Тут вся иллюминация
+     *
      * @param record
      */
     protected void show(Record record) {
@@ -299,9 +301,9 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
         if (!compareList(newList)) {
             oldList = new LinkedHashSet<>();
-            for (Record rec : newList) {
+            newList.stream().forEach((rec) -> {
                 oldList.add(new Record(rec.state, rec.point, rec.customerNumber, rec.ext_data, rec.adressRS));
-            }
+            });
             showOnBoard(newList);
         }
         if (record != null) {
@@ -314,27 +316,28 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
     /**
      * При непосредственным выводом на табло нужно вызвать этот метод, чтоб промаркировать записи как начавшие висеть.
+     *
      * @param list список выводимых звписей.
      */
     protected void markShowed(Collection<Record> list) {
         // Записи попадают на табло
         if (list != null) {
-            for (Record rec : list) {
-                if (!rec.isShowed()) {
-                    rec.startVisible();
-                }
-            }
+            list.stream().filter((rec) -> (!rec.isShowed())).forEach((rec) -> {
+                rec.startVisible();
+            });
         }
     }
 
     /**
-     * Высветить записи на общем табло. 
+     * Высветить записи на общем табло.
+     *
      * @param records Высвечиваемые записи.
      */
     abstract protected void showOnBoard(LinkedHashSet<Record> records);
 
     /**
-     * Высветить запись на табло оператора. 
+     * Высветить запись на табло оператора.
+     *
      * @param record Высвечиваемая запись.
      */
     abstract protected void showToUser(Record record);

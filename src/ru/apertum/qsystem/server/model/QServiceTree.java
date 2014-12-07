@@ -48,20 +48,15 @@ public class QServiceTree extends ATreeModel<QService> {
 
     @Override
     public void save() {
-        // Вложенные нужно добавить. т.к. они не сотрутся по констрейнту
-        for (QService t : deleted) {
-            QServiceTree.sailToStorm(t, new ISailListener() {
-
-                @Override
-                public void actionPerformed(TreeNode service) {
-                    final QService qs = (QService) service;
-                    qs.setDeleted(new Date());
-                    if (!deleted.contains(qs)) {
-                        deleted.add(qs);
-                    }
+        deleted.stream().forEach((t) -> {
+            QServiceTree.sailToStorm(t, (TreeNode service) -> {
+                final QService qs = (QService) service;
+                qs.setDeleted(new Date());
+                if (!deleted.contains(qs)) {
+                    deleted.add(qs);
                 }
             });
-        }
+        });
         Spring.getInstance().getHt().saveOrUpdateAll(deleted);
         deleted.clear();
         Spring.getInstance().getHt().saveOrUpdateAll(getNodes());

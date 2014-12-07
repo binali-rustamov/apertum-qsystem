@@ -21,7 +21,6 @@ import javax.swing.AbstractListModel;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.exceptions.ServerException;
 import ru.apertum.qsystem.server.Spring;
-import ru.apertum.qsystem.server.controller.IServerListener;
 import ru.apertum.qsystem.server.controller.ServerEvents;
 
 /**
@@ -33,12 +32,8 @@ public abstract class ATListModel<T extends IidGetter> extends AbstractListModel
 
     protected ATListModel() {
         createList();
-        ServerEvents.getInstance().registerListener(new IServerListener() {
-
-            @Override
-            public void restartEvent() {
-                createList();
-            }
+        ServerEvents.getInstance().registerListener(() -> {
+            createList();
         });
     }
     private LinkedList<T> items;
@@ -64,21 +59,11 @@ public abstract class ATListModel<T extends IidGetter> extends AbstractListModel
     }
 
     public boolean hasById(long id) {
-        for (T item : items) {
-            if (id == item.getId()) {
-                return true;
-            }
-        }
-        return false;
+        return items.stream().anyMatch((item) -> (id == item.getId()));
     }
 
     public boolean hasByName(String name) {
-        for (T item : items) {
-            if (name != null && name.equals(item.getName())) {
-                return true;
-            }
-        }
-        return false;
+        return items.stream().anyMatch((item) -> (name != null && name.equals(item.getName())));
     }
     protected final LinkedList<T> deleted = new LinkedList<>();
 
@@ -141,11 +126,7 @@ public abstract class ATListModel<T extends IidGetter> extends AbstractListModel
             return items.size();
         } else {
             int i = 0;
-            for (T t : items) {
-                if (filter.filter(t)) {
-                    i++;
-                }
-            }
+            i = items.stream().filter((t) -> (filter.filter(t))).map((_item) -> 1).reduce(i, Integer::sum);
             return i;
         }
 

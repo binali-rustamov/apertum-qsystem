@@ -123,16 +123,36 @@ Access your Glassfish console URL this time over SSL (so accept certificate mism
 /etc/init.d/mysqld restart
 
 
-mysql -u root -p
+mysql <-h ip_remoute_server> -u root -p
 
 mysql> SHOW DATABASES;
+mysql> use mysql;
 mysql> drop database qsystem;
 
-If you are already running mysql, you can execute an SQL script file using the source command or \. command:
+If you are already running mysql, you can execute an SQL script file using the 'source' command or '\.' command:
 mysql> source file_name
 mysql> \. file_name
 
+Back up From the Command Line (using mysqldump)
 
+command:  $ mysqldump --opt -u [uname] -p[pass] [dbname] > [backupfile.sql]
+[uname] Your database username
+[pass] The password for your database (note there is no space between -p and the password)
+[dbname] The name of your database
+[backupfile.sql] The filename for your database backup
+[--opt] The mysqldump option
+examples:
+$ mysqldump -u root -p Tutorials > tut_backup.sql
+$ mysqldump -u root -p database_name > backup.sql
+
+Restoring your MySQL Database
+1.Create an appropriately named database on the target machine
+2.Load the file using the mysql command: $ mysql -u [uname] -p[pass] [db_to_restore] < [backupfile.sql]
+example: $ mysql -u root -p Tutorials < tut_backup.sql
+
+
+
+FOR UTF8
 
 [mysql]
 default-character-set=utf8

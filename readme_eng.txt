@@ -2,7 +2,7 @@ Setup instructions for customer care automation system
 
 
 Step 1. Preparing to installation.
-Prior to the installation make sure, that you have installed MySQL DBMS version 5.5 or later and OracleJRE version 1.7 or later. To check the JRE installation do the following: 
+Prior to the installation make sure, that you have installed MySQL DBMS version 5.5 or later and OracleJRE version 1.8 or later. To check the JRE installation do the following: 
 Start->Execute->cmd-> java –version.
 
 It is recommended to install graphical utilities for MySQL DBMS.

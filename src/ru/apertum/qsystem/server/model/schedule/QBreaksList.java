@@ -65,9 +65,9 @@ public class QBreaksList extends ATListModel<QBreaks> implements ComboBoxModel {
         Spring.getInstance().getHt().deleteAll(breakForDel);
         breakForDel.clear();
         super.save();
-        for (QBreaks qBreaks : getItems()) {
+        getItems().stream().forEach((qBreaks) -> {
             Spring.getInstance().getHt().saveOrUpdateAll(qBreaks.getBreaks());
-        }
+        });
     }
     private final ArrayList<QBreak> breakForDel = new ArrayList<>();
 
