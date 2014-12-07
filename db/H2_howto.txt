@@ -1,0 +1,33 @@
+Как сделать из скрипта для мускудя скрипт для Н2.
+
+1. Удалить все манимуляции с мускулевыми переменными. Обычно это в начале сгенеренного скрипта.
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+2. Удалить все что так или иначе связано с SCHEMA.
+DROP SCHEMA IF EXISTS `qsystem` ;
+CREATE SCHEMA IF NOT EXISTS `qsystem` ;
+3. Удалить все упоминания использования БД.
+USE `qsystem` ;
+4. Удалить все упоминания о движке ДБ
+ENGINE = InnoDB, 
+ENGINE = InnoDB
+ENGINE = InnoDB;
+5. Удалить все упоминания старта транзакций
+START TRANSACTION;
+6. Удалить ссылку на принадлежность к БД
+`qsystem`.
+7. Разобраться одинарными ковычками в html в значениях полей. Заменим на двойные.
+\'->"
+7. Триггеры удалить и вместо них создать триггеры с сылкой на Java-класс реализацию триггеров для Н2.
+CREATE TRIGGER insert_to_statistic 
+    AFTER INSERT ON clients
+    FOR EACH ROW
+CALL "ru.apertum.qsystem.resources.ClientsStatTrigger";
+   
+
+CREATE TRIGGER update_to_statistic
+    AFTER UPDATE ON clients
+    FOR EACH ROW
+CALL "ru.apertum.qsystem.resources.ClientsStatTrigger";
+8. При создании БД для Н2 нужно чтоб QSystem.jar был добавлен в class_path
+
+Готово.
