@@ -49,6 +49,9 @@ import javax.persistence.Transient;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.CustomerState;
 import ru.apertum.qsystem.common.QLog;
@@ -59,6 +62,8 @@ import ru.apertum.qsystem.extra.ICustomerChangePosition;
 import ru.apertum.qsystem.server.ServerProps;
 import ru.apertum.qsystem.server.Spring;
 import ru.apertum.qsystem.server.model.calendar.QCalendar;
+import ru.apertum.qsystem.server.model.schedule.QBreak;
+import ru.apertum.qsystem.server.model.schedule.QBreaks;
 import ru.apertum.qsystem.server.model.schedule.QSchedule;
 
 /**
@@ -483,7 +488,7 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         final int today = new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR);
         if (today != day) {
             day = today;
-            countPerDay = 0;
+            setCountPerDay(0);
         }
         countPerDay++;
 
@@ -495,6 +500,56 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
         }
     }
 
+    // чтоб каждый раз в бд не лазить для проверки сколько предварительных сегодня по этой услуге
+    @Transient
+    private int day_y = -100; // для смены дня проверки
+    @Transient
+    private int dayAdvs = -100; // для смены дня проверки
+
+    /**
+     * Узнать сколько предварительно записанных для этой услуги на дату
+     *
+     * @param date на эту дату узнаем количество записанных предварительно
+     * @param strictStart false - просто количество записанных на этот день, true - количество записанных на этот день начиная с времени date
+     * @return количество записанных предварительно
+     */
+    public int getAdvancedCount(Date date, boolean strictStart) {
+        final GregorianCalendar forDay = new GregorianCalendar();
+        forDay.setTime(date);
+
+        final GregorianCalendar today = new GregorianCalendar();
+        if (!strictStart && forDay.get(GregorianCalendar.DAY_OF_YEAR) == today.get(GregorianCalendar.DAY_OF_YEAR)
+                && day_y != today.get(GregorianCalendar.DAY_OF_YEAR)) {
+            day_y = today.get(GregorianCalendar.DAY_OF_YEAR);
+            dayAdvs = -100;
+        }
+        if (!strictStart && forDay.get(GregorianCalendar.DAY_OF_YEAR) == today.get(GregorianCalendar.DAY_OF_YEAR) && dayAdvs >= 0) {
+            return dayAdvs;
+        }
+
+        final DetachedCriteria dc = DetachedCriteria.forClass(QAdvanceCustomer.class);
+        dc.setProjection(Projections.rowCount());
+        if (!strictStart) {
+            forDay.set(GregorianCalendar.HOUR_OF_DAY, 0);
+            forDay.set(GregorianCalendar.MINUTE, 0);
+        }
+        final Date today_m = forDay.getTime();
+        forDay.set(GregorianCalendar.HOUR_OF_DAY, 23);
+        forDay.set(GregorianCalendar.MINUTE, 59);
+        dc.add(Restrictions.between("advanceTime", today_m, forDay.getTime()));
+        dc.add(Restrictions.eq("service", this));
+        final Long cnt = (Long) (Spring.getInstance().getHt().findByCriteria(dc).get(0));
+        final int i = cnt.intValue();
+
+        forDay.setTime(date);
+        if (!strictStart && forDay.get(GregorianCalendar.DAY_OF_YEAR) == today.get(GregorianCalendar.DAY_OF_YEAR)) {
+            dayAdvs = i;
+        }
+
+        QLog.l().logger().debug("Посмотрели сколько предварительных записалось в " + getName() + ". Их " + i);
+        return i;
+    }
+
     /**
      * Иссяк лимит на одинаковые введенные данные в день по услуге или нет
      *
@@ -502,7 +557,12 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
      * @return true - превышен, в очередь становиться нельзя; false - можно в очередь встать
      */
     public boolean isLimitPersonPerDayOver(String data) {
-        return getPersonDayLimit() != 0 && getDay() == new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR) && getPersonDayLimit() <= getCountPersonsPerDay(data);
+        final int today = new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR);
+        if (today != day) {
+            day = today;
+            setCountPerDay(0);
+        }
+        return getPersonDayLimit() != 0 && getPersonDayLimit() <= getCountPersonsPerDay(data);
     }
 
     private int getCountPersonsPerDay(String data) {
@@ -537,12 +597,80 @@ public class QService extends DefaultMutableTreeNode implements ITreeIdGetter, T
     /**
      * Иссяк лимит на возможных обработанных в день по услуге или нет
      *
-     * @param advCusts сколько предварительнозаписанных уже есть в очереди
      * @return true - превышен, в очередь становиться нельзя; false - можно в очередь встать
      */
-    public boolean isLimitPerDayOver(int advCusts) {
-        return getDayLimit() != 0 && getDay() == new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR) && getDayLimit() - advCusts <= getCountPerDay();
+    public boolean isLimitPerDayOver() {
+        final Date now = new Date();
+        int advCusts = getAdvancedCount(now, true); //сколько предварительнозаписанных уже есть в очереди в оставшееся время(true)
+        final int today = new GregorianCalendar().get(GregorianCalendar.DAY_OF_YEAR);
+        if (today != day) {
+            day = today;
+            setCountPerDay(0);
+        }
+        return getDayLimit() != 0 && getPossibleTickets(now) <= getCountPerDay() + advCusts;
     }
+
+    /**
+     * Получить количество талонов, которые все еще можно выдать учитывая ограничение на время работы с одним клиетом
+     *
+     * @param date на это время все еще доступны сколько-то талонов
+     * @return оставшееся время работы по услуге / ограничение на время работы с одним клиетом
+     */
+    public long getPossibleTickets(Date date) {
+        if (getDayLimit() != 0) {
+            // подсчитаем ограничение на выдачу талонов
+            final GregorianCalendar gc = new GregorianCalendar();
+            final Date now = new Date();
+            gc.setTime(new Date());
+            long dif = getSchedule().getWorkInterval(gc.getTime()).finish.getTime() - now.getTime();
+
+            int ii = gc.get(GregorianCalendar.DAY_OF_WEEK) - 1;
+            if (ii < 1) {
+                ii = 7;
+            }
+            final QBreaks qb;
+            switch (ii) {
+                case 1:
+                    qb = getSchedule().getBreaks_1();
+                    break;
+                case 2:
+                    qb = getSchedule().getBreaks_2();
+                    break;
+                case 3:
+                    qb = getSchedule().getBreaks_3();
+                    break;
+                case 4:
+                    qb = getSchedule().getBreaks_4();
+                    break;
+                case 5:
+                    qb = getSchedule().getBreaks_5();
+                    break;
+                case 6:
+                    qb = getSchedule().getBreaks_6();
+                    break;
+                case 7:
+                    qb = getSchedule().getBreaks_7();
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+            if (qb != null) {// может вообще перерывов нет
+                for (QBreak br : qb.getBreaks()) {
+                    if (br.getTo_time().after(now)) {
+                        if (br.getFrom_time().before(now)) {
+                            dif = dif - (br.getTo_time().getTime() - now.getTime());
+                        } else {
+                            dif = dif - br.diff();
+                        }
+                    }
+                }
+            }
+            return dif / 1000 / 60 / getDayLimit();
+        } else {
+            return Integer.MAX_VALUE;
+        }
+    }
+
     /**
      * Сколько кастомеров уже прошло услугу сегодня
      */

@@ -39,6 +39,8 @@
     <natives>
 		<native type="izpack" name="ShellLink.dll"/>
 		<native type="izpack" name="ShellLink_x64.dll"/>
+		<native type="izpack" name="WinSetupAPI.dll"/>
+		<native type="izpack" name="WinSetupAPI_x64.dll"/>
 	</natives>
 
     <!-- 
@@ -50,6 +52,7 @@
 	    <langpack iso3="eng"/>
         <langpack iso3="rus"/>
 		<langpack iso3="ukr"/>
+		<langpack iso3="ron"/>
     </locale>
 
     <!-- 
@@ -60,24 +63,29 @@
 		<res id="userInputLang.xml_eng" src="i18n/userInputLang_eng.xml" />
         <res id="userInputLang.xml_rus" src="i18n/userInputLang_rus.xml" />
 		<res id="userInputLang.xml_ukr" src="i18n/userInputLang_ukr.xml" />
+		<res id="userInputLang.xml_ron" src="i18n/userInputLang_ron.xml" />
 
 		<res id="HTMLInfoPanel.info_eng" src="i18n/about_eng.html"/>
         <res id="HTMLInfoPanel.info_rus" src="i18n/about_rus.html"/>
 		<res id="HTMLInfoPanel.info_ukr" src="i18n/about_ukr.html"/>
+		<res id="HTMLInfoPanel.info_ron" src="i18n/about_ron.html"/>
 		
 		<res id="LicencePanel.licence_eng" src="i18n/license-gpl3-eng.txt"/>
 		<res id="LicencePanel.licence_rus" src="i18n/license-gpl3-rus.txt"/>
 		<res id="LicencePanel.licence_ukr" src="i18n/license-gpl3-ukr.txt"/>
+		<res id="LicencePanel.licence_ron" src="i18n/license-gpl3-ron.txt"/>
 		
         <res id="InfoPanel.info" src="../src/ru/apertum/qsystem/common/version.properties"/>
         <res id="shortcutSpec.xml_eng" src="i18n/shortcutSpec_eng.xml"/>
 		<res id="shortcutSpec.xml_rus" src="i18n/shortcutSpec_rus.xml"/>
 		<res id="shortcutSpec.xml_ukr" src="i18n/shortcutSpec_ukr.xml"/>
+		<res id="shortcutSpec.xml_ron" src="i18n/shortcutSpec_ron.xml"/>
 		
         <res id="Installer.image" src="resource/img/install_img.png"/>
 		<res id="packsLang.xml_eng" src="i18n/packsLang_eng.xml"/>
         <res id="packsLang.xml_rus" src="i18n/packsLang_rus.xml"/>
 		<res id="packsLang.xml_ukr" src="i18n/packsLang_ukr.xml"/>
+		<res id="packsLang.xml_ron" src="i18n/packsLang_ron.xml"/>
 		
 		<res id="installer.langsel.img" src="resource/img/qlang.jpg" />
     </resources>
@@ -122,6 +130,8 @@
             <fileset os="windows" dir="resource/img" includes="*.ico" targetdir="$INSTALL_PATH/icons/"/>
             <fileset os="unix" dir="resource/img" includes="*.png" targetdir="$INSTALL_PATH/icons/"/>
 			<singlefile src="../plugins/" target="$INSTALL_PATH/plugins"/>
+			<file os="windows" src="resource/txt/version.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/version.sh" targetdir="$INSTALL_PATH"/>
         </pack>
         <!-- 
         Для сервера кроме самих исполняемых библиотек еще нужно 
@@ -171,7 +181,9 @@
 			<fileset dir="../www/" includes="*.jpg,*.gif,*.png,*.mpg,*.htm,*.html,*.js,*.css" targetdir="$INSTALL_PATH/www/"/>
 			<singlefile src="../www/war/" target="$INSTALL_PATH//www/war"/>
             <file os="windows" src="resource/txt/StartServer.bat" targetdir="$INSTALL_PATH"/>
+            <file os="windows" src="resource/txt/StopServer.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/server.sh" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/stopserver.sh" targetdir="$INSTALL_PATH"/>
 			<file os="windows" src="resource/txt/StartServerDemo.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/serverdemo.sh" targetdir="$INSTALL_PATH"/>
 			<executable targetfile="$INSTALL_PATH/serverdemo.sh" stage="never">
@@ -211,6 +223,7 @@
         <pack id="registrationPoint" name="Registration point" required="no" preselected="no">
             <description>Пункт регистрации</description>
             <file src="../config/welcome.properties" targetdir="$INSTALL_PATH/config/"/>
+            <file src="../config/welcome_bg.properties" targetdir="$INSTALL_PATH/config/"/>
             <file os="windows" src="resource/txt/Welcome.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/welcome.sh" targetdir="$INSTALL_PATH"/>
 			<file os="windows" src="resource/txt/WelcomeDemo.bat" targetdir="$INSTALL_PATH"/>
@@ -227,6 +240,8 @@
                 <os family="unix"/>
             </executable>
 			<parsable targetfile="$INSTALL_PATH/config/langs.properties"/>
+			<file os="windows" src="resource/txt/xsltest.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/xsltest.sh" targetdir="$INSTALL_PATH"/>
         </pack>
 		<pack id="reception" name="Reception" required="no" preselected="no">
             <description>Приемная</description>

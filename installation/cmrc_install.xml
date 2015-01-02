@@ -117,6 +117,8 @@
             <fileset os="windows" dir="resource/img" includes="*.ico" targetdir="$INSTALL_PATH/icons/"/>
             <fileset os="unix" dir="resource/img" includes="*.png" targetdir="$INSTALL_PATH/icons/"/>
 			<singlefile src="../plugins/" target="$INSTALL_PATH/plugins"/>
+			<file os="windows" src="resource/txt/version.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/version.sh" targetdir="$INSTALL_PATH"/>
         </pack>
         <!-- 
         Для сервера кроме самих исполняемых библиотек еще нужно 
@@ -152,7 +154,9 @@
 			<fileset dir="../www/" includes="*.jpg,*.gif,*.png,*.mpg,*.htm,*.html,*.js,*.css" targetdir="$INSTALL_PATH/www/"/>
 			<singlefile src="../www/war/" target="$INSTALL_PATH//www/war"/>
             <file os="windows" src="resource/txt/StartServer.bat" targetdir="$INSTALL_PATH"/>
+            <file os="windows" src="resource/txt/StopServer.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/server.sh" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/stopserver.sh" targetdir="$INSTALL_PATH"/>
 			<file src="../config/qub.properties" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/qub.adr" targetdir="$INSTALL_PATH/config/"/>
         </pack>
@@ -181,6 +185,8 @@
             <parsable os="windows" targetfile="$INSTALL_PATH/Welcome.bat"/>
             <parsable os="unix" targetfile="$INSTALL_PATH/welcome.sh"/>
 			<parsable targetfile="$INSTALL_PATH/config/langs.properties"/>
+			<file os="windows" src="resource/txt/xsltest.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/xsltest.sh" targetdir="$INSTALL_PATH"/>
         </pack>
 		<pack id="reception" name="Reception" required="no" preselected="no">
             <description>Приемная</description>

@@ -18,6 +18,7 @@ package ru.apertum.qsystem.server.model.schedule;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -32,6 +33,7 @@ import ru.apertum.qsystem.server.model.IidGetter;
 
 /**
  * Класс плана для расписания.
+ *
  * @author Evgeniy Egorov
  */
 @Entity
@@ -89,17 +91,14 @@ public class QSchedule implements IidGetter, Serializable {
         return name;
     }
     /**
-     * Тип плана
-     * 0 - недельный
-     * 1 - четные/нечетные дни
+     * Тип плана 0 - недельный 1 - четные/нечетные дни
      */
     @Column(name = "type")
     private Integer type;
 
     /**
-     * Тип плана
-     * 0 - недельный
-     * 1 - четные/нечетные дни
+     * Тип плана 0 - недельный 1 - четные/нечетные дни
+     *
      * @return Тип плана
      */
     public Integer getType() {
@@ -109,6 +108,162 @@ public class QSchedule implements IidGetter, Serializable {
     public void setType(Integer type) {
         this.type = type;
     }
+
+    /**
+     * Начало и конец рабочего дня, к примеру.
+     */
+    public static class Interval {
+
+        public final Date start;
+        public final Date finish;
+
+        public Interval(Date start, Date finish) {
+            if (finish.before(start)) {
+                throw new ServerException("Finish date " + finish + " before than start date " + start);
+            }
+            this.start = start;
+            this.finish = finish;
+        }
+
+        public long diff() {
+            return finish.getTime() - start.getTime();
+        }
+
+    }
+
+    public Interval getWorkInterval(Date date) {
+        // Определим время начала и kонца работы на этот день
+        final GregorianCalendar gc_day = new GregorianCalendar();
+        gc_day.setTime(date);
+        final Interval in;
+        if (getType() == 1) {
+            if (0 == (gc_day.get(GregorianCalendar.DAY_OF_MONTH) % 2)) {
+                in = new Interval(getTime_begin_1(), getTime_end_1());
+            } else {
+                in = new Interval(getTime_begin_2(), getTime_end_2());
+            }
+        } else {
+            switch (gc_day.get(GregorianCalendar.DAY_OF_WEEK)) {
+                case 2:
+                    in = new Interval(getTime_begin_1(), getTime_end_1());
+                    break;
+                case 3:
+                    in = new Interval(getTime_begin_2(), getTime_end_2());
+                    break;
+                case 4:
+                    in = new Interval(getTime_begin_3(), getTime_end_3());
+                    break;
+                case 5:
+                    in = new Interval(getTime_begin_4(), getTime_end_4());
+                    break;
+                case 6:
+                    in = new Interval(getTime_begin_5(), getTime_end_5());
+                    break;
+                case 7:
+                    in = new Interval(getTime_begin_6(), getTime_end_6());
+                    break;
+                case 1:
+                    in = new Interval(getTime_begin_7(), getTime_end_7());
+                    break;
+                default:
+                    throw new ServerException("32-е мая!");
+            }
+        }// Определили начало и конец рабочего дня на сегодня
+        final GregorianCalendar gc = new GregorianCalendar();
+        gc.setTime(in.start);
+        gc_day.set(GregorianCalendar.HOUR_OF_DAY, gc.get(GregorianCalendar.HOUR_OF_DAY));
+        gc_day.set(GregorianCalendar.MINUTE, gc.get(GregorianCalendar.MINUTE));
+        gc_day.set(GregorianCalendar.SECOND, 0);
+        final Date ds = gc_day.getTime();
+        gc.setTime(in.finish);
+        gc_day.setTime(date);
+        gc_day.set(GregorianCalendar.HOUR_OF_DAY, gc.get(GregorianCalendar.HOUR_OF_DAY));
+        gc_day.set(GregorianCalendar.MINUTE, gc.get(GregorianCalendar.MINUTE));
+        gc_day.set(GregorianCalendar.SECOND, 0);
+        return new Interval(ds, gc_day.getTime());
+    }
+
+    /**
+     * Проверка на перерыв. К примеру. В перерывах нет возможности записываться, по этому это время не поедет в пункт регистрации. Есть расписание, у него на
+     * каждый день список перерывов. Папало ли время в перерыв на ту дату
+     *
+     * @param date проверка этой даты на перерыв
+     * @return да или нет
+     */
+    public boolean inBreak(Date date) {
+        // Проверка на перерыв. В перерывах нет возможности записываться, по этому это время не поедет в пункт регистрации
+        final GregorianCalendar gc = new GregorianCalendar();
+        gc.setTime(date);
+        gc.add(GregorianCalendar.SECOND, 3);
+        int ii = gc.get(GregorianCalendar.DAY_OF_WEEK) - 1;
+        if (ii < 1) {
+            ii = 7;
+        }
+        final QBreaks qb;
+        switch (ii) {
+            case 1:
+                qb = getBreaks_1();
+                break;
+            case 2:
+                qb = getBreaks_2();
+                break;
+            case 3:
+                qb = getBreaks_3();
+                break;
+            case 4:
+                qb = getBreaks_4();
+                break;
+            case 5:
+                qb = getBreaks_5();
+                break;
+            case 6:
+                qb = getBreaks_6();
+                break;
+            case 7:
+                qb = getBreaks_7();
+                break;
+            default:
+                throw new AssertionError();
+        }
+        if (qb != null) {// может вообще перерывов нет
+            for (QBreak br : qb.getBreaks()) {
+                if (br.getFrom_time().before(gc.getTime()) && br.getTo_time().after(gc.getTime())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Проверка на перерыв. К примеру. В перерывах нет возможности записываться, по этому это время не поедет в пункт регистрации. Есть расписание, у него на
+     * каждый день список перерывов. Папал ли интервал(пересечение) в перерыв на ту дату
+     *
+     * @param interval проверка этго интервала на перерыв
+     * @return да или нет
+     */
+    public boolean inBreak(Interval interval) {
+        final GregorianCalendar gc = new GregorianCalendar();
+        gc.setTime(interval.finish);
+        gc.add(GregorianCalendar.SECOND, -3);
+        return inBreak(interval.start) || inBreak(gc.getTime());
+    }
+
+    /**
+     * Проверка на перерыв. К примеру. В перерывах нет возможности записываться, по этому это время не поедет в пункт регистрации. Есть расписание, у него на
+     * каждый день список перерывов. Папал ли интервал(пересечение) в перерыв на ту дату
+     *
+     * @param start начало этoго интервала на перерыв
+     * @param finish конец этoго интервала на перерыв
+     * @return да или нет
+     */
+    public boolean inBreak(Date start, Date finish) {
+        final GregorianCalendar gc = new GregorianCalendar();
+        gc.setTime(finish);
+        gc.add(GregorianCalendar.SECOND, -3);
+        return inBreak(start) || inBreak(gc.getTime());
+    }
+
     /**
      * Время начала работы в первый день недели или в нечетный день, зависит от type
      */

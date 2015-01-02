@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<langpack>
+	<str id="mainFiles.description" txt="Fisier de baza, biblioteca, resurse grafice."/>
+	<str id="workPlace.description" txt="Instalarea automata a operatorului la statia de lucru. Plasarea fisierului de configurare pentru statia de lucru  APM al operatorului."/>
+	<str id="server.description" txt="Instalarea componentelor serverului: utilitati de configurare, fisiere de configurare, resurse de pe server."/>
+	<str id="admin.description" txt="Instalarea statiei de lucru automatizata a administratorului. Plasarea fisierelor de configurare a componentelor de administrare."/>
+	<str id="registrationPoint.description" txt="Instalarea punctului de inregistrare: utilitati de configurare, fișiere de configurare, resurse de pe server."/>
+	<str id="reception.description" txt="Instalarea la locul de munca de la receptie: utilitati de configurare, fisiere de configurare."/>
+	<str id="journal.description" txt="Plugin. Nu prea mare si foarte flexibil CRM pentru locul operatorului si receptiei."/>
+	<str id="docs.description" txt="Documentatie sistem: Administratorul Ghidului QSystem, Ghidul utilizatorului QSystem, Sisteme de informare a sistemului de raportare programator "/>
+	
+	<str id="forArmCP.txt" txt="Pentru locul de munca si al punctului de inregiostrare:"/>
+</langpack>

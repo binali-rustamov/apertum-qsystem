@@ -136,7 +136,7 @@ public final class QCustomer implements Comparable<QCustomer>, Serializable, Iid
      * Специально для редиректа и возврата после редиректа
      *
      * @param state
-     * @param newServiceId
+     * @param newServiceId - при редиректе и возврате после редиректа тут будет ID той услуги куда редиректим или возвращвем, причем услуга у кастомера все еще прежняя, т.е. так в которой завершили с ним работать
      */
     public void setState(CustomerState state, Long newServiceId) {
         this.state = state;

@@ -107,4 +107,8 @@ public class QBreak implements IidGetter, Serializable {
         this.breaks = breaks;
     }
     
+    public long diff(){
+        return getTo_time().getTime() - getFrom_time().getTime();
+    }
+    
 }

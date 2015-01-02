@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<langpack>
+	<str id="forArmCP" txt="pentru locul de minca si al punctului de inregistrare"/>
+	<str id="servAddr" txt="Adresa serverului:"/>
+	<str id="servPort" txt="Portul serverului:"/>
+	<str id="forAdmin" txt="pentru administrare:"/>
+	<str id="CPaddr" txt="Adresa punctului de inregistrare:"/>
+	<str id="CPport" txt="Punctul portului de inregistrare:"/>
+	<str id="requestServ" txt="Pentru inversa conexiune a serverului cu clientii si cu punctul de inregistrare:"/>
+	<str id="requestClient" txt="Numerotarea locului de  munca al operatorului (nu este oblibatorie):"/>
+	<str id="clnPort" txt="portul clientului:"/>
+	<str id="clnPoint" txt="НNumarul locului de munca:"/>
+	<str id="forCP" txt="Pentru punctul de inregistrare:"/>
+	<str id="kindCP" txt="Selectarea puctului tip de inregistrare :"/>
+	<str id="tach" txt="Selectie serviciul de pe terminalul senzorial"/>
+	<str id="buttons" txt="Alegerea serviciuluide pe dispozitivul tastatura"/>
+	<str id="multylng" txt="Punctul de inregistrare Multilingual"/>
+	<str id="serverboard" txt="Utilizati tabela de marcaj principal"/>
+	<str id="clientboard" txt="Utilizati tabela de marcaj al operatorului"/>
+</langpack>

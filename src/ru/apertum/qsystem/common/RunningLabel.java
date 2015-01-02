@@ -27,6 +27,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,22 +36,36 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.model.ATalkingClock;
 
 /**
- * Компонент расширенной метки JLabel.
- * Класс, расширяющий JLabel.
- * Добавлены свойства создания бегущего текста, статического текста без привязки к лайаутам и т.д.
- * Умеет мигать.
+ * Компонент расширенной метки JLabel. Класс, расширяющий JLabel. Добавлены свойства создания бегущего текста, статического текста без привязки к лайаутам и
+ * т.д. Умеет мигать.
+ *
  * @author Evgeniy Egorov
  */
 public class RunningLabel extends JLabel implements Serializable {
@@ -66,8 +82,8 @@ public class RunningLabel extends JLabel implements Serializable {
     }
 
     /**
-     * Событие ресайза метки.
-     * Если что-то нужно повесиь на ресайз, то перекрыть этод метод, незабыв вызвать предка.
+     * Событие ресайза метки. Если что-то нужно повесиь на ресайз, то перекрыть этод метод, незабыв вызвать предка.
+     *
      * @param evt
      */
     protected void onResize(java.awt.event.ComponentEvent evt) {
@@ -126,8 +142,8 @@ public class RunningLabel extends JLabel implements Serializable {
     private Dimension dmImg = null;
     public static final String PROP_SPEED = "speedRunningText";
     /**
-     * Скорость движения текста. На сколько пикселей сместится кадр относительно предыдущего при 24 кадра в секкунду.
-     * По умолчанию 10 пикселей, т.е. 240 пикселей с секунку будет скорость движения текста.
+     * Скорость движения текста. На сколько пикселей сместится кадр относительно предыдущего при 24 кадра в секкунду. По умолчанию 10 пикселей, т.е. 240
+     * пикселей с секунку будет скорость движения текста.
      */
     private int speedRunningText = 10;
 
@@ -161,8 +177,8 @@ public class RunningLabel extends JLabel implements Serializable {
     }
 
     /**
-     * Этот метод установит новое значение бегущего текста, выведет его на конву
-     * и отцентрирует его в зависимости от установленных выравниваний.
+     * Этот метод установит новое значение бегущего текста, выведет его на конву и отцентрирует его в зависимости от установленных выравниваний.
+     *
      * @param text устанавливаемый бегущий текст
      */
     public void setRunningText(String text) {
@@ -205,14 +221,65 @@ public class RunningLabel extends JLabel implements Serializable {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("utf8")))) {
                 String line;
                 lines.clear();
-                boolean f = true;
                 while ((line = br.readLine()) != null) {
-                    lines.add(f ? line.substring(1) : line);
-                    f = false;
+                    if (!line.startsWith("#")) {
+                        lines.add(line.trim());
+                    }
                     //System.out.println(line);
                 }
             }
         } catch (IOException ex) {
+            QLog.l().logger().error("Cant read running strings from file " + filePath, ex);
+        }
+        // XSLT
+        if (lines.size() == 3 && lines.getFirst().toLowerCase().startsWith("xml")) {
+            String url = lines.get(1);
+
+            final Pattern pattern = Pattern.compile("##.+?##");
+            final Matcher matcher = pattern.matcher(url);
+            // check all occurance
+            while (matcher.find()) {
+                final SimpleDateFormat sdf2 = new SimpleDateFormat(matcher.group().substring(2, (matcher.group().length() - 2)));
+                url = url.replace(matcher.group(), sdf2.format(new Date()));
+            }
+            try {
+                final URL xmlIn = new URL(url);
+                final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                final DocumentBuilder builder = factory.newDocumentBuilder();
+                final Document document = builder.parse(xmlIn.openStream());
+
+                // Use a Transformer for output
+                final URL xslIn = new URL(lines.get(2));
+                final StreamSource stylesource = new StreamSource(xslIn.openStream());
+
+                final TransformerFactory tFactory = TransformerFactory.newInstance();
+                final Transformer transformer = tFactory.newTransformer(stylesource);
+
+                final DOMSource source = new DOMSource(document);
+                final ByteArrayOutputStream os = new ByteArrayOutputStream();
+                final StreamResult result = new StreamResult(os);
+                transformer.transform(source, result);
+
+                fis = new ByteArrayInputStream(os.toByteArray());
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("utf8")))) {
+                    String line;
+                    lines.clear();
+                    while ((line = br.readLine()) != null) {
+                        if (!line.startsWith("#")) {
+                            lines.add(line.trim());
+                        }
+                        //System.out.println(line);
+                    }
+                }
+            } catch (IOException ex) {
+                QLog.l().logger().error("Cant read running strings from XSLT 1 " + filePath, ex);
+            } catch (ParserConfigurationException | SAXException ex) {
+                QLog.l().logger().error("Cant read running strings from XSLT 2 " + filePath, ex);
+            } catch (TransformerConfigurationException ex) {
+                QLog.l().logger().error("Cant read running strings from XSLT 3 " + filePath, ex);
+            } catch (TransformerException ex) {
+                QLog.l().logger().error("Cant read running strings from XSLT 4 " + filePath, ex);
+            }
         }
     }
 
@@ -319,7 +386,6 @@ public class RunningLabel extends JLabel implements Serializable {
         gImg.setColor(bg);
 
         //Теперь мы закрашиваем изображение:
-
         gImg.fillRect(0, 0, dmImg.width, dmImg.height);
         if (getBackgroundImage() != null) {
             gImg.drawImage(backgroundImg, 0, 0, null);
@@ -339,11 +405,11 @@ public class RunningLabel extends JLabel implements Serializable {
                 y = 0;
         }
         /*
-        CENTER  = 0;
-        TOP     = 1;
-        LEFT    = 2;
-        BOTTOM  = 3;
-        RIGHT   = 4;
+         CENTER  = 0;
+         TOP     = 1;
+         LEFT    = 2;
+         BOTTOM  = 3;
+         RIGHT   = 4;
          */
         // отцентрируем по горизонтале
         final int len = sizes.length == 0 ? 0 : totalSize;
@@ -378,7 +444,6 @@ public class RunningLabel extends JLabel implements Serializable {
             while (-nPosition - delta > lenHead) {
                 lenHead = lenHead + sizes[++pos];
             }
-
 
             int posLast = pos == -1 ? 0 : pos;
             int lenTail = 0;
@@ -448,8 +513,7 @@ public class RunningLabel extends JLabel implements Serializable {
         run = true;
         setRateMainTimer();
         /**
-         * Создать поток для инициализации перересовки.
-         * Он выступает так же и в качестве таймера для перересовки.
+         * Создать поток для инициализации перересовки. Он выступает так же и в качестве таймера для перересовки.
          */
         nPosition = getWidth();
         if (!timerThread.isRunning()) {
@@ -526,8 +590,7 @@ public class RunningLabel extends JLabel implements Serializable {
         }
 
         /**
-         * Создать поток для инициализации перересовки.
-         * Он выступает так же и в качестве таймера для перересовки.
+         * Создать поток для инициализации перересовки. Он выступает так же и в качестве таймера для перересовки.
          */
         if (!timerThread.isRunning()) {
             timerThread.start();
@@ -575,8 +638,7 @@ public class RunningLabel extends JLabel implements Serializable {
         propertySupport.firePropertyChange(PROP_SHOW_TIME, oldValue, showTime);
         setRateMainTimer();
         /**
-         * Создать поток для инициализации перересовки.
-         * Он выступает так же и в качестве таймера для перересовки.
+         * Создать поток для инициализации перересовки. Он выступает так же и в качестве таймера для перересовки.
          */
         if (showTime) {
             setSizes(getDate());

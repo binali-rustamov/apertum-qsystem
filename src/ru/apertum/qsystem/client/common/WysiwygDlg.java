@@ -56,7 +56,6 @@ public class WysiwygDlg extends javax.swing.JDialog {
         final GridLayout gl = new GridLayout(1, 1);
         panel.setLayout(gl);
         panel.add(javafxPanel);
-        //bro.load(Uses.prepareAbsolutPathForImg(WelcomeParams.getInstance().topURL));
     }
     private String result;
 

@@ -1,0 +1,111 @@
+<html lang="ru-RU" xmlns="http://www.w3.org/1999/xhtml">
+    <head profile="http://gmpg.org/xfn/11">
+
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+        <meta http-equiv="Refresh" content="70" />
+
+        <title> L E D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S T R I N G 2</title>
+
+
+        <link media="screen" type="text/css" href="led-stroka/new-led-stroka.css" rel="stylesheet"/>
+        <!--script src="led-stroka/button521d.js" type="text/javascript"></script-->
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+        <!-- Running Line -->
+        <script>
+            function sleepFor(sleepDuration) {
+                var now = new Date().getTime();
+                while (new Date().getTime() < now + sleepDuration) { /* do nothing */
+                }
+            }
+
+            var xmlHttp = null;
+
+            function httpGet(theUrl)
+            {
+                //http://www.bnm.org/md/official_exchange_rates?get_xml=1&date=10.12.2014
+                xmlHttp = null;
+
+                xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = ProcessRequest;
+                document.getElementById("test2").innerHTML = "READY";
+                xmlHttp.open("GET", theUrl, false);
+                xmlHttp.send(theUrl);
+                document.getElementById("test2").innerHTML = "READY END";
+                //return xmlHttp.responseText;
+            }
+
+            function ProcessRequest()
+            {
+                document.getElementById("test3").innerHTML = "GO";
+
+
+                if (xmlHttp.readyState === 4 && xmlHttp.status === 200)
+                {
+                    document.getElementById("test4").innerHTML = "is 200";
+                    if (xmlHttp.responseText === "Not found")
+                    {
+                        document.getElementById("run_text").innerHTML = "Not found";
+                    }
+                    else
+                    {
+                        // No parsing necessary with JSON!        
+                        document.getElementById("run_text").innerHTML = xmlHttp.responseText;
+                    }
+                } else {
+                    document.getElementById("test4").innerHTML = "NOT 200 " + xmlHttp.readyState + " - " + xmlHttp.status + " - " + xmlHttp.responseText;
+                }
+            }
+
+            function getJQ(theUrl) {
+                var page_content;
+                document.getElementById("test2").innerHTML = "READY";
+                $.get(theUrl, function (data) {
+                    document.getElementById("test3").innerHTML = "GO";
+                    page_content = data;
+                    document.getElementById("test4").innerHTML = data;
+                });
+                document.getElementById("test2").innerHTML = "READY 2";
+            }
+
+            function start() {
+                var d = new Date();
+                var theurl = "http://www.bnm.org/md/official_exchange_rates?get_xml=1&date=" + d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear();
+
+                theurl="http://qsystem.info/index.php/links";
+                document.getElementById("test1").innerHTML = "<a href=\"" + theurl + "\">" + theurl + "</a>";
+                httpGet(theurl);
+                //getJQ(theurl);
+                //alert(theurl);
+                //document.getElementById("run_text").innerHTML = theurl;//httpGet(theurl);
+            }
+
+
+        </script>
+    </head>
+    <body bgcolor="#1177BB" background="back.jpg" leftmargin="0" bottommargin="0" topmargin="0" onload="start1();">
+
+        <div class="runninglinecontainer">
+            <div id="l1" class="line">
+                <div class="line_text" id="run_text">Ну&nbspи&nbspсвоего&nbsp;текста&nbsp;конечно&nbsp;не&nbsp;забыть&nbsp;прописать,&nbsp;килограмм&nbsp;на&nbsp;25&nbsp;прямо&nbsp;во&nbsp;всю&nbsp;строку&nbsp;браузера&nbsp;</div>
+                <div class="line_cover"></div>
+            </div>
+            <div id = "test1">
+                test1
+            </div>
+            <div id = "test2">
+                test2
+            </div>
+            <div id = "test3">
+                test3
+            </div>
+            <div id = "test4">
+                test4
+            </div>
+        </div>
+        <button onclick="start();">press</button>
+
+
+
+    </body>
+</html>

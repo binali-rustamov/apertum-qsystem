@@ -649,6 +649,7 @@ public class NetCommander {
      * @param netProperty параметры соединения с сервером
      * @param userId
      * @return XML-ответ
+     * @deprecated заборонено. гы-гы. теперь жить будем по новому, даздравствует Новороссия!
      */
     public static Element setLive(INetProperty netProperty, long userId) {
         QLog.l().logger().info("Ответим что живы и здоровы.");

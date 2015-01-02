@@ -335,7 +335,7 @@ public final class FClient extends javax.swing.JFrame {
             }
             if (Uses.HOW_DO_YOU_DO.equals(data)) {
                 //Отправим по TCP/IP
-                NetCommander.setLive(netProperty, user.getId());
+                // NetCommander.setLive(netProperty, user.getId()); // заборонено. гы-гы. теперь жить будем по новому, даздравствует Новороссия!
             }
             if (data.startsWith("message#") && (data.startsWith("message#ALL##") || isMyMessage(data))) {
                 final String mess = data.substring(data.indexOf("##") + 2);
@@ -554,7 +554,8 @@ public final class FClient extends javax.swing.JFrame {
             final String tts = prob + action + "  " + tt / 1000 / 60 + ":" + (tt / 1000) % 60;
             labelMotiv.setText(tts.substring(tts.length() - 26));
             // тут типа костылик для автообновления. удп у них видите ли не доходят! Лохи криворукие! Раз в три минуты если давно не обновлялось...
-            if (new Date().getTime() - refreshTime > 3 * 60 * 1000) {
+            // ок-ок. раз в 55 скеунд. Это обновление будет еще сессию обновлять, такая так сказать долбилка для сессии.
+            if (new Date().getTime() - refreshTime > 1 * 55 * 1000) {
                 refreshTime = new Date().getTime();
                 refreshClient();
             }
@@ -612,6 +613,9 @@ public final class FClient extends javax.swing.JFrame {
     protected void setSituation(SelfSituation plan) {
         QLog.l().logger().trace("Обновляем видимую ситуацию.");
         refreshTime = new Date().getTime();
+        if (plan.getSelfservices() == null) {
+            return;
+        }
         this.plan = plan;
         /**
          * На первую закладку.
@@ -1112,6 +1116,7 @@ public final class FClient extends javax.swing.JFrame {
         buttonRedirect.setName("buttonRedirect"); // NOI18N
 
         jLayeredPane1.setBorder(new javax.swing.border.MatteBorder(null));
+        jLayeredPane1.setAutoscrolls(true);
         jLayeredPane1.setName("jLayeredPane1"); // NOI18N
 
         labelNextCustomerInfo.setText(resourceMap.getString("labelNextCustomerInfo.text")); // NOI18N

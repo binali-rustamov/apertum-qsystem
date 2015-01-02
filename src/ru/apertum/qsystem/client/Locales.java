@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -45,6 +45,7 @@ public final class Locales {
             f = new File(configFileName);
             if (f.exists()) {
                 config.setFileName(configFileName);
+                config.setEncoding("utf8");
             } else {
                 final Exception ex = new FileNotFoundException(configFileName);
                 QLog.l().logger().error(ex);
@@ -109,23 +110,23 @@ public final class Locales {
     /**
      * eng -> Locale(eng)
      */
-    private final HashMap<String, Locale> locales = new HashMap<>();
+    private final LinkedHashMap<String, Locale> locales = new LinkedHashMap<>();
     /**
      * Locale(eng)-> eng
      */
-    private final HashMap<Locale, String> locales_name = new HashMap<>();
+    private final LinkedHashMap<Locale, String> locales_name = new LinkedHashMap<>();
     /**
      * English -> eng
      */
-    private final HashMap<String, String> lngs = new HashMap<>();
+    private final LinkedHashMap<String, String> lngs = new LinkedHashMap<>();
     /**
      * eng -> English
      */
-    private final HashMap<String, String> lngs_names = new HashMap<>();
+    private final LinkedHashMap<String, String> lngs_names = new LinkedHashMap<>();
     /**
      * eng -> buttontext
      */
-    private final HashMap<String, String> lngs_buttontext = new HashMap<>();
+    private final LinkedHashMap<String, String> lngs_buttontext = new LinkedHashMap<>();
 
     public static Locales getInstance() {
         return LocalesHolder.INSTANCE;

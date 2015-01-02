@@ -39,6 +39,7 @@ public class QLog {
     private static final String KEY_PAUSE = "-pause";
     private static final String KEY_TERMINAL = "-terminal";
     private static final String KEY_WELCOME_BTN = "-buttons";
+     private static final String KEY_RETAIN = "-RETAIN";
     private Logger logger = Logger.getLogger("server.file");//**.file.info.trace
 
     public Logger logger() {
@@ -48,9 +49,13 @@ public class QLog {
      * Пользуемся этой константой для работы с логом для отчетов
      */
     private Logger logRep = Logger.getLogger("reports.file");
+    private Logger logQUser = isServer1 ? Logger.getLogger("quser.file") : Logger.getLogger("reports.file.info.trace");
 
     public Logger logRep() {
         return logRep;
+    }
+    public Logger logQUser() {
+        return logQUser;
     }
     /**
      * Режим отладки
@@ -227,10 +232,13 @@ public class QLog {
 
         if ("server.file.info.trace".equalsIgnoreCase(logger.getName())) {
             logRep = Logger.getLogger("reports.file.info.trace");
-        }
-        // ключ, отвечающий за логирование
-        if ("server.file.info".equalsIgnoreCase(logger.getName())) {
-            logRep = Logger.getLogger("reports.file.info");
+            logQUser = Logger.getLogger("quser.file.info.trace");
+        } else {
+            // ключ, отвечающий за логирование
+            if ("server.file.info".equalsIgnoreCase(logger.getName())) {
+                logRep = Logger.getLogger("reports.file.info");
+                logQUser = Logger.getLogger("quser.file.info");
+            }
         }
     }
 
@@ -241,12 +249,16 @@ public class QLog {
     public static boolean isServer1 = false;
     public static boolean isIDE = false;
     public static boolean isSTART = false;
+    /**
+     * Всегда грузим temp.json и никогда не чистим состояние.
+     */
+    public static boolean isRETAIN = false;
     public static int loggerType = 0; // 0-сервер,1-клиент,2-приемная,3-админка,4-киоск
 
     /**
      *
      * @param args
-     * @param type 0-сервер,1-клиент,2-приемная,3-админка,4-киоск,5-сервер хардварных кнопок 
+     * @param type 0-сервер,1-клиент,2-приемная,3-админка,4-киоск,5-сервер хардварных кнопок
      * @return
      */
     public static QLog initial(String[] args, int type) {
@@ -257,6 +269,9 @@ public class QLog {
             }
             if (KEY_START.equalsIgnoreCase(string)) {
                 isSTART = true;
+            }
+            if (KEY_RETAIN.equalsIgnoreCase(string)) {
+                isRETAIN = true;
             }
         }
         loggerType = type;

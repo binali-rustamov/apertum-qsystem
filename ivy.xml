@@ -38,7 +38,7 @@
         <dependency org="antlr" name="antlr" rev="2.7.7" conf="runtime->*" transitive="false"/>
         <dependency org="org.slf4j" name="jcl-over-slf4j" rev="1.6.1" conf="runtime->*" transitive="false"/>
         <dependency org="log4j" name="log4j" rev="1.2.15" conf="compile->*" transitive="false"/>
-        <dependency org="xalan" name="xalan" rev="2.7.1" conf="runtime->*" transitive="false"/>
+        <!--dependency org="xalan" name="xalan" rev="2.7.1" conf="runtime->*" transitive="false"/-->
         <dependency org="com.lowagie" name="itext" rev="2.1.7" conf="runtime->*" transitive="false"/>
         <dependency org="net.java.dev.beansbinding" name="beansbinding" rev="1.2.1" conf="compile->*" transitive="false"/>
         <dependency org="net.sourceforge.barbecue" name="barbecue" rev="1.5-beta1" conf="compile->*" transitive="false"/>
@@ -70,7 +70,22 @@
 
         <dependency org="com.google.code.gson" name="gson" rev="2.3" conf="compile->*" transitive="false"/>
         
-        <dependency org="org.eclipse.jetty" name="jetty-server" rev="9.2.5.v20141112" conf="compile->*" transitive="false"/>
+        
+        <dependency org="org.eclipse.jetty" name="jetty-server" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-util" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-continuation" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-http" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-io" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-servlet" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-servlets" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-security" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-webapp" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-jsp" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-runner" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-xml" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-annotations" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
+        
+        <!--dependency org="org.eclipse.jetty" name="jetty-server" rev="9.2.5.v20141112" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-util" rev="9.2.5.v20141112" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-continuation" rev="9.2.5.v20141112" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-http" rev="9.2.5.v20141112" conf="compile->*" transitive="false"/>
@@ -83,6 +98,9 @@
         <dependency org="org.eclipse.jetty" name="jetty-runner" rev="9.2.5.v20141112" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-xml" rev="9.2.5.v20141112" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-annotations" rev="9.2.5.v20141112" conf="compile->*" transitive="false"/>
+        <dependency org="org.eclipse.jetty" name="jetty-jmx" rev="9.2.5.v20141112" conf="compile->*" transitive="false"/-->
+        
+        
         <!--dependency org="org.eclipse.jetty" name="jetty-plus" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-client" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>
         <dependency org="org.eclipse.jetty" name="jetty-deploy" rev="9.0.4.v20130625" conf="compile->*" transitive="false"/>

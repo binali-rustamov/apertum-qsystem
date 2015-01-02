@@ -30,6 +30,7 @@ import java.awt.Graphics2D;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.KeyEvent;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
@@ -88,6 +89,7 @@ public class PComplexService extends javax.swing.JPanel {
 
     final private File configFile;
     final IClientNetProperty netProperty;
+    final ATreeModel<QService> servsTree;
 
     /**
      * Creates new form PComplexService
@@ -100,6 +102,7 @@ public class PComplexService extends javax.swing.JPanel {
         initComponents();
         this.configFile = configFile;
         this.netProperty = netProperty;
+        servsTree = (ATreeModel<QService>) tm;
         treeServices.setModel(tm);
 
         listOfLists.setModel(new DefaultListModel<>());
@@ -159,7 +162,7 @@ public class PComplexService extends javax.swing.JPanel {
             if (listOfLists.getSelectedIndex() != -1) {
                 DefaultListModel<ComplexListOfServices> sll = (DefaultListModel<ComplexListOfServices>) (listOfLists.getModel());
                 final ComplexListOfServices cmp = sll.get(listOfLists.getSelectedIndex());
-                
+
                 DefaultListModel<QService> sl = (DefaultListModel<QService>) (listFreeServices.getModel());
                 sl.clear();
                 for (QService ser : cmp.listFree) {
@@ -190,7 +193,7 @@ public class PComplexService extends javax.swing.JPanel {
                 for (QService ser : cmp.list5) {
                     sl.addElement(ser);
                 }
-                
+
             }
         });
 
@@ -198,10 +201,10 @@ public class PComplexService extends javax.swing.JPanel {
     }
     private static final ResourceBundle translate = ResourceBundle.getBundle("ru/apertum/qsystem/client/forms/resources/PComplexService", Locales.getInstance().getLangCurrent());
 
-    private String locMes(String key){
+    private String locMes(String key) {
         return translate.getString(key);
     }
-    
+
     private boolean isGood(QService data) {
         boolean flag = true;
         DefaultListModel<QService> sl = (DefaultListModel<QService>) (listFreeServices.getModel());
@@ -441,7 +444,7 @@ public class PComplexService extends javax.swing.JPanel {
         jSplitPane1.setDividerLocation(350);
         jSplitPane1.setContinuousLayout(true);
 
-        treeServices.setBorder(javax.swing.BorderFactory.createTitledBorder(locMes("services")));
+        treeServices.setBorder(javax.swing.BorderFactory.createTitledBorder("Оказываемые услуги"));
         treeServices.setDragEnabled(true);
         treeServices.setDropMode(javax.swing.DropMode.ON);
         treeServices.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -461,12 +464,17 @@ public class PComplexService extends javax.swing.JPanel {
         jSplitPane2.setDividerLocation(330);
         jSplitPane2.setContinuousLayout(true);
 
-        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(locMes("savedServiceList")));
+        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder("Сохраненные списки услуг"));
 
         listOfLists.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         listOfLists.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 listOfListsMouseClicked(evt);
+            }
+        });
+        listOfLists.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                listOfListsKeyPressed(evt);
             }
         });
         jScrollPane6.setViewportView(listOfLists);
@@ -504,7 +512,7 @@ public class PComplexService extends javax.swing.JPanel {
         jSplitPane3.setAutoscrolls(true);
         jSplitPane3.setContinuousLayout(true);
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(locMes("seqServices")));
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Последовательнооказываемые услуги"));
         jPanel5.setLayout(new javax.swing.BoxLayout(jPanel5, javax.swing.BoxLayout.Y_AXIS));
 
         listServ1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -559,7 +567,7 @@ public class PComplexService extends javax.swing.JPanel {
 
         jSplitPane3.setRightComponent(jPanel5);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(locMes("unseqServices")));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Безочередные услуги"));
 
         listFreeServices.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         listFreeServices.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -640,7 +648,7 @@ public class PComplexService extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab(locMes("servList"), jPanel7);
+        jTabbedPane1.addTab("Списки услуг", jPanel7);
 
         treeDepends.setExpandsSelectedPaths(false);
         treeDepends.setRootVisible(false);
@@ -676,7 +684,7 @@ public class PComplexService extends javax.swing.JPanel {
             .addComponent(jTabbedPane1)
         );
 
-        jTabbedPane1.getAccessibleContext().setAccessibleName(locMes("servList"));
+        jTabbedPane1.getAccessibleContext().setAccessibleName("Списки услуг");
         jTabbedPane1.getAccessibleContext().setAccessibleDescription("");
 
         jSplitPane2.setLeftComponent(jPanel1);
@@ -969,7 +977,7 @@ public class PComplexService extends javax.swing.JPanel {
                     for (LinkedList<Long> rec : recList.dependences) {
                         if (rec.get(0).equals(ds.id)) {
                             rec.stream().forEach((long1) -> {
-                                final QService ser = QServiceTree.getInstance().getById(long1);
+                                final QService ser = servsTree.getById(long1);
                                 if (ser != null && !ser.getId().equals(ds.id)) {
                                     ds.add(new DepService(ser.getName(), long1));
                                 }
@@ -984,32 +992,32 @@ public class PComplexService extends javax.swing.JPanel {
                 for (ComplexListOfServices rec : recList.backup) {
 
                     ArrayList<QService> del = new ArrayList<>();
-                    rec.listFree.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                    rec.listFree.stream().filter((service) -> (!servsTree.hasById(service.getId()))).forEach((service) -> {
                         del.add(service);
                     });
                     rec.listFree.removeAll(del);
                     del.clear();
-                    rec.list1.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                    rec.list1.stream().filter((service) -> (!servsTree.hasById(service.getId()))).forEach((service) -> {
                         del.add(service);
                     });
                     rec.list1.removeAll(del);
                     del.clear();
-                    rec.list2.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                    rec.list2.stream().filter((service) -> (!servsTree.hasById(service.getId()))).forEach((service) -> {
                         del.add(service);
                     });
                     rec.list2.removeAll(del);
                     del.clear();
-                    rec.list3.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                    rec.list3.stream().filter((service) -> (!servsTree.hasById(service.getId()))).forEach((service) -> {
                         del.add(service);
                     });
                     rec.list3.removeAll(del);
                     del.clear();
-                    rec.list4.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                    rec.list4.stream().filter((service) -> (!servsTree.hasById(service.getId()))).forEach((service) -> {
                         del.add(service);
                     });
                     rec.list4.removeAll(del);
                     del.clear();
-                    rec.list5.stream().filter((service) -> (!QServiceTree.getInstance().hasById(service.getId()))).forEach((service) -> {
+                    rec.list5.stream().filter((service) -> (!servsTree.hasById(service.getId()))).forEach((service) -> {
                         del.add(service);
                     });
                     rec.list5.removeAll(del);
@@ -1283,16 +1291,14 @@ public class PComplexService extends javax.swing.JPanel {
 
                 line = line + 3;
 
-                write(FWelcome.getLocaleMessage("ticket.time") + " " +
-                        (Locales.getInstance().isRuss ?
-                                Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm") :
-                                (Locales.getInstance().isUkr ? 
-                                        Uses.getUkrDate(customer.getStandTime(), "dd MMMM HH:mm") : 
-                                        Uses.format_for_label.format(customer.getStandTime())))
-               
-                        , ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
+                write(FWelcome.getLocaleMessage("ticket.time") + " "
+                        + (Locales.getInstance().isRuss
+                                ? Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm")
+                                : (Locales.getInstance().isUkr
+                                        ? Uses.getUkrDate(customer.getStandTime(), "dd MMMM HH:mm")
+                                        : Uses.format_for_label.format(customer.getStandTime()))), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
 
-               // write(Locales.getInstance().isRuss ? Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm") : (Locales.getInstance().isUkr ? Uses.getUkrDate(customer.getStandTime(), "dd MMMM HH:mm") : Uses.format_for_label.format(customer.getStandTime())), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
+                // write(Locales.getInstance().isRuss ? Uses.getRusDate(customer.getStandTime(), "dd MMMM HH:mm") : (Locales.getInstance().isUkr ? Uses.getUkrDate(customer.getStandTime(), "dd MMMM HH:mm") : Uses.format_for_label.format(customer.getStandTime())), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
                 // если клиент что-то ввел, то напечатаем это на его талоне
                 if (customer.getService().getInput_required()) {
                     write(customer.getService().getTextToLocale(QService.Field.INPUT_CAPTION).replaceAll("<.*?>", ""), ++line, WelcomeParams.getInstance().leftMargin, 1, 1);
@@ -1327,7 +1333,7 @@ public class PComplexService extends javax.swing.JPanel {
                 //write(FWelcome.getLocaleMessage("ticket.service"), ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
                 //write("№ 1 _____________________________", ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
                 g2.drawRect(WelcomeParams.getInstance().leftMargin, WelcomeParams.getInstance().topMargin + line * WelcomeParams.getInstance().lineHeigth,
-                        (int) (WelcomeParams.getInstance().lineHeigth*1.1), (int) (WelcomeParams.getInstance().lineHeigth*1.1));
+                        (int) (WelcomeParams.getInstance().lineHeigth * 1.1), (int) (WelcomeParams.getInstance().lineHeigth * 1.1));
                 final long n1 = customer.getService().getId();
                 String name = " 1    " + customer.getService().getTextToLocale(QService.Field.NAME);
                 line = writeLongString(name, line);
@@ -1353,10 +1359,10 @@ public class PComplexService extends javax.swing.JPanel {
                 for (QService qService : servs) {
                     ++line;
                     //write("№   _____________________________", ++line, WelcomeParams.getInstance().leftMargin, 1.5, 1);
-                    
-                    g2.drawRect(WelcomeParams.getInstance().leftMargin, WelcomeParams.getInstance().topMargin + line * WelcomeParams.getInstance().lineHeigth, 
-                           (int) (WelcomeParams.getInstance().lineHeigth*1.1), (int) (WelcomeParams.getInstance().lineHeigth*1.1));
-                    String str = "        "+qService.getTextToLocale(QService.Field.NAME);
+
+                    g2.drawRect(WelcomeParams.getInstance().leftMargin, WelcomeParams.getInstance().topMargin + line * WelcomeParams.getInstance().lineHeigth,
+                            (int) (WelcomeParams.getInstance().lineHeigth * 1.1), (int) (WelcomeParams.getInstance().lineHeigth * 1.1));
+                    String str = "        " + qService.getTextToLocale(QService.Field.NAME);
                     line = writeLongString(str, line);
                     str = qService.getTextToLocale(QService.Field.DESCRIPTION);
                     line = writeLongString(str, line);
@@ -1433,7 +1439,7 @@ public class PComplexService extends javax.swing.JPanel {
     }
 
     private void listOfListsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listOfListsMouseClicked
-        if (evt.getClickCount() > 1) {
+        if (evt.getClickCount() > 2) {
             final JList list = ((JList) (evt.getComponent()));
             if (list.getSelectedIndex() != -1) {
                 if (JOptionPane.showConfirmDialog(this, locMes("del1") + " \"" + ((DefaultListModel) (list.getModel())).get(list.getSelectedIndex()) + "\"?", locMes("del2"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
@@ -1442,6 +1448,8 @@ public class PComplexService extends javax.swing.JPanel {
                 ((DefaultListModel) (list.getModel())).remove(list.getSelectedIndex());
                 saveState();
             }
+        } else {
+            listOfLists.getListSelectionListeners()[0].valueChanged(null);
         }
     }//GEN-LAST:event_listOfListsMouseClicked
 
@@ -1477,6 +1485,16 @@ public class PComplexService extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_treeDependsMouseClicked
+
+    private void listOfListsKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listOfListsKeyPressed
+        if ((evt.getKeyCode() == KeyEvent.VK_DELETE || evt.getKeyCode() == KeyEvent.VK_BACK_SPACE) && listOfLists.getSelectedIndex() != -1) {
+            if (JOptionPane.showConfirmDialog(this, locMes("del1") + " \"" + ((DefaultListModel) (listOfLists.getModel())).get(listOfLists.getSelectedIndex()) + "\"?", locMes("del2"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) {
+                return;
+            }
+            ((DefaultListModel) (listOfLists.getModel())).remove(listOfLists.getSelectedIndex());
+            saveState();
+        }
+    }//GEN-LAST:event_listOfListsKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonClearLists;

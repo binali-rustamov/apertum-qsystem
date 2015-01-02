@@ -167,6 +167,8 @@ public class QButton extends JButton {
         isActive = NO_ACTIVE != service.getStatus() && isVisible;
         isForPrereg = FOR_PREREG == service.getStatus() && isActive;
         isDummy = FOR_DUMMY == service.getStatus() && isActive;
+        QLog.l().logger().trace("Create button for \"" + service.getName() + "\" ID=" + service.getId() + " states:"
+                + (isVisible ? " Visible" : " Hide") + (isActive ? " Active" : " Pasive") + (isForPrereg ? " ForPrereg" : " ForAll") + (isDummy ? " Dummy" : " Real"));
         if (!isVisible) {
             setVisible(false);
             return;
@@ -232,6 +234,7 @@ public class QButton extends JButton {
         }
 
         addActionListener((ActionEvent e) -> {
+            QLog.l().logger().info("Pressed button \"" + service.getName() + "\" ID=" + service.getId());
             try {
                 // "Услуги" и "Группа" это одно и тоже.
                 if (!service.isLeaf()) {

@@ -97,7 +97,7 @@ public class JettyRunner implements Runnable {
     public void run() {
         QLog.l().logger().info("Старт сервера Jetty на порту " + servetPort);
         jetty = new Server();
-
+        
         //org.eclipse.jetty.io.nio.AsyncConnection d;
         HttpConfiguration http_config = new HttpConfiguration();
         http_config.setSecureScheme("https");
@@ -165,7 +165,7 @@ public class JettyRunner implements Runnable {
         }
 
         jetty.setHandler(handlers);
-
+        
 
         /*
          String jetty_home = "";

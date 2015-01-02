@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.ServiceLoader;
+import ru.apertum.qsystem.About;
 import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.client.forms.FAbout;
 import ru.apertum.qsystem.common.CodepagePrintStream;
@@ -70,6 +71,7 @@ public class QServer extends Thread {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
+        About.printdef();
         QLog.initial(args, 0);
         Locale.setDefault(Locales.getInstance().getLangCurrent());
 
@@ -157,7 +159,7 @@ public class QServer extends Thread {
                 @Override
                 public void run() {
                     // это обнуление
-                    if (Uses.format_HH_mm.format(new Date(new Date().getTime() + 10 * 60 * 1000)).equals(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getStartTime()))) {
+                    if (!QLog.isRETAIN && Uses.format_HH_mm.format(new Date(new Date().getTime() + 10 * 60 * 1000)).equals(Uses.format_HH_mm.format(ServerProps.getInstance().getProps().getStartTime()))) {
                         QLog.l().logger().info("Очистка всех услуг.");
                         // почистим все услуги от трупов кастомеров с прошлого дня
                         QServer.clearAllQueue();
@@ -221,7 +223,7 @@ public class QServer extends Thread {
         int pos = 0;
         boolean exit = false;
         // слушаем порт
-        while (!exit) {
+        while (!globalExit && !exit) {
             // ждём нового подключения, после чего запускаем обработку клиента
             // в новый вычислительный поток и увеличиваем счётчик на единичку
 
@@ -291,6 +293,8 @@ public class QServer extends Thread {
         System.exit(0);
     }
 
+    private static volatile boolean globalExit = false;
+
     /**
      * @param socket
      */
@@ -304,7 +308,7 @@ public class QServer extends Thread {
     @Override
     public void run() {
         try {
-            QLog.l().logger().debug("Старт потока приема задания.");
+            QLog.l().logger().debug("Старт потока приема задания. host=" + socket.getInetAddress().getHostAddress() + " ip=" + Arrays.toString(socket.getInetAddress().getAddress()));
 
             // из сокета клиента берём поток входящих данных
             InputStream is;
@@ -337,6 +341,14 @@ public class QServer extends Thread {
                 throw new ServerException("Ошибка декодирования сетевого сообщения: " + ex);
             }
             QLog.l().logger().trace("Задание:\n" + data);
+
+            /*
+             Если по сетке поймали exit, то это значит что запустили останавливающий батник.
+             */
+            if ("exit".equalsIgnoreCase(data)) {
+                globalExit = true;
+                return;
+            }
 
             final String answer;
             final JsonRPC20 rpc;
@@ -499,7 +511,7 @@ public class QServer extends Thread {
             }
 
             // Проверим не просрочился ли кеш. Время просточки 3 часа.
-            if (recList.date == null || new Date().getTime() - recList.date > 3 * 60 * 60 * 1000) {
+            if (!QLog.isRETAIN && (recList.date == null || new Date().getTime() - recList.date > 3 * 60 * 60 * 1000)) {
                 // Просрочился кеш, не грузим
                 QLog.l().logger().warn("Срок давности хранения состояния истек. Если в системе ничего не происходит 3 часа, то считается что сохраненные данные устарели безвозвратно.");
             } else {

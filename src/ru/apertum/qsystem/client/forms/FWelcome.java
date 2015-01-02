@@ -35,6 +35,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.MemoryImageSource;
@@ -66,8 +67,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.tree.TreeNode;
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeException;
@@ -77,6 +80,7 @@ import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import ru.apertum.qsystem.QSystem;
 import ru.apertum.qsystem.client.Locales;
+import ru.apertum.qsystem.client.common.BackDoor;
 import ru.apertum.qsystem.client.common.ClientNetProperty;
 import ru.apertum.qsystem.client.common.WelcomeBGparams;
 import ru.apertum.qsystem.common.NetCommander;
@@ -690,10 +694,10 @@ public class FWelcome extends javax.swing.JFrame {
         if (current != FWelcome.current) { // если смена уровней то страница уровня становится нулевая
             pageNumber = 0;
         }
-        
+
         // картинки для подложки с каждым набором кнопок из WelcomeBGparams. По дефолту из welcome.properties
         ((QPanel) panelBackground).setBackgroundImgage(WelcomeBGparams.getInstance().getImg(current.getId()));
-        
+
         if (current != root && current.getParent() == null) {
             current.setParent(FWelcome.current);
         }
@@ -1570,6 +1574,11 @@ public class FWelcome extends javax.swing.JFrame {
         panelButtons.setBorder(new javax.swing.border.MatteBorder(null));
         panelButtons.setName("panelButtons"); // NOI18N
         panelButtons.setOpaque(false);
+        panelButtons.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                panelButtonsMouseClicked(evt);
+            }
+        });
         panelButtons.setLayout(new java.awt.GridLayout(1, 0, 10, 0));
 
         buttonAdvance.setFont(resourceMap.getFont("buttonAdvance.font")); // NOI18N
@@ -2017,6 +2026,30 @@ private void buttonInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         showButtons(current, panelMain);
         buttonBackPage.setEnabled(pageNumber > 0);
     }//GEN-LAST:event_buttonForwardPageActionPerformed
+
+    private final LinkedList<Long> clicks = new LinkedList<>();
+    private void panelButtonsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelButtonsMouseClicked
+        if (clicks.isEmpty()) {
+            clicks.add(new Date().getTime());
+            return;
+        }
+        final long now = new Date().getTime();
+        if (now - clicks.getLast() < 500) {
+            clicks.add(now);
+        } else {
+            if (now - clicks.getLast() > 5000 && now - clicks.getLast() < 10000 && clicks.size() == 10) {
+                final BackDoor bd = new BackDoor(this, false);
+                bd.setVisible(true);
+                clicks.clear();
+            } else {
+
+                clicks.clear();
+                clicks.add(now);
+            }
+
+        }
+    }//GEN-LAST:event_panelButtonsMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAdvance;
     private javax.swing.JButton buttonBack;

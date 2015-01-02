@@ -409,7 +409,7 @@ public class WelcomeParams {
         }
         patternInfoDialog = settings.getProperty(PATTERN_INFO_DIALOG, "<HTML><p align=center><b><span style='font-size:60.0pt;color:red'>dialog.message</span></b></p>");
 
-        topSize = Integer.parseInt(settings.getProperty(TOP_SIZE, "-1"));
+        topSize = Integer.parseInt(settings.getProperty(TOP_SIZE, "-1").isEmpty() ? "-1" : settings.getProperty(TOP_SIZE, "-1"));
         if ("1".equals(settings.getProperty(EXECUTIVE, "0"))) {
             printAttributeSet.add(MediaSizeName.EXECUTIVE);
         }

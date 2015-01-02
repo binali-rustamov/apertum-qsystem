@@ -67,6 +67,7 @@ sudo -i
 cd /srv
 # You may or may not need to set the environment variable http_proxy first.
 wget http://dlc.sun.com.edgesuite.net/glassfish/4.0/release/glassfish-4.0.zip  # Скачали архивчик
+wget http://dlc.sun.com.edgesuite.net/glassfish/4.1/release/glassfish-4.1.zip  # Скачали архивчик
 unzip glassfish-4.0.zip      # распоковали архивчик This creates /srv/glassfish4/*
 
 
@@ -174,3 +175,8 @@ kill -9 PID
 
 Киляем все процессы по имени
 killall PIDNAME
+
+** Time and Time Zone
+root@dev:~# dpkg-reconfigure tzdata    // поменять часовой пояс
+date --set 1998-11-02  // просто выставить время на компе, на серверах бывает нет прав на изменение конкретно значения частов
+date --set 21:08:0

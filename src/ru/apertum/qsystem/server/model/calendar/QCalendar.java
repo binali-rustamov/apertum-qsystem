@@ -18,15 +18,20 @@ package ru.apertum.qsystem.server.model.calendar;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.LinkedList;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Property;
 import ru.apertum.qsystem.common.exceptions.ServerException;
+import ru.apertum.qsystem.server.Spring;
 import ru.apertum.qsystem.server.model.IidGetter;
 
 /**
  * Класс календаря для расписания.
+ *
  * @author Evgeniy Egorov
  */
 @Entity
@@ -70,18 +75,31 @@ public class QCalendar implements IidGetter, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null){
+        if (o == null) {
             return false;
         }
-        if (!(o instanceof QCalendar)){
+        if (!(o instanceof QCalendar)) {
             throw new TypeNotPresentException("Неправильный тип для сравнения", new ServerException("Неправильный тип для сравнения"));
         }
-        return id.equals(((QCalendar)o).id);
+        return id.equals(((QCalendar) o).id);
     }
 
     @Override
     public int hashCode() {
         return (int) (this.id != null ? this.id : 0);
     }
-    
+
+    /**
+     * Проверка даты на нерабочую в определенном календаре
+     *
+     * @param date проверяемая дата, важен месяц и день
+     * @return Выходной день в этом календаре или нет
+     */
+    public boolean checkFreeDay(Date date) {
+        final DetachedCriteria criteria = DetachedCriteria.forClass(FreeDay.class);
+        criteria.add(Property.forName("calendarId").eq(getId()));
+        criteria.add(Property.forName("date").eq(date));
+        return !(new LinkedList<>(Spring.getInstance().getHt().findByCriteria(criteria)).isEmpty());
+    }
+
 }
