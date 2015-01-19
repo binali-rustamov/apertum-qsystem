@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import ru.apertum.qsystem.common.QLog;
@@ -33,6 +34,12 @@ import ru.apertum.qsystem.common.Uses;
  * @author Evgeniy Egorov
  */
 public final class Locales {
+    
+    private static final ResourceBundle translate = ResourceBundle.getBundle("ru/apertum/qsystem/common/resources/i3-label", Locales.getInstance().getLangCurrent());
+
+    public static String locMes(String key) {
+        return translate.getString(key);
+    }
 
     private Locales() {
         config = new PropertiesConfiguration();

@@ -420,7 +420,7 @@ public final class FClient extends javax.swing.JFrame {
         this.user = user;
         this.netProperty = netProperty;
         initComponents();
-        setTitle(getTitle() + " " + Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF()));
+        setTitle(Uses.getLocaleMessage("project.name" + FAbout.getCMRC_SUFF()) + " - " + getTitle());
 
         try {
             setIconImage(ImageIO.read(FAdmin.class.getResource("/ru/apertum/qsystem/client/forms/resources/client.png")));
@@ -522,32 +522,32 @@ public final class FClient extends javax.swing.JFrame {
             final String action;
             switch (oldKeys) {
                 case KEYS_OFF:
-                    action = "Нет посетителей";
+                    action = getLocaleMessage("no_customers");
                     t1 = 990000000;
                     t2 = 990000900;
                     break;
                 case KEYS_MAY_INVITE:
-                    action = "Бездействие";
+                    action = getLocaleMessage("inaction");
                     t1 = 60000;
                     t2 = 120000;
                     break;
                 case KEYS_INVITED:
-                    action = "Вызвали";
+                    action = getLocaleMessage("invited");
                     t1 = 35000;
                     t2 = 45000;
                     break;
                 case KEYS_STARTED:
-                    action = "В работе";
+                    action = getLocaleMessage("in_work");
                     t1 = 300000;
                     t2 = 60000;
                     break;
                 case KEYS_ALL:
-                    action = "Что-то не то";
+                    action = "What?";
                     t1 = 1000;
                     t2 = 2000;
                     break;
                 default:
-                    action = "Что-то новое";
+                    action = "Somethink new";
             }
             final long tt = new Date().getTime() - start;
             labelMotiv.setForeground(tt < t1 ? new Color(0, 150, 0) : (tt > t2 ? new Color(200, 0, 0) : new Color(90, 0, 230)));

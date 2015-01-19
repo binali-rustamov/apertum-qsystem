@@ -2,10 +2,10 @@ Setup instructions for customer care automation system
 
 
 Step 1. Preparing to installation.
-Prior to the installation make sure, that you have installed MySQL DBMS version 5.5 or later and OracleJRE version 1.8 or later. To check the JRE installation do the following: 
+Prior to the installation make sure, that you have installed OracleJRE version 1.8 or later and (if you want to use MySQL)MySQL DBMS version 5.5 or later. Built-in H2 database is alternative. In case using H2 the database MySQL not required. To check the JRE installation do the following: 
 Start->Execute->cmd-> java –version.
 
-It is recommended to install graphical utilities for MySQL DBMS.
+In case using MySQL, It is recommended to install graphical utilities for MySQL DBMS - MySQL Workbemch.
 
 Step 2. Start of the system installation.
 Microsoft Windows:
@@ -53,15 +53,15 @@ The mentioned above is enough to install the client module.
 
 Now you have all the necessary components installed to your computer. You have only to activate the DB and set up the system to use the DB.
 
-Step 7. Data base activation.
-* You have to use the utf8 encoding. Enter the appropriate settings to the MySQL administrator or to the my.ini(my.cnf). Example:
+Step 7. Data base creating.
+* For MySQL. You have to use the utf8 encoding. Enter the appropriate settings to the MySQL administrator or to the my.ini(my.cnf). Example:
 [mysql]
 default-character-set=utf8
 [mysqld]
 collation_server=utf8_unicode_ci
 character_set_server=utf8
 
-You can find the activation script qsystem.sql in the DB folder. The script creates a data base, necessary tables and fills the tables with starting data. If you have a DB and want to update it's version, you have to use an sql-script to update it. You may use the MYSQL DBMS console to activate sql-scripts, but t is better to use the MySQL Query Browser application, which you can download from the Internet for free and install to your computer. Add a DBMS user and give it access to the DB.
+You can find the creating script qsystem_eng.sql for MySQL and qsystem_H2_eng.sql for H2 in the DB folder. The script creates a data base, necessary tables and fills the tables with starting data. If you have a DB and want to update it's version, you have to use an sql-script to update it. In case H2 for running scripts use h2.bat/h2.sh or h2w.bat. You may use the MYSQL DBMS console to activate sql-scripts, but t is better to use the MySQL Query Browser application, which you can download from the Internet for free and install to your computer. Add a DBMS user and give it access to the DB.
 MySQL DBMS settings include wait_timeout parameter, this is time in seconds that takes the server to watch inactivity in the non-interactive connection prior to closing it. The default value is 28800 seconds. If the server works at night or during long holidays, an error occurs at the work start, as DBMS can not address the request. You may set up the parameter in MySQL configuration file. It is the my.ini file in Windows, you may clarify it in server configurations of MySQL Administrator application. Add to the file the following line "wait_timeout=õõõõ". The server maintains connection by DBMS questioning on a hourly basis. Take that into account if you have more strict settings.
 
 Step 8. System configuration for DB.
@@ -73,9 +73,9 @@ Open the StartAdmin.bat file. First, enter to the Administration program as "Adm
 
 Step 10. Main and operator's boards positioning.
 
-Since version 1.3.7 specify the monitor number for the main board in the editor board in the central part. The parameters "number of additional monitor to display". That is enough. If the monitor is not plug in, coordinates from clientboard.xml and  mainboard.xml will be used. When parameter is 0, then the board is disabled.
+Since version 1.3.7 specify the monitor number for the main board in the editor board in the central part. The parameters "Number of additional monitor for board". That is enough. If the monitor is not plug in, coordinates from clientboard.xml and  mainboard.xml will be used. When parameter is 0, then the board is disabled.
 
-There are 2 files in the <Qsystem>\config\ folder: clientboard.xml and mainboard.xml (for client machine and server respectively). These files contain board positioning coordinates, you can also turn it on\off there. If you have not connected the second monitor, the program opens it all on one monitor. To send the board to the second monitor enter to the clientboard.xml and mainboard.xml files the second monitor coordinates. Enter the x and y parameters to the setting files:
+For old versions. There are 2 files in the <Qsystem>\config\ folder: clientboard.xml and mainboard.xml (for client machine and server respectively). These files contain board positioning coordinates, you can also turn it on\off there. If you have not connected the second monitor, the program opens it all on one monitor. To send the board to the second monitor enter to the clientboard.xml and mainboard.xml files the second monitor coordinates. Enter the x and y parameters to the setting files:
 <Board visible="1" x="-500" y="10" Name="Save board configuration">
 
 The parameters allow to identify the board location and open it on the second monitor. When the second monitor connects, you need to upscale the desktop on it. The upscaled desktop has its own coordinates in relation to the main desktop. You have to enter coordinates of a point included to the upscale. Positioning will be carried out by that point. I.e., the upper left corner of the board will be positioned by the point. Remember, that the coordinates of the main monitor upper left corner are (0,0). For example, an aux. monitor is connected, the desktop is upscaled on it on the left from the main desktop. The aux. monitor has the extension of 640x480 px. The upper left corner of the auxiliary desktop has the coordinates (-640, 0) in relation to the main desktop. The settings are x="-500" y="10", which means that the table is positioned to the aux. desktop, but not to the aux. monitor corner. It is positioned 10 pixels down and 140 pixels from the edge of the aux. monitor. After that the desktop expanses to the entire screen.

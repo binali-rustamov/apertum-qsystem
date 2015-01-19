@@ -693,7 +693,7 @@ COMMIT;
 -- -----------------------------------------------------
  
  
-INSERT INTO  `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`, `limit_recall`, `button_free_design`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '2.6', 1, 999, 0, 0, 1, -1, '', '127.0.0.1', 27007, 0, 0, 0, 0);
+INSERT INTO  `net` (`id`, `server_port`, `web_server_port`, `client_port`, `finish_time`, `start_time`, `version`, `first_number`, `last_number`, `numering`, `point`, `sound`, `branch_id`, `sky_server_url`, `zone_board_serv_addr`, `zone_board_serv_port`, `voice`, `black_time`, `limit_recall`, `button_free_design`) VALUES (1, 3128, 8088, 3129, '18:00:00', '08:45:00', '2.6', 1, 999, 0, 0, 1, 113, 'http://localhost:8080/qskyapi/customer_events?wsdl', '127.0.0.1', 27007, 0, 0, 0, 0);
 
 COMMIT;
 

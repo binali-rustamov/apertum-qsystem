@@ -1,7 +1,7 @@
 ﻿Instrucción de instalación del sistema de automatización del trabajo con clientes.
 
 Paso 1. Preparando la instalación.
-Antes de instalar el sistema, necesita asegurarse que ya tiene instalado el MySQL de versión no menos que 5.5 y OracleJRE no menos de 1.8. Puede averiguar la instalación de JRE así:
+Antes de instalar el sistema, necesita asegurarse que ya tiene instalado el MySQL(si desea utilizar MySQL) de versión no menos que 5.5 y OracleJRE no menos de 1.8. Construido en base de datos de H2 es alternativa. Puede averiguar la instalación de JRE así:
 El menú Inicio –>Cumplir->cmd-> java –version.
 
 También está recomendado instalar utilidades gráficas para trabajar con MySQL.
@@ -54,14 +54,14 @@ Para instalar el módulo de clientes estas acciones son suficientes.
 Ahora todos los componenetes necesarios están instalados en el ordenador. Ahora necesita implementar el base de datos y configurar el sistema para utilizar este base de datos.
 
 Paso 7. Implementación de BD.
-*Necesita utilizar codificación utf8. En administración de MySQL o en my.ini(my.cnf) indica las configuraciones necesarias. Por ejemplo:
+* Para MySQL. Necesita utilizar codificación utf8. En administración de MySQL o en my.ini(my.cnf) indica las configuraciones necesarias. Por ejemplo:
 [mysql]
 default-character-set=utf8
 [mysqld]
 collation_server=utf8_unicode_ci
 character_set_server=utf8
 
-En carpeta DB encuentra el script de implementación qsystem.sql. Este script creará el base mismo, las tablas necesarias y rellenará las tablas con datos basicos. Si ya tiene el BD y pasa a nueva versión de BD, necesita utilizar sql-script para renovar el base hasta la versión necesaria. Para cumplir sql-scripts puede utilizar la consola de MySQL, pero es mejor utilizar la aplicación MySQL Query Browser, la puede bajar gratis de Internet e instalar en el ordenador. Añade el usuario de BD y permitele el acceso al creado BD.
+En carpeta DB encuentra el script de implementación qsystem_eng.sql para MySQL o qsystem_H2_eng.sql para H2 DB. Este script creará el base mismo, las tablas necesarias y rellenará las tablas con datos basicos. Si ya tiene el BD y pasa a nueva versión de BD, necesita utilizar sql-script para renovar el base hasta la versión necesaria. En caso de H2 para ejecutar secuencias de comandos utilizan h2.bat / h2.sh o h2w.bat. Para cumplir sql-scripts puede utilizar la consola de MySQL, pero es mejor utilizar la aplicación MySQL Query Browser, la puede bajar gratis de Internet e instalar en el ordenador. Añade el usuario de BD y permitele el acceso al creado BD.
 
 En las configuraciones de BD MySQL huy parámetro wait_timeout, es el tiempo en secundos, en la duración de él el servidor observe desactividad en la conexión desinteractiva antes de cerrarlo.
 La significación predeterminada es 28800 secundos. Si el servidor del sistema se queda trabajando, por ejemplo, durante toda la noche o las fiestas largas, entonces cuando empiece a trabajar va a ocurrir el error, porque el BD no va a trabajar la demanda. Este parámetro puede indicar en archivo de configuración de MySQL. A menudo en Windows este archivo es my.ini, puede ver ciertemente en configuraciones de servidor de aplicación de MySQL Administrator. Añadir a este archivo la línea"wait_timeout=хххх". El servidor tiene el funcional de mantener la conexión consultando BD una vez a la hora. Tiene que tomarlo en cuenta si tiene las configuraciones más duras.
@@ -73,8 +73,9 @@ Paso 9. Relleno de configuración y ajuste de servidor.
 Inicia StartAdmin.bat. Al principio entra en programa de administración como “Administrador” con contraseña vacía. Rellena la lista de operadores, compone variedad de servicios, indica los servicios para operadores. No olvide de encargarse del horario de hacer servicios y conservar los cambios.
 
 Paso 10. Posicionamiento de tablero principal y de tablero de los operadores.
-Desde la versión 1.3.7 especificar el número de monitor para la placa base en la tabla de editor en la parte central. El "número de monitor adicional para mostrar" parámetros. Eso es suficiente. Si el monitor no se conecte, coordina desde clientboard.xml y mainboard.xml se utilizarán. Cuando el parámetro es 0, el tablero está desactivado.
-En carpeta <Qsystem>\config\ hay 2 archivos: clientboard.xml y mainboard.xml (para máquina de clientes y para el servidor respetivamente). En ellos indica las coordenadas de posicionamiento de tableros, allí es donde puede encender/apagarlo. Si el segundo monitor no está conectado, el programa muestra todo en un monitor. Para que el tablero aparezca en el segundo monitor, necesita indicar en clientboard.xml y mainboard.xml las coordenadas que están en el segundo monitor. En los archivos de configuración necesita poner los parámetros X y Y:
+Desde la versión 1.3.7 especificar el número de monitor para la placa base en la tabla de editor en la parte central. El "Number of additional monitor for board" parámetros. Eso es suficiente. Si el monitor no se conecte, coordina desde clientboard.xml y mainboard.xml se utilizarán. Cuando el parámetro es 0, el tablero está desactivado.
+
+Para las versiones antiguas. En carpeta <Qsystem>\config\ hay 2 archivos: clientboard.xml y mainboard.xml (para máquina de clientes y para el servidor respetivamente). En ellos indica las coordenadas de posicionamiento de tableros, allí es donde puede encender/apagarlo. Si el segundo monitor no está conectado, el programa muestra todo en un monitor. Para que el tablero aparezca en el segundo monitor, necesita indicar en clientboard.xml y mainboard.xml las coordenadas que están en el segundo monitor. En los archivos de configuración necesita poner los parámetros X y Y:
 <Board visible="1" x="-500" y="10" Denominación="Conservar la configuración de tablero">
 Denominación="Conservar la configuración de tablero">
 

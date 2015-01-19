@@ -49,7 +49,6 @@ import ru.apertum.qsystem.reports.model.QReportsList;
 import ru.apertum.qsystem.reports.model.WebServer;
 import ru.apertum.qsystem.server.controller.Executer;
 import ru.apertum.qsystem.server.http.JettyRunner;
-import ru.apertum.qsystem.server.model.QPlanService;
 import ru.apertum.qsystem.server.model.QService;
 import ru.apertum.qsystem.server.model.QServiceTree;
 import ru.apertum.qsystem.server.model.QUser;
@@ -88,38 +87,42 @@ public class QServer extends Thread {
 
         System.out.println("Welcome to the QSystem server. Your MySQL mast be prepared.");
         FAbout.loadVersionSt();
-        if ("0".equals(FAbout.CMRC_)) {
-            System.out.println("Server version: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
-            System.out.println("Database version: " + FAbout.VERSION_DB_ + " for MySQL 5.5-community Server (GPL)");
-            System.out.println("Released : " + FAbout.DATE_);
 
-            System.out.println("Copyright (c) 2010-2013, Apertum Projects and/or its affiliates. All rights reserved.");
-            System.out.println("This software comes with ABSOLUTELY NO WARRANTY. This is free software,");
-            System.out.println("and you are welcome to modify and redistribute it under the GPL v3 license");
-            System.out.println("Text of this license on your language located in the folder with the program.");
+        if (Locales.getInstance().isRuss) {
+
+            if ("0".equals(FAbout.CMRC_)) {
+                System.out.println("Добро пожаловать на сервер QSystem. Для работы необходим MySQL5.5 или выше.");
+                System.out.println("Версия сервера: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
+                System.out.println("Версия базы данных: " + FAbout.VERSION_DB_ + " for MySQL 5.5-community Server (GPL)");
+                System.out.println("Дата выпуска : " + FAbout.DATE_);
+                System.out.println("Copyright (c) 2013, Apertum Projects. Все права защищены.");
+                System.out.println("QSystem является свободным программным обеспечением, вы можете");
+                System.out.println("распространять и/или изменять его согласно условиям Стандартной Общественной");
+                System.out.println("Лицензии GNU (GNU GPL), опубликованной Фондом свободного программного");
+                System.out.println("обеспечения (FSF), либо Лицензии версии 3, либо более поздней версии.");
+
+                System.out.println("Вы должны были получить копию Стандартной Общественной Лицензии GNU вместе");
+                System.out.println("с этой программой. Если это не так, напишите в Фонд Свободного ПО ");
+                System.out.println("(Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA)");
+            }
+
+            System.out.println("Набирите 'exit' чтобы штатно остановить работу сервера.");
+            System.out.println();
+        } else {
+            if ("0".equals(FAbout.CMRC_)) {
+                System.out.println("Server version: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
+                System.out.println("Database version: " + FAbout.VERSION_DB_ + " for MySQL 5.5-community Server (GPL)");
+                System.out.println("Released : " + FAbout.DATE_);
+
+                System.out.println("Copyright (c) 2010-2013, Apertum Projects and/or its affiliates. All rights reserved.");
+                System.out.println("This software comes with ABSOLUTELY NO WARRANTY. This is free software,");
+                System.out.println("and you are welcome to modify and redistribute it under the GPL v3 license");
+                System.out.println("Text of this license on your language located in the folder with the program.");
+            }
+
+            System.out.println("Type 'exit' to stop work and close server.");
+            System.out.println();
         }
-
-        System.out.println("Type 'exit' to stop work and close server.");
-        System.out.println();
-
-        if ("0".equals(FAbout.CMRC_)) {
-            System.out.println("Добро пожаловать на сервер QSystem. Для работы необходим MySQL5.5 или выше.");
-            System.out.println("Версия сервера: " + FAbout.VERSION_ + "-community QSystem Server (GPL)");
-            System.out.println("Версия базы данных: " + FAbout.VERSION_DB_ + " for MySQL 5.5-community Server (GPL)");
-            System.out.println("Дата выпуска : " + FAbout.DATE_);
-            System.out.println("Copyright (c) 2013, Apertum Projects. Все права защищены.");
-            System.out.println("QSystem является свободным программным обеспечением, вы можете");
-            System.out.println("распространять и/или изменять его согласно условиям Стандартной Общественной");
-            System.out.println("Лицензии GNU (GNU GPL), опубликованной Фондом свободного программного");
-            System.out.println("обеспечения (FSF), либо Лицензии версии 3, либо более поздней версии.");
-
-            System.out.println("Вы должны были получить копию Стандартной Общественной Лицензии GNU вместе");
-            System.out.println("с этой программой. Если это не так, напишите в Фонд Свободного ПО ");
-            System.out.println("(Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA)");
-        }
-
-        System.out.println("Набирите 'exit' чтобы штатно остановить работу сервера.");
-        System.out.println();
 
         final long start = System.currentTimeMillis();
 
@@ -133,7 +136,7 @@ public class QServer extends Thread {
         // если етсь ключ http, то запускаем сервер и принимаем на нем команды серверу суо
         for (int i = 0; i < args.length; i++) {
             if (KEY_HTML.equalsIgnoreCase(args[i]) && i != args.length - 1) {
-                QLog.l().logger().info("Запустим Jetty.");
+                QLog.l().logger().info("Run Jetty.");
                 try {
                     int port = Integer.parseInt(args[i + 1]);
                     JettyRunner.start(port);
@@ -212,9 +215,9 @@ public class QServer extends Thread {
             QLog.l().logger().info("Сервер системы захватывает порт \"" + ServerProps.getInstance().getProps().getServerPort() + "\".");
             server = new ServerSocket(ServerProps.getInstance().getProps().getServerPort());
         } catch (IOException e) {
-            throw new ServerException("Ошибка при создании серверного сокета: " + e);
+            throw new ServerException("ОшиNetwork error. Creating net socket is not possible: " + e);
         } catch (Exception e) {
-            throw new ServerException("Ошибка сети: " + e);
+            throw new ServerException("Network error: " + e);
         }
         server.setSoTimeout(500);
         final AnnotationSessionFactoryBean as = (AnnotationSessionFactoryBean) Spring.getInstance().getFactory().getBean("conf");
@@ -236,7 +239,7 @@ public class QServer extends Thread {
             } catch (SocketTimeoutException e) {
                 // ничего страшного, гасим исключение стобы дать возможность отработать входному/выходному потоку
             } catch (Exception e) {
-                throw new ServerException("Ошибка сети: " + e);
+                throw new ServerException("Network error: " + e);
             }
 
             if (!QLog.l().isDebug()) {
@@ -308,14 +311,14 @@ public class QServer extends Thread {
     @Override
     public void run() {
         try {
-            QLog.l().logger().debug("Старт потока приема задания. host=" + socket.getInetAddress().getHostAddress() + " ip=" + Arrays.toString(socket.getInetAddress().getAddress()));
+            QLog.l().logger().debug(" Start thread for receiving task. host=" + socket.getInetAddress().getHostAddress() + " ip=" + Arrays.toString(socket.getInetAddress().getAddress()));
 
             // из сокета клиента берём поток входящих данных
             InputStream is;
             try {
                 is = socket.getInputStream();
             } catch (IOException e) {
-                throw new ServerException("Ошибка при получении входного потока: " + Arrays.toString(e.getStackTrace()));
+                throw new ServerException("Input Stream broken: " + Arrays.toString(e.getStackTrace()));
             }
 
             final String data;
@@ -340,7 +343,7 @@ public class QServer extends Thread {
             } catch (IllegalArgumentException ex) {
                 throw new ServerException("Ошибка декодирования сетевого сообщения: " + ex);
             }
-            QLog.l().logger().trace("Задание:\n" + data);
+            QLog.l().logger().trace("Task:\n" + data);
 
             /*
              Если по сетке поймали exit, то это значит что запустили останавливающий батник.
@@ -359,14 +362,14 @@ public class QServer extends Thread {
                 final Object result = Executer.getInstance().doTask(rpc, socket.getInetAddress().getHostAddress(), socket.getInetAddress().getAddress());
                 answer = gson.toJson(result);
             } catch (Exception ex) {
-                QLog.l().logger().error("Поздно пойманная ошибка при выполнении команды. ", ex);
+                QLog.l().logger().error("Late caught the error when running the command. ", ex);
                 throw new ServerException("Поздно пойманная ошибка при выполнении команды: " + Arrays.toString(ex.getStackTrace()));
             } finally {
                 GsonPool.getInstance().returnGson(gson);
             }
 
             // выводим данные:
-            QLog.l().logger().trace("Ответ:\n" + answer);
+            QLog.l().logger().trace("Response:\n" + answer);
             try {
                 // Передача данных ответа
                 PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
@@ -391,7 +394,7 @@ public class QServer extends Thread {
             } catch (IOException e) {
                 QLog.l().logger().trace(e);
             }
-            QLog.l().logger().trace("Ответ завершен");
+            QLog.l().logger().trace("Response was finished");
         }
     }
 
@@ -400,21 +403,21 @@ public class QServer extends Thread {
      */
     public synchronized static void savePool() {
         final long start = System.currentTimeMillis();
-        QLog.l().logger().info("Сохранение состояния.");
+        QLog.l().logger().info("Save the state.");
         final LinkedList<QCustomer> backup = new LinkedList<>();// создаем список сохраняемых кастомеров
         final LinkedList<Long> pauses = new LinkedList<>();// создаем список юзеров у которых менопауза
         QServiceTree.getInstance().getNodes().stream().forEach((service) -> {
             backup.addAll(service.getClients());
         });
 
-        for (QUser user : QUserList.getInstance().getItems()) {
+        QUserList.getInstance().getItems().forEach((user) -> {
             if (user.getCustomer() != null) {
                 backup.add(user.getCustomer());
             }
             if (user.isPause()) {
                 pauses.add(user.getId());
             }
-        }
+        });
         // в темповый файл
         final FileOutputStream fos;
         try {
@@ -479,7 +482,7 @@ public class QServer extends Thread {
         QLog.l().logger().info("Пробуем восстановить состояние системы.");
         File recovFile = new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE);
         if (recovFile.exists()) {
-            QLog.l().logger().warn("Восстановление состояние системы после вчерашнего... нештатного завершения работы сервера.");
+            QLog.l().logger().warn(Locales.locMes("came_back"));
             //восстанавливаем состояние
 
             final FileInputStream fis;
@@ -566,10 +569,10 @@ public class QServer extends Thread {
 
     static public void clearAllQueue() {
         // почистим все услуги от трупов кастомеров
-        for (QService service : QServiceTree.getInstance().getNodes()) {
+        QServiceTree.getInstance().getNodes().forEach((service) -> {
             service.clearNextNumber();
             service.freeCustomers();
-        }
+        });
         QService.clearNextStNumber();
 
         QPostponedList.getInstance().clear();
@@ -578,25 +581,25 @@ public class QServer extends Thread {
         // Сотрем временные файлы
         deleteTempFile();
         QLog.l().logger().info("Очистка всех пользователей от привязанных кастомеров.");
-        for (QUser user : QUserList.getInstance().getItems()) {
+        QUserList.getInstance().getItems().forEach((user) -> {
             user.setCustomer(null);
             user.setShadow(null);
-            for (QPlanService plan : user.getPlanServices()) {
+            user.getPlanServices().forEach((plan) -> {
                 plan.setAvg_wait(0);
                 plan.setAvg_work(0);
                 plan.setKilled(0);
                 plan.setWorked(0);
-            }
-        }
+            });
+        });
     }
 
     public static void deleteTempFile() {
-        QLog.l().logger().debug("Удаляем " + Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE);
+        QLog.l().logger().debug("Remove " + Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE);
         File file = new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATE_FILE);
         if (file.exists()) {
             file.delete();
         }
-        QLog.l().logger().debug("Удаляем " + Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATATISTIC_FILE);
+        QLog.l().logger().debug("Remove " + Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATATISTIC_FILE);
         file = new File(Uses.TEMP_FOLDER + File.separator + Uses.TEMP_STATATISTIC_FILE);
         if (file.exists()) {
             file.delete();

@@ -39,7 +39,8 @@ public class QLog {
     private static final String KEY_PAUSE = "-pause";
     private static final String KEY_TERMINAL = "-terminal";
     private static final String KEY_WELCOME_BTN = "-buttons";
-     private static final String KEY_RETAIN = "-RETAIN";
+    private static final String KEY_RETAIN = "-RETAIN";
+    private static final String KEY_DELAY_INVITE_FIRST = "-dfi";
     private Logger logger = Logger.getLogger("server.file");//**.file.info.trace
 
     public Logger logger() {
@@ -54,6 +55,7 @@ public class QLog {
     public Logger logRep() {
         return logRep;
     }
+
     public Logger logQUser() {
         return logQUser;
     }
@@ -88,6 +90,12 @@ public class QLog {
 
     public boolean isButtons() {
         return buttons;
+    }
+
+    private int pauseFirst = 15;
+
+    public int getPauseFirst() {
+        return pauseFirst;
     }
 
     private QLog() {
@@ -214,6 +222,13 @@ public class QLog {
                     }
                 }
             }
+
+            // ключ, отвечающий за паузу при вызове только что вставшего с очередь. Чтоб в зал успел вбежать. 
+            if (KEY_DELAY_INVITE_FIRST.equalsIgnoreCase(args1[i])) {
+                if (i < args1.length - 1 && args1[i + 1].matches("^-?\\d+$")) {
+                    pauseFirst = Integer.parseInt(args1[i + 1]);
+                }
+            }
         }
         /*if (!isDebugin) {
          final Properties settings = new Properties();
@@ -277,9 +292,9 @@ public class QLog {
         loggerType = type;
         isServer1 = type == 0;
         final QLog log = LogerHolder.INSTANCE;
-        QLog.l().logger.info("СТАРТ ЛОГИРОВАНИЯ. Логгер: " + QLog.l().logger().getName());
+        QLog.l().logger.info("START LOGER. Logger: " + QLog.l().logger().getName());
         if (isServer1) {
-            QLog.l().logRep.info("СТАРТ ЛОГИРОВАНИЯ для отчетов. Логгер: " + QLog.l().logRep().getName());
+            QLog.l().logRep.info("START LOGGER for reports. Logger: " + QLog.l().logRep().getName());
         }
         QLog.l().logger.info("Mode: " + (QLog.l().isDebug() ? KEY_DEBUG : (QLog.l().isDemo() ? KEY_DEMO : "FULL")));
         QLog.l().logger.info("Plugins: " + (QLog.l().isPlaginable() ? "YES" : "NO"));

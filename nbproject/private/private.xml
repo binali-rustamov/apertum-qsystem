@@ -1,20 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="29">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="32">
         <file>
             <url>src/ru/apertum/qsystem/server/model/QService.java</url>
             <bookmark id="21">
                 <name/>
                 <line>601</line>
-                <key/>
-            </bookmark>
-        </file>
-        <file>
-            <url>src/ru/apertum/qsystem/common/QLog.java</url>
-            <bookmark id="27">
-                <name/>
-                <line>263</line>
                 <key/>
             </bookmark>
         </file>
@@ -31,24 +23,6 @@
             <bookmark id="25">
                 <name/>
                 <line>1453</line>
-                <key/>
-            </bookmark>
-        </file>
-        <file>
-            <url>src/ru/apertum/qsystem/server/controller/Executer.java</url>
-            <bookmark id="7">
-                <name/>
-                <line>155</line>
-                <key/>
-            </bookmark>
-            <bookmark id="8">
-                <name/>
-                <line>209</line>
-                <key/>
-            </bookmark>
-            <bookmark id="1">
-                <name/>
-                <line>273</line>
                 <key/>
             </bookmark>
         </file>
@@ -77,7 +51,7 @@
             <url>src/ru/apertum/qsystem/client/forms/FAdmin.java</url>
             <bookmark id="20">
                 <name/>
-                <line>2561</line>
+                <line>4528</line>
                 <key/>
             </bookmark>
             <bookmark id="28">
@@ -92,6 +66,19 @@
             </bookmark>
         </file>
         <file>
+            <url>src/ru/apertum/qsystem/server/model/schedule/QSchedule.java</url>
+            <bookmark id="30">
+                <name/>
+                <line>124</line>
+                <key/>
+            </bookmark>
+            <bookmark id="31">
+                <name/>
+                <line>167</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
             <url>src/ru/apertum/qsystem/client/forms/FServiceChangeDialod.java</url>
             <bookmark id="16">
                 <name/>
@@ -100,20 +87,54 @@
             </bookmark>
         </file>
         <file>
+            <url>src/ru/apertum/qsystem/client/forms/FIndicatorBoard.java</url>
+            <bookmark id="32">
+                <name/>
+                <line>772</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/common/QLog.java</url>
+            <bookmark id="27">
+                <name/>
+                <line>278</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/ru/apertum/qsystem/server/controller/Executer.java</url>
+            <bookmark id="7">
+                <name/>
+                <line>157</line>
+                <key/>
+            </bookmark>
+            <bookmark id="8">
+                <name/>
+                <line>211</line>
+                <key/>
+            </bookmark>
+            <bookmark id="1">
+                <name/>
+                <line>275</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
             <url>src/ru/apertum/qsystem/common/NetCommander.java</url>
             <bookmark id="6">
                 <name/>
-                <line>193</line>
+                <line>194</line>
                 <key/>
             </bookmark>
             <bookmark id="9">
                 <name/>
-                <line>232</line>
+                <line>233</line>
                 <key/>
             </bookmark>
             <bookmark id="5">
                 <name/>
-                <line>593</line>
+                <line>594</line>
                 <key/>
             </bookmark>
         </file>
@@ -128,7 +149,11 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/common/Uses.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/common/QLog.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/controller/IIndicatorBoard.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/controller/AIndicatorBoard.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/controller/Executer.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/controller/QIndicatorBoardMonitor.java</file>
         </group>
     </open-files>
 </project-private>

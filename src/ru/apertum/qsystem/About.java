@@ -69,6 +69,7 @@ public class About {
         }
         switch (i) {
             case 0:
+                System.out.println();
                 System.out.println("0000000000000000000000000000000000000000000000000000000000");
                 System.out.println("000000000000000000000__00000000000000000000000000000000000");
                 System.out.println("0000000000000000000000___000000000000000000000000000000000");
@@ -108,6 +109,7 @@ public class About {
                 break;
 
             case 1:
+                System.out.println();
                 System.out.println("                                                                 ");
                 System.out.println("                                                                 ");
                 System.out.println("                                                                 ");
@@ -174,6 +176,7 @@ public class About {
                 break;
 
             case 2:
+                System.out.println();
                 System.out.println("             `$$+  l$+  ;$$ d$$   ,$'    ,");
                 System.out.println("              `$$b,;$$b,$$$$$$; ,d$$   ,$");
                 System.out.println("               `$$$b$$$$$$$$$$$$$$$; ,d$'");
@@ -202,6 +205,7 @@ public class About {
                 break;
 
             case 3:
+                System.out.println();
                 System.out.println("                          ooo");
                 System.out.println("                         $ o$");
                 System.out.println("                        o $$");
@@ -231,7 +235,7 @@ public class About {
                 break;
 
             case 4:
-
+                System.out.println();
                 System.out.println("                         8888888888888");
                 System.out.println("                     888888888888888888888888");
                 System.out.println("                 8888:::8888888888888888888888888");
@@ -394,7 +398,7 @@ public class About {
                 System.out.println("                                        M:M");
                 break;
             case 5:
-
+                System.out.println();
                 System.out.println("___________o8o_______o8BBB8o");
                 System.out.println("_________oBBBBB8o___oBBBBBBB8");
                 System.out.println("_____o8BBBBBBBBBBB__BBBBBBBBB8________o88o");
@@ -445,6 +449,7 @@ public class About {
                 break;
 
             case 6:
+                System.out.println();
                 System.out.println("¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶");
                 System.out.println("¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶");
                 System.out.println("¶¶¶¶¶¶¶¶¶¶¶¶¶___¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶");
@@ -489,6 +494,7 @@ public class About {
                 System.out.println("¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶");
                 break;
             case 7:
+                System.out.println();
                 System.out.println("                          $$$$$$                         ");
                 System.out.println("                        $$$$$$    $$$  $$$$$$$$$$$$$$$   ");
                 System.out.println("               $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$         ");
@@ -533,6 +539,7 @@ public class About {
 
                 break;
             case 8:
+                System.out.println();
                 System.out.println("                $$$$");
                 System.out.println("            $$      $  $$$$ ");
                 System.out.println("         $$ $ $$$        $$$");
@@ -608,6 +615,7 @@ public class About {
                 break;
 
             case 9:
+                System.out.println();
                 System.out.println("                                     $$$$$$$$$$$");
                 System.out.println("                                $$$$$$$$$$$$$$$$$$");
                 System.out.println("                             $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
@@ -641,6 +649,7 @@ public class About {
                 System.out.println("                           $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
                 break;
             case 10:
+                System.out.println();
                 System.out.println("              _‡_                                          ");
                 System.out.println("               _‡_                                         ");
                 System.out.println("               _‡‡‡_                                       ");
@@ -694,6 +703,7 @@ public class About {
                 break;
 
             case 11:
+                System.out.println();
                 System.out.println("                \\,_     __,----. ");
                 System.out.println("            ,_,-/_   _,' _,'-\"\"\"\"\"-. ");
                 System.out.println("           ( : : ,),' _,'_,--\"\"\"\"\"---.__ ");
@@ -802,7 +812,6 @@ public class About {
         }
 
         System.out.println("");
-        System.out.println("");
         printver();
         System.out.println("");
         System.out.println("");
@@ -814,6 +823,7 @@ public class About {
     }
 
     static public void printdef() {
+        System.out.println();
         System.out.println("############################################################");
         System.out.println("############################################################");
         System.out.println("###########################      ###########################");
@@ -847,6 +857,7 @@ public class About {
     }
 
     static public void printver() {
+        System.out.println();
         System.out.println("       $  $          #       ##      #         $  $");
         System.out.println("         $  $      ###      ###    ###       $  $");
         System.out.println("       $$$$$$$      ##     # ##     ##      $$$$$$$");

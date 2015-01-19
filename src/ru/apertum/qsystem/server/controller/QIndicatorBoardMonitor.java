@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -46,14 +47,14 @@ import ru.apertum.qsystem.server.model.QUser;
  * @author Evgeniy Egorov
  */
 public class QIndicatorBoardMonitor extends AIndicatorBoard {
-
+    
     protected FIndicatorBoard indicatorBoard = null;
     protected String configFile;
-
+    
     public String getConfigFile() {
         return configFile;
     }
-
+    
     public void setConfigFile(String configFile) {
         final String err = ("/".equals(File.separator)) ? "\\" : "/";
         while (configFile.contains(err)) {
@@ -91,19 +92,19 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             }
             // Определим форму нв монитор
             indicatorBoard.toPosition(QLog.l().isDebug(), Integer.parseInt(rootParams.attributeValue("x")), Integer.parseInt(rootParams.attributeValue("y")));
-
+            
             setLinesCount(indicatorBoard.getLinesCount());
             setPause(indicatorBoard.getPause());
             if (records.size() != 0) {
                 showOnBoard(new LinkedHashSet<>(records.values()));
             }
-
+            
             java.awt.EventQueue.invokeLater(() -> {
                 indicatorBoard.setVisible(true);
             });
         }
     }
-
+    
     public QIndicatorBoardMonitor() {
         QLog.l().logger().info("Создание табло для телевизоров или мониторов.");
     }
@@ -121,7 +122,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             indicatorBoard.showCallPanel(customer.getPrefix() + customer.getNumber(), user.getPoint());
         }
     }
-
+    
     @Override
     protected void showOnBoard(LinkedHashSet<Record> records) {
         if (indicatorBoard != null) {
@@ -133,7 +134,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
                 indicatorBoard.printRecord(t, "", "", "", -1);
             }
             markShowed(records);
-
+            
             if (QLog.isServer1) { // если это не сервер, то QServiceTree полезет в спринг
                 final LinkedList<String> nexts = new LinkedList<>();
                 final PriorityQueue<QCustomer> customers = new PriorityQueue<>();
@@ -161,7 +162,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
     @Override
     protected void showToUser(Record record) {
     }
-
+    
     @Override
     public Element getConfig() {
         final File boardFile = new File(getConfigFile());
@@ -177,7 +178,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             return DocumentHelper.createElement("Ответ");
         }
     }
-
+    
     @Override
     public void saveConfig(Element element) {
         // в темповый файл
@@ -195,7 +196,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             throw new ServerException("Не возможно сохранить изменения в поток при сохранении файла конфигурации главного табло." + ex.getMessage());
         }
     }
-
+    
     @Override
     public AFBoardRedactor getRedactor() {
         if (boardConfig == null) {
@@ -207,7 +208,7 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
      * Используемая ссылка на диалоговое окно. Singleton
      */
     private static FBoardConfig boardConfig;
-
+    
     @Override
     public void showBoard() {
         // Для прерывания звука в роликах при звуковом оповещении.
@@ -232,25 +233,25 @@ public class QIndicatorBoardMonitor extends AIndicatorBoard {
             indicatorBoard = null;
         }
     }
-
+    
     @Override
     public void refresh() {
         close();
         indicatorBoard = null;
         initIndicatorBoard();
     }
-
+    
     @Override
     public void clear() {
         records.clear();
         showOnBoard(new LinkedHashSet(records.values()));
     }
-
+    
     @Override
     public String getDescription() {
         return "Default Tablo.";
     }
-
+    
     @Override
     public long getUID() {
         return 1;

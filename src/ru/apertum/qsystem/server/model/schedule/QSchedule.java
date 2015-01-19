@@ -118,11 +118,16 @@ public class QSchedule implements IidGetter, Serializable {
         public final Date finish;
 
         public Interval(Date start, Date finish) {
-            if (finish.before(start)) {
-                throw new ServerException("Finish date " + finish + " before than start date " + start);
+            if (start == null || finish == null) {
+                this.start = new Date(111);
+                this.finish = new Date(222);
+            } else {
+                if (finish.before(start)) {
+                    throw new ServerException("Finish date " + finish + " before than start date " + start);
+                }
+                this.start = start;
+                this.finish = finish;
             }
-            this.start = start;
-            this.finish = finish;
         }
 
         public long diff() {

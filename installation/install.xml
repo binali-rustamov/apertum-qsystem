@@ -174,11 +174,17 @@
             <file os="unix" src="resource/txt/admdbcom.sh" targetdir="$INSTALL_PATH"/>
             <file src="../db/qsystem.sql" targetdir="$INSTALL_PATH/DB/"/>
             <file src="../db/qsystem_eng.sql" targetdir="$INSTALL_PATH/DB/"/>
+            <file src="../db/qsystem_H2.sql" targetdir="$INSTALL_PATH/DB/"/>
+            <file src="../db/qsystem_H2_eng.sql" targetdir="$INSTALL_PATH/DB/"/>
             <file src="../config/mainboard.xml" targetdir="$INSTALL_PATH/config/"/>
+            <file src="resource/txt/asfb.dat" targetdir="$INSTALL_PATH/config/"/>
+            <file src="resource/bin/QSystemDB.mv.db" targetdir="$INSTALL_PATH/DB/"/>
 			<parsable encoding="utf-8" targetfile="$INSTALL_PATH/config/mainboard.xml"/>
 			<file src="../config/reporter.properties" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/reporter.html" targetdir="$INSTALL_PATH/config/"/>
 			<fileset dir="../www/" includes="*.jpg,*.gif,*.png,*.mpg,*.htm,*.html,*.js,*.css" targetdir="$INSTALL_PATH/www/"/>
+			<fileset dir="../www/led-string/" includes="*.jpg,*.gif,*.png,*.mpg,*.htm,*.html,*.js,*.css" targetdir="$INSTALL_PATH/www/led-string/"/>
+			<fileset dir="../www/img/" includes="*.jpg,*.gif,*.png" targetdir="$INSTALL_PATH/www/img/"/>
 			<singlefile src="../www/war/" target="$INSTALL_PATH//www/war"/>
             <file os="windows" src="resource/txt/StartServer.bat" targetdir="$INSTALL_PATH"/>
             <file os="windows" src="resource/txt/StopServer.bat" targetdir="$INSTALL_PATH"/>
@@ -195,6 +201,10 @@
 			
 			<file src="../config/qub.properties" targetdir="$INSTALL_PATH/config/"/>
 			<file src="../config/qub.adr" targetdir="$INSTALL_PATH/config/"/>
+			
+			<file os="windows" src="resource/txt/h2.bat" targetdir="$INSTALL_PATH"/>
+			<file os="windows" src="resource/txt/h2w.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/h2.sh" targetdir="$INSTALL_PATH"/>
         </pack>
         <pack id="admin" name="Administrator" required="no" preselected="no">
             <description>Администрирование</description>
@@ -219,6 +229,11 @@
 			<executable targetfile="$INSTALL_PATH/admdbcom.sh" stage="never">
                 <os family="unix"/>
             </executable>
+			
+			<file src="resource/txt/asfb.dat" targetdir="$INSTALL_PATH/config/"/>
+			<file os="windows" src="resource/txt/h2.bat" targetdir="$INSTALL_PATH"/>
+			<file os="windows" src="resource/txt/h2w.bat" targetdir="$INSTALL_PATH"/>
+            <file os="unix" src="resource/txt/h2.sh" targetdir="$INSTALL_PATH"/>
         </pack>
         <pack id="registrationPoint" name="Registration point" required="no" preselected="no">
             <description>Пункт регистрации</description>

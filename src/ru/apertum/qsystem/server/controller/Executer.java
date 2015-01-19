@@ -25,6 +25,7 @@ import java.util.GregorianCalendar;
 import org.dom4j.DocumentException;
 import ru.apertum.qsystem.common.model.QCustomer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -32,6 +33,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.dom4j.DocumentHelper;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import ru.apertum.qsystem.client.Locales;
 import ru.apertum.qsystem.common.Uses;
 import ru.apertum.qsystem.common.QLog;
 import ru.apertum.qsystem.common.CustomerState;
@@ -139,7 +141,7 @@ public final class Executer {
         }
 
         public Object process(CmdParams cmdParams, String ipAdress, byte[] IP) {
-            QLog.l().logger().debug("Выполняем : \"" + name + "\"");
+            QLog.l().logger().debug("Processing: \"" + name + "\"");
             QSessions.getInstance().update(cmdParams == null ? null : cmdParams.userId, ipAdress, IP);
             this.cmdParams = cmdParams;
             return "";
@@ -276,6 +278,51 @@ public final class Executer {
      */
     final Task inviteCustomerTask = new Task(Uses.TASK_INVITE_NEXT_CUSTOMER) {
 
+        private final HashSet<QUser> usrs = new HashSet<>();
+
+        class MyRun implements Runnable {
+
+            private QUser user;
+            private boolean isFrst;
+
+            @Override
+            public void run() {
+                final long delta = new Date().getTime() - user.getCustomer().getStandTime().getTime();
+                System.out.println("################## " + QLog.l().getPauseFirst());
+                if (delta < QLog.l().getPauseFirst() * 1000) {
+                    try {
+                        Thread.sleep(QLog.l().getPauseFirst() * 1000 - delta);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+                // просигналим звуком
+                if (user.getCustomer() != null && (user.getCustomer().getState() == CustomerState.STATE_WAIT
+                        || user.getCustomer().getState() == CustomerState.STATE_INVITED_SECONDARY
+                        || user.getCustomer().getState() == CustomerState.STATE_INVITED
+                        || user.getCustomer().getState() == CustomerState.STATE_BACK
+                        || user.getCustomer().getState() == CustomerState.STATE_WAIT_AFTER_POSTPONED
+                        || user.getCustomer().getState() == CustomerState.STATE_WAIT_COMPLEX_SERVICE)) {
+                    SoundPlayer.inviteClient(user.getCustomer().getService(), user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), isFrst);
+                    // Должно высветитьсяна основном табло
+                    MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
+                }
+                usrs.remove(user);
+            }
+        }
+
+        private void invite(final QUser user, final boolean isFirst) {
+            if (usrs.contains(user)) {
+                return;
+            }
+            usrs.add(user);
+            final MyRun mr = new MyRun();
+            mr.user = user;
+            mr.isFrst = isFirst;
+            final Thread t = new Thread(mr);
+            t.setDaemon(true);
+            t.start();
+        }
+
         /**
          * Cинхронизируем, ато вызовут одного и того же. А еще сдесь надо вызвать метод, который "проговорит" кого и куда вазвали. Может случиться ситуация
          * когда двое вызывают последнего кастомера, первому достанется, а второму нет.
@@ -301,12 +348,10 @@ public final class Executer {
                 } else {
                     // кастомер переходит в состояние в котором был в такое и переходит.
                     user.getCustomer().setState(user.getCustomer().getState());
-                    // просигналим звуком
-                    SoundPlayer.inviteClient(user.getCustomer().getService(), user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), false);
 
-                    //разослать оповещение о том, что посетитель вызван повторно
-                    //рассылаем широковещетельно по UDP на определенный порт. Должно высветитьсяна основном табло
-                    MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
+                    // просигналим звуком
+                    // Должно высветитьсяна основном табло
+                    invite(user, false);
 
                     return new RpcInviteCustomer(user.getCustomer());
                 }
@@ -375,11 +420,9 @@ public final class Executer {
                 // сохраняем состояния очередей.
                 QServer.savePool();
                 if (customer.getService().getEnable() == 1) { // услуга требует вызова
-                    // просигналим звуком
-                    SoundPlayer.inviteClient(customer.getService(), user.getCustomer().getPrefix() + user.getCustomer().getNumber(), user.getPoint(), true);
-                    //разослать оповещение о том, что появился вызванный посетитель
+                    // звук
                     // Должно высветитьсяна основном табло
-                    MainBoard.getInstance().inviteCustomer(user, user.getCustomer());
+                    invite(user, true);
                 }
                 //разослать оповещение о том, что посетителя вызвали, состояние очереди изменилось
                 //рассылаем широковещетельно по UDP на определенный порт
@@ -736,6 +779,7 @@ public final class Executer {
             super.process(cmdParams, ipAdress, IP);
             final QUser user = QUserList.getInstance().getById(cmdParams.userId);
             QLog.l().logger().warn("УДАЛЕНИЕ: Удалили по неявке кастомера " + user.getCustomer().getPrefix() + "-" + user.getCustomer().getNumber() + " он ввел \"" + user.getCustomer().getInput_data() + "\"");
+            QLog.l().logger().warn("REMOVING: Customer was removing because of absence " + user.getCustomer().getPrefix() + "-" + user.getCustomer().getNumber() + " customer inputted \"" + user.getCustomer().getInput_data() + "\"");
             // Если кастомер имел что-то введенное на пункте регистрации, то удалить всех таких кастомеров с такими введеными данными
             // и отправить его в бан, ибо нехрен набирать кучу талонов и просирать очереди.
             if (user.getCustomer().getInput_data() != null && !"".equals(user.getCustomer().getInput_data())) {
@@ -1626,7 +1670,7 @@ public final class Executer {
             for (QService service : QServiceTree.getInstance().getNodes()) {
                 for (QCustomer customer : service.getClients()) {
                     if (num.equalsIgnoreCase(customer.getFullNumber())) {
-                        s = "Клиент с номером \"" + num + "\" стоит в очереди для получения услуги \"" + service.getName() + "\".";
+                        s = Locales.locMes("client_with_number") + " \"" + num + "\" стоит в очереди для получения услуги \"" + service.getName() + "\".";
                         break;
                     }
                 }
@@ -1634,7 +1678,7 @@ public final class Executer {
             if ("".equals(s)) {
                 for (QCustomer customer : QPostponedList.getInstance().getPostponedCustomers()) {
                     if (num.equalsIgnoreCase(customer.getFullNumber())) {
-                        s = "Клиент с номером \"" + num + "\" находится в списке временно отложенных.";
+                        s = Locales.locMes("client_with_number") + " \"" + num + "\" находится в списке временно отложенных.";
                         break;
                     }
                 }
@@ -1643,14 +1687,14 @@ public final class Executer {
             if ("".equals(s)) {
                 for (QUser user : QUserList.getInstance().getItems()) {
                     if (user.getCustomer() != null && num.equalsIgnoreCase(user.getCustomer().getFullNumber())) {
-                        s = "Клиент с номером \"" + num + "\" обслуживается у оператора \"" + user.getName() + "\".";
+                        s = Locales.locMes("client_with_number") + " \"" + num + "\" обслуживается у оператора \"" + user.getName() + "\".";
                         break;
                     }
                 }
             }
 
             if ("".equals(s) && killedCustomers.get(num) != null) {
-                s = "Клиент с номером \"" + num + "\" удален по неявке в " + Uses.format_for_label.format(killedCustomers.get(num));
+                s = Locales.locMes("client_with_number") + " \"" + num + "\" удален по неявке в " + Uses.format_for_label.format(killedCustomers.get(num));
             }
             return new RpcGetSrt("".equals(s) ? "Клиент по введенному номеру \"" + num + "\" не найден в списке удаленных по неявке или стоящих в очереди." : s);
         }
@@ -1786,7 +1830,7 @@ public final class Executer {
         if (!QLog.l().isDebug()) {
             System.out.println("Task processing: '" + rpc.getMethod());
         }
-        QLog.l().logger().info("Обработка задания: '" + rpc.getMethod() + "'");
+        QLog.l().logger().info("Task processing: '" + rpc.getMethod() + "'");
         if (tasks.get(rpc.getMethod()) == null) {
             throw new ServerException("В задании не верно указано название действия: '" + rpc.getMethod() + "'");
         }
@@ -1798,7 +1842,7 @@ public final class Executer {
         // А то что необходимо синхронизировать, то синхронизится в самих обработчиках.
         result = tasks.get(rpc.getMethod()).process(rpc.getParams(), ipAdress, IP);
 
-        QLog.l().logger().info("Задание завершено. Затрачено времени: " + ((double) (System.currentTimeMillis() - start)) / 1000 + " сек.");
+        QLog.l().logger().info("Task was finished. Time: " + ((double) (System.currentTimeMillis() - start)) / 1000 + " sec.");
         return result;
     }
 }

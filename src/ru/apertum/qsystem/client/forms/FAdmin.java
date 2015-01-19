@@ -2559,7 +2559,7 @@ public class FAdmin extends javax.swing.JFrame {
         jSplitPane3.setName("jSplitPane3"); // NOI18N
         jSplitPane3.setPreferredSize(new java.awt.Dimension(40, 25));
 
-        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel11.border.title")));
+        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder("Свойства пользователя"));
         jPanel11.setMinimumSize(new java.awt.Dimension(5, 5));
         jPanel11.setName("jPanel11"); // NOI18N
 
@@ -4199,7 +4199,7 @@ public class FAdmin extends javax.swing.JFrame {
                         .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
+                .addComponent(jTabbedPane2)
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(

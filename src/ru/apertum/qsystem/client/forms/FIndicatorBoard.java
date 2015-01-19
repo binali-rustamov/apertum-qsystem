@@ -187,17 +187,21 @@ public class FIndicatorBoard extends javax.swing.JFrame {
 
         this.colorTextLine = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_LINE).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         this.colorRow = Color.decode("#" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_COLOR).get(0).attributeValue(Uses.TAG_BOARD_VALUE));
-        this.rowCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        final String rowCap = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LINE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        this.rowCaption = !"".equals(rowCap) ? rowCap : getLocaleMessage("line_caption");
         this.leftColCaption = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_LEFT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
         ArrayList<Element> li = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_RIGHT_CAPTION);
         this.rightColCaption = li.isEmpty() ? "" : li.get(0).attributeValue(Uses.TAG_BOARD_VALUE);
         li = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_EXT_CAPTION);
-        this.extColCaption = li.isEmpty() ? "" : li.get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        final String adCap = li.isEmpty() ? "" : li.get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        this.extColCaption = !"".equals(adCap) ? adCap : getLocaleMessage("additional_column_cap");
         li = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_EXT_POSITION);
         int t = Integer.parseInt(li.isEmpty() ? "0" : li.get(0).attributeValue(Uses.TAG_BOARD_VALUE));
         t = t < 0 ? 0 : t;
         t = t > 3 ? 3 : t;
         this.extColPosition = t;
+        final String cap = Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE);
+        this.nextGridCaption = (!"".equals(cap) ? cap : getLocaleMessage("board.next_caption"));
         this.border = new TitledBorder(new LineBorder(colorRow), "".equals(rowCaption) ? getLocaleMessage("board.cell") : rowCaption);//  MatteBorder(1, 3, 1, 2, Color.LIGHT_GRAY);
         border.setTitleColor(colorTextLine);
 
@@ -382,7 +386,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                             + "<tr><td>"
                             + "<p align=center>"
                             + "<span style='font-size:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ".0pt;color:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ";'>"
-                            + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)
+                            + nextGridCaption
                             + "</span></p>"
                             + "</td></tr>"
                             + "<tr>"
@@ -456,7 +460,7 @@ public class FIndicatorBoard extends javax.swing.JFrame {
                     + "<tr><td colspan='" + Uses.elementsByAttr(el_nexts.get(rl), Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_COLS).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + "'>"
                     + "<p align=center>"
                     + "<span style='font-size:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_SIZE_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ".0pt;color:" + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_FONT_COLOR_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE) + ";'>"
-                    + Uses.elementsByAttr(mainElement, Uses.TAG_BOARD_NAME, Uses.TAG_BOARD_GRID_NEXT_CAPTION).get(0).attributeValue(Uses.TAG_BOARD_VALUE)
+                    + nextGridCaption
                     + "</span></p>"
                     + "</td></tr>";
             int t = 0;
@@ -695,6 +699,8 @@ public class FIndicatorBoard extends javax.swing.JFrame {
      * Заголовок правого столбца
      */
     private final String rightColCaption;
+    private final String nextGridCaption;
+
     private final String extColCaption;
     private final int extColPosition;
     /**
