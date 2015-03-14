@@ -34,7 +34,7 @@ import ru.apertum.qsystem.common.Uses;
  * @author Evgeniy Egorov
  */
 public final class Locales {
-    
+
     private static final ResourceBundle translate = ResourceBundle.getBundle("ru/apertum/qsystem/common/resources/i3-label", Locales.getInstance().getLangCurrent());
 
     public static String locMes(String key) {
@@ -81,6 +81,7 @@ public final class Locales {
                         lngs.put(config.getString("locale." + s + ".name"), s);
                         lngs_names.put(s, config.getString("locale." + s + ".name"));
                         lngs_buttontext.put(s, config.getString("locale." + s + ".buttontext"));
+                        lngs_welcome.put(s, config.getString("locale." + s + ".welcome", "1"));
                     }
                 }
             }
@@ -90,7 +91,7 @@ public final class Locales {
         isUkr = getLangCurrent().getISO3Language().toLowerCase().startsWith("ukr");
         //System.out.println("- 1 --" + Locale.getDefault());
         //System.out.println("- 2 --" + locales_name.get(Locale.getDefault()));
-        
+
         //isRuss = getNameOfPresentLocale().toLowerCase().startsWith("ru") && !isUkr;
         isRuss = getLangCurrent().getISO3Language().startsWith("ru") && !isUkr;
 
@@ -134,6 +135,10 @@ public final class Locales {
      * eng -> buttontext
      */
     private final LinkedHashMap<String, String> lngs_buttontext = new LinkedHashMap<>();
+    /**
+     * eng -> 1/0
+     */
+    private final LinkedHashMap<String, String> lngs_welcome = new LinkedHashMap<>();
 
     public static Locales getInstance() {
         return LocalesHolder.INSTANCE;
@@ -143,6 +148,7 @@ public final class Locales {
 
         private static final Locales INSTANCE = new Locales();
     }
+    private final String WELCOME = "welcome";
     private final String LANG_CURRENT = "locale.current";
     private final String WELCOME_LNG = "welcome.multylangs";
     private final String WELCOME_LNG_POS = "welcome.multylangs.position";
@@ -151,6 +157,20 @@ public final class Locales {
 
     public boolean isWelcomeMultylangs() {
         return config.getString(WELCOME_LNG) == null ? false : "1".equals(config.getString(WELCOME_LNG)) || config.getString(WELCOME_LNG).startsWith("$");
+    }
+
+    public void setWelcomeMultylangs(boolean multylangs) {
+        if (!config.getString(WELCOME_LNG).startsWith("$")) {
+            config.setProperty(WELCOME_LNG, multylangs ? "1" : "0");
+        }
+    }
+
+    public boolean isIDE() {
+        return config.getString(WELCOME_LNG).startsWith("$");
+    }
+
+    public boolean isWelcomeFirstLaunch() {
+        return config.getString(WELCOME) == null ? false : ("1".equals(config.getString(WELCOME)) && !config.getString(WELCOME_LNG).startsWith("$"));
     }
 
     public boolean isWelcomeMultylangsButtonsFilled() {
@@ -181,16 +201,29 @@ public final class Locales {
         return lngs_buttontext.get(lng);
     }
 
+    public String getLangWelcome(String lng) {
+        return lngs_welcome.get(lng);
+    }
+
     public String getNameOfPresentLocale() {
         return locales_name.get(Locale.getDefault());
     }
 
     /**
      *
-     * @param name English к примеру
+     * @param name English к примеру eng
      */
     public void setLangCurrent(String name) {
         config.setProperty(LANG_CURRENT, lngs.get(name));
+    }
+
+    public void setWelcome(String count) {
+        config.setProperty(WELCOME, count);
+    }
+
+    public void setLangWelcome(String name, boolean on) {
+        config.setProperty("locale." + name + ".welcome", on ? "1" : "0");
+        lngs_welcome.put(name, on ? "1" : "0");
     }
 
     public ArrayList<String> getAvailableLocales() {

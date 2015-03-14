@@ -117,6 +117,12 @@ abstract public class AIndicatorBoard implements IIndicatorBoard {
 
         final public String point;
         final public String customerNumber;
+
+        @Override
+        public String toString() {
+            return customerNumber + "-" + point;
+        }
+
         /**
          * Название юзера, создавшего эту строку на табло. Это идентификатор строк, т.к. имя позьзователя уникально в системе.
          */

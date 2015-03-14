@@ -361,6 +361,9 @@ public class QServer extends Thread {
                 // полученное задание передаем в пул
                 final Object result = Executer.getInstance().doTask(rpc, socket.getInetAddress().getHostAddress(), socket.getInetAddress().getAddress());
                 answer = gson.toJson(result);
+            } catch (JsonSyntaxException ex) {
+                QLog.l().logger().error("Received data \"" + data + "\" has not correct JSOM format. ", ex);
+                throw new ServerException("Received data \"" + data + "\" has not correct JSOM format. " + Arrays.toString(ex.getStackTrace()));
             } catch (Exception ex) {
                 QLog.l().logger().error("Late caught the error when running the command. ", ex);
                 throw new ServerException("Поздно пойманная ошибка при выполнении команды: " + Arrays.toString(ex.getStackTrace()));

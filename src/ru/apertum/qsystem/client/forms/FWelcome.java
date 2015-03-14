@@ -35,7 +35,6 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.MemoryImageSource;
@@ -67,10 +66,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.Timer;
 import javax.swing.tree.TreeNode;
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeException;
@@ -339,6 +336,20 @@ public class FWelcome extends javax.swing.JFrame {
         // Загрузка плагинов из папки plugins
         Uses.loadPlugins("./plugins/");
         Locale.setDefault(Locales.getInstance().getLangCurrent());
+
+        // выберем нужные языки на велкоме если первый раз запускаем или ключ -clangs
+        if (Locales.getInstance().isWelcomeMultylangs() && (Locales.getInstance().isWelcomeFirstLaunch() || QLog.chooseLANGS)) {
+
+            JFrame form = new FLangsOnWelcome();
+            java.awt.EventQueue.invokeLater(() -> {
+                form.setVisible(true);
+            });
+            Thread.sleep(2000);
+            while (form.isVisible()) {
+                Thread.sleep(1000);
+            }
+        }
+
         LOCK_MESSAGE = "<HTML><p align=center><b><span style='font-size:40.0pt;color:red'>" + getLocaleMessage("messages.lock_messages") + "</span></b></p>";
         netProperty = new ClientNetProperty(args);
         // определим режим пользовательского интерфейса
@@ -357,7 +368,14 @@ public class FWelcome extends javax.swing.JFrame {
                 isInfo = true;
             }
         }
-        final RpcGetAllServices.ServicesForWelcome servs = NetCommander.getServiсes(netProperty);
+        final RpcGetAllServices.ServicesForWelcome servs;
+        try {
+            servs = NetCommander.getServiсes(netProperty);
+        } catch (Throwable t) {
+            QLog.l().logger().error("Start Welcome was failed.", t);
+            System.exit(117);
+            throw new RuntimeException(t);
+        }
         root = servs.getRoot();
         FWelcome.startTime = servs.getStartTime();
         FWelcome.finishTime = servs.getFinishTime();
@@ -595,6 +613,7 @@ public class FWelcome extends javax.swing.JFrame {
                 btn.setFocusPainted(false);
                 btn.setBorderPainted(Locales.getInstance().isWelcomeMultylangsButtonsBorder());
                 btn.addActionListener(new LngBtnAction(Locales.getInstance().getLocaleByName(lng)));
+                btn.setVisible("1".equals(Locales.getInstance().getLangWelcome(lng)));
                 return btn;
             }).forEach((btn) -> {
                 panelLngs.add(btn);

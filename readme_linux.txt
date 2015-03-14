@@ -84,12 +84,13 @@ asadmin --host www.yourdomain.com --port 4848 enable-secure-admin
 Then stop/start glassfish immediately after enabling secure admin.
 In case your private Glassfish runs on shared server you will need to use your custom port (assume 15123 for the example) in asadmin command. Check Java Control Panel for your Glassfish console port. Use the port with your asadmin commands. The below was tested with Glassfish 3.1.2 and 4.0.
 
+не вовремя выполненная команда, с неё начинать не нужно:
 [~]# asadmin --port 15123 enable-secure-admin
 remote failure: At least one admin user has an empty password, which secure admin does not permit. Use the change-admin-password command or the admin console to create non-empty passwords for admin accounts.
 Command enable-secure-admin failed.
 Set the password as prompted
 
-Вот так мы админу сменим пароль
+Вот так мы админу сменим пароль для начала:
 [~]# asadmin --port 15123 change-admin-password
 Enter admin user name [default: admin]> 
 Enter admin password> 
@@ -98,7 +99,9 @@ Enter new admin password again> secret
 Command change-admin-password executed successfully.
 Now retry enable-secure-admin
 
+Во вторую очередь разрешим админу заходить:
 # asadmin --port 15123 enable-secure-admin
+# asadmin enable-secure-admin  <-- тут для 4.1 порт указывать не нужно, не то говорит что не конект к гласфишу
 Enter admin user name> admin
 Enter admin password for user "admin"> secret
 You must restart all running servers for the change in secure admin to take effect.

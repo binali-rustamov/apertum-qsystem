@@ -1765,6 +1765,7 @@ public class FReception extends javax.swing.JFrame {
             }
         }
 
+        Uses.closeSplash();
         if (res) {
             java.awt.EventQueue.invokeLater(() -> {
                 try {

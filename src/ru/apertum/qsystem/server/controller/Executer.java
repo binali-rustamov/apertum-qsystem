@@ -201,6 +201,9 @@ public final class Executer {
                 //разослать оповещение о том, что появился посетитель
                 //рассылаем широковещетельно по UDP на определенный порт
                 Uses.sendUDPBroadcast(service.getId().toString(), ServerProps.getInstance().getProps().getClientPort());
+
+                // Должно высветитьсяна основном табло в таблице ближайших
+                MainBoard.getInstance().customerStandIn(customer);
             } catch (Exception ex) {
                 QLog.l().logger().error(ex);
             }

@@ -40,6 +40,7 @@ public class QLog {
     private static final String KEY_TERMINAL = "-terminal";
     private static final String KEY_WELCOME_BTN = "-buttons";
     private static final String KEY_RETAIN = "-RETAIN";
+    private static final String KEY_CLANGS = "-clangs";
     private static final String KEY_DELAY_INVITE_FIRST = "-dfi";
     private Logger logger = Logger.getLogger("server.file");//**.file.info.trace
 
@@ -264,6 +265,7 @@ public class QLog {
     public static boolean isServer1 = false;
     public static boolean isIDE = false;
     public static boolean isSTART = false;
+    public static boolean chooseLANGS = false;
     /**
      * Всегда грузим temp.json и никогда не чистим состояние.
      */
@@ -287,6 +289,9 @@ public class QLog {
             }
             if (KEY_RETAIN.equalsIgnoreCase(string)) {
                 isRETAIN = true;
+            }
+            if (KEY_CLANGS.equalsIgnoreCase(string)) {
+                chooseLANGS = true;
             }
         }
         loggerType = type;

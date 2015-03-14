@@ -148,7 +148,7 @@ public class WelcomeParams {
     public String topImg = ""; // - это картинка на верхней панели на п.р. с видом кнопок
     public String topURL = ""; // - а верхней панели пункта регистрации, там где заголовок и картинка в углу, можно вывести вэб-контент по URL. Оставьте пустым если не требуется
     public String topImgSecondary = ""; // - это картинка на верхней панели на п.р. на вторичных диалогах
-    public PrintService printService = null; // - это картинка на верхней панели на п.р. на вторичных диалогах
+    public PrintService printService = null; // - это принтер определенный по имени printer.Name
     public String patternGetTicket = ""; // - это шаблон текста для диалога забрать талон
     public String getTicketImg = ""; // - это картинка для диалогаплучения талона. пустое значение - картинка по умолчанию
     public String patternConfirmationStart = ""; // - это это шаблон текста для диалога подтверждения стоять в очереди. Встроенный текст dialogue_text.take_ticket dialog.text_before_people [[endRus]]

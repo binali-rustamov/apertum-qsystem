@@ -14,7 +14,7 @@
     <!-- http://mvnrepository.com -->
     <dependencies>
         <dependency org="mysql" name="mysql-connector-java" rev="5.1.33" conf="runtime->*" transitive="false"/>
-        <dependency org="com.h2database" name="h2" rev="1.4.182" conf="compile->*"/>
+        <dependency org="com.h2database" name="h2" rev="1.4.185" conf="compile->*"/>
 
         <dependency org="org.springframework" name="spring-core" rev="4.0.0.RELEASE"  conf="compile->*" transitive="false"/>
         <dependency org="org.springframework" name="spring-beans" rev="4.0.0.RELEASE"  conf="compile->*" transitive="false"/>
@@ -39,7 +39,7 @@
         <dependency org="org.slf4j" name="jcl-over-slf4j" rev="1.6.1" conf="runtime->*" transitive="false"/>
         <dependency org="log4j" name="log4j" rev="1.2.15" conf="compile->*" transitive="false"/>
         <!--dependency org="xalan" name="xalan" rev="2.7.1" conf="runtime->*" transitive="false"/-->
-        <dependency org="com.lowagie" name="itext" rev="2.1.7" conf="runtime->*" transitive="false"/>
+        <dependency org="com.lowagie" name="itext" rev="4.2.1" conf="runtime->*" transitive="false"/>
         <dependency org="net.java.dev.beansbinding" name="beansbinding" rev="1.2.1" conf="compile->*" transitive="false"/>
         <dependency org="net.sourceforge.barbecue" name="barbecue" rev="1.5-beta1" conf="compile->*" transitive="false"/>
         <dependency org="com.google.zxing" name="core" rev="2.2"  conf="compile->*" transitive="false"/>

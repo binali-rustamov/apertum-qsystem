@@ -23,15 +23,15 @@ import ru.apertum.qsystem.extra.IExtra;
 import ru.apertum.qsystem.server.model.QUser;
 
 /**
- * Интерфейс событий вывода информации: зазываем, обрабатываем, освобождаем
- * Имеет методы для конфигурирования.
+ * Интерфейс событий вывода информации: зазываем, обрабатываем, освобождаем Имеет методы для конфигурирования.
+ *
  * @author Evgeniy Egorov
  */
 public interface IIndicatorBoard extends IExtra {
 
     /**
-     * На табло по определенному адресу должен замигать номер вызываемого клиента.
-     * При этом он должен подняться на верх.
+     * На табло по определенному адресу должен замигать номер вызываемого клиента. При этом он должен подняться на верх.
+     *
      * @param user пользователь, который начал работать с клиентом.
      * @param customer Клиент, который был вызван
      */
@@ -39,12 +39,14 @@ public interface IIndicatorBoard extends IExtra {
 
     /**
      * На табло оператора долженн перестать мигать номер вызываемого клиента
+     *
      * @param user пользователь, который начал работать с клиентом.
      */
     public void workCustomer(QUser user);
 
     /**
      * На табло по определенному адресу должно отчистиццо табло
+     *
      * @param user пользователь, который удалил клиента.
      */
     public void killCustomer(QUser user);
@@ -63,7 +65,7 @@ public interface IIndicatorBoard extends IExtra {
      * Включить информационное табло.
      */
     public void showBoard();
-    
+
     /**
      * Включить информационное табло.
      */
@@ -71,19 +73,32 @@ public interface IIndicatorBoard extends IExtra {
 
     /**
      * Получить некую информацию о табло
+     *
      * @return XML-конфигурация
      */
     public Element getConfig();
 
     /**
      * Сохранить конфигурацию
+     *
      * @param element XML-конфигурация для сохранения
      */
     public void saveConfig(Element element);
 
     /**
      * получить форму редактора для табло.
+     *
      * @return фрейм редактора.
      */
     public AFBoardRedactor getRedactor();
+
+    /**
+     * Событие для главного табло в моменте встатия клиента в очередь. Появилось при необходимости обносить таблицу ближайших в момент получения талона.
+     * Объявлен как дефолтный что бы старые плагины не отвалились. Надеюсь, не отвалятся.
+     *
+     * @param customer Клиент, который был вызван
+     */
+    public default void customerStandIn(QCustomer customer) {
+
+    }
 }

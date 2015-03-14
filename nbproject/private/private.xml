@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="32">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="33">
         <file>
             <url>src/ru/apertum/qsystem/server/model/QService.java</url>
             <bookmark id="21">
@@ -43,7 +43,7 @@
             </bookmark>
             <bookmark id="26">
                 <name/>
-                <line>1847</line>
+                <line>1848</line>
                 <key/>
             </bookmark>
         </file>
@@ -98,7 +98,7 @@
             <url>src/ru/apertum/qsystem/common/QLog.java</url>
             <bookmark id="27">
                 <name/>
-                <line>278</line>
+                <line>280</line>
                 <key/>
             </bookmark>
         </file>
@@ -111,12 +111,17 @@
             </bookmark>
             <bookmark id="8">
                 <name/>
-                <line>211</line>
+                <line>214</line>
                 <key/>
             </bookmark>
             <bookmark id="1">
                 <name/>
-                <line>275</line>
+                <line>278</line>
+                <key/>
+            </bookmark>
+            <bookmark id="33">
+                <name/>
+                <line>1293</line>
                 <key/>
             </bookmark>
         </file>
@@ -149,11 +154,8 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/common/QLog.java</file>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/controller/IIndicatorBoard.java</file>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/controller/AIndicatorBoard.java</file>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/controller/Executer.java</file>
-            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/controller/QIndicatorBoardMonitor.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/common/NetCommander.java</file>
+            <file>file:/E:/WORK/apertum-qsystem/src/ru/apertum/qsystem/server/QServer.java</file>
         </group>
     </open-files>
 </project-private>

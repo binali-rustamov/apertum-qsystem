@@ -1499,7 +1499,7 @@ public class FAdmin extends javax.swing.JFrame {
                         Spring.getInstance().getHt().saveOrUpdate(ServerProps.getInstance().getProps());
                         //Сохраняем нормативные параметры
                         Spring.getInstance().getHt().saveOrUpdate(ServerProps.getInstance().getStandards());
-
+                        
                         // Сохраняем планы расписания
                         QScheduleList.getInstance().save();
                         // Сохраняем перерывы в расписании
@@ -2306,7 +2306,7 @@ public class FAdmin extends javax.swing.JFrame {
             }
         });
 
-        jScrollPane2.setBorder(javax.swing.BorderFactory.createTitledBorder("Информация о состоянии сервера"));
+        jScrollPane2.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("server_info")));
         jScrollPane2.setName("jScrollPane2"); // NOI18N
 
         labelServerState.setText(resourceMap.getString("labelServerState.text")); // NOI18N
@@ -2559,7 +2559,7 @@ public class FAdmin extends javax.swing.JFrame {
         jSplitPane3.setName("jSplitPane3"); // NOI18N
         jSplitPane3.setPreferredSize(new java.awt.Dimension(40, 25));
 
-        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder("Свойства пользователя"));
+        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel11.border.title")));
         jPanel11.setMinimumSize(new java.awt.Dimension(5, 5));
         jPanel11.setName("jPanel11"); // NOI18N
 
@@ -4814,7 +4814,7 @@ private void buttonCloudTestActionPerformed(java.awt.event.ActionEvent evt) {//G
         QLog.l().logger().error("SPI error: ", ex);
         sb.append(getLocaleMessage("admin.cloud_test_dialog.error"));
     }
-    final String res = sb.toString();
+    final String res = "URL=\"" + ServerProps.getInstance().getProps().getSkyServerUrl() + "\"\n\n" + sb.toString();
     sb.setLength(0);
     JOptionPane.showConfirmDialog(null, res, getLocaleMessage("admin.cloud_test_dialog.title"), JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
 }//GEN-LAST:event_buttonCloudTestActionPerformed

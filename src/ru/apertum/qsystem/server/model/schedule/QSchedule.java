@@ -200,6 +200,9 @@ public class QSchedule implements IidGetter, Serializable {
         final GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(date);
         gc.add(GregorianCalendar.SECOND, 3);
+        gc.set(GregorianCalendar.YEAR, 0);
+        gc.set(GregorianCalendar.MONTH, 0);
+        gc.set(GregorianCalendar.DAY_OF_YEAR, 0);
         int ii = gc.get(GregorianCalendar.DAY_OF_WEEK) - 1;
         if (ii < 1) {
             ii = 7;
@@ -232,7 +235,17 @@ public class QSchedule implements IidGetter, Serializable {
         }
         if (qb != null) {// может вообще перерывов нет
             for (QBreak br : qb.getBreaks()) {
-                if (br.getFrom_time().before(gc.getTime()) && br.getTo_time().after(gc.getTime())) {
+                final GregorianCalendar gc1 = new GregorianCalendar();
+                gc1.setTime(br.getFrom_time());
+                gc1.set(GregorianCalendar.YEAR, 0);
+                gc1.set(GregorianCalendar.MONTH, 0);
+                gc1.set(GregorianCalendar.DAY_OF_YEAR, 0);
+                final GregorianCalendar gc2 = new GregorianCalendar();
+                gc2.setTime(br.getTo_time());
+                gc2.set(GregorianCalendar.YEAR, 0);
+                gc2.set(GregorianCalendar.MONTH, 0);
+                gc2.set(GregorianCalendar.DAY_OF_YEAR, 0);
+                if (gc1.getTime().before(gc.getTime()) && gc2.getTime().after(gc.getTime())) {
                     return true;
                 }
             }

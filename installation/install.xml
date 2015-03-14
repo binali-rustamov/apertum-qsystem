@@ -239,6 +239,7 @@
             <description>Пункт регистрации</description>
             <file src="../config/welcome.properties" targetdir="$INSTALL_PATH/config/"/>
             <file src="../config/welcome_bg.properties" targetdir="$INSTALL_PATH/config/"/>
+            <file os="windows" src="../multilangs.bat" targetdir="$INSTALL_PATH"/>
             <file os="windows" src="resource/txt/Welcome.bat" targetdir="$INSTALL_PATH"/>
             <file os="unix" src="resource/txt/welcome.sh" targetdir="$INSTALL_PATH"/>
 			<file os="windows" src="resource/txt/WelcomeDemo.bat" targetdir="$INSTALL_PATH"/>

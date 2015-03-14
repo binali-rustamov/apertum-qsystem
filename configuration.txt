@@ -1,0 +1,46 @@
+ Если сервер на Linux, то для корректного отображения кирилицы добавьте параметр в JVM Options. Заходим в server-config > JVM Settings > JVM Options и добавляем параметр -Dfile.encoding=UTF8. Если Glassfish запускается не в серверном режиме, то этот параметр нужно добавить в  default-config > JVM Settings > JVM Options. 
+ 
+mysql-connector-java-5.1.33.jar  --> <glassfish>\glassfish\lib
+
+
+QSKY_IGNOR_ADDR 193.107;213.5
+QSKY_QSYS_VER 1.4.1
+QSKY_TIME_SHIFT 0
+QSKY_USERS qadmin=qadminqadmin;demo=demo#4_5;kievfriend=kievfriend@3;prozoriy.office=v6gb8aj#10
+demo_QSYSPREREG_CAPTION СУО QSystem: демонстрация предварительной записи через интернет.
+demo_QSYSPREREG_LOGO /resources/img/label.png
+demo_QSYSPREREG_TITLE СУО QSystem!
+demo_QSYSTEM_SERVER_ADDR 82.146.53.79
+demo_QSYSTEM_SERVER_PORT 3128
+
+QSYSPREREG-MAIL
+Mail Host: smtp.yandex.ru
+Default User: apertum2010
+Default Sender Address: apertum2010@yandex.ru
+Store Protocol: imap
+Store Protocol Class: com.sun.mail.imap.IMAPStore
+Transport Protocol: smtp
+Transport Protocol Class: com.sun.mail.smtp.SMTPTransport
+mail.smtp.port 587
+mail.smtp.auth true
+mail.smtp.password ***********
+mail.mime.charset UTF-8
+mail.smtp.starttls.enable true
+
+Edit JDBC Connection Pool
+Pool Name: dev-qsky-dsource
+Resource Type: jax.sql.DataSource
+Datasource Classname: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+User sky
+ServerName 188.120.226.155
+Port 3306
+CharacterEncoding utf-8
+DatabaseName qsky
+Password qskyqsky
+UseUnicode true
+Encoding utf-8
+
+
+Edit JDBC Resource
+JNDI Name: jdbc/mysql/qsky
+Pool Name: dev-qsky-dsource
